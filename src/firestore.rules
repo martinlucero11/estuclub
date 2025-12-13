@@ -1,0 +1,100 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------
+    // Helper functions
+    // -------------------------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    function isSupplier() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    // -------------------------
+    // USERS
+    // -------------------------
+    match /users/{userId} {
+
+      // Cualquier usuario autenticado puede crear su perfil
+      allow create: if isSignedIn();
+
+      // El usuario puede leer su perfil y admins también
+      allow read: if isSignedIn();
+
+      // El usuario puede actualizar solo su propio documento
+      allow update, delete: if isSignedIn()
+        && request.auth.uid == userId;
+
+      // Admins siempre pueden modificar cualquier perfil
+      allow update, delete: if isAdmin();
+
+      // Subcolección de canjes
+      match /redeemed_benefits/{redemptionId} {
+        allow read, write: if isSignedIn()
+          && request.auth.uid == userId;
+
+        allow read, write: if isAdmin() || isSupplier();
+      }
+    }
+    
+    // -------------------------
+    // USERNAMES
+    // -------------------------
+    match /usernames/{username} {
+
+      // Cualquier usuario registrado puede crear su username
+      allow create: if isSignedIn();
+
+      // Leer y borrar username solo del dueño o admin
+      allow read, delete: if isSignedIn();
+    }
+
+    // -------------------------
+    // BENEFITS
+    // -------------------------
+    match /benefits/{benefitId} {
+      allow read: if true;
+      allow create: if isAdmin() || isSupplier();
+      allow update, delete: if isAdmin()
+        || (isSupplier() && resource.data.ownerId == request.auth.uid);
+    }
+
+    // -------------------------
+    // ANNOUNCEMENTS
+    // -------------------------
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // -------------------------
+    // ROLES
+    // -------------------------
+    match /roles_admin/{userId} {
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    match /roles_supplier/{userId} {
+      allow read: if isAdmin() || request.auth.uid == userId;
+      allow write: if isAdmin(); // Only admins can make someone a supplier
+    }
+
+    // -------------------------
+    // NOTIFICATIONS
+    // -------------------------
+    match /notifications/{notificationId} {
+        allow read: if true;
+        allow create: if isAdmin() || isSupplier();
+    }
+  }
+}

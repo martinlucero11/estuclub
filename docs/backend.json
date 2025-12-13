@@ -1,0 +1,531 @@
+
+{
+  "entities": {
+    "Username": {
+      "title": "Username",
+      "type": "object",
+      "description": "Represents a unique username claimed by a user.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this username."
+        }
+      },
+      "required": ["userId"]
+    },
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user profile within the student benefits app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile.",
+          "format": "uuid"
+        },
+        "username": {
+            "type": "string",
+            "description": "The user's unique username or handle."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "dni": {
+          "type": "string",
+          "description": "The user's national identity document number."
+        },
+        "phone": {
+            "type": "string",
+            "description": "The user's phone number."
+        },
+        "gender": {
+          "type": "string",
+          "description": "The user's gender.",
+          "enum": ["Masculino", "Femenino", "Otro", "Prefiero no decirlo"]
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The user's date of birth.",
+          "format": "date"
+        },
+        "university": {
+          "type": "string",
+          "description": "The university the user attends."
+        },
+        "major": {
+          "type": "string",
+          "description": "The user's major or field of study."
+        },
+        "points": {
+          "type": "number",
+          "description": "The total points the user has accumulated."
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "firstName",
+        "lastName",
+        "email",
+        "dni",
+        "phone",
+        "gender",
+        "dateOfBirth",
+        "university",
+        "major",
+        "points"
+      ]
+    },
+    "SupplierProfile": {
+        "title": "SupplierProfile",
+        "type": "object",
+        "description": "Represents a supplier (business, institution, etc.)",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "Name of the supplier."
+            },
+            "type": {
+                "type": "string",
+                "enum": ["Institucion", "Club", "Iglesia", "Comercio", "Estado"],
+                "description": "The type of the supplier."
+            }
+        },
+        "required": ["name", "type"]
+    },
+    "Benefit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Benefit",
+      "type": "object",
+      "description": "Represents a student benefit, discount, event, or show.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the benefit.",
+          "format": "uuid"
+        },
+        "ownerId": {
+            "type": "string",
+            "description": "The UID of the supplier user who owns this benefit."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the benefit."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the benefit."
+        },
+        "category": {
+          "type": "string",
+          "description": "The category of the benefit.",
+          "enum": ["Comercios", "Eventos", "Comida", "Educación", "Entretenimiento"]
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL for the image representing the benefit.",
+          "format": "uri"
+        },
+        "location": {
+          "type": "string",
+          "description": "The location of the benefit (if applicable)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The timestamp when the benefit was created.",
+          "format": "date-time"
+        },
+        "points": {
+          "type": "number",
+          "description": "The number of points awarded for redeeming this benefit."
+        },
+        "redemptionLimit": {
+            "type": "number",
+            "description": "Maximum number of times a user can redeem this benefit. 0 or undefined means unlimited."
+        },
+        "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date and time when the benefit expires and can no longer be redeemed."
+        }
+      },
+      "required": [
+        "ownerId",
+        "title",
+        "description",
+        "category",
+        "imageUrl",
+        "location",
+        "createdAt",
+        "points"
+      ]
+    },
+    "LandingPageModule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LandingPageModule",
+      "type": "object",
+      "description": "Represents a module on the landing page.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the landing page module.",
+          "format": "uuid"
+        },
+        "moduleType": {
+          "type": "string",
+          "description": "The type of module (e.g., banner, list, carousel)."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the module."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the module (e.g., HTML, JSON data)."
+        },
+        "order": {
+          "type": "number",
+          "description": "The order in which the module appears on the landing page."
+        },
+        "benefitIds": {
+          "type": "array",
+          "description": "References to Benefits included in this module. (Relationship: LandingPageModule 1:N Benefit)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "moduleType",
+        "title",
+        "content",
+        "order"
+      ]
+    },
+    "Announcement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Announcement",
+      "type": "object",
+      "description": "Represents an announcement or bulletin board post.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the announcement.",
+          "format": "uuid"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the announcement."
+        },
+        "content": {
+          "type": "string",
+          "description": "The content of the announcement."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "Reference to UserProfile who created the announcement. (Relationship: UserProfile 1:N Announcement)"
+        },
+        "authorUsername": {
+          "type": "string",
+          "description": "The username of the author at the time of posting."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL for an optional image representing the announcement.",
+          "format": "uri"
+        },
+        "linkUrl": {
+          "type": "string",
+          "description": "Optional URL for a link associated with the announcement.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the announcement was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time the announcement was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "content",
+        "authorId",
+        "authorUsername",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "RedeemedBenefit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RedeemedBenefit",
+      "type": "object",
+      "description": "Tracks a benefit that has been redeemed by a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the redemption event.",
+          "format": "uuid"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who redeemed the benefit. (Relationship: UserProfile 1:N RedeemedBenefit)"
+        },
+        "benefitId": {
+          "type": "string",
+          "description": "The ID of the redeemed benefit. (Relationship: Benefit 1:N RedeemedBenefit)"
+        },
+        "redeemedAt": {
+          "type": "string",
+          "description": "The date and time the benefit was redeemed.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the redemption.",
+          "enum": [
+            "valid",
+            "used"
+          ]
+        },
+        "userName": {
+          "type": "string",
+          "description": "The name of the user at the time of redemption."
+        },
+        "userDni": {
+          "type": "string",
+          "description": "The DNI of the user at the time of redemption."
+        },
+        "benefitTitle": {
+          "type": "string",
+          "description": "The title of the benefit at the time of redemption."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "benefitId",
+        "redeemedAt",
+        "status",
+        "userName",
+        "userDni",
+        "benefitTitle"
+      ]
+    },
+    "Notification": {
+      "title": "Notification",
+      "type": "object",
+      "description": "Represents a notification for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the notification."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the notification."
+        },
+        "description": {
+          "type": "string",
+          "description": "A short description of the notification."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of notification (e.g., 'benefit', 'announcement')."
+        },
+        "referenceId": {
+          "type": "string",
+          "description": "The ID of the document this notification refers to."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The date and time the notification was created."
+        }
+      },
+      "required": ["id", "title", "description", "type", "referenceId", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "indexes": [
+      {
+        "collectionGroup": "benefits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "category", "order": "ASCENDING" },
+          { "fieldPath": "createdAt", "order": "DESCENDING" }
+        ]
+      }
+    ],
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profiles. Path-based ownership ensures only the user can access their own profile data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/usernames/{username}",
+        "definition": {
+          "entityName": "Username",
+          "schema": {
+            "$ref": "#/backend/entities/Username"
+          },
+          "description": "Stores a mapping of unique usernames to user IDs to enforce uniqueness. The document ID is the lowercase username.",
+          "params": [
+            {
+              "name": "username",
+              "description": "The unique username."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/benefits/{benefitId}",
+        "definition": {
+          "entityName": "Benefit",
+          "schema": {
+            "$ref": "#/backend/entities/Benefit"
+          },
+          "description": "Stores benefit information. Admin access is controlled via /roles_admin/{userId}.",
+          "params": [
+            {
+              "name": "benefitId",
+              "description": "The unique identifier for the benefit."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/landing_page_modules/{moduleId}",
+        "definition": {
+          "entityName": "LandingPageModule",
+          "schema": {
+            "$ref": "#/backend/entities/LandingPageModule"
+          },
+          "description": "Stores landing page module configurations.  Admin access is controlled via /roles_admin/{userId}.",
+          "params": [
+            {
+              "name": "moduleId",
+              "description": "The unique identifier for the landing page module."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/announcements/{announcementId}",
+        "definition": {
+          "entityName": "Announcement",
+          "schema": {
+            "$ref": "#/backend/entities/Announcement"
+          },
+          "description": "Stores announcements. Access control based on the 'authorId' field, allowing users to only modify their own announcements.",
+          "params": [
+            {
+              "name": "announcementId",
+              "description": "The unique identifier for the announcement."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/redeemed_benefits/{redemptionId}",
+        "definition": {
+          "entityName": "RedeemedBenefit",
+          "schema": {
+            "$ref": "#/backend/entities/RedeemedBenefit"
+          },
+          "description": "Stores a record of each benefit redemption for a specific user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "redemptionId",
+              "description": "The unique identifier for the redemption event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "role_admin",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Indicates admin role. Existence of document grants admin privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_supplier/{userId}",
+        "definition": {
+          "entityName": "role_supplier",
+          "schema": { "$ref": "#/backend/entities/SupplierProfile" },
+          "description": "Indicates supplier role. Existence of document grants supplier privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/notifications/{notificationId}",
+        "definition": {
+          "entityName": "Notification",
+          "schema": { "$ref": "#/backend/entities/Notification" },
+          "description": "Stores system-wide notifications about new benefits or announcements.",
+          "params": [
+            {
+              "name": "notificationId",
+              "description": "The unique identifier for the notification."
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+    

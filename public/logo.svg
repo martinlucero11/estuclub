@@ -1,0 +1,25 @@
+<svg width="250" height="60" viewBox="0 0 250 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .estu-text {
+      font-family: 'PT Sans', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      fill: #C23564;
+    }
+    .club-text {
+      font-family: 'Lobster', cursive;
+      font-size: 48px;
+      fill: #C23564;
+    }
+    .icon {
+      fill: #C23564;
+    }
+  </style>
+  <defs>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@700&family=Lobster&display=swap" rel="stylesheet"/>
+  </defs>
+  <path class="icon" d="M11.913 2.939l-9.06 4.39A3 3 0 001.5 10.003v15.35a2 2 0 001.054 1.783l10 5.555a3 3 0 001.892 0l10-5.555a2 2 0 001.054-1.783V10.003a3 3 0 00-1.353-2.674l-9.06-4.39a3 3 0 00-2.174 0zM24 25.353a1 1 0 01-.527.892l-10 5.555a2 2 0 01-1.892 0l-10-5.555a1 1 0 01-.527-.892V10.003a2 2 0 01.902-1.783l9.06-4.39a2 2 0 012.174 0l9.06 4.39a2 2 0 01.902 1.783v15.35z" fill-rule="evenodd" clip-rule="evenodd"/>
+  <path class="icon" d="M12.28 14.135l-7.947 3.84a1 1 0 00-.472.888v4.274a1 1 0 001.527.85l7.13-3.876a1 1 0 00-.238-1.836zM4.86 19.34l7.14-3.453 7.14 3.452-7.14 3.88-7.14-3.88z" fill-rule="evenodd" clip-rule="evenodd"/>
+  <text x="45" y="42" class="estu-text">Estu</text>
+  <text x="135" y="42" class="club-text">Club</text>
+</svg>

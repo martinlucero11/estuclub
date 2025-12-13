@@ -1,0 +1,52 @@
+{
+  "placeholderImages": [
+    {
+      "id": "food-discount",
+      "description": "A delicious looking burger and fries.",
+      "imageUrl": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwZm9vZHxlbnwwfHx8fDE3NjUyMzcyOTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "restaurant food"
+    },
+    {
+      "id": "concert-ticket",
+      "description": "A vibrant concert with a crowd and stage lights.",
+      "imageUrl": "https://images.unsplash.com/photo-1709090083073-d130ac28cc19?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bXVzaWMlMjBjb25jZXJ0fGVufDB8fHx8MTc2NTIzNTk0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "music concert"
+    },
+    {
+      "id": "clothing-sale",
+      "description": "Stylish clothes on a rack in a store.",
+      "imageUrl": "https://images.unsplash.com/photo-1555529771-835f59fc5efe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjbG90aGluZyUyMHN0b3JlfGVufDB8fHx8MTc2NTIyNzIxNnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "clothing store"
+    },
+    {
+      "id": "bookstore-offer",
+      "description": "Shelves full of books in a library or bookstore.",
+      "imageUrl": "https://images.unsplash.com/photo-1485322551133-3a4c27a9d925?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGlicmFyeSUyMGJvb2tzfGVufDB8fHx8MTc2NTIwNjYyN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "library books"
+    },
+    {
+      "id": "travel-deal",
+      "description": "An airplane wing with a beautiful sunset view.",
+      "imageUrl": "https://images.unsplash.com/photo-1569242987891-d7a718c7aff6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxhaXJwbGFuZSUyMHdpbmRvd3xlbnwwfHx8fDE3NjUyMzA1NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "airplane window"
+    },
+    {
+      "id": "tech-deal",
+      "description": "A modern laptop on a clean desk setup.",
+      "imageUrl": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxsYXB0b3AlMjBjb21wdXRlcnxlbnwwfHx8fDE3NjUxODg0MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop computer"
+    },
+    {
+      "id": "event-speaker",
+      "description": "A person speaking on a stage at a conference.",
+      "imageUrl": "https://images.unsplash.com/photo-1626125345510-4603468eedfb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxjb25mZXJlbmNlJTIwc3BlYWtlcnxlbnwwfHx8fDE3NjUyMDg0NTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "conference speaker"
+    },
+    {
+      "id": "coffee-shop",
+      "description": "A cozy coffee shop interior.",
+      "imageUrl": "https://images.unsplash.com/photo-1453614512568-c4024d13c247?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb2ZmZWUlMjBzaG9wfGVufDB8fHx8MTc2NTE5MjE3OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "coffee shop"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+diff --git a/node_modules/embla-carousel-autoplay/package.json b/node_modules/embla-carousel-autoplay/package.json
+index 4519965..1919888 100644
+--- a/node_modules/embla-carousel-autoplay/package.json
++++ b/node_modules/embla-carousel-autoplay/package.json
+@@ -21,6 +21,6 @@
+   "peerDependencies": {
+-    "embla-carousel": "8.0.0-rc22"
++    "embla-carousel-react": "8.0.0-rc22"
+   },
+   "devDependencies": {
+     "embla-carousel": "8.0.0-rc22",
+diff --git a/node_modules/embla-carousel-autoplay/src/components/Autoplay.ts
+index e573715..621b71e 100644
+--- a/node_modules/embla-carousel-autoplay/src/components/Autoplay.ts
++++ b/node_modules/embla-carousel-autoplay/src/components/Autoplay.ts
+@@ -1,4 +1,4 @@
+-import { EmblaCarouselType } from 'embla-carousel'
++import { EmblaCarouselType } from 'embla-carousel-react'
+ import { OptionsType } from './Options'
+ 
+ type AutoplayType = {
+diff --git a/node_modules/embla-carousel-autoplay/src/components/Options.ts
+index 0e33527..2c62c2f 100644
+--- a/node_modules/embla-carousel-autoplay/src/components/Options.ts
++++ b/node_modules/embla-carousel-autoplay/src/components/Options.ts
+@@ -1,4 +1,4 @@
+-import { CreateOptionsType } from 'embla-carousel/components/Options'
++import { CreateOptionsType } from 'embla-carousel-react/components/Options'
+ 
+ export type OptionsType = CreateOptionsType<{
+   delay: number
+diff --git a/node_modules/embla-carousel-autoplay/src/index.ts
+index bf72648..8b16af0 100644
+--- a/node_modules/embla-carousel-autoplay/src/index.ts
++++ b/node_modules/embla-carousel-autoplay/src/index.ts
+@@ -1,5 +1,5 @@
+-import { EmblaCarouselType } from 'embla-carousel'
+-import { OptionsType, defaultOptions, mergeOptions } from './components/Options'
++import { EmblaCarouselType } from 'embla-carousel-react'
++import { OptionsType, defaultOptions, mergeOptions } from './components/Options.js'
+ import { AutoplayType } from './components/Autoplay'
+ 
+ declare module 'embla-carousel/components/Plugins' {
