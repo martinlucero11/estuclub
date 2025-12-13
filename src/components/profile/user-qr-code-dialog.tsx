@@ -25,7 +25,7 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
   useEffect(() => {
     // We need to check for window to ensure this code only runs on the client
     if (typeof window !== 'undefined') {
-        const verificationUrl = `${window.location.origin}/verify/${userId}`;
+        const verificationUrl = `${window.location.origin}/verify?userId=${userId}`;
         QRCode.toDataURL(verificationUrl, {
             errorCorrectionLevel: 'H',
             width: 256,
@@ -64,5 +64,3 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
     </Dialog>
   );
 }
-
-    

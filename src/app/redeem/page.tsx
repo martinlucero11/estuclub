@@ -9,6 +9,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, Fingerprint, Award, University } from 'lucide-react';
 import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,11 +57,15 @@ function ValidationSkeleton() {
     );
 }
 
-function RedemptionValidationContent({ redemptionId, userId }: { redemptionId: string, userId: string | null }) {
+function RedemptionValidationContent() {
+    const searchParams = useSearchParams();
+    const redemptionId = searchParams.get('redemptionId');
+    const userId = searchParams.get('userId');
+
     const firestore = useFirestore();
 
     const redemptionRef = useMemoFirebase(
-        () => (userId ? doc(firestore, 'users', userId, 'redeemed_benefits', redemptionId) : null),
+        () => (userId && redemptionId ? doc(firestore, 'users', userId, 'redeemed_benefits', redemptionId) : null),
         [firestore, userId, redemptionId]
     );
 
@@ -75,7 +80,7 @@ function RedemptionValidationContent({ redemptionId, userId }: { redemptionId: s
     const isLoading = isRedemptionLoading || isProfileLoading;
     const error = redemptionError || profileError;
     
-    if (!userId) {
+    if (!userId || !redemptionId) {
          return (
             <Card className="w-full max-w-md text-center">
                 <CardHeader>
@@ -86,7 +91,7 @@ function RedemptionValidationContent({ redemptionId, userId }: { redemptionId: s
                 </CardHeader>
                 <CardContent>
                     <Alert variant="destructive">
-                        <AlertTitle>Falta el ID de Usuario</AlertTitle>
+                        <AlertTitle>Faltan Parámetros</AlertTitle>
                         <AlertDescription>
                             El enlace de validación es incorrecto o está incompleto.
                         </AlertDescription>
@@ -167,11 +172,11 @@ function RedemptionValidationContent({ redemptionId, userId }: { redemptionId: s
 }
 
 
-export default function RedemptionValidationPage({ params, searchParams }: { params: { redemptionId: string }, searchParams: { userId: string | null } }) {
+export default function RedemptionValidationPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-muted p-4">
             <Suspense fallback={<ValidationSkeleton />}>
-                <RedemptionValidationContent redemptionId={params.redemptionId} userId={searchParams.userId || null} />
+                <RedemptionValidationContent />
             </Suspense>
         </div>
     );

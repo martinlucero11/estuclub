@@ -49,7 +49,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   useEffect(() => {
     if (!redemptionId || !user || typeof window === 'undefined') return;
 
-    const validationUrl = `${window.location.origin}/redeem/${redemptionId}?userId=${user.uid}`;
+    const validationUrl = `${window.location.origin}/redeem?redemptionId=${redemptionId}&userId=${user.uid}`;
     QRCode.toDataURL(validationUrl, {
         errorCorrectionLevel: 'H',
         width: 256,

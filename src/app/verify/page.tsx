@@ -9,6 +9,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, User, Fingerprint } from 'lucide-react';
 import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,14 +42,37 @@ function VerificationSkeleton() {
     );
 }
 
-function VerificationContent({ userId }: { userId: string }) {
+function VerificationContent() {
+    const searchParams = useSearchParams();
+    const userId = searchParams.get('userId');
     const firestore = useFirestore();
 
     const userProfileRef = useMemoFirebase(
-        () => doc(firestore, 'users', userId),
+        () => (userId ? doc(firestore, 'users', userId) : null),
         [firestore, userId]
     );
     const { data: userProfile, isLoading, error } = useDocOnce<UserProfile>(userProfileRef);
+
+    if (!userId) {
+         return (
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                        <ShieldX className="h-6 w-6 text-destructive" />
+                    </div>
+                    <CardTitle className="mt-4">URL Inválida</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Alert variant="destructive">
+                        <AlertTitle>Falta el ID de Usuario</AlertTitle>
+                        <AlertDescription>
+                            El enlace de verificación es incorrecto o está incompleto.
+                        </AlertDescription>
+                    </Alert>
+                </CardContent>
+            </Card>
+        );
+    }
 
     if (isLoading) {
         return <VerificationSkeleton />;
@@ -113,11 +137,11 @@ function VerificationContent({ userId }: { userId: string }) {
     );
 }
 
-export default function VerificationPage({ params }: { params: { userId: string } }) {
+export default function VerificationPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-muted p-4">
             <Suspense fallback={<VerificationSkeleton />}>
-                <VerificationContent userId={params.userId} />
+                <VerificationContent />
             </Suspense>
         </div>
     );
