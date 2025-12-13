@@ -22,7 +22,6 @@ const nextConfig = {
         'estuclub.com.ar'
     ]
   },
-  output: 'export',
 };
 
 module.exports = nextConfig;
