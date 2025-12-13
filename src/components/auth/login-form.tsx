@@ -53,27 +53,6 @@ export default function LoginForm() {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       
-       if (!userCredential.user.emailVerified) {
-        toast({
-          variant: "destructive",
-          title: "Verificación de correo requerida",
-          description: "Por favor, verifica tu correo antes de iniciar sesión.",
-          action: (
-            <Button
-              variant="secondary"
-              onClick={async () => {
-                await sendEmailVerification(userCredential.user);
-                toast({ title: "Correo de verificación enviado." });
-              }}
-            >
-              Reenviar correo
-            </Button>
-          ),
-        });
-        await auth.signOut(); // Log out the user if email is not verified
-        return;
-      }
-
       // After successful login, offer to set up biometrics
       if (userCredential.user) {
         await biometricService.askToSetupBiometrics(values.email, values.password);

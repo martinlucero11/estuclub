@@ -98,8 +98,6 @@ export default function SignupForm() {
       const user = userCredential.user;
 
       if (user) {
-        await sendEmailVerification(user);
-
         await updateProfile(user, {
           displayName: `${values.firstName} ${values.lastName}`,
         });
@@ -131,11 +129,11 @@ export default function SignupForm() {
         await batch.commit();
 
         toast({
-          title: '¡Revisa tu correo!',
-          description: 'Se ha enviado un enlace de verificación a tu correo electrónico.',
+          title: '¡Cuenta Creada!',
+          description: 'Tu cuenta ha sido creada con éxito. Serás redirigido.',
         });
         
-        router.push('/login');
+        router.push('/');
       }
     } catch (error: any) {
       console.error("Signup failed:", error);
