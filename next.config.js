@@ -21,7 +21,8 @@ const nextConfig = {
         '*.cloudworkstations.dev',
         'estuclub.com.ar'
     ]
-  }
+  },
+  output: 'export',
 };
 
 module.exports = nextConfig;
