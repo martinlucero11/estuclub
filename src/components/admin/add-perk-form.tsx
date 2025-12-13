@@ -27,6 +27,9 @@ import { collection, serverTimestamp, Timestamp, addDoc } from 'firebase/firesto
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Checkbox } from '../ui/checkbox';
+
+const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
@@ -39,6 +42,7 @@ const formSchema = z.object({
   points: z.coerce.number().min(0, 'Los puntos deben ser un número positivo.').default(0),
   redemptionLimit: z.coerce.number().min(0, 'El límite debe ser un número positivo.').optional(),
   validUntil: z.date().optional(),
+  availableDays: z.array(z.string()).optional(),
 });
 
 export default function AddPerkForm() {
@@ -55,6 +59,7 @@ export default function AddPerkForm() {
       location: '',
       points: 0,
       redemptionLimit: 0,
+      availableDays: [],
     },
   });
 
@@ -77,6 +82,10 @@ export default function AddPerkForm() {
           dataToSave.validUntil = Timestamp.fromDate(values.validUntil);
       } else {
         delete dataToSave.validUntil;
+      }
+       
+      if (!values.availableDays || values.availableDays.length === 0) {
+        delete dataToSave.availableDays;
       }
 
       if (!values.redemptionLimit) {
@@ -290,6 +299,56 @@ export default function AddPerkForm() {
             )}
             />
         </div>
+        <FormField
+            control={form.control}
+            name="availableDays"
+            render={() => (
+                <FormItem>
+                <div className="mb-4">
+                    <FormLabel className="text-base">Días Disponibles</FormLabel>
+                    <FormDescription>
+                        Selecciona los días en que este beneficio es válido. Si no seleccionas ninguno, será válido todos los días.
+                    </FormDescription>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {daysOfWeek.map((day) => (
+                    <FormField
+                    key={day}
+                    control={form.control}
+                    name="availableDays"
+                    render={({ field }) => {
+                        return (
+                        <FormItem
+                            key={day}
+                            className="flex flex-row items-start space-x-3 space-y-0"
+                        >
+                            <FormControl>
+                            <Checkbox
+                                checked={field.value?.includes(day)}
+                                onCheckedChange={(checked) => {
+                                return checked
+                                    ? field.onChange([...(field.value || []), day])
+                                    : field.onChange(
+                                        field.value?.filter(
+                                        (value) => value !== day
+                                        )
+                                    )
+                                }}
+                            />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                                {day}
+                            </FormLabel>
+                        </FormItem>
+                        )
+                    }}
+                    />
+                ))}
+                </div>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
         <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Añadiendo...' : (
                 <>
@@ -302,3 +361,5 @@ export default function AddPerkForm() {
     </Form>
   );
 }
+
+    

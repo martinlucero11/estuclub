@@ -17,9 +17,10 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Perk } from '@/lib/data';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Badge } from '../ui/badge';
 
 interface RedeemPerkDialogProps {
   perk: Perk;
@@ -88,6 +89,16 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setQrCodeUrl(null);
 
     try {
+      const today = new Date();
+      const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
+      const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
+
+      if (perk.availableDays && perk.availableDays.length > 0 && !perk.availableDays.includes(capitalizedDay)) {
+        setError(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
+        setIsRedeeming(false);
+        return;
+      }
+      
       if (perk.validUntil && (perk.validUntil as Timestamp).toDate() < new Date()) {
         setError("Este beneficio ha expirado y ya no se puede canjear.");
         setIsRedeeming(false);
@@ -203,6 +214,18 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                         </DialogDescription>
                     </DialogHeader>
 
+                    {perk.availableDays && perk.availableDays.length > 0 && (
+                        <div className="flex items-center gap-2 rounded-lg border p-3">
+                            <CalendarDays className="h-5 w-5 text-primary" />
+                            <div className='flex-1'>
+                                <p className="text-sm font-medium">Días disponibles</p>
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                    {perk.availableDays.map(day => <Badge key={day} variant="secondary">{day}</Badge>)}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {error && (
                         <Alert variant="destructive">
                             <AlertTitle>Error</AlertTitle>
@@ -236,3 +259,5 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
+
+    

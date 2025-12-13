@@ -158,6 +158,14 @@
             "type": "string",
             "format": "date-time",
             "description": "The date and time when the benefit expires and can no longer be redeemed."
+        },
+        "availableDays": {
+          "type": "array",
+          "description": "Specifies the days of the week the benefit is available.",
+          "items": {
+            "type": "string",
+            "enum": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+          }
         }
       },
       "required": [
@@ -528,4 +536,5 @@
   }
 }
 
+    
     
