@@ -101,6 +101,9 @@ export default function SignupForm() {
         await updateProfile(user, {
           displayName: `${values.firstName} ${values.lastName}`,
         });
+        
+        // Temporarily disabled email verification
+        // await sendEmailVerification(user);
 
         const batch = writeBatch(firestore);
 
