@@ -1,13 +1,16 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
+import BenefitAdminList from '@/components/admin/benefit-admin-list';
+import { useUser } from '@/firebase';
 
 function SupplierAccessDenied() {
     return (
@@ -58,6 +61,7 @@ function SupplierLoadingSkeleton() {
 
 export default function SupplierPage() {
     const { isSupplier, isLoading } = useSupplier();
+    const { user } = useUser();
     
     if (isLoading) {
         return (
@@ -85,12 +89,16 @@ export default function SupplierPage() {
             Panel de Proveedor
           </h1>
           <p className="text-muted-foreground">
-            Publica beneficios y anuncios para la comunidad estudiantil.
+            Publica y gestiona beneficios y anuncios para la comunidad estudiantil.
           </p>
         </header>
 
-        <Tabs defaultValue="add-benefit" className="space-y-4">
+        <Tabs defaultValue="manage-benefits" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="manage-benefits">
+              <List className="mr-2 h-4 w-4" />
+              Gestionar Beneficios
+            </TabsTrigger>
              <TabsTrigger value="add-benefit">
               <PlusCircle className="mr-2 h-4 w-4" />
               Añadir Beneficio
@@ -100,6 +108,18 @@ export default function SupplierPage() {
               Añadir Anuncio
             </TabsTrigger>
           </TabsList>
+          
+           <TabsContent value="manage-benefits">
+            <Card>
+              <CardHeader>
+                <CardTitle>Mis Beneficios Publicados</CardTitle>
+                <CardDescription>Edita o elimina los beneficios que has creado.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BenefitAdminList supplierId={user?.uid} />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
            <TabsContent value="add-benefit">
             <Card>
