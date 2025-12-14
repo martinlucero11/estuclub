@@ -85,8 +85,20 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
     const perkRef = doc(firestore, 'benefits', perk.id);
     try {
         const dataToUpdate: any = { ...values };
+        
+        // Convert date to Firestore Timestamp or remove if not present
         if (values.validUntil) {
             dataToUpdate.validUntil = Timestamp.fromDate(values.validUntil);
+        } else {
+            delete dataToUpdate.validUntil;
+        }
+
+        // Remove optional fields if they are falsy (0 or undefined)
+        if (!values.redemptionLimit) {
+          delete dataToUpdate.redemptionLimit;
+        }
+        if (!values.availableDays || values.availableDays.length === 0) {
+            delete dataToUpdate.availableDays;
         }
 
       await updateDoc(perkRef, dataToUpdate);
