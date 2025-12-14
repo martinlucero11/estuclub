@@ -22,20 +22,18 @@ interface RedeemedBenefit {
 
 function RedeemedListSkeleton() {
     return (
-        <div className="space-y-4">
-            {[...Array(4)].map((_, i) => (
-                <Card key={i}>
-                    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-48" />
-                            <Skeleton className="h-4 w-32" />
-                        </div>
-                         <div className="flex items-center justify-between pt-4 md:pt-0 md:justify-end md:gap-4">
-                            <Skeleton className="h-8 w-20" />
-                            <Skeleton className="h-10 w-24" />
-                        </div>
-                    </CardHeader>
-                </Card>
+        <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+                 <div key={i} className="flex items-center space-x-4 rounded-md border p-3">
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-5 w-3/5" />
+                        <Skeleton className="h-4 w-2/5" />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-8 w-20 rounded-md" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                    </div>
+                </div>
             ))}
         </div>
     );
@@ -73,29 +71,27 @@ function RedeemedList() {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {redeemedBenefits.map((benefit) => (
-                <Card key={benefit.id}>
-                    <CardHeader className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <div className="flex-1">
-                            <CardTitle className="text-lg">{benefit.benefitTitle}</CardTitle>
-                             <CardDescription className="flex items-center gap-2 pt-2">
-                                <Calendar className="h-4 w-4" />
-                                {benefit.redeemedAt ? new Date(benefit.redeemedAt.seconds * 1000).toLocaleDateString('es-ES') : 'Fecha desconocida'}
-                            </CardDescription>
+                <div key={benefit.id} className="flex items-center justify-between gap-4 rounded-md border p-3">
+                    <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">{benefit.benefitTitle}</p>
+                         <p className="flex items-center gap-1.5 text-xs text-muted-foreground pt-1">
+                            <Calendar className="h-3 w-3" />
+                            {benefit.redeemedAt ? new Date(benefit.redeemedAt.seconds * 1000).toLocaleDateString('es-ES') : 'Fecha desconocida'}
+                        </p>
+                    </div>
+                     <div className="flex shrink-0 items-center gap-2">
+                        <div className="flex items-center justify-center gap-1.5 rounded-md bg-secondary px-2.5 py-1.5 text-sm font-semibold text-secondary-foreground">
+                            <Award className="h-4 w-4 text-primary" />
+                            <span>+{benefit.points || 0}</span>
                         </div>
-                         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
-                            <div className="flex items-center justify-center gap-2 rounded-md border bg-background px-4 py-2 font-semibold text-primary">
-                                <Award className="h-5 w-5" />
-                                <span>+{benefit.points || 0} Puntos</span>
-                            </div>
-                            <Button variant="outline" onClick={() => setSelectedBenefit(benefit)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver Detalle
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedBenefit(benefit)}>
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">Ver Detalle</span>
+                        </Button>
+                    </div>
+                </div>
             ))}
             {selectedBenefit && (
                 <RedeemedBenefitDialog
