@@ -1,6 +1,7 @@
 import SplashScreen from '@/components/layout/splash-screen';
 
 export default function Loading() {
-  // You can add any UI inside Loading, including a Skeleton.
+  // Este componente se muestra automáticamente al cargar la aplicación,
+  // funcionando como nuestro splash screen principal.
   return <SplashScreen />;
 }
