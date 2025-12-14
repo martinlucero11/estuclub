@@ -1,3 +1,4 @@
+
 'use client';
 import MainLayout from '@/components/layout/main-layout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -79,10 +80,10 @@ function RankingList({ users, currentUserUid }: { users: UserProfile[] | null, c
                 <AvatarImage src={user.photoURL} alt={user.username} />
                 <AvatarFallback>{userInitial}</AvatarFallback>
             </Avatar>
-            <div className="ml-4 flex-1">
-              <p className="font-semibold text-foreground">@{user.username}</p>
+            <div className="ml-4 flex-1 min-w-0">
+              <p className="font-semibold text-foreground truncate">@{user.username}</p>
             </div>
-            <div className="flex items-center gap-1 font-bold text-foreground">
+            <div className="flex shrink-0 items-center gap-1 pl-2 font-bold text-foreground">
               <Award className="h-4 w-4 text-primary" />
               {user.points || 0}
             </div>

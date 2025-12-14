@@ -25,12 +25,12 @@ function RedeemedListSkeleton() {
         <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
                 <Card key={i}>
-                    <CardHeader className="flex flex-row items-center justify-between">
+                    <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
                         <div className="space-y-2">
                             <Skeleton className="h-6 w-48" />
                             <Skeleton className="h-4 w-32" />
                         </div>
-                         <div className="flex items-center gap-4">
+                         <div className="flex items-center justify-between pt-4 md:pt-0 md:justify-end md:gap-4">
                             <Skeleton className="h-8 w-20" />
                             <Skeleton className="h-10 w-24" />
                         </div>
@@ -76,7 +76,7 @@ function RedeemedList() {
         <div className="space-y-4">
             {redeemedBenefits.map((benefit) => (
                 <Card key={benefit.id}>
-                    <CardHeader className="flex flex-row items-center justify-between space-x-4">
+                    <CardHeader className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                         <div className="flex-1">
                             <CardTitle className="text-lg">{benefit.benefitTitle}</CardTitle>
                              <CardDescription className="flex items-center gap-2 pt-2">
@@ -84,10 +84,10 @@ function RedeemedList() {
                                 {benefit.redeemedAt ? new Date(benefit.redeemedAt.seconds * 1000).toLocaleDateString('es-ES') : 'Fecha desconocida'}
                             </CardDescription>
                         </div>
-                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 font-semibold text-primary">
+                         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+                            <div className="flex items-center justify-center gap-2 rounded-md border bg-background px-4 py-2 font-semibold text-primary">
                                 <Award className="h-5 w-5" />
-                                <span>+{benefit.points || 0}</span>
+                                <span>+{benefit.points || 0} Puntos</span>
                             </div>
                             <Button variant="outline" onClick={() => setSelectedBenefit(benefit)}>
                                 <Eye className="mr-2 h-4 w-4" />
