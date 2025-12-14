@@ -86,14 +86,13 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
     try {
         const dataToUpdate: any = { ...values };
         
-        // Convert date to Firestore Timestamp or remove if not present
         if (values.validUntil) {
             dataToUpdate.validUntil = Timestamp.fromDate(values.validUntil);
         } else {
+            // Firestore does not allow `undefined`, so we delete the key.
             delete dataToUpdate.validUntil;
         }
 
-        // Remove optional fields if they are falsy (0 or undefined)
         if (!values.redemptionLimit) {
           delete dataToUpdate.redemptionLimit;
         }
