@@ -34,6 +34,17 @@ interface UserProfile {
   dni: string;
 }
 
+const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const dayAbbreviations: { [key: string]: string } = {
+  "Lunes": "L",
+  "Martes": "M",
+  "Miércoles": "M",
+  "Jueves": "J",
+  "Viernes": "V",
+  "Sábado": "S",
+  "Domingo": "D"
+};
+
 export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false }: RedeemPerkDialogProps) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -215,12 +226,16 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                     </DialogHeader>
 
                     {perk.availableDays && perk.availableDays.length > 0 && (
-                        <div className="flex items-center gap-2 rounded-lg border p-3">
-                            <CalendarDays className="h-5 w-5 text-primary" />
+                        <div className="flex items-center gap-3 rounded-lg border p-3">
+                            <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className='flex-1'>
                                 <p className="text-sm font-medium">Días disponibles</p>
-                                <div className="flex flex-wrap gap-1 pt-1">
-                                    {perk.availableDays.map(day => <Badge key={day} variant="secondary">{day}</Badge>)}
+                                <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
+                                    {daysOrder.map(day => (
+                                        <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
+                                            {dayAbbreviations[day]}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -259,5 +274,3 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
-
-    

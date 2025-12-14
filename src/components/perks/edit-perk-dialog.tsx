@@ -38,6 +38,7 @@ import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
 
 const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
+const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
@@ -295,8 +296,8 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                                 Selecciona los días en que este beneficio es válido. Si no seleccionas ninguno, será válido todos los días.
                             </FormDescription>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {daysOfWeek.map((day) => (
+                        <div className="grid grid-cols-7 gap-2">
+                        {daysOfWeek.map((day, index) => (
                             <FormField
                             key={day}
                             control={form.control}
@@ -305,8 +306,11 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                                 return (
                                 <FormItem
                                     key={day}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                    className="flex flex-col items-center space-y-2"
                                 >
+                                    <FormLabel className="font-normal text-sm">
+                                        {dayAbbreviations[index]}
+                                    </FormLabel>
                                     <FormControl>
                                     <Checkbox
                                         checked={field.value?.includes(day)}
@@ -321,9 +325,6 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                                         }}
                                     />
                                     </FormControl>
-                                    <FormLabel className="font-normal">
-                                        {day}
-                                    </FormLabel>
                                 </FormItem>
                                 )
                             }}
@@ -353,5 +354,3 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
     </Dialog>
   );
 }
-
-    
