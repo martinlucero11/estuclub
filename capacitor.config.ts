@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.estuclub.app',
   appName: 'EstuClub',
   webDir: 'out',
+  ios: {
+    deploymentTarget: '13.0'
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 0,
