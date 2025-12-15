@@ -66,10 +66,14 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      allow get, list: if true;
+      allow get: if true;
       allow create: if isAdmin() || isSupplier();
       allow update, delete: if isAdmin()
         || (isSupplier() && resource.data.ownerId == request.auth.uid);
+    }
+    
+    match /benefits {
+        allow list: if true;
     }
 
     // -------------------------
