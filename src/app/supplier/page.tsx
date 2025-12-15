@@ -93,12 +93,8 @@ export default function SupplierPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="manage-benefits" className="space-y-4">
+        <Tabs defaultValue="add-benefit" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="manage-benefits">
-              <List className="mr-2 h-4 w-4" />
-              Gestionar Beneficios
-            </TabsTrigger>
              <TabsTrigger value="add-benefit">
               <PlusCircle className="mr-2 h-4 w-4" />
               Añadir Beneficio
@@ -109,18 +105,6 @@ export default function SupplierPage() {
             </TabsTrigger>
           </TabsList>
           
-           <TabsContent value="manage-benefits">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mis Beneficios Publicados</CardTitle>
-                <CardDescription>Edita o elimina los beneficios que has creado.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BenefitAdminList supplierId={user?.uid} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
            <TabsContent value="add-benefit">
             <Card>
               <CardHeader>

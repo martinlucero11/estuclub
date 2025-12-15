@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -68,8 +69,7 @@ service cloud.firestore {
     match /benefits/{benefitId} {
       allow get: if true;
       allow create: if isAdmin() || isSupplier();
-      allow update, delete: if isAdmin()
-        || (isSupplier() && resource.data.ownerId == request.auth.uid);
+      allow update, delete: if isAdmin();
     }
     
     match /benefits {
