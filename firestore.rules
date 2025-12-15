@@ -67,13 +67,9 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      allow get: if true;
+      allow get, list: if true;
       allow create: if isAdmin() || isSupplier();
       allow update, delete: if isAdmin();
-    }
-    
-    match /benefits {
-        allow list: if true;
     }
 
     // -------------------------
