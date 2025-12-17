@@ -35,7 +35,7 @@ function PerksList() {
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
-        // DO NOT run the query until the user is authenticated.
+        // DO NOT run the query until the user is authenticated and firestore is available.
         if (!user || !firestore) return null;
 
         let field: string, direction: OrderByDirection;
