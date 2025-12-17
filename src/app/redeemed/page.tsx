@@ -46,12 +46,12 @@ function RedeemedList() {
     const [selectedBenefit, setSelectedBenefit] = useState<RedeemedBenefit | null>(null);
 
     const redeemedQuery = useMemoFirebase(
-        () => user ? query(
+        () => (firestore && user?.uid) ? query(
             collection(firestore, 'redeemed_benefits'), 
             where('userId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         ) : null,
-        [user, firestore]
+        [user?.uid, firestore]
     );
 
     const { data: redeemedBenefits, isLoading: isCollectionLoading } = useCollection<RedeemedBenefit>(redeemedQuery);

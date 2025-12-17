@@ -4,89 +4,74 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Función para verificar si el usuario es administrador
     function isAdmin() {
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    // Función para verificar si el usuario es un proveedor
     function isSupplier() {
       return exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
     
-    // Función para verificar si el usuario es un proveedor específico
-    function isSupplierOf(supplierId) {
-      return exists(/databases/$(database)/documents/roles_supplier/$(supplierId));
-    }
-    
-    // Función para verificar si el usuario autenticado es el proveedor
     function isSupplierSelf() {
       return isSupplier() && request.auth.uid == resource.data.ownerId;
     }
     
-    // Función para verificar si el usuario está autenticado
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Perfiles de usuario: solo el propietario puede leer y escribir sus propios datos
     match /users/{userId} {
       allow read, update: if request.auth.uid == userId || isAdmin();
       allow create: if isSignedIn();
     }
     
-    // Nombres de usuario: solo se pueden crear, no modificar ni eliminar, para garantizar la unicidad
     match /usernames/{username} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
     }
 
-    // Beneficios: lectura pública, creación para admins/suppliers, edición/eliminación restringida
     match /benefits/{benefitId} {
       allow read: if true;
       allow create: if isAdmin() || isSupplierSelf();
       allow update, delete: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.ownerId);
     }
     
-    // Módulos de la página de inicio: solo los administradores pueden gestionar
     match /landing_page_modules/{moduleId} {
        allow read, write: if isAdmin();
     }
     
-    // Anuncios: lectura pública, escritura/edición para el autor o administradores
     match /announcements/{announcementId} {
       allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
     }
 
-    // Beneficios canjeados: los usuarios solo pueden leer sus propios canjes. Los proveedores solo los suyos.
     match /redeemed_benefits/{redemptionId} {
       allow create: if isSignedIn();
       allow read: if (isSignedIn() && request.auth.uid == resource.data.userId) 
                       || (isSupplier() && request.auth.uid == resource.data.supplierId) 
                       || isAdmin();
+      allow list: if (isSignedIn() && request.query.where.userId == request.auth.uid)
+                      || (isSupplier() && request.query.where.supplierId == request.auth.uid)
+                      || isAdmin();
     }
 
-    // Roles: Solo los administradores pueden asignar roles
     match /roles_admin/{userId} {
       allow read, write: if isAdmin();
     }
     match /roles_supplier/{userId} {
-       allow read: if true; // Publicly readable to get supplier info
+       allow read: if true;
        allow write: if isAdmin();
     }
 
-    // Subcolecciones de proveedores
     match /roles_supplier/{userId}/{document=**} {
-      allow read: if true; // Allows public access to services, availability
-      allow write: if request.auth.uid == userId || isAdmin(); // Only supplier or admin can manage
+      allow read: if true;
+      allow write: if request.auth.uid == userId || isAdmin();
     }
     
-    // Notificaciones: Lectura pública (si se decide implementar un feed de notificaciones)
     match /notifications/{notificationId} {
       allow read: if true;
-      allow write: if false; // Solo se crean desde el backend (o funciones)
+      allow write: if false;
     }
   }
 }
