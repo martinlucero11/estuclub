@@ -8,8 +8,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Store, Building, Briefcase, Church, Scale, User, Search, ShoppingBasket } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { Input } from '@/components/ui/input';
 
 interface SupplierProfile {
     id: string;
@@ -32,14 +33,10 @@ function SuppliersPageSkeleton() {
     return (
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-                <Card key={i} className="flex flex-col">
-                    <CardContent className="p-4 flex items-center gap-4">
-                         <Skeleton className="h-20 w-20 rounded-full" />
-                        <div className="space-y-2 flex-1">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                        </div>
-                    </CardContent>
+                <Card key={i} className="p-6 flex flex-col items-center justify-center">
+                    <Skeleton className="h-20 w-20 rounded-full" />
+                    <Skeleton className="mt-4 h-5 w-3/4" />
+                    <Skeleton className="mt-1 h-4 w-1/2" />
                 </Card>
             ))}
         </div>
@@ -48,6 +45,7 @@ function SuppliersPageSkeleton() {
 
 function SupplierListPage() {
     const firestore = useFirestore();
+    const [searchTerm, setSearchTerm] = useState('');
 
     const suppliersQuery = useMemoFirebase(
         () => query(collection(firestore, 'roles_supplier'), orderBy('name')),
@@ -55,6 +53,14 @@ function SupplierListPage() {
     );
 
     const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
+    
+    const filteredSuppliers = useMemo(() => {
+        if (!suppliers) return [];
+        return suppliers.filter(supplier =>
+            supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [suppliers, searchTerm]);
+
 
      if (isLoading) {
         return <SuppliersPageSkeleton />;
@@ -64,48 +70,59 @@ function SupplierListPage() {
         return <p className="text-destructive">Error al cargar los proveedores.</p>;
     }
 
-    if (!suppliers || suppliers.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <Search className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-xl font-semibold">No hay proveedores</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                    Aún no se han registrado proveedores en la plataforma.
-                </p>
-            </div>
-        );
-    }
-
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {suppliers.map(supplier => {
-                const TypeIcon = typeIcons[supplier.type] || User;
-                const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        <div className="space-y-6">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                    type="text"
+                    placeholder="Buscar un supplier..."
+                    className="w-full pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
 
-                return (
-                    <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full">
-                        <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-                            <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-                                <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
-                                <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                                    {supplierInitials}
-                                </AvatarFallback>
-                            </Avatar>
-                            <h3 className="mt-4 font-bold text-lg text-foreground">{supplier.name}</h3>
-                            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                                <TypeIcon className="h-4 w-4" />
-                                <p className="capitalize">{supplier.type}</p>
-                            </div>
-                        </Card>
-                    </Link>
-                );
-            })}
+            {filteredSuppliers.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
+                    <Search className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-xl font-semibold">No se encontraron suppliers</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        {searchTerm ? 'Intenta con otro término de búsqueda.' : 'Aún no se han registrado suppliers.'}
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredSuppliers.map(supplier => {
+                        const TypeIcon = typeIcons[supplier.type] || User;
+                        const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                        return (
+                            <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full">
+                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
+                                        <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
+                                        <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
+                                            {supplierInitials}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <h3 className="mt-4 font-bold text-lg text-foreground">{supplier.name}</h3>
+                                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                                        <TypeIcon className="h-4 w-4" />
+                                        <p className="capitalize">{supplier.type}</p>
+                                    </div>
+                                </Card>
+                            </Link>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }
 
 
-export default function ProveedoresPage() {
+export default function SuppliersPage() {
     return (
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
@@ -113,7 +130,7 @@ export default function ProveedoresPage() {
                     <div className="flex items-center gap-3">
                         <Store className="h-8 w-8 text-primary" />
                         <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                            Proveedores
+                            Suppliers
                         </h1>
                     </div>
                     <p className="text-muted-foreground">

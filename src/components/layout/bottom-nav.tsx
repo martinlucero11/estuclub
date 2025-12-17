@@ -16,7 +16,7 @@ export default function BottomNav() {
 
   const navItems = [
     { href: '/benefits', label: 'Beneficios', icon: Gift },
-    { href: '/proveedores', label: 'Proveedores', icon: Store },
+    { href: '/proveedores', label: 'Suppliers', icon: Store },
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/announcements', label: 'Anuncios', icon: Megaphone },
   ];
