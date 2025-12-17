@@ -12,6 +12,9 @@ import { Building, Briefcase, Church, Scale, ShoppingBasket, User, Search, Ticke
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk } from '@/lib/data';
+import ServiceList from '@/components/supplier/service-list';
+import type { Service } from '@/lib/data';
+
 
 interface SupplierProfile {
     id: string;
@@ -99,9 +102,18 @@ export default function SupplierProfilePage({ params }: { params: { slug: string
     const benefitsQuery = useMemoFirebase(() => {
         if (!supplier) return null;
         return query(collection(firestore, 'benefits'), where('ownerId', '==', supplier.id));
-    }, [supplier]);
+    }, [supplier, firestore]);
     
     const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
+
+    // Fetch services for this supplier
+    const servicesQuery = useMemoFirebase(() => {
+        if (!supplier) return null;
+        return query(collection(firestore, `roles_supplier/${supplier.id}/services`));
+    }, [supplier, firestore]);
+
+    const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
+
     
     if (isLoading) {
         return <MainLayout><ProfileSkeleton /></MainLayout>;
@@ -174,11 +186,18 @@ export default function SupplierProfilePage({ params }: { params: { slug: string
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <ConciergeBell />
-                                    Servicios y Turnos
+                                    Servicios Disponibles
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground">La reserva de turnos estará disponible próximamente.</p>
+                                {servicesLoading ? (
+                                    <div className="space-y-4">
+                                        <Skeleton className="h-16 w-full" />
+                                        <Skeleton className="h-16 w-full" />
+                                    </div>
+                                ) : (
+                                    <ServiceList services={services || []} />
+                                )}
                             </CardContent>
                         </Card>
                     )}
