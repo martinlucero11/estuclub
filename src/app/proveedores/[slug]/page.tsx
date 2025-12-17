@@ -159,19 +159,7 @@ function SupplierProfileContent({ slug }: { slug: string }) {
             </header>
 
             <div className="space-y-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Ticket />
-                            Beneficios Ofrecidos
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                         {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
-                    </CardContent>
-                </Card>
-
-                {supplier.allowsBooking && (
+                 {supplier.allowsBooking && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -191,6 +179,18 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                         </CardContent>
                     </Card>
                 )}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Ticket />
+                            Beneficios Ofrecidos
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
