@@ -47,14 +47,15 @@ service cloud.firestore {
     match /redeemed_benefits/{id} {
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
 
-      // USER: lista solo sus canjes
-      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-
-      allow get: if isSignedIn()
-        && (
-          request.auth.uid == resource.data.userId
-          || request.auth.uid == resource.data.supplierId
-        );
+      // USER can list their own redemptions.
+      // SUPPLIER can list redemptions for their benefits.
+      // GET is allowed if the user is the owner or the supplier.
+      allow get, list: if isSignedIn() && (
+          (request.query.where.size() > 0 && request.query.where.get("userId")[2] == request.auth.uid) ||
+          (request.query.where.size() > 0 && request.query.where.get("supplierId")[2] == request.auth.uid) ||
+          (resource.data.userId == request.auth.uid) ||
+          (resource.data.supplierId == request.auth.uid)
+      );
 
       allow update: if isSignedIn()
         && request.auth.uid == resource.data.supplierId;
