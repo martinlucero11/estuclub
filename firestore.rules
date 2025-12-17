@@ -68,7 +68,7 @@ service cloud.firestore {
         && request.resource.data.benefitId != null;
 
       allow get, list: if 
-        (isOwner(resource.data.userId)) || 
+        (isSignedIn() && resource.data.userId == request.auth.uid) || 
         (isSupplier() && resource.data.supplierId == request.auth.uid) ||
         isAdmin();
 
