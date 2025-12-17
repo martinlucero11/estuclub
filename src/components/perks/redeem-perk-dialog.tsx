@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -116,7 +115,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         return;
       }
       
-      // Use the root collection now
       const redeemedBenefitsRef = collection(firestore, 'redeemed_benefits');
       
       if (perk.redemptionLimit && perk.redemptionLimit > 0) {
@@ -139,7 +137,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
-        ownerId: perk.ownerId, // IMPORTANT: Save the supplier's ID
+        supplierId: perk.ownerId, // Use supplierId (was ownerId in perk)
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         benefitId: perk.id,
@@ -283,3 +281,5 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
+
+    

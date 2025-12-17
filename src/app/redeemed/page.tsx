@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, Award, Calendar, Archive, Eye } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import RedeemedBenefitDialog from '@/components/redeemed/redeemed-benefit-dialog';
 import { Button } from '@/components/ui/button';
 
@@ -18,7 +18,7 @@ interface RedeemedBenefit {
     points: number;
     status: 'valid' | 'used';
     userId: string;
-    ownerId?: string; // Add ownerId
+    supplierId?: string; 
 }
 
 function RedeemedListSkeleton() {
@@ -47,8 +47,8 @@ function RedeemedList() {
 
     const redeemedQuery = useMemoFirebase(
         () => user ? query(
-            collection(firestore, 'redeemed_benefits'), // Query the root collection
-            where('userId', '==', user.uid), // Filter by the current user's ID
+            collection(firestore, 'redeemed_benefits'), 
+            where('userId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         ) : null,
         [user, firestore]
@@ -110,6 +110,8 @@ function RedeemedList() {
 
 
 export default function RedeemedBenefitsPage() {
+    const { user, isUserLoading } = useUser();
+
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
@@ -125,10 +127,12 @@ export default function RedeemedBenefitsPage() {
                     </p>
                 </header>
                 
-                <Suspense fallback={<RedeemedListSkeleton />}>
+                {isUserLoading ? <RedeemedListSkeleton /> : <Suspense fallback={<RedeemedListSkeleton />}>
                     <RedeemedList />
-                </Suspense>
+                </Suspense>}
             </div>
         </MainLayout>
     );
 }
+
+    
