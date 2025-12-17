@@ -34,12 +34,14 @@ service cloud.firestore {
 
     match /benefits/{benefitId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      // Any signed in user can update the redemption count. Admins can create/delete.
+      allow update: if isSignedIn(); 
+      allow create, delete: if isAdmin();
     }
     
     match /announcements/{announcementId} {
         allow read: if true;
-        allow create, update, delete: if isSignedIn() && (request.auth.uid == resource.data.authorId || isAdmin());
+        allow create, update, delete: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /redeemed_benefits/{id} {
