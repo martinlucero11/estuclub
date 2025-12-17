@@ -46,10 +46,11 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.auth.uid == request.resource.data.userId;
 
-      allow list: if isSignedIn() && (
-        request.query.where("userId", "==", request.auth.uid) ||
-        request.query.where("supplierId", "==", request.auth.uid)
-      );
+      // USER: lista solo sus canjes
+      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+
+      // SUPPLIER: lista solo canjes de sus beneficios
+      allow list: if isSignedIn() && request.query.where("supplierId", "==", request.auth.uid);
 
       allow get: if isSignedIn()
         && (
