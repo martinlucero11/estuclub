@@ -2,13 +2,13 @@
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Church, Scale, ShoppingBasket, User, Ticket, ConciergeBell } from 'lucide-react';
+import { Building, Briefcase, Church, Scale, Ticket, ConciergeBell } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk } from '@/lib/data';
 import type { Service, Availability } from '@/lib/data';
@@ -29,7 +29,7 @@ const typeIcons = {
     Institucion: Building,
     Club: Briefcase,
     Iglesia: Church,
-    Comercio: ShoppingBasket,
+    Comercio: Briefcase, // Corrected from ShoppingBasket
     Estado: Scale,
 };
 
@@ -104,10 +104,11 @@ function SupplierProfileContent({ slug }: { slug: string }) {
     const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
     const availabilityRef = useMemoFirebase(() => {
-        if (!supplier) return null;
-        return firestore ? firestore.collection('roles_supplier').doc(supplier.id).collection('availability').doc('schedule') : null;
+        if (!supplier || !firestore) return null;
+        return doc(firestore, 'roles_supplier', supplier.id, 'availability', 'schedule');
     }, [supplier, firestore]);
-    const { data: availability, isLoading: availabilityLoading } = useDoc<Availability>(availabilityRef as any);
+    const { data: availability, isLoading: availabilityLoading } = useDoc<Availability>(availabilityRef);
+
 
     if (isLoading) {
         return <ProfileSkeleton />;
@@ -135,7 +136,7 @@ function SupplierProfileContent({ slug }: { slug: string }) {
         )
     }
 
-    const TypeIcon = typeIcons[supplier.type] || User;
+    const TypeIcon = typeIcons[supplier.type] || Briefcase;
     const defaultTab = supplier.allowsBooking ? "services" : "benefits";
 
     return (
