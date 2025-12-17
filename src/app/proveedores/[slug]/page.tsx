@@ -131,6 +131,7 @@ function SupplierProfileContent({ slug }: { slug: string }) {
     }
 
     const TypeIcon = typeIcons[supplier.type] || User;
+    const defaultTab = supplier.allowsBooking ? "services" : "benefits";
 
     return (
         <div className="space-y-8 p-4 md:p-8">
@@ -152,18 +153,18 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                 </div>
             </header>
 
-             <Tabs defaultValue="benefits" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="benefits">
-                        <Ticket className="mr-2 h-4 w-4" />
-                        Beneficios
-                    </TabsTrigger>
-                     {supplier.allowsBooking && (
+             <Tabs defaultValue={defaultTab} className="w-full">
+                <TabsList className={`grid w-full ${supplier.allowsBooking ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {supplier.allowsBooking && (
                         <TabsTrigger value="services">
                             <ConciergeBell className="mr-2 h-4 w-4" />
                             Servicios
                         </TabsTrigger>
                     )}
+                    <TabsTrigger value="benefits">
+                        <Ticket className="mr-2 h-4 w-4" />
+                        Beneficios
+                    </TabsTrigger>
                 </TabsList>
                 <TabsContent value="benefits" className="mt-6">
                     {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
