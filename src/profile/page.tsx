@@ -31,7 +31,7 @@ import UserQRCodeDialog from '@/components/profile/user-qr-code-dialog';
 const profileFormSchema = z.object({
     firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
     lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres.'),
-    username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.').regex(/^[a-zA-Z0-9_.]+$/, 'Solo letras, números, puntos y guiones bajos.'),
+    username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.').regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos.'),
 });
 
 interface UserProfile {
