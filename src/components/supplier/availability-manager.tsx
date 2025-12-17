@@ -14,6 +14,7 @@ import { Loader2, Save } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
+import { Input } from '../ui/input';
 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // HH:MM format
 
