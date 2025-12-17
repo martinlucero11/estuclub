@@ -1,3 +1,4 @@
+
 import { GraduationCap } from 'lucide-react';
 
 function EstuClubLogo() {
