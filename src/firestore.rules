@@ -1,3 +1,4 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -9,40 +10,38 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    function isSupplier() {
+    function isSupplier(userId) {
+      // If userId is provided, check if the requesting user is that specific supplier.
+      // Otherwise, check if the requesting user has the supplier role in general.
       return isSignedIn() &&
-        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+        exists(/databases/$(database)/documents/roles_supplier/$(userId_or_auth_uid(userId)));
     }
+
+    function userId_or_auth_uid(userId) {
+      return userId != null ? userId : request.auth.uid;
+    }
+    
 
     // -------------------------
     // USERS
     // -------------------------
     match /users/{userId} {
-
-      // Cualquier usuario autenticado puede crear su perfil
       allow create: if isSignedIn();
-
-      // El usuario puede leer su perfil y admins también
       allow read: if isSignedIn();
-
-      // El usuario puede actualizar solo su propio documento
-      allow update, delete: if isSignedIn()
-        && request.auth.uid == userId;
-
-      // Admins siempre pueden modificar cualquier perfil
-      allow update, delete: if isAdmin();
+      allow update, delete: if isOwner(userId) || isAdmin();
 
       // Subcolección de canjes
       match /redeemed_benefits/{redemptionId} {
-        allow read, write: if isSignedIn()
-          && request.auth.uid == userId;
-
-        allow read, write: if isAdmin() || isSupplier();
+        allow read, write: if isOwner(userId) || isAdmin() || isSupplier(null);
       }
     }
     
@@ -50,51 +49,84 @@ service cloud.firestore {
     // USERNAMES
     // -------------------------
     match /usernames/{username} {
-
-      // Cualquier usuario registrado puede crear su username
-      allow create: if isSignedIn();
-
-      // Leer y borrar username solo del dueño o admin
-      allow read, delete: if isSignedIn();
+      // Anyone can read to check for uniqueness
+      allow read: if true;
+      // Only the owner can create their username
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      // Only the owner or an admin can delete it
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
     // -------------------------
     // BENEFITS
     // -------------------------
-    match /benefits/{benefitId} {
-      allow read: if true;
-      allow create: if isAdmin() || isSupplier();
-      allow update, delete: if isAdmin()
-        || (isSupplier() && resource.data.ownerId == request.auth.uid);
+     match /benefits/{benefitId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() || isSupplier(null);
+      allow update: if isAdmin() || (isSupplier(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
+      allow delete: if isAdmin() || (isSupplier(resource.data.ownerId) && request.auth.uid == resource.data.ownerId);
     }
+
 
     // -------------------------
     // ANNOUNCEMENTS
     // -------------------------
     match /announcements/{announcementId} {
       allow read: if true;
-      allow create, update, delete: if isSignedIn();
+      // An announcement can be created by any authenticated user.
+      // It can be updated or deleted only by its original author or an admin.
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
     }
 
     // -------------------------
     // ROLES
     // -------------------------
     match /roles_admin/{userId} {
-      allow read: if request.auth.uid == userId || isAdmin();
+      allow read: if isOwner(userId) || isAdmin();
       allow write: if isAdmin();
     }
 
-    match /roles_supplier/{userId} {
-      allow read: if isAdmin() || request.auth.uid == userId;
-      allow write: if isAdmin(); // Only admins can make someone a supplier
+    match /roles_supplier/{supplierId} {
+      // Anyone can read a supplier's public profile data.
+      allow read: if true;
+      // Only admins can create or delete supplier roles.
+      allow create, delete: if isAdmin();
+      // Admins can update any field. Suppliers can only update their own profile.
+      allow update: if isAdmin() || isOwner(supplierId);
+
+      // Subcollections for suppliers
+      match /services/{serviceId} {
+        // Anyone can read the services offered by a supplier.
+        allow read: if true;
+        // Only the supplier themselves can create, update, or delete their services.
+        allow write: if isOwner(supplierId);
+      }
+      match /availability/{doc} {
+        // A supplier can read and write their own availability.
+        allow read, write: if isOwner(supplierId);
+      }
+      match /appointments/{appointmentId} {
+         // The user who made the appointment can read it.
+        allow read: if isOwner(resource.data.userId);
+        // The supplier can read all their appointments.
+        allow get: if isOwner(supplierId);
+        allow list: if isOwner(supplierId);
+         // A user can create an appointment for themselves.
+        allow create: if isOwner(request.resource.data.userId);
+        // A user can cancel (update) their own appointment.
+        // A supplier can also update the status of an appointment.
+        allow update: if isOwner(resource.data.userId) || isOwner(supplierId);
+      }
     }
+
 
     // -------------------------
     // NOTIFICATIONS
     // -------------------------
     match /notifications/{notificationId} {
         allow read: if true;
-        allow create: if isAdmin() || isSupplier();
+        allow create: if isAdmin() || isSupplier(null);
     }
   }
 }
