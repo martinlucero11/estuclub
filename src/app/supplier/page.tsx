@@ -2,8 +2,6 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import AddPerkForm from '@/components/admin/add-perk-form';
-import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock, BookUser, BarChart3, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +11,6 @@ import AddServiceForm from '@/components/supplier/add-service-form';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
-import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import { useUser } from '@/firebase';
 import RedeemedByUsersList from '@/components/supplier/redeemed-by-users-list';
 
@@ -94,12 +91,12 @@ export default function SupplierPage() {
             Panel de Proveedor
           </h1>
           <p className="text-muted-foreground">
-            Publica y gestiona beneficios, servicios y anuncios para la comunidad estudiantil.
+            Gestiona tus servicios, turnos y revisa los canjes de tus clientes.
           </p>
         </header>
 
-        <Tabs defaultValue="appointments" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto flex-wrap">
+        <Tabs defaultValue="redeemed-by-users" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
@@ -115,14 +112,6 @@ export default function SupplierPage() {
              <TabsTrigger value="add-service">
                 <ConciergeBell className="mr-2 h-4 w-4" />
                 Añadir Servicio
-            </TabsTrigger>
-             <TabsTrigger value="my-benefits">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Mis Beneficios
-            </TabsTrigger>
-             <TabsTrigger value="add-benefit">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Beneficio
             </TabsTrigger>
             <TabsTrigger value="redeemed-by-users">
               <Users className="mr-2 h-4 w-4" />
@@ -174,30 +163,6 @@ export default function SupplierPage() {
               </CardHeader>
               <CardContent>
                 <AddServiceForm />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-           <TabsContent value="my-benefits">
-            <Card>
-              <CardHeader>
-                <CardTitle>Mis Beneficios y Estadísticas</CardTitle>
-                <CardDescription>Gestiona tus beneficios publicados y ve cuántas veces han sido canjeados.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BenefitAdminList supplierId={user?.uid} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-           <TabsContent value="add-benefit">
-            <Card>
-              <CardHeader>
-                <CardTitle>Añadir Nuevo Beneficio</CardTitle>
-                <CardDescription>Rellena el formulario para añadir un nuevo beneficio a la plataforma.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AddPerkForm />
               </CardContent>
             </Card>
           </TabsContent>
