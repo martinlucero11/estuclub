@@ -51,18 +51,13 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
+      // LECTURA - PUBLICA
       allow read: if true;
-      
+
+      // ESCRITURA - RESTRINGIDA
       allow create: if isAdmin() || isSupplierSelf();
-
-      allow update: if isAdmin()
-        || (isSupplierOf(resource.data.ownerId)
-            && request.auth.uid == resource.data.ownerId
-            && request.resource.data.ownerId == resource.data.ownerId);
-
-      allow delete: if isAdmin()
-        || (isSupplierOf(resource.data.ownerId)
-            && request.auth.uid == resource.data.ownerId);
+      
+      allow update, delete: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.ownerId);
     }
     
     // -------------------------
