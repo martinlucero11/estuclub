@@ -5,13 +5,16 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock, BookUser, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddServiceForm from '@/components/supplier/add-service-form';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
+import AppointmentList from '@/components/supplier/appointment-list';
+import BenefitAdminList from '@/components/admin/benefit-admin-list';
+import { useUser } from '@/firebase';
 
 function SupplierAccessDenied() {
     return (
@@ -61,6 +64,7 @@ function SupplierLoadingSkeleton() {
 
 
 export default function SupplierPage() {
+    const { user } = useUser();
     const { isSupplier, isLoading } = useSupplier();
     
     if (isLoading) {
@@ -93,27 +97,31 @@ export default function SupplierPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto flex-wrap">
+        <Tabs defaultValue="appointments" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
             </TabsTrigger>
-             <TabsTrigger value="add-benefit">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Beneficio
-            </TabsTrigger>
-             <TabsTrigger value="add-service">
-                <ConciergeBell className="mr-2 h-4 w-4" />
-                Añadir Servicio
+             <TabsTrigger value="appointments">
+                <BookUser className="mr-2 h-4 w-4" />
+                Mis Turnos
             </TabsTrigger>
             <TabsTrigger value="availability">
                 <CalendarClock className="mr-2 h-4 w-4" />
                 Disponibilidad
             </TabsTrigger>
-            <TabsTrigger value="add-announcement">
-                <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Anuncio
+             <TabsTrigger value="add-service">
+                <ConciergeBell className="mr-2 h-4 w-4" />
+                Añadir Servicio
+            </TabsTrigger>
+             <TabsTrigger value="my-benefits">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Mis Beneficios
+            </TabsTrigger>
+             <TabsTrigger value="add-benefit">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Añadir Beneficio
             </TabsTrigger>
           </TabsList>
 
@@ -128,16 +136,28 @@ export default function SupplierPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
-           <TabsContent value="add-benefit">
+
+          <TabsContent value="appointments">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Turnos Reservados</CardTitle>
+                    <CardDescription>Aquí puedes ver todos los turnos que han reservado contigo.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AppointmentList />
+                </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="availability">
             <Card>
-              <CardHeader>
-                <CardTitle>Añadir Nuevo Beneficio</CardTitle>
-                <CardDescription>Rellena el formulario para añadir un nuevo beneficio a la plataforma.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AddPerkForm />
-              </CardContent>
+                <CardHeader>
+                    <CardTitle>Gestionar Disponibilidad</CardTitle>
+                    <CardDescription>Define tus horarios de trabajo para que los estudiantes puedan reservar turnos.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AvailabilityManager />
+                </CardContent>
             </Card>
           </TabsContent>
 
@@ -152,30 +172,30 @@ export default function SupplierPage() {
               </CardContent>
             </Card>
           </TabsContent>
-            <TabsContent value="availability">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Gestionar Disponibilidad</CardTitle>
-                        <CardDescription>Define tus horarios de trabajo para que los estudiantes puedan reservar turnos.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AvailabilityManager />
-                    </CardContent>
-                </Card>
-            </TabsContent>
-
-          <TabsContent value="add-announcement">
+          
+           <TabsContent value="my-benefits">
             <Card>
-                <CardHeader>
-                    <CardTitle>Publicar un Nuevo Anuncio</CardTitle>
-                    <CardDescription>Comparte algo con la comunidad estudiantil.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <AddAnnouncementForm />
-                </CardContent>
+              <CardHeader>
+                <CardTitle>Mis Beneficios y Estadísticas</CardTitle>
+                <CardDescription>Gestiona tus beneficios publicados y ve cuántas veces han sido canjeados.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BenefitAdminList supplierId={user?.uid} />
+              </CardContent>
             </Card>
           </TabsContent>
-          
+
+           <TabsContent value="add-benefit">
+            <Card>
+              <CardHeader>
+                <CardTitle>Añadir Nuevo Beneficio</CardTitle>
+                <CardDescription>Rellena el formulario para añadir un nuevo beneficio a la plataforma.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AddPerkForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </MainLayout>

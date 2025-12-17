@@ -63,7 +63,8 @@ service cloud.firestore {
      match /benefits/{benefitId} {
       allow get, list: if true;
       allow create: if isAdmin() || isSupplier(null);
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (isSupplier(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
+      allow delete: if isAdmin() || (isSupplier(resource.data.ownerId) && request.auth.uid == resource.data.ownerId);
     }
 
 
@@ -101,7 +102,7 @@ service cloud.firestore {
         // Only the supplier themselves can create, update, or delete their services.
         allow write: if isOwner(supplierId);
       }
-      match /availability/schedule {
+      match /availability/{doc} {
         // A supplier can read and write their own availability.
         allow read, write: if isOwner(supplierId);
       }
@@ -109,7 +110,8 @@ service cloud.firestore {
          // The user who made the appointment can read it.
         allow read: if isOwner(resource.data.userId);
         // The supplier can read all their appointments.
-        allow read: if isOwner(supplierId);
+        allow get: if isOwner(supplierId);
+        allow list: if isOwner(supplierId);
          // A user can create an appointment for themselves.
         allow create: if isOwner(request.resource.data.userId);
         // A user can cancel (update) their own appointment.

@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, updateDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { Perk } from '@/lib/data';
 import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
@@ -129,6 +129,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
 
       const userRedemptionRef = doc(collection(firestore, `users/${user.uid}/redeemed_benefits`));
+      const benefitRef = doc(firestore, 'benefits', perk.id);
 
       const redemptionData = {
         id: userRedemptionRef.id,
@@ -150,6 +151,9 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
           points: increment(perk.points),
         });
       }
+      
+      // Increment redemption count on the benefit itself
+      batch.update(benefitRef, { redemptionCount: increment(1) });
 
       await batch.commit(); 
 

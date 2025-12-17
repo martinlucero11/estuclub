@@ -19,6 +19,7 @@ export interface Perk {
   redemptionLimit?: number;
   validUntil?: Timestamp;
   availableDays?: string[];
+  redemptionCount?: number;
 }
 
 export interface Service {
@@ -26,6 +27,31 @@ export interface Service {
   name: string;
   description: string;
   duration: number; // in minutes
+}
+
+export interface DaySchedule {
+  active: boolean;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+}
+
+export interface Availability {
+    schedule: {
+        [day: string]: DaySchedule;
+    }
+}
+
+export interface Appointment {
+    id: string;
+    userId: string;
+    userName: string;
+    userDni: string;
+    userPhone: string;
+    serviceId: string;
+    serviceName: string;
+    startTime: Date | Timestamp;
+    endTime: Date | Timestamp;
+    status: 'confirmed' | 'cancelled';
 }
 
 

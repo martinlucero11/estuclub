@@ -244,6 +244,10 @@
             "type": "string",
             "enum": ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
           }
+        },
+        "redemptionCount": {
+          "type": "number",
+          "description": "The number of times this benefit has been redeemed."
         }
       },
       "required": [

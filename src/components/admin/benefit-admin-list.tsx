@@ -1,18 +1,17 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, deleteDoc, where } from 'firebase/firestore';
+import { collection, query, orderBy, doc, deleteDoc, where, updateDoc, increment } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, TrendingUp } from 'lucide-react';
 import type { Perk } from '@/lib/data';
 import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAdmin } from '@/firebase/auth/use-admin';
-import { useUser } from '@/firebase/auth/use-user';
 
 function BenefitAdminListItem({ perk }: { perk: Perk }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -42,7 +41,7 @@ function BenefitAdminListItem({ perk }: { perk: Perk }) {
   return (
     <>
       <div className="flex items-center justify-between space-x-4 rounded-md border p-4">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Image
             src={perk.imageUrl}
             alt={perk.title}
@@ -50,9 +49,13 @@ function BenefitAdminListItem({ perk }: { perk: Perk }) {
             height={64}
             className="h-16 w-16 rounded-md object-cover"
           />
-          <div className="flex-1">
-            <p className="font-medium">{perk.title}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium truncate">{perk.title}</p>
             <p className="text-sm text-muted-foreground">{perk.category}</p>
+            <div className='flex items-center gap-2 text-sm text-primary font-semibold pt-1'>
+              <TrendingUp className='h-4 w-4' />
+              <span>{perk.redemptionCount || 0} canjes</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center space-x-2">

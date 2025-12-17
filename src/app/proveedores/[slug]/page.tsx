@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/main-layout';
@@ -11,10 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Church, Scale, ShoppingBasket, User, Ticket, ConciergeBell } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk } from '@/lib/data';
-import ServiceList from '@/components/supplier/service-list';
-import type { Service } from '@/lib/data';
+import type { Service, Availability } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
+import BookingCalendar from '@/components/booking/booking-calendar';
 
 interface SupplierProfile {
     id: string;
@@ -104,6 +103,12 @@ function SupplierProfileContent({ slug }: { slug: string }) {
     }, [supplier, firestore]);
     const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
 
+    const availabilityRef = useMemoFirebase(() => {
+        if (!supplier) return null;
+        return firestore ? firestore.collection('roles_supplier').doc(supplier.id).collection('availability').doc('schedule') : null;
+    }, [supplier, firestore]);
+    const { data: availability, isLoading: availabilityLoading } = useDoc<Availability>(availabilityRef as any);
+
     if (isLoading) {
         return <ProfileSkeleton />;
     }
@@ -168,14 +173,15 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                 </TabsList>
                 {supplier.allowsBooking && (
                     <TabsContent value="services" className="mt-6">
-                        {servicesLoading ? (
-                            <div className="space-y-4">
-                                <Skeleton className="h-16 w-full" />
-                                <Skeleton className="h-16 w-full" />
-                            </div>
-                        ) : (
-                            <ServiceList services={services || []} />
-                        )}
+                         {servicesLoading || availabilityLoading ? (
+                             <Skeleton className="h-96 w-full" />
+                         ) : (
+                             <BookingCalendar 
+                                services={services || []} 
+                                availability={availability || { schedule: {} }}
+                                supplierId={supplier.id}
+                            />
+                         )}
                     </TabsContent>
                 )}
                 <TabsContent value="benefits" className="mt-6">
