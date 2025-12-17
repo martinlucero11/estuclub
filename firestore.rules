@@ -92,7 +92,7 @@ service cloud.firestore {
     }
 
     match /roles_supplier/{uid} {
-      allow read: if true;
+      allow read: if isOwner(uid) || isAdmin();
       allow write: if isAdmin(); // Solo admin puede crear/modificar proveedores
       
       match /services/{serviceId} {
