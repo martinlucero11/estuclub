@@ -96,7 +96,7 @@ export default function SupplierPage() {
         </header>
 
         <Tabs defaultValue="redeemed-by-users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil

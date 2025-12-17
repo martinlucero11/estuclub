@@ -3,11 +3,89 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ⚠️ REGLA DE EMERGENCIA
-    // Todo permitido para lectura y escritura
-    match /{document=**} {
-      allow read, write: if true;
+    function isSignedIn() {
+      return request.auth != null;
     }
 
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    function isSupplier() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+    
+    match /usernames/{username} {
+        allow read: if true;
+        allow create: if isSignedIn();
+    }
+
+    match /benefits/{benefitId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    match /announcements/{announcementId} {
+        allow read: if true;
+        allow create, update, delete: if isSignedIn() && (request.auth.uid == resource.data.authorId || isAdmin());
+    }
+
+    match /redeemed_benefits/{id} {
+      allow create: if isSignedIn()
+        && request.auth.uid == request.resource.data.userId;
+
+      // USER: lista solo sus canjes
+      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+
+      // SUPPLIER: lista solo canjes de sus beneficios
+      allow list: if isSignedIn() && request.query.where("supplierId", "==", request.auth.uid);
+
+      allow get: if isSignedIn()
+        && (
+          request.auth.uid == resource.data.userId
+          || request.auth.uid == resource.data.supplierId
+        );
+
+      allow update: if isSignedIn()
+        && request.auth.uid == resource.data.supplierId;
+
+      allow delete: if false;
+    }
+
+    match /roles_admin/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /roles_supplier/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+      
+      match /services/{serviceId} {
+        allow read: if true;
+        allow write: if isOwner(uid) || isAdmin();
+      }
+      
+      match /availability/schedule {
+         allow read: if true;
+         allow write: if isOwner(uid) || isAdmin();
+      }
+      
+      match /appointments/{appointmentId} {
+        allow read, write: if isOwner(uid) || isSignedIn();
+      }
+    }
   }
 }
