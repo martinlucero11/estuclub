@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock, BookUser, BarChart3 } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock, BookUser, BarChart3, Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,7 @@ import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import { useUser } from '@/firebase';
+import RedeemedByUsersList from '@/components/supplier/redeemed-by-users-list';
 
 function SupplierAccessDenied() {
     return (
@@ -98,7 +99,7 @@ export default function SupplierPage() {
         </header>
 
         <Tabs defaultValue="appointments" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
@@ -122,6 +123,10 @@ export default function SupplierPage() {
              <TabsTrigger value="add-benefit">
               <PlusCircle className="mr-2 h-4 w-4" />
               Añadir Beneficio
+            </TabsTrigger>
+            <TabsTrigger value="redeemed-by-users">
+              <Users className="mr-2 h-4 w-4" />
+              Canjes de Clientes
             </TabsTrigger>
           </TabsList>
 
@@ -193,6 +198,18 @@ export default function SupplierPage() {
               </CardHeader>
               <CardContent>
                 <AddPerkForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="redeemed-by-users">
+            <Card>
+              <CardHeader>
+                <CardTitle>Canjes de Clientes</CardTitle>
+                <CardDescription>Aquí puedes ver qué usuarios han canjeado tus beneficios.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RedeemedByUsersList />
               </CardContent>
             </Card>
           </TabsContent>
