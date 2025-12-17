@@ -51,7 +51,8 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      allow list, get: if isSignedIn();
+      allow get: if true;
+      allow list: if isSignedIn();
 
       allow create: if isAdmin() || isSupplierSelf();
 
