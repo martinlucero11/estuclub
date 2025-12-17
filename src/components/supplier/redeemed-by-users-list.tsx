@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -44,13 +43,15 @@ export default function RedeemedByUsersList() {
     const firestore = useFirestore();
 
     const redeemedQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null; // Wait for user and firestore
+        // Bloqueo de query prematura
+        if (!firestore || !user?.uid) return null;
+
         return query(
             collection(firestore, 'redeemed_benefits'),
             where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
-    }, [user, firestore]);
+    }, [firestore, user?.uid]);
 
     const { data: redeemedBenefits, isLoading } = useCollection<RedeemedBenefit>(redeemedQuery);
     
