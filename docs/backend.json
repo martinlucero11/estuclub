@@ -469,7 +469,7 @@
         "collectionGroup": "benefits",
         "queryScope": "COLLECTION",
         "fields": [
-          { "fieldPath": "category", "order": "ASCENDING" },
+          { "fieldPath": "ownerId", "order": "ASCENDING" },
           { "fieldPath": "createdAt", "order": "DESCENDING" }
         ]
       },
@@ -676,5 +676,3 @@
     ]
   }
 }
-
-    

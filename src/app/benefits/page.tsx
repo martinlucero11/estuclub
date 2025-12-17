@@ -35,9 +35,6 @@ function PerksList() {
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
-        // DO NOT run the query until the user is authenticated and firestore is available.
-        if (!user || !firestore) return null;
-
         let field: string, direction: OrderByDirection;
 
         switch (sortOption) {
@@ -52,13 +49,10 @@ function PerksList() {
                 break;
         }
         return query(collection(firestore, 'benefits'), orderBy(field, direction));
-    }, [firestore, sortOption, user]); // Add user to dependency array
+    }, [firestore, sortOption]);
 
-    const { data: perks, isLoading: isCollectionLoading, error } = useCollection<Perk>(perksQuery);
+    const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     
-    // The user is loading, or we have a user but the collection hasn't started loading yet
-    const isLoading = isUserLoading || (user && isCollectionLoading);
-
     return (
         <div className="space-y-6">
             <div className="flex justify-end">
