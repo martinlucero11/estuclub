@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Store, Building, Briefcase, Church, Scale, User, Search } from 'lucide-react';
+import { Store, Building, Briefcase, Church, Scale, User, Search, ShoppingBasket } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
