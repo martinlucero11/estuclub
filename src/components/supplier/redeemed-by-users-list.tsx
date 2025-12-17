@@ -44,7 +44,7 @@ export default function RedeemedByUsersList() {
     const firestore = useFirestore();
 
     const redeemedQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
+        if (!user || !firestore) return null; // Wait for user and firestore
         return query(
             collection(firestore, 'redeemed_benefits'),
             where('supplierId', '==', user.uid),
