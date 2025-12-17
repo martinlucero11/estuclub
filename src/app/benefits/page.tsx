@@ -35,7 +35,8 @@ function PerksList() {
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
-        if (!user) return null; // Don't query if user is not logged in
+        // DO NOT run the query until the user is authenticated.
+        if (!user || !firestore) return null;
 
         let field: string, direction: OrderByDirection;
 
@@ -59,7 +60,8 @@ function PerksList() {
 
     const { data: perks, isLoading: isCollectionLoading, error } = useCollection<Perk>(perksQuery);
     
-    const isLoading = isUserLoading || isCollectionLoading;
+    // The user is loading, or we have a user but the collection hasn't started loading yet
+    const isLoading = isUserLoading || (user && isCollectionLoading);
 
     return (
         <div className="space-y-6">

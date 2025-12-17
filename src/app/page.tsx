@@ -8,7 +8,7 @@ import { Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import type { Perk } from '@/lib/data';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import PerksCarousel from '@/components/perks/perks-carousel';
 
 
@@ -41,18 +41,26 @@ function toISOString(timestamp?: SerializableTimestamp | Timestamp): string | un
 
 function HomePageContent() {
     const firestore = useFirestore();
+    const { user } = useUser(); // Get user for auth-dependent query
 
-    const perksQuery = useMemoFirebase(() => query(
-        collection(firestore, 'benefits'),
-        orderBy('createdAt', 'desc'),
-        limit(5)
-    ), [firestore]);
+    const perksQuery = useMemoFirebase(() => {
+        // DO NOT run the query until the user is authenticated and firestore is available.
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, 'benefits'),
+            orderBy('createdAt', 'desc'),
+            limit(5)
+        );
+    }, [firestore, user]);
 
-    const announcementsQuery = useMemoFirebase(() => query(
-        collection(firestore, 'announcements'),
-        orderBy('createdAt', 'desc'),
-        limit(20)
-    ), [firestore]);
+    const announcementsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'announcements'),
+            orderBy('createdAt', 'desc'),
+            limit(20)
+        );
+    }, [firestore]);
 
     const { data: perksData, isLoading: perksLoading } = useCollection<Perk>(perksQuery);
     const { data: announcementsData, isLoading: announcementsLoading } = useCollection<any>(announcementsQuery);
