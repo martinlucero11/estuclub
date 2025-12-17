@@ -82,7 +82,7 @@ export default function RedeemedByUsersList() {
                              <div className="flex items-center gap-3">
                                  <Avatar className='h-10 w-10'>
                                     <AvatarFallback>{userInitial}</AvatarFallback>
-                                </Avatar>
+                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{redemption.userName}</p>
                                     <p className="text-sm text-muted-foreground flex items-center gap-2">
