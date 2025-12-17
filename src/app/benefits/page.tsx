@@ -35,6 +35,8 @@ function PerksList() {
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null; // Wait for user and firestore
+
         let field: string, direction: OrderByDirection;
 
         switch (sortOption) {
@@ -49,10 +51,13 @@ function PerksList() {
                 break;
         }
         return query(collection(firestore, 'benefits'), orderBy(field, direction));
-    }, [firestore, sortOption]);
+    }, [firestore, sortOption, user]); // Add user as a dependency
 
     const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     
+    // Combine loading states
+    const combinedIsLoading = isUserLoading || isLoading;
+
     return (
         <div className="space-y-6">
             <div className="flex justify-end">
@@ -68,7 +73,7 @@ function PerksList() {
                 </Select>
             </div>
             
-            {isLoading && <PerksGridSkeleton />}
+            {combinedIsLoading && <PerksGridSkeleton />}
 
             {error && (
                 <p className="text-destructive text-center">
@@ -76,7 +81,7 @@ function PerksList() {
                 </p>
             )}
 
-            {!isLoading && !error && <PerksGrid perks={perks || []} />}
+            {!combinedIsLoading && !error && <PerksGrid perks={perks || []} />}
         </div>
     );
 }
