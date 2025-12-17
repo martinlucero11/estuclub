@@ -43,27 +43,28 @@ service cloud.firestore {
     }
 
     match /redeemed_benefits/{id} {
-      allow create: if request.auth != null
+      allow create: if isSignedIn()
         && request.auth.uid == request.resource.data.userId;
 
-      allow get, list: if request.auth != null
+      allow get, list: if isSignedIn()
         && (
           request.auth.uid == resource.data.userId
           || request.auth.uid == resource.data.supplierId
         );
 
-      allow update: if request.auth != null
+      allow update: if isSignedIn()
         && request.auth.uid == resource.data.supplierId;
 
       allow delete: if false;
     }
 
     match /roles_admin/{uid} {
-      allow read, write: if isAdmin();
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /roles_supplier/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
+      allow read: if isSignedIn();
       allow write: if isAdmin();
       
       match /services/{serviceId} {
