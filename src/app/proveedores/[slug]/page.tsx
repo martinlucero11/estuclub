@@ -166,9 +166,6 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                         Beneficios
                     </TabsTrigger>
                 </TabsList>
-                <TabsContent value="benefits" className="mt-6">
-                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
-                </TabsContent>
                 {supplier.allowsBooking && (
                     <TabsContent value="services" className="mt-6">
                         {servicesLoading ? (
@@ -181,6 +178,9 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                         )}
                     </TabsContent>
                 )}
+                <TabsContent value="benefits" className="mt-6">
+                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
+                </TabsContent>
             </Tabs>
         </div>
     );
