@@ -51,7 +51,7 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      // Allow any user to get a single doc, and any authenticated user to list the collection.
+      // Allow any authenticated user to get a single doc or list the collection.
       allow get, list: if request.auth != null;
       
       allow create: if isAdmin() || isSupplierSelf();

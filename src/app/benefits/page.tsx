@@ -11,7 +11,7 @@ import { Suspense, useState, useMemo } from 'react';
 import { Gift, ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type SortOption = 'createdAt_desc' | 'createdAt_asc' | 'points_desc';
+type SortOption = 'createdAt_desc' | 'createdAt_asc';
 
 function PerksGridSkeleton() {
     return (
@@ -45,10 +45,6 @@ function PerksList() {
                 field = 'createdAt';
                 direction = 'asc';
                 break;
-            case 'points_desc':
-                field = 'points';
-                direction = 'desc';
-                break;
             case 'createdAt_desc':
             default:
                 field = 'createdAt';
@@ -74,7 +70,6 @@ function PerksList() {
                     <SelectContent>
                         <SelectItem value="createdAt_desc">Más Nuevos</SelectItem>
                         <SelectItem value="createdAt_asc">Más Antiguos</SelectItem>
-                        <SelectItem value="points_desc">Mayor Puntaje</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
