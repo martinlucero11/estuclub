@@ -4,7 +4,7 @@
 import MainLayout from '@/components/layout/main-layout';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Perk } from '@/lib/data';
 import { collection, orderBy, query, OrderByDirection } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
@@ -31,9 +31,12 @@ function PerksGridSkeleton() {
 
 function PerksList() {
     const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
+        if (!user) return null; // Don't query if user is not logged in
+
         let field: string, direction: OrderByDirection;
 
         switch (sortOption) {
@@ -52,9 +55,11 @@ function PerksList() {
                 break;
         }
         return query(collection(firestore, 'benefits'), orderBy(field, direction));
-    }, [firestore, sortOption]);
+    }, [firestore, sortOption, user]); // Add user to dependency array
 
-    const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
+    const { data: perks, isLoading: isCollectionLoading, error } = useCollection<Perk>(perksQuery);
+    
+    const isLoading = isUserLoading || isCollectionLoading;
 
     return (
         <div className="space-y-6">

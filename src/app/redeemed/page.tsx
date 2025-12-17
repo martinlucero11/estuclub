@@ -41,7 +41,7 @@ function RedeemedListSkeleton() {
 }
 
 function RedeemedList() {
-    const { user } = useUser();
+    const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const [selectedBenefit, setSelectedBenefit] = useState<RedeemedBenefit | null>(null);
 
@@ -54,7 +54,9 @@ function RedeemedList() {
         [user, firestore]
     );
 
-    const { data: redeemedBenefits, isLoading } = useCollection<RedeemedBenefit>(redeemedQuery);
+    const { data: redeemedBenefits, isLoading: isCollectionLoading } = useCollection<RedeemedBenefit>(redeemedQuery);
+    
+    const isLoading = isUserLoading || isCollectionLoading;
 
     if (isLoading) {
         return <RedeemedListSkeleton />;
