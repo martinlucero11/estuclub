@@ -5,12 +5,13 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List, ConciergeBell, User } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddServiceForm from '@/components/supplier/add-service-form';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
+import AvailabilityManager from '@/components/supplier/availability-manager';
 
 function SupplierAccessDenied() {
     return (
@@ -92,8 +93,8 @@ export default function SupplierPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="add-benefit" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto flex-wrap">
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
@@ -105,6 +106,10 @@ export default function SupplierPage() {
              <TabsTrigger value="add-service">
                 <ConciergeBell className="mr-2 h-4 w-4" />
                 Añadir Servicio
+            </TabsTrigger>
+            <TabsTrigger value="availability">
+                <CalendarClock className="mr-2 h-4 w-4" />
+                Disponibilidad
             </TabsTrigger>
             <TabsTrigger value="add-announcement">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -147,6 +152,17 @@ export default function SupplierPage() {
               </CardContent>
             </Card>
           </TabsContent>
+            <TabsContent value="availability">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Gestionar Disponibilidad</CardTitle>
+                        <CardDescription>Define tus horarios de trabajo para que los estudiantes puedan reservar turnos.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <AvailabilityManager />
+                    </CardContent>
+                </Card>
+            </TabsContent>
 
           <TabsContent value="add-announcement">
             <Card>

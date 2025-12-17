@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Username": {
@@ -131,6 +132,37 @@
         "duration": { "type": "number", "description": "Duration of the service in minutes." }
       },
       "required": ["name", "description", "duration"]
+    },
+    "Availability": {
+        "title": "Availability",
+        "type": "object",
+        "description": "Defines the weekly working hours for a supplier.",
+        "properties": {
+            "schedule": {
+                "type": "object",
+                "description": "Object containing the schedule for each day of the week.",
+                "properties": {
+                    "Lunes": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Martes": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Miércoles": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Jueves": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Viernes": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Sábado": { "$ref": "#/backend/entities/DaySchedule" },
+                    "Domingo": { "$ref": "#/backend/entities/DaySchedule" }
+                }
+            }
+        }
+    },
+    "DaySchedule": {
+        "title": "DaySchedule",
+        "type": "object",
+        "description": "Defines the working hours for a single day.",
+        "properties": {
+            "active": { "type": "boolean" },
+            "startTime": { "type": "string", "format": "time", "description": "e.g., '09:00'" },
+            "endTime": { "type": "string", "format": "time", "description": "e.g., '17:00'" }
+        },
+        "required": ["active", "startTime", "endTime"]
     },
     "Appointment": {
         "title": "Appointment",
@@ -580,6 +612,17 @@
           "params": [
             { "name": "userId", "description": "The supplier's user ID." },
             { "name": "serviceId", "description": "The unique identifier for the service." }
+          ]
+        }
+      },
+      {
+        "path": "/roles_supplier/{userId}/availability/schedule",
+        "definition": {
+          "entityName": "Availability",
+          "schema": { "$ref": "#/backend/entities/Availability" },
+          "description": "Stores the weekly availability for a supplier in a single document.",
+          "params": [
+            { "name": "userId", "description": "The supplier's user ID." }
           ]
         }
       },
