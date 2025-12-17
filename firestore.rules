@@ -1,77 +1,115 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    function isAdmin() {
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
 
-    function isSupplier() {
-      return exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
-    }
-    
-    function isSupplierSelf() {
-      return isSupplier() && request.auth.uid == resource.data.ownerId;
-    }
-    
+    // -------------------------
+    // Helpers
+    // -------------------------
     function isSignedIn() {
       return request.auth != null;
     }
 
-    match /users/{userId} {
-      allow read, update: if request.auth.uid == userId || isAdmin();
-      allow create: if isSignedIn();
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
     }
-    
-    match /usernames/{username} {
+
+    function isAdmin() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    function isSupplier() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    // -------------------------
+    // USERS
+    // -------------------------
+    match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
+      allow update, delete: if isOwner(userId) || isAdmin();
+    }
+    
+    // -------------------------
+    // USERNAMES
+    // -------------------------
+    match /usernames/{username} {
+        allow read: if true;
+        allow create: if isSignedIn();
     }
 
+    // -------------------------
+    // BENEFITS
+    // -------------------------
     match /benefits/{benefitId} {
+      // Lectura pública para todos
       allow read: if true;
-      allow create: if isAdmin() || isSupplierSelf();
-      allow update, delete: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.ownerId);
+
+      // Solo admin y el proveedor dueño pueden escribir
+      allow create, update, delete: if isAdmin() || (isSupplier() && request.auth.uid == request.resource.data.ownerId);
     }
     
-    match /landing_page_modules/{moduleId} {
-       allow read, write: if isAdmin();
-    }
-    
+     // -------------------------
+    // ANNOUNCEMENTS
+    // -------------------------
     match /announcements/{announcementId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || request.auth.uid == resource.data.authorId;
+        allow read: if true;
+        allow create, update, delete: if isSignedIn() && (request.auth.uid == resource.data.authorId || isAdmin());
     }
 
-    match /redeemed_benefits/{redemptionId} {
-      allow create: if isSignedIn();
-      allow read: if (isSignedIn() && request.auth.uid == resource.data.userId) 
-                      || (isSupplier() && request.auth.uid == resource.data.supplierId) 
-                      || isAdmin();
-      allow list: if (isSignedIn() && request.query.where.userId == request.auth.uid)
-                      || (isSupplier() && request.query.where.supplierId == request.auth.uid)
-                      || isAdmin();
+
+    // -------------------------
+    // REDEEMED BENEFITS
+    // -------------------------
+    match /redeemed_benefits/{redeemId} {
+      // User canjea
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.supplierId != null
+        && request.resource.data.benefitId != null;
+
+      // LECTURA: El usuario ve sus canjes Y el proveedor ve los canjes de sus beneficios.
+      allow get, list: if 
+        (isOwner(resource.data.userId)) || 
+        (isSupplier() && resource.data.supplierId == request.auth.uid) ||
+        isAdmin();
+
+      // UPDATE (marcar como usado): Solo el proveedor del beneficio.
+      allow update: if isSupplier() && resource.data.supplierId == request.auth.uid;
+      
+      // No se pueden borrar canjes.
+      allow delete: if false;
     }
 
-    match /roles_admin/{userId} {
+    // -------------------------
+    // ROLES & SUPPLIER DATA
+    // -------------------------
+    match /roles_admin/{uid} {
       allow read, write: if isAdmin();
     }
-    match /roles_supplier/{userId} {
-       allow read: if true;
-       allow write: if isAdmin();
-    }
 
-    match /roles_supplier/{userId}/{document=**} {
+    match /roles_supplier/{uid} {
       allow read: if true;
-      allow write: if request.auth.uid == userId || isAdmin();
-    }
-    
-    match /notifications/{notificationId} {
-      allow read: if true;
-      allow write: if false;
+      allow write: if isAdmin(); // Solo admin puede crear/modificar proveedores
+      
+      match /services/{serviceId} {
+        allow read: if true;
+        allow write: if isOwner(uid) || isAdmin();
+      }
+      
+      match /availability/schedule {
+         allow read: if true;
+         allow write: if isOwner(uid) || isAdmin();
+      }
+      
+      match /appointments/{appointmentId} {
+        // El proveedor puede leer sus propios turnos
+        // El usuario puede crear turnos (se debe validar en la app)
+        allow read, write: if isOwner(uid) || isSignedIn();
+      }
     }
   }
 }
