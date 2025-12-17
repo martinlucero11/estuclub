@@ -116,10 +116,15 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         return;
       }
       
-      const userRedeemedBenefitsRef = collection(firestore, `users/${user.uid}/redeemed_benefits`);
+      // Use the root collection now
+      const redeemedBenefitsRef = collection(firestore, 'redeemed_benefits');
       
       if (perk.redemptionLimit && perk.redemptionLimit > 0) {
-        const q = query(userRedeemedBenefitsRef, where("benefitId", "==", perk.id));
+        const q = query(
+          redeemedBenefitsRef, 
+          where("benefitId", "==", perk.id),
+          where("userId", "==", user.uid)
+        );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.size >= perk.redemptionLimit) {
           setError(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
@@ -128,12 +133,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         }
       }
 
-      const userRedemptionRef = doc(collection(firestore, `users/${user.uid}/redeemed_benefits`));
+      const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
       const benefitRef = doc(firestore, 'benefits', perk.id);
 
       const redemptionData = {
-        id: userRedemptionRef.id,
+        id: newRedemptionRef.id,
         userId: user.uid,
+        ownerId: perk.ownerId, // IMPORTANT: Save the supplier's ID
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         benefitId: perk.id,
@@ -144,7 +150,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       };
       
       const batch = writeBatch(firestore);
-      batch.set(userRedemptionRef, redemptionData);
+      batch.set(newRedemptionRef, redemptionData);
 
       if (perk.points && perk.points > 0) {
         batch.update(userProfileRef, {
@@ -152,12 +158,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         });
       }
       
-      // Increment redemption count on the benefit itself
       batch.update(benefitRef, { redemptionCount: increment(1) });
 
       await batch.commit(); 
 
-      setRedemptionId(userRedemptionRef.id);
+      setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
         description: `Muestra el código QR al proveedor para validarlo.`,

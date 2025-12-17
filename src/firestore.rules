@@ -38,33 +38,38 @@ service cloud.firestore {
       allow create: if isSignedIn();
       allow read: if isSignedIn();
       allow update, delete: if isOwner(userId) || isAdmin();
-
-      // Subcolección de canjes
-      match /redeemed_benefits/{redemptionId} {
-        allow read, write: if isOwner(userId) || isAdmin() || isSupplier(null);
-      }
     }
     
     // -------------------------
     // USERNAMES
     // -------------------------
     match /usernames/{username} {
-      // Anyone can read to check for uniqueness
       allow read: if true;
-      // Only the owner can create their username
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Only the owner or an admin can delete it
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
     // -------------------------
     // BENEFITS
     // -------------------------
-     match /benefits/{benefitId} {
+    match /benefits/{benefitId} {
       allow read: if isSignedIn();
       allow create: if isAdmin() || isSupplier(null);
       allow update: if isAdmin() || (isSupplier(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
       allow delete: if isAdmin() || (isSupplier(resource.data.ownerId) && request.auth.uid == resource.data.ownerId);
+    }
+    
+    // -------------------------
+    // REDEEMED BENEFITS (Root Collection)
+    // -------------------------
+    match /redeemed_benefits/{redemptionId} {
+      // A user can create their own redemption record.
+      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
+      // A user can read their own redemptions.
+      // A supplier can read redemptions of their own benefits.
+      allow read: if isOwner(resource.data.userId) || isSupplier(resource.data.ownerId) || isAdmin();
+      // Allow update for status changes by supplier/admin.
+      allow update: if isSupplier(resource.data.ownerId) || isAdmin();
     }
 
 
@@ -73,8 +78,6 @@ service cloud.firestore {
     // -------------------------
     match /announcements/{announcementId} {
       allow read: if true;
-      // An announcement can be created by any authenticated user.
-      // It can be updated or deleted only by its original author or an admin.
       allow create: if isSignedIn();
       allow update, delete: if isOwner(resource.data.authorId) || isAdmin();
     }
@@ -88,34 +91,21 @@ service cloud.firestore {
     }
 
     match /roles_supplier/{supplierId} {
-      // Anyone can read a supplier's public profile data.
       allow read: if true;
-      // Only admins can create or delete supplier roles.
       allow create, delete: if isAdmin();
-      // Admins can update any field. Suppliers can only update their own profile.
       allow update: if isAdmin() || isOwner(supplierId);
 
       // Subcollections for suppliers
       match /services/{serviceId} {
-        // Anyone can read the services offered by a supplier.
         allow read: if true;
-        // Only the supplier themselves can create, update, or delete their services.
         allow write: if isOwner(supplierId);
       }
       match /availability/{doc} {
-        // A supplier can read and write their own availability.
         allow read, write: if isOwner(supplierId);
       }
       match /appointments/{appointmentId} {
-         // The user who made the appointment can read it.
-        allow read: if isOwner(resource.data.userId);
-        // The supplier can read all their appointments.
-        allow get: if isOwner(supplierId);
-        allow list: if isOwner(supplierId);
-         // A user can create an appointment for themselves.
+        allow read: if isOwner(resource.data.userId) || isOwner(supplierId);
         allow create: if isOwner(request.resource.data.userId);
-        // A user can cancel (update) their own appointment.
-        // A supplier can also update the status of an appointment.
         allow update: if isOwner(resource.data.userId) || isOwner(supplierId);
       }
     }

@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +18,7 @@ interface RedeemedBenefit {
     points: number;
     status: 'valid' | 'used';
     userId: string;
+    ownerId?: string; // Add ownerId
 }
 
 function RedeemedListSkeleton() {
@@ -46,7 +47,8 @@ function RedeemedList() {
 
     const redeemedQuery = useMemoFirebase(
         () => user ? query(
-            collection(firestore, 'users', user.uid, 'redeemed_benefits'),
+            collection(firestore, 'redeemed_benefits'), // Query the root collection
+            where('userId', '==', user.uid), // Filter by the current user's ID
             orderBy('redeemedAt', 'desc')
         ) : null,
         [user, firestore]

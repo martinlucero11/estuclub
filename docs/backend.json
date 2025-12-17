@@ -377,6 +377,10 @@
           "type": "string",
           "description": "The ID of the user who redeemed the benefit. (Relationship: UserProfile 1:N RedeemedBenefit)"
         },
+         "ownerId": {
+          "type": "string",
+          "description": "The ID of the supplier who owns the benefit."
+        },
         "benefitId": {
           "type": "string",
           "description": "The ID of the redeemed benefit. (Relationship: Benefit 1:N RedeemedBenefit)"
@@ -410,6 +414,7 @@
       "required": [
         "id",
         "userId",
+        "ownerId",
         "benefitId",
         "redeemedAt",
         "status",
@@ -466,6 +471,22 @@
         "fields": [
           { "fieldPath": "category", "order": "ASCENDING" },
           { "fieldPath": "createdAt", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "redeemed_benefits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "userId", "order": "ASCENDING" },
+          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "redeemed_benefits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "ownerId", "order": "ASCENDING" },
+          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
         ]
       },
        {
@@ -558,18 +579,14 @@
         }
       },
       {
-        "path": "/users/{userId}/redeemed_benefits/{redemptionId}",
+        "path": "/redeemed_benefits/{redemptionId}",
         "definition": {
           "entityName": "RedeemedBenefit",
           "schema": {
             "$ref": "#/backend/entities/RedeemedBenefit"
           },
-          "description": "Stores a record of each benefit redemption for a specific user.",
+          "description": "Stores a record of each benefit redemption. This is a root collection for efficient querying by both users and suppliers.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
             {
               "name": "redemptionId",
               "description": "The unique identifier for the redemption event."
