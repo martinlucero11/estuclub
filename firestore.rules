@@ -49,9 +49,6 @@ service cloud.firestore {
       // USER: lista solo sus canjes
       allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
 
-      // SUPPLIER: lista solo canjes de sus beneficios
-      allow list: if isSignedIn() && request.query.where("supplierId", "==", request.auth.uid);
-
       allow get: if isSignedIn()
         && (
           request.auth.uid == resource.data.userId

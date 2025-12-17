@@ -3,7 +3,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List, ConciergeBell, User, CalendarClock, BookUser, BarChart3, Users } from 'lucide-react';
+import { ShieldAlert, User, CalendarClock, BookUser, ConciergeBell } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,7 +12,6 @@ import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import { useUser } from '@/firebase';
-import RedeemedByUsersList from '@/components/supplier/redeemed-by-users-list';
 
 function SupplierAccessDenied() {
     return (
@@ -95,8 +94,8 @@ export default function SupplierPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="redeemed-by-users" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 h-auto flex-wrap">
+        <Tabs defaultValue="profile" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-4 h-auto flex-wrap">
              <TabsTrigger value="profile">
                 <User className="mr-2 h-4 w-4" />
                 Mi Perfil
@@ -112,10 +111,6 @@ export default function SupplierPage() {
              <TabsTrigger value="add-service">
                 <ConciergeBell className="mr-2 h-4 w-4" />
                 Añadir Servicio
-            </TabsTrigger>
-            <TabsTrigger value="redeemed-by-users">
-              <Users className="mr-2 h-4 w-4" />
-              Canjes de Clientes
             </TabsTrigger>
           </TabsList>
 
@@ -167,17 +162,6 @@ export default function SupplierPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="redeemed-by-users">
-            <Card>
-              <CardHeader>
-                <CardTitle>Canjes de Clientes</CardTitle>
-                <CardDescription>Aquí puedes ver qué usuarios han canjeado tus beneficios.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <RedeemedByUsersList />
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </div>
     </MainLayout>
