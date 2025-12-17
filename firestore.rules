@@ -45,11 +45,8 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      // Lectura pública para todos
       allow read: if true;
-
-      // Solo admin y el proveedor dueño pueden escribir
-      allow create, update, delete: if isAdmin() || (isSupplier() && request.auth.uid == request.resource.data.ownerId);
+      allow create, update, delete: if isAdmin();
     }
     
      // -------------------------
@@ -65,22 +62,18 @@ service cloud.firestore {
     // REDEEMED BENEFITS
     // -------------------------
     match /redeemed_benefits/{redeemId} {
-      // User canjea
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.supplierId != null
         && request.resource.data.benefitId != null;
 
-      // LECTURA: El usuario ve sus canjes Y el proveedor ve los canjes de sus beneficios.
       allow get, list: if 
         (isOwner(resource.data.userId)) || 
         (isSupplier() && resource.data.supplierId == request.auth.uid) ||
         isAdmin();
 
-      // UPDATE (marcar como usado): Solo el proveedor del beneficio.
       allow update: if isSupplier() && resource.data.supplierId == request.auth.uid;
       
-      // No se pueden borrar canjes.
       allow delete: if false;
     }
 
@@ -93,7 +86,7 @@ service cloud.firestore {
 
     match /roles_supplier/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow write: if isAdmin(); // Solo admin puede crear/modificar proveedores
+      allow write: if isAdmin();
       
       match /services/{serviceId} {
         allow read: if true;
@@ -106,8 +99,6 @@ service cloud.firestore {
       }
       
       match /appointments/{appointmentId} {
-        // El proveedor puede leer sus propios turnos
-        // El usuario puede crear turnos (se debe validar en la app)
         allow read, write: if isOwner(uid) || isSignedIn();
       }
     }
