@@ -51,8 +51,7 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      allow get: if true;
-      allow read: if request.query.keys.hasAny(['category']);
+      allow read: if true;
       
       allow create: if isAdmin() || isSupplierSelf();
 
@@ -137,5 +136,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
