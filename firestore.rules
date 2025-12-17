@@ -34,28 +34,25 @@ service cloud.firestore {
 
     match /benefits/{benefitId} {
       allow read: if true;
-      // Any signed in user can update the redemption count. Admins can create/delete.
       allow update: if isSignedIn(); 
       allow create, delete: if isAdmin();
     }
     
     match /announcements/{announcementId} {
         allow read: if true;
-        allow create, update, delete: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
+        allow create: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
+        allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
     match /redeemed_benefits/{id} {
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow create: if isSignedIn()
+        && request.auth.uid == request.resource.data.userId;
 
-      // USER can list their own redemptions.
-      // SUPPLIER can list redemptions for their benefits.
-      // GET is allowed if the user is the owner or the supplier.
-      allow get, list: if isSignedIn() && (
-          (request.query.where.size() > 0 && request.query.where.get("userId")[2] == request.auth.uid) ||
-          (request.query.where.size() > 0 && request.query.where.get("supplierId")[2] == request.auth.uid) ||
-          (resource.data.userId == request.auth.uid) ||
-          (resource.data.supplierId == request.auth.uid)
-      );
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || resource.data.supplierId == request.auth.uid
+        );
 
       allow update: if isSignedIn()
         && request.auth.uid == resource.data.supplierId;
