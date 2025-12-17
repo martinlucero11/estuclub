@@ -5,11 +5,12 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List, ConciergeBell } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List, ConciergeBell, User } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddServiceForm from '@/components/supplier/add-service-form';
+import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 
 function SupplierAccessDenied() {
     return (
@@ -92,7 +93,11 @@ export default function SupplierPage() {
         </header>
 
         <Tabs defaultValue="add-benefit" className="space-y-4">
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto flex-wrap">
+             <TabsTrigger value="profile">
+                <User className="mr-2 h-4 w-4" />
+                Mi Perfil
+            </TabsTrigger>
              <TabsTrigger value="add-benefit">
               <PlusCircle className="mr-2 h-4 w-4" />
               Añadir Beneficio
@@ -106,6 +111,18 @@ export default function SupplierPage() {
               Añadir Anuncio
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Editar Perfil de Proveedor</CardTitle>
+                <CardDescription>Modifica tu información pública que ven los estudiantes.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EditSupplierProfileForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
           
            <TabsContent value="add-benefit">
             <Card>
