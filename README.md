@@ -1,4 +1,4 @@
-git pull
+ git pull
 firebase deploy# Firebase Studio
 
 This is a NextJS starter in Firebase Studio.
