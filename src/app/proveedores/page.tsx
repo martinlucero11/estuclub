@@ -34,7 +34,7 @@ function SuppliersPageSkeleton() {
             {[...Array(6)].map((_, i) => (
                 <Card key={i} className="flex flex-col">
                     <CardContent className="p-4 flex items-center gap-4">
-                         <Skeleton className="h-16 w-16 rounded-lg" />
+                         <Skeleton className="h-20 w-20 rounded-full" />
                         <div className="space-y-2 flex-1">
                             <Skeleton className="h-5 w-3/4" />
                             <Skeleton className="h-4 w-1/2" />
@@ -80,22 +80,22 @@ function SupplierListPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {suppliers.map(supplier => {
                 const TypeIcon = typeIcons[supplier.type] || User;
+                const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                 return (
-                    <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="w-full">
-                        <Card className="flex flex-col h-full hover:shadow-md transition-shadow">
-                            <CardContent className="p-4 flex items-center gap-4">
-                                 <Avatar className="h-16 w-16 rounded-lg">
-                                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
-                                    <AvatarFallback className="rounded-lg">
-                                        <TypeIcon className="h-8 w-8 text-muted-foreground" />
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                    <h3 className="font-semibold text-lg line-clamp-1">{supplier.name}</h3>
-                                    <p className="text-sm text-muted-foreground capitalize">{supplier.type}</p>
-                                </div>
-                            </CardContent>
+                    <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full">
+                        <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                            <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
+                                <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
+                                <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
+                                    {supplierInitials}
+                                </AvatarFallback>
+                            </Avatar>
+                            <h3 className="mt-4 font-bold text-lg text-foreground">{supplier.name}</h3>
+                            <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                                <TypeIcon className="h-4 w-4" />
+                                <p className="capitalize">{supplier.type}</p>
+                            </div>
                         </Card>
                     </Link>
                 );
