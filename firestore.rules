@@ -61,7 +61,8 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
      match /benefits/{benefitId} {
-      allow get, list: if true;
+      allow get: if true;
+      allow list: if isSignedIn();
       allow create: if isAdmin() || isSupplier(null);
       allow update: if isAdmin() || (isSupplier(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
       allow delete: if isAdmin() || (isSupplier(resource.data.ownerId) && request.auth.uid == resource.data.ownerId);
