@@ -18,18 +18,16 @@ service cloud.firestore {
       return isSignedIn() &&
         exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
-
-    function isSupplier(userId) {
-      // If userId is provided, check if the requesting user is that specific supplier.
-      // Otherwise, check if the requesting user has the supplier role in general.
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/roles_supplier/$(userId_or_auth_uid(userId)));
-    }
-
-    function userId_or_auth_uid(userId) {
-      return userId != null ? userId : request.auth.uid;
-    }
     
+    function isSupplierSelf() {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    function isSupplierOf(userId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(userId));
+    }
 
     // -------------------------
     // USERS
@@ -53,26 +51,35 @@ service cloud.firestore {
     // BENEFITS
     // -------------------------
     match /benefits/{benefitId} {
-      allow list, get: if true; // Temporarily allow public read to diagnose auth issue
-      allow create: if isAdmin() || isSupplier(null);
-      allow update: if isAdmin() || (isSupplier(resource.data.ownerId) && request.resource.data.ownerId == resource.data.ownerId);
-      allow delete: if isAdmin() || (isSupplier(resource.data.ownerId) && request.auth.uid == resource.data.ownerId);
+      allow get: if true;
+      allow list: if isSignedIn();
+
+      allow create: if isAdmin() || isSupplierSelf();
+
+      allow update: if isAdmin()
+        || (isSupplierOf(resource.data.ownerId)
+            && request.auth.uid == resource.data.ownerId
+            && request.resource.data.ownerId == resource.data.ownerId);
+
+      allow delete: if isAdmin()
+        || (isSupplierOf(resource.data.ownerId)
+            && request.auth.uid == resource.data.ownerId);
     }
     
     // -------------------------
     // REDEEMED BENEFITS (Root Collection)
     // -------------------------
     match /redeemed_benefits/{redemptionId} {
-      // A user can create their own redemption record.
-      allow create: if isSignedIn() && isOwner(request.resource.data.userId);
-      // A user can read their own redemptions.
-      // A supplier can read redemptions of their own benefits.
-      // An admin can read any redemption.
-      allow read: if isOwner(resource.data.userId) || isSupplier(resource.data.ownerId) || isAdmin();
-      // Allow update for status changes by supplier/admin.
-      allow update: if isSupplier(resource.data.ownerId) || isAdmin();
-    }
+      allow create: if isSignedIn()
+        && request.auth.uid == request.resource.data.userId
+        && exists(/databases/$(database)/documents/benefits/$(request.resource.data.benefitId));
 
+      allow read: if isOwner(resource.data.userId)
+        || isSupplierOf(resource.data.ownerId)
+        || isAdmin();
+
+      allow update: if isSupplierOf(resource.data.ownerId) || isAdmin();
+    }
 
     // -------------------------
     // ANNOUNCEMENTS
@@ -116,8 +123,8 @@ service cloud.firestore {
     // NOTIFICATIONS
     // -------------------------
     match /notifications/{notificationId} {
-        allow read: if true;
-        allow create: if isAdmin() || isSupplier(null);
+      allow read: if isSignedIn();
+      allow create: if isAdmin() || isSupplierSelf();
     }
   }
 }
