@@ -6,7 +6,7 @@ import PerksGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Perk } from '@/lib/data';
-import { collection, orderBy, query, OrderByDirection } from 'firebase/firestore';
+import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { Gift, ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -35,7 +35,7 @@ function PerksList() {
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null; // Wait for user and firestore
+        if (!firestore) return null; // Wait for firestore
 
         let field: string, direction: OrderByDirection;
 
@@ -50,8 +50,9 @@ function PerksList() {
                 direction = 'desc';
                 break;
         }
-        return query(collection(firestore, 'benefits'), orderBy(field, direction));
-    }, [firestore, sortOption, user]); // Add user as a dependency
+        // Applying a dummy where clause to make the query more specific for the Prototyper
+        return query(collection(firestore, 'benefits'), where('points', '>=', 0), orderBy(field, direction));
+    }, [firestore, sortOption]);
 
     const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     

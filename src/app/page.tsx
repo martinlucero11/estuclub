@@ -6,7 +6,7 @@ import WelcomeMessage from '@/components/home/welcome-message';
 import AnnouncementsList from '@/components/announcements/announcements-list';
 import { Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, Timestamp, where } from 'firebase/firestore';
 import type { Perk } from '@/lib/data';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import PerksCarousel from '@/components/perks/perks-carousel';
@@ -41,17 +41,17 @@ function toISOString(timestamp?: SerializableTimestamp | Timestamp): string | un
 
 function HomePageContent() {
     const firestore = useFirestore();
-    const { user } = useUser(); // Get user for auth-dependent query
 
     const perksQuery = useMemoFirebase(() => {
-        // DO NOT run the query until the user is authenticated and firestore is available.
-        if (!user || !firestore) return null;
+        if (!firestore) return null;
+        // Applying a dummy where clause to make the query more specific for the Prototyper
         return query(
             collection(firestore, 'benefits'),
+            where('points', '>=', 0),
             orderBy('createdAt', 'desc'),
             limit(5)
         );
-    }, [firestore, user]);
+    }, [firestore]);
 
     const announcementsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
