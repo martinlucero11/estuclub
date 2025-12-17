@@ -9,11 +9,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Church, Scale, ShoppingBasket, User, Ticket, ConciergeBell } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk } from '@/lib/data';
 import ServiceList from '@/components/supplier/service-list';
 import type { Service } from '@/lib/data';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 interface SupplierProfile {
@@ -46,24 +46,18 @@ function ProfileSkeleton() {
                     <Skeleton className="h-12 w-full" />
                 </div>
             </div>
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-6 w-40" />
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {[...Array(3)].map((_, i) => (
-                            <div key={i} className="space-y-4">
-                                <Skeleton className="h-48 w-full" />
-                                <div className="space-y-2">
-                                    <Skeleton className="h-6 w-3/4" />
-                                    <Skeleton className="h-4 w-1/2" />
-                                </div>
-                            </div>
-                        ))}
+            <Skeleton className="h-10 w-full" />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="space-y-4">
+                        <Skeleton className="h-48 w-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
+                ))}
+            </div>
         </div>
     )
 }
@@ -158,40 +152,35 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                 </div>
             </header>
 
-            <div className="space-y-6">
-                 {supplier.allowsBooking && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <ConciergeBell />
-                                Servicios Disponibles
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {servicesLoading ? (
-                                <div className="space-y-4">
-                                    <Skeleton className="h-16 w-full" />
-                                    <Skeleton className="h-16 w-full" />
-                                </div>
-                            ) : (
-                                <ServiceList services={services || []} />
-                            )}
-                        </CardContent>
-                    </Card>
+             <Tabs defaultValue="benefits" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="benefits">
+                        <Ticket className="mr-2 h-4 w-4" />
+                        Beneficios
+                    </TabsTrigger>
+                     {supplier.allowsBooking && (
+                        <TabsTrigger value="services">
+                            <ConciergeBell className="mr-2 h-4 w-4" />
+                            Servicios
+                        </TabsTrigger>
+                    )}
+                </TabsList>
+                <TabsContent value="benefits" className="mt-6">
+                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
+                </TabsContent>
+                {supplier.allowsBooking && (
+                    <TabsContent value="services" className="mt-6">
+                        {servicesLoading ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-16 w-full" />
+                                <Skeleton className="h-16 w-full" />
+                            </div>
+                        ) : (
+                            <ServiceList services={services || []} />
+                        )}
+                    </TabsContent>
                 )}
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Ticket />
-                            Beneficios Ofrecidos
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                         {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
-                    </CardContent>
-                </Card>
-            </div>
+            </Tabs>
         </div>
     );
 }
