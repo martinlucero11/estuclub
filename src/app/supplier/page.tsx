@@ -5,12 +5,11 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, ShieldAlert, List } from 'lucide-react';
+import { PlusCircle, ShieldAlert, List, ConciergeBell } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
-import BenefitAdminList from '@/components/admin/benefit-admin-list';
-import { useUser } from '@/firebase';
+import AddServiceForm from '@/components/supplier/add-service-form';
 
 function SupplierAccessDenied() {
     return (
@@ -61,7 +60,6 @@ function SupplierLoadingSkeleton() {
 
 export default function SupplierPage() {
     const { isSupplier, isLoading } = useSupplier();
-    const { user } = useUser();
     
     if (isLoading) {
         return (
@@ -89,7 +87,7 @@ export default function SupplierPage() {
             Panel de Proveedor
           </h1>
           <p className="text-muted-foreground">
-            Publica y gestiona beneficios y anuncios para la comunidad estudiantil.
+            Publica y gestiona beneficios, servicios y anuncios para la comunidad estudiantil.
           </p>
         </header>
 
@@ -98,6 +96,10 @@ export default function SupplierPage() {
              <TabsTrigger value="add-benefit">
               <PlusCircle className="mr-2 h-4 w-4" />
               Añadir Beneficio
+            </TabsTrigger>
+             <TabsTrigger value="add-service">
+                <ConciergeBell className="mr-2 h-4 w-4" />
+                Añadir Servicio
             </TabsTrigger>
             <TabsTrigger value="add-announcement">
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -113,6 +115,18 @@ export default function SupplierPage() {
               </CardHeader>
               <CardContent>
                 <AddPerkForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="add-service">
+            <Card>
+              <CardHeader>
+                <CardTitle>Añadir Nuevo Servicio</CardTitle>
+                <CardDescription>Crea un servicio que los estudiantes puedan reservar (ej: consulta, clase, etc.).</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AddServiceForm />
               </CardContent>
             </Card>
           </TabsContent>

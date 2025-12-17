@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Gift, Megaphone, QrCode } from 'lucide-react';
+import { Home, Gift, Megaphone, QrCode, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { useUser } from '@/firebase';
@@ -16,6 +16,7 @@ export default function BottomNav() {
 
   const navItems = [
     { href: '/benefits', label: 'Beneficios', icon: Gift },
+    { href: '/proveedores', label: 'Proveedores', icon: Store },
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/announcements', label: 'Anuncios', icon: Megaphone },
   ];
@@ -36,14 +37,14 @@ export default function BottomNav() {
         </div>
       )}
       <nav className="fixed bottom-0 z-40 w-full border-t bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-around px-4">
+        <div className="container mx-auto grid grid-cols-4 h-16 items-center justify-around px-4">
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cn(
-                'flex w-20 flex-col items-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
-                pathname === href && 'text-primary'
+                'flex flex-col items-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
+                (pathname === href || (href === '/proveedores' && pathname.startsWith('/proveedores'))) && 'text-primary'
               )}
             >
               <Icon className="h-6 w-6" />

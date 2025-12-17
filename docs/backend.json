@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Username": {
@@ -100,9 +99,56 @@
                 "type": "string",
                 "enum": ["Institucion", "Club", "Iglesia", "Comercio", "Estado"],
                 "description": "The type of the supplier."
+            },
+            "description": {
+                "type": "string",
+                "description": "A public description of the supplier."
+            },
+            "logoUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL for the supplier's logo."
+            },
+            "slug": {
+                "type": "string",
+                "description": "A URL-friendly version of the supplier's name."
+            },
+            "allowsBooking": {
+                "type": "boolean",
+                "description": "If true, users can book appointments with this supplier. Controlled by admin."
             }
         },
-        "required": ["name", "type"]
+        "required": ["name", "type", "slug"]
+    },
+    "Service": {
+      "title": "Service",
+      "type": "object",
+      "description": "Represents a bookable service offered by a supplier.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "description": "Name of the service." },
+        "description": { "type": "string", "description": "Description of the service." },
+        "duration": { "type": "number", "description": "Duration of the service in minutes." }
+      },
+      "required": ["name", "description", "duration"]
+    },
+    "Appointment": {
+        "title": "Appointment",
+        "type": "object",
+        "description": "Represents a booking made by a user with a supplier.",
+        "properties": {
+            "id": { "type": "string" },
+            "userId": { "type": "string", "description": "ID of the user who booked." },
+            "userName": { "type": "string" },
+            "userDni": { "type": "string" },
+            "userPhone": { "type": "string" },
+            "serviceId": { "type": "string", "description": "ID of the booked service." },
+            "serviceName": { "type": "string" },
+            "startTime": { "type": "string", "format": "date-time" },
+            "endTime": { "type": "string", "format": "date-time" },
+            "status": { "type": "string", "enum": ["confirmed", "cancelled"] }
+        },
+        "required": ["userId", "userName", "userDni", "userPhone", "serviceId", "serviceName", "startTime", "endTime", "status"]
     },
     "Benefit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -385,6 +431,13 @@
           { "fieldPath": "category", "order": "ASCENDING" },
           { "fieldPath": "createdAt", "order": "DESCENDING" }
         ]
+      },
+       {
+        "collectionGroup": "roles_supplier",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "slug", "order": "ASCENDING" }
+        ]
       }
     ],
     "structure": [
@@ -519,6 +572,30 @@
         }
       },
       {
+        "path": "/roles_supplier/{userId}/services/{serviceId}",
+        "definition": {
+          "entityName": "Service",
+          "schema": { "$ref": "#/backend/entities/Service" },
+          "description": "Stores the services offered by a supplier.",
+          "params": [
+            { "name": "userId", "description": "The supplier's user ID." },
+            { "name": "serviceId", "description": "The unique identifier for the service." }
+          ]
+        }
+      },
+       {
+        "path": "/roles_supplier/{userId}/appointments/{appointmentId}",
+        "definition": {
+          "entityName": "Appointment",
+          "schema": { "$ref": "#/backend/entities/Appointment" },
+          "description": "Stores appointments booked with a supplier.",
+          "params": [
+            { "name": "userId", "description": "The supplier's user ID." },
+            { "name": "appointmentId", "description": "The unique identifier for the appointment." }
+          ]
+        }
+      },
+      {
         "path": "/notifications/{notificationId}",
         "definition": {
           "entityName": "Notification",
@@ -535,6 +612,3 @@
     ]
   }
 }
-
-    
-    

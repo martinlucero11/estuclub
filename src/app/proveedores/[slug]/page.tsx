@@ -1,0 +1,189 @@
+
+'use client';
+
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import MainLayout from '@/components/layout/main-layout';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Building, Briefcase, Church, Scale, ShoppingBasket, User, Search, Ticket, ConciergeBell } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import PerksGrid from '@/components/perks/perks-grid';
+import { Perk } from '@/lib/data';
+
+interface SupplierProfile {
+    id: string;
+    name: string;
+    type: 'Institucion' | 'Club' | 'Iglesia' | 'Comercio' | 'Estado';
+    slug: string;
+    logoUrl?: string;
+    description?: string;
+    allowsBooking?: boolean;
+}
+
+const typeIcons = {
+    Institucion: Building,
+    Club: Briefcase,
+    Iglesia: Church,
+    Comercio: ShoppingBasket,
+    Estado: Scale,
+};
+
+
+function ProfileSkeleton() {
+    return (
+        <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+                <Skeleton className="h-32 w-32 rounded-full" />
+                <div className="space-y-3">
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-12 w-full" />
+                </div>
+            </div>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-6 w-40" />
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="space-y-4">
+                                <Skeleton className="h-48 w-full" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+}
+
+export default function SupplierProfilePage({ params }: { params: { slug: string } }) {
+    const firestore = useFirestore();
+    const [supplier, setSupplier] = useState<SupplierProfile | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    // Fetch supplier data
+    useEffect(() => {
+        const fetchSupplier = async () => {
+            if (!params.slug) return;
+            setIsLoading(true);
+            try {
+                const q = query(collection(firestore, 'roles_supplier'), where('slug', '==', params.slug), limit(1));
+                const querySnapshot = await getDocs(q);
+                if (querySnapshot.empty) {
+                    setError('No se encontró el proveedor.');
+                } else {
+                    const supplierDoc = querySnapshot.docs[0];
+                    setSupplier({ id: supplierDoc.id, ...supplierDoc.data() } as SupplierProfile);
+                }
+            } catch (err) {
+                console.error(err);
+                setError('Error al cargar el proveedor.');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchSupplier();
+    }, [firestore, params.slug]);
+
+    // Fetch benefits for this supplier
+    const benefitsQuery = useMemoFirebase(() => {
+        if (!supplier) return null;
+        return query(collection(firestore, 'benefits'), where('ownerId', '==', supplier.id));
+    }, [supplier]);
+    
+    const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
+    
+    if (isLoading) {
+        return <MainLayout><ProfileSkeleton /></MainLayout>;
+    }
+    
+    if (error) {
+         return (
+            <MainLayout>
+                <div className="flex items-center justify-center pt-16">
+                     <Alert variant="destructive" className="max-w-lg">
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                </div>
+            </MainLayout>
+        );
+    }
+    
+    if (!supplier) {
+        return (
+             <MainLayout>
+                <div className="flex items-center justify-center pt-16">
+                     <Alert variant="destructive" className="max-w-lg">
+                        <AlertTitle>Proveedor no encontrado</AlertTitle>
+                        <AlertDescription>No se pudo encontrar un proveedor con la URL especificada.</AlertDescription>
+                    </Alert>
+                </div>
+            </MainLayout>
+        )
+    }
+
+    const TypeIcon = typeIcons[supplier.type] || User;
+
+    return (
+        <MainLayout>
+            <div className="space-y-8 p-4 md:p-8">
+                <header className="flex flex-col sm:flex-row items-center gap-6">
+                    <Avatar className="h-32 w-32 rounded-full border-4 border-primary">
+                        <AvatarImage src={supplier.logoUrl} alt={supplier.name} />
+                        <AvatarFallback className="text-5xl">
+                           {supplier.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="text-center sm:text-left">
+                        <div className="flex items-center gap-3 justify-center sm:justify-start">
+                             <TypeIcon className="h-6 w-6 text-muted-foreground" />
+                            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
+                                {supplier.name}
+                            </h1>
+                        </div>
+                        <p className="mt-2 text-muted-foreground max-w-xl">{supplier.description || 'Este proveedor aún no ha añadido una descripción.'}</p>
+                    </div>
+                </header>
+
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Ticket />
+                                Beneficios Ofrecidos
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
+                        </CardContent>
+                    </Card>
+
+                    {supplier.allowsBooking && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <ConciergeBell />
+                                    Servicios y Turnos
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-muted-foreground">La reserva de turnos estará disponible próximamente.</p>
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
+            </div>
+        </MainLayout>
+    );
+}

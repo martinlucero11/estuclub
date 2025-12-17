@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -19,12 +21,27 @@ import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { UserPlus, Briefcase, Building, Church, ShoppingBasket, Scale } from 'lucide-react';
+import { Textarea } from '../ui/textarea';
 
 const formSchema = z.object({
   email: z.string().email('El correo electrónico no es válido.'),
   name: z.string().min(2, 'El nombre del proveedor debe tener al menos 2 caracteres.'),
   type: z.enum(['Institucion', 'Club', 'Iglesia', 'Comercio', 'Estado']),
+  description: z.string().optional(),
+  logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
 });
+
+function slugify(text: string) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+    .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+}
+
 
 export default function AddSupplierForm() {
   const { toast } = useToast();
@@ -37,6 +54,8 @@ export default function AddSupplierForm() {
       email: '',
       name: '',
       type: 'Comercio',
+      description: '',
+      logoUrl: '',
     },
   });
 
@@ -60,6 +79,7 @@ export default function AddSupplierForm() {
 
       const userDoc = querySnapshot.docs[0];
       const userId = userDoc.id;
+      const slug = slugify(values.name);
 
       // 2. Add the user to the roles_supplier collection with data
       const supplierRoleRef = doc(firestore, 'roles_supplier', userId);
@@ -68,6 +88,10 @@ export default function AddSupplierForm() {
         type: values.type,
         email: values.email, // Add email for easier lookup in admin panels
         userId: userId, // Add userId for reference
+        slug: slug,
+        description: values.description || '',
+        logoUrl: values.logoUrl || '',
+        allowsBooking: false, // Default to false
       });
 
       toast({
@@ -99,6 +123,7 @@ export default function AddSupplierForm() {
               <FormControl>
                 <Input placeholder="usuario@email.com" {...field} />
               </FormControl>
+               <FormDescription>El correo del usuario al que se le asignará el rol.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -108,7 +133,7 @@ export default function AddSupplierForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre del Proveedor</FormLabel>
+              <FormLabel>Nombre Público del Proveedor</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Café Martínez" {...field} />
               </FormControl>
@@ -136,6 +161,32 @@ export default function AddSupplierForm() {
                   <SelectItem value="Estado"><Scale className="mr-2 h-4 w-4" />Estado</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Describe brevemente al proveedor..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="logoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL del Logo</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
