@@ -119,9 +119,6 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const storage = useStorage();
     const { toast } = useToast();
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
     const { data: userProfile, isLoading: isProfileLoading, error } = useDoc<UserProfile>(userProfileRef);
@@ -145,11 +142,8 @@ export default function ProfilePage() {
                 lastName: userProfile.lastName,
                 username: userProfile.username,
             });
-            // Use photoURL from Firestore first, then fallback to Auth user
-            const photo = userProfile.photoURL || user?.photoURL;
-            setPreviewUrl(photo || null);
         }
-    }, [userProfile, user, form]);
+    }, [userProfile, form]);
 
     async function onSubmit(values: z.infer<typeof profileFormSchema>) {
         if (!user || !userProfileRef || !userProfile) {
@@ -185,40 +179,19 @@ export default function ProfilePage() {
                 batch.set(newUsernameRef, { userId: user.uid });
             }
 
-            // --- 2. Photo Upload ---
-            if (selectedFile) {
-                const oldPhotoURL = userProfile.photoURL;
-                // Delete old photo if it exists and is a Firebase Storage URL
-                if (oldPhotoURL && oldPhotoURL.includes('firebasestorage.googleapis.com')) {
-                    try {
-                        const oldImageRef = ref(storage, oldPhotoURL);
-                        await deleteObject(oldImageRef);
-                    } catch (e: any) {
-                        if (e.code !== 'storage/object-not-found') {
-                            console.warn("Could not delete old profile picture:", e);
-                        }
-                    }
-                }
-                // Upload new photo
-                const newPhotoRef = ref(storage, `profile_pictures/${user.uid}/${selectedFile.name}`);
-                await uploadBytes(newPhotoRef, selectedFile);
-                updates.photoURL = await getDownloadURL(newPhotoRef);
-            }
 
-            // --- 3. Batch Write and Auth Profile Update ---
+            // --- 2. Batch Write and Auth Profile Update ---
             batch.update(userProfileRef, updates);
             await batch.commit();
 
             await updateProfile(user, {
                 displayName: `${values.firstName} ${values.lastName}`,
-                ...(updates.photoURL && { photoURL: updates.photoURL }),
             });
 
             toast({
                 title: 'Perfil Actualizado',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            setSelectedFile(null);
 
         } catch (e: any) {
             console.error("Error updating profile:", e);
@@ -230,18 +203,6 @@ export default function ProfilePage() {
         }
     }
     
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            setSelectedFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewUrl(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         toast({
@@ -272,6 +233,7 @@ export default function ProfilePage() {
     }
     
     const userInitial = userProfile.username ? userProfile.username.charAt(0).toUpperCase() : 'U';
+    const photo = userProfile.photoURL || user?.photoURL;
 
     return (
         <MainLayout>
@@ -301,17 +263,10 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="flex items-center space-x-6">
-                            <div className="relative">
-                                <Avatar className="h-24 w-24">
-                                    <AvatarImage src={previewUrl || undefined} alt={user.displayName || 'User'} />
-                                    <AvatarFallback>{userInitial}</AvatarFallback>
-                                </Avatar>
-                                <Button size="icon" variant="outline" className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full" onClick={() => fileInputRef.current?.click()}>
-                                    <Upload className="h-4 w-4" />
-                                    <span className="sr-only">Subir foto</span>
-                                </Button>
-                                <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
-                            </div>
+                            <Avatar className="h-24 w-24">
+                                <AvatarImage src={photo || undefined} alt={user.displayName || 'User'} />
+                                <AvatarFallback>{userInitial}</AvatarFallback>
+                            </Avatar>
                             <div className='space-y-1'>
                                 <p className="text-2xl font-semibold">{userProfile.firstName} {userProfile.lastName}</p>
                                 <p className="text-muted-foreground">@{userProfile.username}</p>
