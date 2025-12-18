@@ -4,7 +4,6 @@ import { PT_Sans, Lobster } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { FirebaseClientProvider } from '@/firebase';
-import { ThemeProvider } from '@/components/theme-provider';
 import PushNotificationsHandler from '@/components/PushNotificationsHandler'; // Import the new component
 
 const ptSans = PT_Sans({
@@ -38,18 +37,11 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body className={`${ptSans.variable} ${logoScript.variable} font-body antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
           <FirebaseClientProvider>
             <PushNotificationsHandler /> {/* Add the handler here */}
             {children}
           </FirebaseClientProvider>
           <Toaster />
-        </ThemeProvider>
       </body>
     </html>
   );
