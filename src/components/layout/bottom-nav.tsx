@@ -23,19 +23,6 @@ export default function BottomNav() {
 
   return (
     <>
-      {user && isSupplier && (
-        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2">
-          <Link href="/scanner">
-            <Button
-              size="icon"
-              className="h-14 w-14 rounded-full bg-primary shadow-lg hover:bg-primary/90"
-            >
-              <QrCode className="h-7 w-7" />
-              <span className="sr-only">Escanear QR</span>
-            </Button>
-          </Link>
-        </div>
-      )}
       <nav className="fixed bottom-0 z-40 w-full border-t bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto grid grid-cols-4 h-16 items-center justify-around px-4">
           {navItems.map(({ href, label, icon: Icon }) => (

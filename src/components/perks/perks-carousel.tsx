@@ -11,6 +11,7 @@ import {
 import PerkCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import type { CarouselItemType } from '@/app/page';
+import Autoplay from "embla-carousel-autoplay"
 
 export default function PerksCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
 
@@ -28,6 +29,12 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
   return (
     <Carousel 
         opts={{ loop: true, align: 'start' }} 
+        plugins={[
+            Autoplay({
+              delay: 4000,
+              stopOnInteraction: true,
+            }),
+          ]}
         className="w-full"
     >
       <CarouselContent className="-ml-2">

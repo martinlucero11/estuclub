@@ -16,13 +16,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Fingerprint, KeyRound, Mail, AlertTriangle } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { KeyRound, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { biometricService } from '@/services/biometric-service';
-import { useEffect, useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState } from 'react';
 import ResetPasswordDialog from './reset-password-dialog';
 
 const formSchema = z.object({
@@ -34,12 +32,6 @@ export default function LoginForm() {
   const router = useRouter();
   const auth = useAuth();
   const { toast } = useToast();
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false);
-
-  useEffect(() => {
-    biometricService.isAvailable().then(setIsBiometricAvailable);
-  }, []);
-
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,13 +43,8 @@ export default function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      await signInWithEmailAndPassword(auth, values.email, values.password);
       
-      // After successful login, offer to set up biometrics
-      if (userCredential.user) {
-        await biometricService.askToSetupBiometrics(values.email, values.password);
-      }
-
       toast({
         title: 'Iniciando sesión...',
         description: 'Serás redirigido en un momento.',
@@ -71,29 +58,6 @@ export default function LoginForm() {
       });
     }
   }
-
-  async function handleBiometricLogin() {
-    try {
-      const credentials = await biometricService.loginWithBiometrics();
-      if (credentials) {
-        await onSubmit(credentials);
-      } else {
-         toast({
-          variant: "destructive",
-          title: "Inicio de sesión biométrico cancelado",
-          description: "No se proporcionaron credenciales.",
-        });
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error Biométrico",
-        description: error.message || "No se pudo iniciar sesión con biometría.",
-      });
-    }
-  }
-
 
   return (
     <Card>
@@ -144,23 +108,6 @@ export default function LoginForm() {
             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>
-            {isBiometricAvailable && (
-              <>
-                <div className="relative w-full">
-                    <Separator className="absolute left-0 top-1/2 -translate-y-1/2"/>
-                    <p className="text-center text-xs text-muted-foreground bg-card px-2 relative">O CONTINUAR CON</p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleBiometricLogin}
-                >
-                  <Fingerprint className="mr-2 h-4 w-4" />
-                  Iniciar Sesión con Biometría
-                </Button>
-              </>
-            )}
           </CardFooter>
         </form>
       </Form>
