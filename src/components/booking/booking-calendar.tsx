@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -93,7 +92,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
       currentTime = add(currentTime, { minutes: selectedService.duration }); // Or some other interval
     }
     return slots;
-  }, [selectedDate, selectedServiceId, availability, services, existingAppointments]);
+  }, [selectedDate, selectedServiceId, availability, services, existingAppointments, dayNames]);
 
   const handleBooking = async () => {
     if (!user || !userProfile || !selectedSlot || !selectedServiceId) {
