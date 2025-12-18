@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, doc, writeBatch, serverTimestamp, query, where, Timestamp } from 'firebase/firestore';
+import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import type { Service, Availability, Appointment } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -35,7 +35,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(services[0]?.id);
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -57,7 +57,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
     );
 }, [supplierId, selectedDate, firestore]);
 
-  const { data: existingAppointments } = useCollection<Appointment>(appointmentsQuery as any);
+  const { data: existingAppointments } = useCollection<Appointment>(appointmentsQuery);
 
   const availableSlots = useMemo(() => {
     if (!selectedDate || !selectedServiceId || !availability?.schedule) return [];
@@ -180,6 +180,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
                     disabled={(date) => date < startOfDay(new Date())}
                     className="rounded-md border"
                     locale={es}
+                    weekStartsOn={1}
                 />
             </div>
         </div>
