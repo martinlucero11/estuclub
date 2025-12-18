@@ -160,31 +160,27 @@ function SupplierProfileContent({ slug }: { slug: string }) {
             </header>
 
              <Tabs defaultValue={defaultTab} className="w-full">
-                <TabsList className={`grid w-full ${supplier.allowsBooking ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    {supplier.allowsBooking && (
-                        <TabsTrigger value="services">
-                            <ConciergeBell className="mr-2 h-4 w-4" />
-                            Servicios
-                        </TabsTrigger>
-                    )}
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="services">
+                        <ConciergeBell className="mr-2 h-4 w-4" />
+                        Servicios
+                    </TabsTrigger>
                     <TabsTrigger value="benefits">
                         <Ticket className="mr-2 h-4 w-4" />
                         Beneficios
                     </TabsTrigger>
                 </TabsList>
-                {supplier.allowsBooking && (
-                    <TabsContent value="services" className="mt-6">
-                         {servicesLoading || availabilityLoading ? (
-                             <Skeleton className="h-96 w-full" />
-                         ) : (
-                             <BookingCalendar 
-                                services={services || []} 
-                                availability={availability || { schedule: {} }}
-                                supplierId={supplier.id}
-                            />
-                         )}
-                    </TabsContent>
-                )}
+                <TabsContent value="services" className="mt-6">
+                    {servicesLoading || availabilityLoading ? (
+                        <Skeleton className="h-96 w-full" />
+                    ) : (
+                        <BookingCalendar 
+                            services={services || []} 
+                            availability={availability || { schedule: {} }}
+                            supplierId={supplier.id}
+                        />
+                    )}
+                </TabsContent>
                 <TabsContent value="benefits" className="mt-6">
                     {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
                 </TabsContent>
