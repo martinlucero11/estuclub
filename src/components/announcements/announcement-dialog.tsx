@@ -13,19 +13,10 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Link2 } from 'lucide-react';
 import Link from 'next/link';
-
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorUsername: string;
-  createdAt: string; // Expect a string
-  linkUrl?: string;
-}
+import type { SerializableAnnouncement } from '@/lib/data';
 
 interface AnnouncementDialogProps {
-  announcement: Announcement;
+  announcement: SerializableAnnouncement;
   children: React.ReactNode;
 }
 

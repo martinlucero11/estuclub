@@ -3,19 +3,9 @@
 'use client';
 
 import AnnouncementCard from './announcement-card';
+import type { SerializableAnnouncement } from '@/lib/data';
 
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorUsername: string;
-  createdAt: string; // Expect a string
-  imageUrl?: string;
-  linkUrl?: string;
-}
-
-export default function AnnouncementsList({ announcements }: { announcements: Announcement[]}) {
+export default function AnnouncementsList({ announcements }: { announcements: SerializableAnnouncement[]}) {
 
   if (!announcements || announcements.length === 0) {
     return (
@@ -36,4 +26,3 @@ export default function AnnouncementsList({ announcements }: { announcements: An
     </div>
   );
 }
-

@@ -46,6 +46,28 @@ export function makePerkSerializable(perk: Perk): SerializablePerk {
   };
 }
 
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  authorId: string;
+  authorUsername: string;
+  createdAt: Timestamp;
+  imageUrl?: string;
+  linkUrl?: string;
+}
+
+export type SerializableAnnouncement = Omit<Announcement, 'createdAt'> & {
+  createdAt: string;
+};
+
+export function makeAnnouncementSerializable(announcement: Announcement): SerializableAnnouncement {
+  return {
+    ...announcement,
+    createdAt: announcement.createdAt.toDate().toISOString(),
+  };
+}
+
 
 export interface Service {
   id: string;

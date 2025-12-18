@@ -7,32 +7,13 @@ import AnnouncementsList from '@/components/announcements/announcements-list';
 import { Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
-import type { Perk, SerializablePerk } from '@/lib/data';
-import { makePerkSerializable } from '@/lib/data';
+import type { Perk, SerializablePerk, Announcement, SerializableAnnouncement } from '@/lib/data';
+import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import PerksCarousel from '@/components/perks/perks-carousel';
 
 
-// Define serializable types for client components
-type SerializableTimestamp = { toDate: () => Date };
-interface SerializableAnnouncement {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorUsername: string;
-  createdAt: string; // Changed to string
-  imageUrl?: string;
-  linkUrl?: string;
-}
-
 export type CarouselItem = (SerializablePerk & { type: 'perk' }) | (SerializableAnnouncement & { type: 'announcement' });
-
-// Function to safely convert Timestamp to ISO string
-function toISOString(timestamp?: SerializableTimestamp | Timestamp): string | undefined {
-    if (!timestamp) return undefined;
-    return timestamp.toDate().toISOString();
-}
 
 function HomePageContent() {
     const firestore = useFirestore();
@@ -56,7 +37,7 @@ function HomePageContent() {
     }, [firestore]);
 
     const { data: perksData, isLoading: perksLoading } = useCollection<Perk>(perksQuery);
-    const { data: announcementsData, isLoading: announcementsLoading } = useCollection<any>(announcementsQuery);
+    const { data: announcementsData, isLoading: announcementsLoading } = useCollection<Announcement>(announcementsQuery);
 
     const carouselItems = useMemo(() => {
         if (!perksData || !announcementsData) return [];
@@ -67,9 +48,8 @@ function HomePageContent() {
         }));
 
         const announcements: CarouselItem[] = announcementsData.map(doc => ({
-            ...doc,
+            ...makeAnnouncementSerializable(doc),
             type: 'announcement' as const,
-            createdAt: toISOString(doc.createdAt),
         }));
 
         const combined = [...perks, ...announcements];
@@ -84,10 +64,7 @@ function HomePageContent() {
     
     const serializableAnnouncements = useMemo(() => {
         if (!announcementsData) return [];
-        return announcementsData.map(doc => ({
-            ...doc,
-            createdAt: toISOString(doc.createdAt),
-        })) as SerializableAnnouncement[];
+        return announcementsData.map(makeAnnouncementSerializable);
     }, [announcementsData]);
 
     return (

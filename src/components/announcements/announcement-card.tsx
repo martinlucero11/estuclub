@@ -8,20 +8,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import AnnouncementDialog from './announcement-dialog';
 import { cn } from '@/lib/utils';
 import { Link2 } from 'lucide-react';
-
-interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorUsername: string;
-  createdAt: string; // Expect a string
-  imageUrl?: string;
-  linkUrl?: string;
-}
+import type { SerializableAnnouncement } from '@/lib/data';
 
 interface AnnouncementCardProps {
-  announcement: Announcement;
+  announcement: SerializableAnnouncement;
   variant?: 'default' | 'carousel';
   className?: string;
 }

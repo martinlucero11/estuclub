@@ -8,34 +8,9 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, orderBy, query, Timestamp } from 'firebase/firestore';
 import { Suspense, useMemo } from 'react';
 import { Megaphone } from 'lucide-react';
+import type { Announcement, SerializableAnnouncement } from '@/lib/data';
+import { makeAnnouncementSerializable } from '@/lib/data';
 
-interface Announcement {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
-    authorUsername: string;
-    createdAt: Timestamp;
-    imageUrl?: string;
-    linkUrl?: string;
-}
-
-interface SerializableAnnouncement {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
-    authorUsername: string;
-    createdAt: string; // Changed to string
-    imageUrl?: string;
-    linkUrl?: string;
-}
-
-
-function toISOString(timestamp?: Timestamp): string | undefined {
-    if (!timestamp) return undefined;
-    return timestamp.toDate().toISOString();
-}
 
 function AnnouncementsListSkeleton() {
     return (
@@ -64,10 +39,7 @@ function Announcements() {
 
     const announcements = useMemo(() => {
         if (!data) return [];
-        return data.map(doc => ({
-            ...doc,
-            createdAt: toISOString(doc.createdAt)!,
-        })) as SerializableAnnouncement[];
+        return data.map(makeAnnouncementSerializable);
     }, [data]);
 
     if (isLoading) {
