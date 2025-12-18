@@ -119,7 +119,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
       const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
       const benefitRef = doc(firestore, 'benefits', perk.id);
-
+      
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
@@ -268,3 +268,5 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
+
+    
