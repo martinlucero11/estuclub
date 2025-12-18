@@ -19,7 +19,6 @@ const nextConfig = {
   devIndicators: {
     allowedDevOrigins: [
         '*.cloudworkstations.dev',
-        'estuclub.com.ar'
     ]
   },
 };
