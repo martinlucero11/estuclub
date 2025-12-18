@@ -152,13 +152,17 @@ export default function ProfilePage() {
     }, [userProfile, user, form]);
 
     async function onSubmit(values: z.infer<typeof profileFormSchema>) {
-        if (!user || !userProfileRef || !userProfile) return;
+        if (!user || !userProfileRef || !userProfile) {
+            toast({ variant: "destructive", title: "Error", description: "No se puede actualizar el perfil sin estar autenticado." });
+            return;
+        }
 
+        form.clearErrors();
         toast({ title: 'Actualizando perfil...', description: 'Por favor espera.' });
-        
+
         try {
             const batch = writeBatch(firestore);
-            const updates: any = {
+            const updates: { [key: string]: any } = {
                 firstName: values.firstName,
                 lastName: values.lastName,
             };
@@ -166,26 +170,26 @@ export default function ProfilePage() {
             const newUsername = values.username.toLowerCase();
             const oldUsername = userProfile.username.toLowerCase();
 
+            // --- 1. Username Validation ---
             if (newUsername !== oldUsername) {
                 const newUsernameRef = doc(firestore, 'usernames', newUsername);
                 const usernameDoc = await getDoc(newUsernameRef);
-
                 if (usernameDoc.exists()) {
                     form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
                     toast({ variant: "destructive", title: "Error", description: "Nombre de usuario no disponible." });
                     return;
                 }
-                
                 updates.username = newUsername;
+                // Prep username changes for the batch
                 const oldUsernameRef = doc(firestore, 'usernames', oldUsername);
                 batch.delete(oldUsernameRef);
                 batch.set(newUsernameRef, { userId: user.uid });
             }
 
+            // --- 2. Photo Upload ---
             if (selectedFile) {
                 const oldPhotoURL = userProfile.photoURL;
-                const storageRef = ref(storage, `profile_pictures/${user.uid}/${selectedFile.name}`);
-                
+                // Delete old photo if it exists
                 if (oldPhotoURL) {
                     try {
                         const oldImageRef = ref(storage, oldPhotoURL);
@@ -196,14 +200,17 @@ export default function ProfilePage() {
                         }
                     }
                 }
-                
-                await uploadBytes(storageRef, selectedFile);
-                updates.photoURL = await getDownloadURL(storageRef);
+                // Upload new photo
+                const newPhotoRef = ref(storage, `profile_pictures/${user.uid}/${selectedFile.name}`);
+                await uploadBytes(newPhotoRef, selectedFile);
+                updates.photoURL = await getDownloadURL(newPhotoRef);
             }
 
+            // --- 3. Batch Write and Auth Profile Update ---
             batch.update(userProfileRef, updates);
             await batch.commit();
 
+            // Update Auth profile after DB is successful
             await updateProfile(user, {
                 displayName: `${values.firstName} ${values.lastName}`,
                 ...(updates.photoURL && { photoURL: updates.photoURL }),
@@ -213,14 +220,14 @@ export default function ProfilePage() {
                 title: 'Perfil Actualizado',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            setSelectedFile(null);
+            setSelectedFile(null); // Clear file selection after successful upload
 
         } catch (e: any) {
             console.error("Error updating profile:", e);
             toast({
                 variant: "destructive",
-                title: "Error",
-                description: "No se pudo actualizar tu perfil. Inténtalo de nuevo.",
+                title: "Error al actualizar",
+                description: e.message || "No se pudo actualizar tu perfil. Inténtalo de nuevo.",
             });
         }
     }
