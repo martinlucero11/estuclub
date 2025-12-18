@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import MainLayout from '@/components/layout/main-layout';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -10,7 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 export default function SettingsPage() {
     const [notificationStatus, setNotificationStatus] = useState(true);
     const { toast } = useToast();
-    
+    const { setTheme } = useTheme();
+
     const handleNotificationToggle = (checked: boolean) => {
         setNotificationStatus(checked);
         toast({
@@ -55,6 +58,22 @@ export default function SettingsPage() {
                                         aria-label="Toggle notifications"
                                     />
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Tema</CardTitle>
+                            <CardDescription>
+                                Elige cómo se ve la aplicación.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-3 gap-4">
+                                <Button variant="outline" onClick={() => setTheme('light')}>Claro</Button>
+                                <Button variant="outline" onClick={() => setTheme('dark')}>Oscuro</Button>
+                                <Button variant="outline" onClick={() => setTheme('system')}>Sistema</Button>
                             </div>
                         </CardContent>
                     </Card>
