@@ -171,12 +171,18 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
   const isLoading = isUserLoading || (!!user && isProfileLoading);
 
-  const triggerButton = (
-      <Button className="w-full" variant="default" onClick={() => setIsOpen(true)} disabled={isLoading || !user}>
-        {isLoading ? 'Cargando...' : 'Canjear Beneficio'}
-        {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
-      </Button>
+  const TriggerWrapper = ({ children }: { children: React.ReactNode }) => (
+    isCarouselTrigger ? (
+      <div className="h-full w-full cursor-pointer" onClick={(e) => { e.preventDefault(); setIsOpen(true); }}>
+        {children}
+      </div>
+    ) : (
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+    )
   );
+
   
   const RedemptionSuccessView = () => (
       <div className='text-center space-y-4 flex flex-col items-center'>
@@ -195,69 +201,70 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
-            {isCarouselTrigger ? (
-                 <div className="h-full w-full cursor-pointer" onClick={() => setIsOpen(true)}>
-                    {children}
-                </div>
-            ) : triggerButton}
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-            {!redemptionId ? (
-                <>
-                    <DialogHeader>
-                        <DialogTitle>Canjear: {perk.title}</DialogTitle>
-                        <DialogDescription>
-                        Confirma para canjear este beneficio y ganar {perk.points || 0} puntos.
-                        </DialogDescription>
-                    </DialogHeader>
+      <TriggerWrapper>
+        {isCarouselTrigger ? children : (
+          <Button className="w-full" variant="default" disabled={isLoading || !user}>
+            {isLoading ? 'Cargando...' : 'Canjear Beneficio'}
+            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+          </Button>
+        )}
+      </TriggerWrapper>
+      <DialogContent className="sm:max-w-md">
+        {!redemptionId ? (
+            <>
+                <DialogHeader>
+                    <DialogTitle>Canjear: {perk.title}</DialogTitle>
+                    <DialogDescription>
+                    Confirma para canjear este beneficio y ganar {perk.points || 0} puntos.
+                    </DialogDescription>
+                </DialogHeader>
 
-                    {perk.availableDays && perk.availableDays.length > 0 && (
-                        <div className="flex items-center gap-3 rounded-lg border p-3">
-                            <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
-                            <div className='flex-1'>
-                                <p className="text-sm font-medium">Días disponibles</p>
-                                <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
-                                    {daysOrder.map(day => (
-                                        <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
-                                            {dayAbbreviations[day]}
-                                        </span>
-                                    ))}
-                                </div>
+                {perk.availableDays && perk.availableDays.length > 0 && (
+                    <div className="flex items-center gap-3 rounded-lg border p-3">
+                        <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
+                        <div className='flex-1'>
+                            <p className="text-sm font-medium">Días disponibles</p>
+                            <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
+                                {daysOrder.map(day => (
+                                    <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
+                                        {dayAbbreviations[day]}
+                                    </span>
+                                ))}
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {error && (
-                        <Alert variant="destructive">
-                            <AlertTitle>Error</AlertTitle>
-                            <AlertDescription>{error}</AlertDescription>
-                        </Alert>
-                    )}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
 
-                    <DialogFooter className="sm:justify-between gap-2">
-                        <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-                            Cancelar
-                        </Button>
-                        <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading}>
-                            {isRedeeming ? 'Validando...' : (isLoading ? 'Cargando perfil...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
-                        </Button>
-                    </DialogFooter>
-                </>
-            ) : (
-                <>
-                    <DialogHeader>
-                        <DialogTitle>Validación Requerida</DialogTitle>
-                    </DialogHeader>
-                    <RedemptionSuccessView />
-                    <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-                            Cerrar
-                        </Button>
-                    </DialogFooter>
-                </>
-            )}
-        </DialogContent>
+                <DialogFooter className="sm:justify-between gap-2">
+                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                        Cancelar
+                    </Button>
+                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading}>
+                        {isRedeeming ? 'Validando...' : (isLoading ? 'Cargando perfil...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
+                    </Button>
+                </DialogFooter>
+            </>
+        ) : (
+            <>
+                <DialogHeader>
+                    <DialogTitle>Validación Requerida</DialogTitle>
+                </DialogHeader>
+                <RedemptionSuccessView />
+                <DialogFooter>
+                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
+                        Cerrar
+                    </Button>
+                </DialogFooter>
+            </>
+        )}
+      </DialogContent>
     </Dialog>
   );
 }

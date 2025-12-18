@@ -47,36 +47,34 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
 
   if (variant === 'carousel') {
     const carouselCardContent = (
-      <Card className={cn("relative h-full overflow-hidden text-white transition-all hover:shadow-lg cursor-pointer", className)}>
-        <Image
-          src={perk.imageUrl}
-          alt={perk.title}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 flex h-full flex-col justify-between p-4">
-          <div className='flex-grow'>
-            <CardTitle className="text-xl line-clamp-2">{perk.title}</CardTitle>
-            <CardDescription className='text-gray-300'>{perk.category}</CardDescription>
+      <RedeemPerkDialog perk={perk} isCarouselTrigger>
+        <Card className={cn("relative h-full overflow-hidden text-white transition-all hover:shadow-lg cursor-pointer", className)}>
+          <Image
+            src={perk.imageUrl}
+            alt={perk.title}
+            fill
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="relative z-10 flex h-full flex-col justify-between p-4">
+            <div className='flex-grow'>
+              <CardTitle className="text-xl line-clamp-2">{perk.title}</CardTitle>
+              <CardDescription className='text-gray-300'>{perk.category}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              {perk.location && (
+                <>
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                  <span>{perk.location}</span>
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            {perk.location && (
-              <>
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>{perk.location}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </Card>
+        </Card>
+      </RedeemPerkDialog>
     );
 
-    return (
-      <RedeemPerkDialog perk={perk} isCarouselTrigger>
-          {carouselCardContent}
-      </RedeemPerkDialog>
-    )
+    return carouselCardContent;
   }
 
   return cardContent;

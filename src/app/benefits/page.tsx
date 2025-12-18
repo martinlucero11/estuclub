@@ -32,11 +32,11 @@ function PerksGridSkeleton() {
 
 function PerksList() {
     const firestore = useFirestore();
-    const { user, isUserLoading } = useUser();
+    const { isUserLoading } = useUser();
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
 
     const perksQuery = useMemoFirebase(() => {
-        if (!firestore) return null; // Wait for firestore
+        if (!firestore) return null;
 
         let field: string, direction: OrderByDirection;
 
@@ -57,12 +57,11 @@ function PerksList() {
 
     const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     
-    const serializablePerks = useMemo(() => {
+    const serializablePerks: SerializablePerk[] = useMemo(() => {
         if (!perks) return [];
         return perks.map(makePerkSerializable);
     }, [perks]);
 
-    // Combine loading states
     const combinedIsLoading = isUserLoading || isLoading;
 
     return (

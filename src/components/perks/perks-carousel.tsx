@@ -12,7 +12,6 @@ import PerkCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import type { CarouselItem as CarouselItemType } from '@/app/page';
 import Autoplay from "embla-carousel-autoplay"
-import { SerializablePerk, SerializableAnnouncement } from '@/lib/data';
 
 export default function PerksCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
 
