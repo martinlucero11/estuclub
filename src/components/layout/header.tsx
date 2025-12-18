@@ -28,6 +28,7 @@ import { useSupplier } from '@/firebase/auth/use-supplier';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '../ui/skeleton';
+import NotificationBell from './notification-bell';
 
 function Logo() {
     return (
@@ -173,7 +174,8 @@ export default function Header() {
         <div className="w-1/3 flex justify-center">
             <Logo />
         </div>
-        <div className="w-1/3 flex justify-end">
+        <div className="w-1/3 flex justify-end items-center gap-2">
+            <NotificationBell />
             <UserMenu />
         </div>
       </div>
