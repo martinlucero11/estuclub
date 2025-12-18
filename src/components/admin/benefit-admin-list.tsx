@@ -103,7 +103,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
   
   const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
 
-  const serializablePerks = useMemo(() => {
+  const serializablePerks: SerializablePerk[] = useMemo(() => {
     if (!perks) return [];
     return perks.map(makePerkSerializable);
   }, [perks]);

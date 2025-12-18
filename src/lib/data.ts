@@ -33,8 +33,8 @@ export interface Perk {
 
 // Serializable type for client-side components
 export type SerializablePerk = Omit<Perk, 'createdAt' | 'validUntil'> & {
-  createdAt: string;
-  validUntil?: string;
+  createdAt: string; // Always a string
+  validUntil?: string; // Optional string
 };
 
 // Function to convert Firestore Timestamps to ISO strings

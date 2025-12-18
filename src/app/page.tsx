@@ -39,7 +39,7 @@ function HomePageContent() {
     const { data: perksData, isLoading: perksLoading } = useCollection<Perk>(perksQuery);
     const { data: announcementsData, isLoading: announcementsLoading } = useCollection<Announcement>(announcementsQuery);
 
-    const carouselItems = useMemo(() => {
+    const carouselItems: CarouselItem[] = useMemo(() => {
         if (!perksData || !announcementsData) return [];
         
         const perks: CarouselItem[] = perksData.map(doc => ({
@@ -62,7 +62,7 @@ function HomePageContent() {
         return combined;
     }, [perksData, announcementsData]);
     
-    const serializableAnnouncements = useMemo(() => {
+    const serializableAnnouncements: SerializableAnnouncement[] = useMemo(() => {
         if (!announcementsData) return [];
         return announcementsData.map(makeAnnouncementSerializable);
     }, [announcementsData]);

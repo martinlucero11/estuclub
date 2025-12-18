@@ -42,9 +42,9 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
         {carouselItems.map((item) => (
           <CarouselItem key={`${item.type}-${item.id}`} className="md:basis-1/2 lg:basis-1/3 pl-2 h-48">
             {item.type === 'perk' ? (
-              <PerkCard perk={item as SerializablePerk} variant="carousel" className="h-full" />
+              <PerkCard perk={item} variant="carousel" className="h-full" />
             ) : (
-              <AnnouncementCard announcement={item as SerializableAnnouncement} variant="carousel" className="h-full" />
+              <AnnouncementCard announcement={item} variant="carousel" className="h-full" />
             )}
           </CarouselItem>
         ))}
