@@ -34,7 +34,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(services[0]?.id);
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -138,13 +138,9 @@ export default function BookingCalendar({ services, availability, supplierId }: 
   };
 
   const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-        setSelectedDate(startOfDay(date));
-        setSelectedSlot(null); // Reset selected slot when date changes
-    } else {
-        setSelectedDate(undefined);
-    }
-  }
+    setSelectedDate(date);
+    setSelectedSlot(null);
+  };
 
   if (!services || services.length === 0) {
       return <Alert><AlertTitle>Sin Servicios</AlertTitle><AlertDescription>Este proveedor no tiene servicios disponibles para reservar en este momento.</AlertDescription></Alert>
