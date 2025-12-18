@@ -138,6 +138,13 @@ export default function BookingCalendar({ services, availability, supplierId }: 
     }
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+        setSelectedDate(startOfDay(date));
+        setSelectedSlot(null); // Reset selected slot when date changes
+    }
+  }
+
   if (!services || services.length === 0) {
       return <Alert><AlertTitle>Sin Servicios</AlertTitle><AlertDescription>Este proveedor no tiene servicios disponibles para reservar en este momento.</AlertDescription></Alert>
   }
@@ -167,7 +174,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
                 <Calendar
                     mode="single"
                     selected={selectedDate}
-                    onSelect={setSelectedDate}
+                    onSelect={handleDateSelect}
                     disabled={(date) => date < startOfDay(new Date())}
                     className="rounded-md border"
                     locale={es}
