@@ -13,7 +13,7 @@ import PerksGrid from '@/components/perks/perks-grid';
 import { Perk } from '@/lib/data';
 import type { Service, Availability } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import BookingCalendar from '@/components/booking/booking-calendar';
+import ServiceList from '@/components/supplier/service-list';
 
 interface SupplierProfile {
     id: string;
@@ -29,7 +29,7 @@ const typeIcons = {
     Institucion: Building,
     Club: Briefcase,
     Iglesia: Church,
-    Comercio: Briefcase, // Corrected from ShoppingBasket
+    Comercio: Briefcase,
     Estado: Scale,
 };
 
@@ -159,7 +159,7 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                 </div>
             </header>
 
-             <Tabs defaultValue={defaultTab} className="w-full">
+            <Tabs defaultValue={defaultTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="services">
                         <ConciergeBell className="mr-2 h-4 w-4" />
@@ -174,10 +174,11 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                     {servicesLoading || availabilityLoading ? (
                         <Skeleton className="h-96 w-full" />
                     ) : (
-                        <BookingCalendar 
-                            services={services || []} 
+                        <ServiceList
+                            services={services || []}
                             availability={availability || { schedule: {} }}
                             supplierId={supplier.id}
+                            allowsBooking={supplier.allowsBooking || false}
                         />
                     )}
                 </TabsContent>

@@ -1,16 +1,33 @@
-
 'use client';
 
-import type { Service } from '@/lib/data';
+import type { Service, Availability } from '@/lib/data';
 import { Button } from '../ui/button';
-import { Calendar, Clock, Info, Search } from 'lucide-react';
+import { Calendar, Clock, Search, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/card';
+import BookingDialog from '../booking/booking-dialog';
+import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 interface ServiceListProps {
   services: Service[];
+  availability: Availability;
+  supplierId: string;
+  allowsBooking: boolean;
 }
 
-export default function ServiceList({ services }: ServiceListProps) {
+export default function ServiceList({ services, availability, supplierId, allowsBooking }: ServiceListProps) {
+  
+  if (!allowsBooking) {
+    return (
+       <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Reservas no habilitadas</AlertTitle>
+        <AlertDescription>
+          Este proveedor actualmente no tiene habilitada la opción para reservar turnos.
+        </AlertDescription>
+      </Alert>
+    )
+  }
+
   if (!services || services.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
@@ -37,10 +54,14 @@ export default function ServiceList({ services }: ServiceListProps) {
               </div>
             </div>
           </div>
-          <Button disabled>
-            <Calendar className="mr-2 h-4 w-4" />
-            Reservar Turno
-          </Button>
+
+          <BookingDialog service={service} availability={availability} supplierId={supplierId}>
+            <Button>
+              <Calendar className="mr-2 h-4 w-4" />
+              Reservar Turno
+            </Button>
+          </BookingDialog>
+          
         </Card>
       ))}
     </div>
