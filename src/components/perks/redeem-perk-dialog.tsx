@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
 import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
@@ -76,11 +76,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
 
   const handleRedeem = async () => {
-    if (!user || !userProfile || !firestore) {
+    if (!user || !userProfile || !firestore || !perk.ownerId) {
       toast({ 
           variant: 'destructive', 
-          title: 'Error de autenticación', 
-          description: 'No se pudo cargar tu perfil. Inténtalo de nuevo.' 
+          title: 'Error de datos',
+          description: 'No se pudo cargar la información completa del beneficio. Inténtalo de nuevo.' 
       });
       return;
     }
@@ -140,6 +140,19 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       batch.update(benefitRef, { redemptionCount: increment(1) });
       await batch.commit();
       
+      // --- INICIO: Lógica para registrar el canje para el comercio ---
+      const benefitRedemptionData = {
+        benefitId: perk.id,
+        benefitTitle: perk.title,
+        supplierId: perk.ownerId, // Corregido: usar ownerId
+        userId: user.uid,
+        userName: `${userProfile.firstName} ${userProfile.lastName}`,
+        redeemedAt: serverTimestamp(),
+      };
+      addDoc(collection(firestore, 'benefitRedemptions'), benefitRedemptionData)
+        .catch(e => console.error("Error writing to benefitRedemptions: ", e));
+      // --- FIN: Lógica para registrar el canje para el comercio ---
+
       setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
@@ -268,5 +281,3 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
-
-    
