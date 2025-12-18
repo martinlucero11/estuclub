@@ -2,14 +2,14 @@
 import type { Metadata } from 'next';
 import { PT_Sans, Lobster } from 'next/font/google';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-pt-sans',
-  display: 'swap', // Add display: swap for better font loading
+  display: 'swap',
 });
 
 const logoScript = Lobster({
