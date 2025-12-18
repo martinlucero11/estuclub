@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -6,10 +5,11 @@ import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, Award, Calendar, Archive, Eye } from 'lucide-react';
-import { Suspense, useState, useEffect } from 'react';
+import { History, Calendar, Archive, Eye, Ticket } from 'lucide-react';
+import { Suspense, useState } from 'react';
 import RedeemedBenefitDialog from '@/components/redeemed/redeemed-benefit-dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface RedeemedBenefit {
     id: string;
@@ -86,9 +86,13 @@ function RedeemedList() {
                         </p>
                     </div>
                      <div className="flex shrink-0 items-center gap-2">
+                        {benefit.status === 'valid' ? 
+                            <Badge variant="default">Válido</Badge> : 
+                            <Badge variant="secondary">Usado</Badge>
+                        }
                         <div className="flex items-center justify-center gap-1.5 rounded-md bg-secondary px-2.5 py-1.5 text-sm font-semibold text-secondary-foreground">
-                            <Award className="h-4 w-4 text-primary" />
-                            <span>+{benefit.points || 0}</span>
+                            <Ticket className="h-4 w-4 text-primary" />
+                            <span>-{benefit.points || 0}</span>
                         </div>
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedBenefit(benefit)}>
                             <Eye className="h-4 w-4" />
@@ -110,8 +114,6 @@ function RedeemedList() {
 
 
 export default function RedeemedBenefitsPage() {
-    const { user, isUserLoading } = useUser();
-
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
@@ -127,9 +129,9 @@ export default function RedeemedBenefitsPage() {
                     </p>
                 </header>
                 
-                {isUserLoading ? <RedeemedListSkeleton /> : <Suspense fallback={<RedeemedListSkeleton />}>
+                <Suspense fallback={<RedeemedListSkeleton />}>
                     <RedeemedList />
-                </Suspense>}
+                </Suspense>
             </div>
         </MainLayout>
     );
