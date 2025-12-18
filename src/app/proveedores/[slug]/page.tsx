@@ -3,14 +3,14 @@
 
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Church, Scale, Ticket, ConciergeBell } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
-import { Perk } from '@/lib/data';
+import { Perk, makePerkSerializable } from '@/lib/data';
 import type { Service, Availability } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ServiceList from '@/components/supplier/service-list';
@@ -96,6 +96,11 @@ function SupplierProfileContent({ slug }: { slug: string }) {
         return query(collection(firestore, 'benefits'), where('ownerId', '==', supplier.id));
     }, [supplier, firestore]);
     const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
+
+    const serializableBenefits = useMemo(() => {
+        if (!benefits) return [];
+        return benefits.map(makePerkSerializable);
+    }, [benefits]);
     
     const servicesQuery = useMemoFirebase(() => {
         if (!supplier) return null;
@@ -183,7 +188,7 @@ function SupplierProfileContent({ slug }: { slug: string }) {
                     )}
                 </TabsContent>
                 <TabsContent value="benefits" className="mt-6">
-                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={benefits || []} />}
+                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
                 </TabsContent>
             </Tabs>
         </div>

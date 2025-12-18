@@ -7,8 +7,9 @@ import AnnouncementsList from '@/components/announcements/announcements-list';
 import { Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
-import type { Perk } from '@/lib/data';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import type { Perk, SerializablePerk } from '@/lib/data';
+import { makePerkSerializable } from '@/lib/data';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import PerksCarousel from '@/components/perks/perks-carousel';
 
 
@@ -25,13 +26,7 @@ interface SerializableAnnouncement {
   linkUrl?: string;
 }
 
-interface SerializablePerk extends Omit<Perk, 'createdAt' | 'validUntil'> {
-  createdAt?: string; // Changed to string
-  validUntil?: string; // Changed to string
-}
-
-
-export type CarouselItemType = (SerializablePerk & { type: 'perk' }) | (SerializableAnnouncement & { type: 'announcement' });
+export type CarouselItem = (SerializablePerk & { type: 'perk' }) | (SerializableAnnouncement & { type: 'announcement' });
 
 // Function to safely convert Timestamp to ISO string
 function toISOString(timestamp?: SerializableTimestamp | Timestamp): string | undefined {
@@ -66,14 +61,12 @@ function HomePageContent() {
     const carouselItems = useMemo(() => {
         if (!perksData || !announcementsData) return [];
         
-        const perks: CarouselItemType[] = perksData.map(doc => ({
-            ...doc,
+        const perks: CarouselItem[] = perksData.map(doc => ({
+            ...makePerkSerializable(doc),
             type: 'perk' as const,
-            createdAt: toISOString(doc.createdAt),
-            validUntil: toISOString(doc.validUntil),
         }));
 
-        const announcements: CarouselItemType[] = announcementsData.map(doc => ({
+        const announcements: CarouselItem[] = announcementsData.map(doc => ({
             ...doc,
             type: 'announcement' as const,
             createdAt: toISOString(doc.createdAt),

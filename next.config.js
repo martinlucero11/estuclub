@@ -12,14 +12,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'picsum.photos',
       },
-      {
-        protocol: 'https',
-        hostname: 'static.where-e.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i0.wp.com',
-      },
     ],
   },
 };

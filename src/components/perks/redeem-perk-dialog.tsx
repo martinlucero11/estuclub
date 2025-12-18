@@ -14,16 +14,15 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, updateDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { Perk } from '@/lib/data';
+import type { SerializablePerk } from '@/lib/data';
 import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { Badge } from '../ui/badge';
 
 interface RedeemPerkDialogProps {
-  perk: Perk;
+  perk: SerializablePerk;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
@@ -32,6 +31,7 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   dni: string;
+  displayName?: string;
 }
 
 const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -77,19 +77,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
 
   const handleRedeem = async () => {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Error de autenticación',
-        description: 'Debes iniciar sesión para canjear un beneficio.',
-      });
-      return;
-    }
-     if (!userProfile || !userProfileRef) {
-      toast({
-        variant: 'destructive',
-        title: 'Error de autenticación',
-        description: 'No se pudo cargar tu perfil. Inténtalo de nuevo.',
+    if (!user || !userProfile || !firestore) {
+      toast({ 
+          variant: 'destructive', 
+          title: 'Error de autenticación', 
+          description: 'No se pudo cargar tu perfil. Inténtalo de nuevo.' 
       });
       return;
     }
@@ -99,21 +91,19 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setRedemptionId(null);
     setQrCodeUrl(null);
 
+    let successfulRedemptionId: string | null = null;
+
     try {
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
       const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
 
       if (perk.availableDays && perk.availableDays.length > 0 && !perk.availableDays.includes(capitalizedDay)) {
-        setError(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
-        setIsRedeeming(false);
-        return;
+        throw new Error(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
       }
       
-      if (perk.validUntil && (perk.validUntil as Timestamp).toDate() < new Date()) {
-        setError("Este beneficio ha expirado y ya no se puede canjear.");
-        setIsRedeeming(false);
-        return;
+      if (perk.validUntil && new Date(perk.validUntil) < new Date()) {
+        throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
       
       const redeemedBenefitsRef = collection(firestore, 'redeemed_benefits');
@@ -126,9 +116,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.size >= perk.redemptionLimit) {
-          setError(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
-          setIsRedeeming(false);
-          return;
+          throw new Error(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
         }
       }
 
@@ -138,7 +126,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
-        supplierId: perk.ownerId, // Use supplierId (was ownerId in perk)
+        supplierId: perk.ownerId,
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         benefitId: perk.id,
@@ -150,17 +138,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       
       const batch = writeBatch(firestore);
       batch.set(newRedemptionRef, redemptionData);
-
-      if (perk.points && perk.points > 0) {
-        batch.update(userProfileRef, {
-          points: increment(perk.points),
-        });
+      if (perk.points && perk.points > 0 && userProfileRef) {
+        batch.update(userProfileRef, { points: increment(perk.points) });
       }
-      
       batch.update(benefitRef, { redemptionCount: increment(1) });
+      await batch.commit();
 
-      await batch.commit(); 
-
+      successfulRedemptionId = newRedemptionRef.id;
       setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
@@ -169,14 +153,31 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
     } catch (e: any) {
         console.error('Error redeeming perk:', e);
-        setError('No se pudo canjear el beneficio. Por favor, inténtalo de nuevo.');
-        toast({
-            variant: 'destructive',
-            title: 'Error al Canjear',
-            description: e.message || 'Ocurrió un problema al canjear el beneficio.',
+        setError(e.message || 'No se pudo canjear el beneficio. Por favor, inténtalo de nuevo.');
+        toast({ 
+            variant: 'destructive', 
+            title: 'Error al Canjear', 
+            description: e.message || 'Ocurrió un problema al canjear el beneficio.'
         });
     } finally {
       setIsRedeeming(false);
+    }
+
+    if (successfulRedemptionId) {
+        try {
+            const redemptionLogData = {
+                benefitId: perk.id,
+                benefitName: perk.title,
+                merchantId: perk.ownerId,
+                userId: user.uid,
+                userDisplayName: user.displayName || `${userProfile.firstName} ${userProfile.lastName}`,
+                redeemedAt: new Date() 
+            };
+            await addDoc(collection(firestore, 'benefitRedemptions'), redemptionLogData);
+        } catch (error) {
+            console.error("Error al registrar el canje para el comercio:", error);
+            // No notificar al usuario, el canje principal fue exitoso.
+        }
     }
   };
 
@@ -190,7 +191,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     }
   }
 
-  const isLoading = isUserLoading || (user && isProfileLoading);
+  const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   const triggerButton = (
       <Button className="w-full" variant="outline" onClick={() => setIsOpen(true)} disabled={isLoading || !user}>

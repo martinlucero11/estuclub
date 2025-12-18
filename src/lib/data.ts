@@ -1,6 +1,4 @@
 
-import type { ImagePlaceholder } from './placeholder-images';
-import { PlaceHolderImages } from './placeholder-images';
 import type { Timestamp } from 'firebase/firestore';
 
 // Correctly typed as a tuple for Zod compatibility
@@ -32,6 +30,22 @@ export interface Perk {
   availableDays?: string[];
   redemptionCount?: number;
 }
+
+// Serializable type for client-side components
+export type SerializablePerk = Omit<Perk, 'createdAt' | 'validUntil'> & {
+  createdAt?: string;
+  validUntil?: string;
+};
+
+// Function to convert Firestore Timestamps to ISO strings
+export function makePerkSerializable(perk: Perk): SerializablePerk {
+  return {
+    ...perk,
+    createdAt: perk.createdAt?.toDate().toISOString(),
+    validUntil: perk.validUntil?.toDate().toISOString(),
+  };
+}
+
 
 export interface Service {
   id: string;

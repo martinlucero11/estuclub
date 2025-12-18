@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { Perk } from '@/lib/data';
+import type { SerializablePerk } from '@/lib/data';
 import RedeemPerkDialog from './redeem-perk-dialog';
 import { MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PerkCardProps {
-  perk: Perk;
+  perk: SerializablePerk;
   className?: string;
   variant?: 'default' | 'carousel';
 }

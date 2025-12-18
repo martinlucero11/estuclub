@@ -5,7 +5,8 @@ import MainLayout from '@/components/layout/main-layout';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import type { Perk } from '@/lib/data';
+import type { Perk, SerializablePerk } from '@/lib/data';
+import { makePerkSerializable } from '@/lib/data';
 import { collection, orderBy, query, OrderByDirection } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { Gift, ArrowDownUp } from 'lucide-react';
@@ -56,6 +57,11 @@ function PerksList() {
 
     const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     
+    const serializablePerks = useMemo(() => {
+        if (!perks) return [];
+        return perks.map(makePerkSerializable);
+    }, [perks]);
+
     // Combine loading states
     const combinedIsLoading = isUserLoading || isLoading;
 
@@ -82,7 +88,7 @@ function PerksList() {
                 </p>
             )}
 
-            {!combinedIsLoading && !error && <PerksGrid perks={perks || []} />}
+            {!combinedIsLoading && !error && <PerksGrid perks={serializablePerks} />}
         </div>
     );
 }

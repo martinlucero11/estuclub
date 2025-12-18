@@ -1,12 +1,12 @@
 
 
 'use client';
-import type { Perk } from '@/lib/data';
+import type { SerializablePerk } from '@/lib/data';
 import PerkCard from './perk-card';
 import { Archive } from 'lucide-react';
 
 interface PerksGridProps {
-  perks: Perk[];
+  perks: SerializablePerk[];
 }
 
 export default function PerksGrid({ perks }: PerksGridProps) {
