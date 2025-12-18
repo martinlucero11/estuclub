@@ -1,7 +1,6 @@
 
 'use client';
 
-import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel,
   CarouselContent,
@@ -29,12 +28,6 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
   return (
     <Carousel 
         opts={{ loop: true, align: 'start' }} 
-        plugins={[
-            Autoplay({
-                delay: 5000,
-                stopOnInteraction: true,
-            })
-        ]}
         className="w-full"
     >
       <CarouselContent className="-ml-2">
