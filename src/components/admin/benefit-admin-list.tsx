@@ -8,12 +8,13 @@ import { collection, query, orderBy, doc, deleteDoc, where, updateDoc, increment
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Edit, Trash2, TrendingUp } from 'lucide-react';
-import type { Perk } from '@/lib/data';
+import type { Perk, SerializablePerk } from '@/lib/data';
+import { makePerkSerializable } from '@/lib/data';
 import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 
-function BenefitAdminListItem({ perk }: { perk: Perk }) {
+function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { toast } = useToast();
@@ -102,6 +103,12 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
   
   const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
 
+  const serializablePerks = useMemo(() => {
+    if (!perks) return [];
+    return perks.map(makePerkSerializable);
+  }, [perks]);
+
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -122,7 +129,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
     return <p className="text-destructive">Error al cargar los beneficios: {error.message}</p>;
   }
 
-  if (!perks || perks.length === 0) {
+  if (!serializablePerks || serializablePerks.length === 0) {
     return (
       <p className="text-center text-muted-foreground">No hay beneficios para mostrar.</p>
     );
@@ -130,7 +137,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   return (
     <div className="space-y-4">
-      {perks.map((perk) => (
+      {serializablePerks.map((perk) => (
         <BenefitAdminListItem key={perk.id} perk={perk} />
       ))}
     </div>

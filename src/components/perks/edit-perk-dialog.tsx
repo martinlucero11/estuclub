@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { perkCategories, type Perk } from '@/lib/data';
+import { perkCategories, type SerializablePerk } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat } from 'lucide-react';
 import { useFirestore } from '@/firebase';
@@ -55,7 +55,7 @@ const formSchema = z.object({
 });
 
 interface EditPerkDialogProps {
-  perk: Perk;
+  perk: SerializablePerk;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -75,7 +75,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
       location: perk.location,
       points: perk.points || 0,
       redemptionLimit: perk.redemptionLimit || 0,
-      validUntil: perk.validUntil ? perk.validUntil.toDate() : undefined,
+      validUntil: perk.validUntil ? new Date(perk.validUntil) : undefined,
       availableDays: perk.availableDays || [],
     },
   });

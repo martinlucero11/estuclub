@@ -12,7 +12,7 @@ import PerkCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import type { CarouselItem as CarouselItemType } from '@/app/page';
 import Autoplay from "embla-carousel-autoplay"
-import { SerializablePerk } from '@/lib/data';
+import { SerializablePerk, SerializableAnnouncement } from '@/lib/data';
 
 export default function PerksCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
 
@@ -44,7 +44,7 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
             {item.type === 'perk' ? (
               <PerkCard perk={item as SerializablePerk} variant="carousel" className="h-full" />
             ) : (
-              <AnnouncementCard announcement={item} variant="carousel" className="h-full" />
+              <AnnouncementCard announcement={item as SerializableAnnouncement} variant="carousel" className="h-full" />
             )}
           </CarouselItem>
         ))}
