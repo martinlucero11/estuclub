@@ -180,7 +180,6 @@ export default function ProfilePage() {
                     return;
                 }
                 updates.username = newUsername;
-                // Prep username changes for the batch
                 const oldUsernameRef = doc(firestore, 'usernames', oldUsername);
                 batch.delete(oldUsernameRef);
                 batch.set(newUsernameRef, { userId: user.uid });
@@ -189,8 +188,8 @@ export default function ProfilePage() {
             // --- 2. Photo Upload ---
             if (selectedFile) {
                 const oldPhotoURL = userProfile.photoURL;
-                // Delete old photo if it exists
-                if (oldPhotoURL) {
+                // Delete old photo if it exists and is a Firebase Storage URL
+                if (oldPhotoURL && oldPhotoURL.includes('firebasestorage.googleapis.com')) {
                     try {
                         const oldImageRef = ref(storage, oldPhotoURL);
                         await deleteObject(oldImageRef);
@@ -210,7 +209,6 @@ export default function ProfilePage() {
             batch.update(userProfileRef, updates);
             await batch.commit();
 
-            // Update Auth profile after DB is successful
             await updateProfile(user, {
                 displayName: `${values.firstName} ${values.lastName}`,
                 ...(updates.photoURL && { photoURL: updates.photoURL }),
@@ -220,7 +218,7 @@ export default function ProfilePage() {
                 title: 'Perfil Actualizado',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            setSelectedFile(null); // Clear file selection after successful upload
+            setSelectedFile(null);
 
         } catch (e: any) {
             console.error("Error updating profile:", e);
