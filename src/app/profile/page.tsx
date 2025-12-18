@@ -1,4 +1,3 @@
-
 'use client';
 import { useUser, useFirestore, useDoc, useMemoFirebase, useStorage } from '@/firebase';
 import MainLayout from '@/components/layout/main-layout';
@@ -158,39 +157,40 @@ export default function ProfilePage() {
         toast({ title: 'Actualizando perfil...', description: 'Por favor espera.' });
         
         try {
+            const batch = writeBatch(firestore);
             const updates: any = {
                 firstName: values.firstName,
                 lastName: values.lastName,
             };
 
-            // Handle username change
             const newUsername = values.username.toLowerCase();
             const oldUsername = userProfile.username.toLowerCase();
 
             if (newUsername !== oldUsername) {
-                const newUsernameRef = doc(firestore, 'users', newUsername);
+                const newUsernameRef = doc(firestore, 'usernames', newUsername);
                 const usernameDoc = await getDoc(newUsernameRef);
 
-                if (usernameDoc.exists() && usernameDoc.id !== user.uid) {
+                if (usernameDoc.exists()) {
                     form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
                     toast({ variant: "destructive", title: "Error", description: "Nombre de usuario no disponible." });
                     return;
                 }
+                
                 updates.username = newUsername;
+                const oldUsernameRef = doc(firestore, 'usernames', oldUsername);
+                batch.delete(oldUsernameRef);
+                batch.set(newUsernameRef, { userId: user.uid });
             }
 
-            // Handle profile picture upload
             if (selectedFile) {
-                const oldPhotoURL = userProfile.photoURL; // Check Firestore for the old URL
+                const oldPhotoURL = userProfile.photoURL;
                 const storageRef = ref(storage, `profile_pictures/${user.uid}/${selectedFile.name}`);
                 
-                // Delete old photo if it exists and is different
                 if (oldPhotoURL) {
                     try {
                         const oldImageRef = ref(storage, oldPhotoURL);
                         await deleteObject(oldImageRef);
                     } catch (e: any) {
-                        // Ignore if object doesn't exist, log other errors
                         if (e.code !== 'storage/object-not-found') {
                             console.warn("Could not delete old profile picture:", e);
                         }
@@ -201,20 +201,19 @@ export default function ProfilePage() {
                 updates.photoURL = await getDownloadURL(storageRef);
             }
 
-            // Update Auth user profile (displayName and photoURL)
+            batch.update(userProfileRef, updates);
+            await batch.commit();
+
             await updateProfile(user, {
                 displayName: `${values.firstName} ${values.lastName}`,
                 ...(updates.photoURL && { photoURL: updates.photoURL }),
             });
 
-            // Update Firestore document with all changes
-            await updateDoc(userProfileRef, updates);
-
             toast({
                 title: 'Perfil Actualizado',
                 description: 'Tus datos han sido guardados correctamente.',
             });
-            setSelectedFile(null); // Reset file input after successful upload
+            setSelectedFile(null);
 
         } catch (e: any) {
             console.error("Error updating profile:", e);
