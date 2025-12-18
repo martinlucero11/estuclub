@@ -3,7 +3,18 @@ import type { ImagePlaceholder } from './placeholder-images';
 import { PlaceHolderImages } from './placeholder-images';
 import type { Timestamp } from 'firebase/firestore';
 
-export type PerkCategory = 'Comercios' | 'Eventos' | 'Comida' | 'Educación' | 'Entretenimiento';
+// Correctly typed as a tuple for Zod compatibility
+export const perkCategories = [
+  'Comercios',
+  'Eventos',
+  'Comida',
+  'Educación',
+  'Entretenimiento',
+] as const;
+
+// The type is now derived from the tuple
+export type PerkCategory = typeof perkCategories[number];
+
 
 export interface Perk {
   id: string;
@@ -54,8 +65,6 @@ export interface Appointment {
     status: 'confirmed' | 'cancelled';
 }
 
-
-export const perkCategories: PerkCategory[] = ['Comercios', 'Eventos', 'Comida', 'Educación', 'Entretenimiento'];
 
 // This is now just for initial data seeding or as a fallback.
 // The app will primarily use Firestore.
