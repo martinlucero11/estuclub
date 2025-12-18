@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { add, format, startOfDay, getDay } from 'date-fns';
+import { add, format, startOfDay, getDay, set } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
