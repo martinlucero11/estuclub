@@ -33,7 +33,7 @@ export interface Perk {
 
 // Serializable type for client-side components
 export type SerializablePerk = Omit<Perk, 'createdAt' | 'validUntil'> & {
-  createdAt?: string;
+  createdAt: string;
   validUntil?: string;
 };
 
@@ -41,7 +41,7 @@ export type SerializablePerk = Omit<Perk, 'createdAt' | 'validUntil'> & {
 export function makePerkSerializable(perk: Perk): SerializablePerk {
   return {
     ...perk,
-    createdAt: perk.createdAt?.toDate().toISOString(),
+    createdAt: perk.createdAt?.toDate().toISOString() || new Date().toISOString(),
     validUntil: perk.validUntil?.toDate().toISOString(),
   };
 }

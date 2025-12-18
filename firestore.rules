@@ -50,18 +50,9 @@ service cloud.firestore {
     }
 
     match /redeemed_benefits/{id} {
-      allow create: if isSignedIn()
-        && request.auth.uid == request.resource.data.userId;
-
-      allow read: if isSignedIn()
-        && (
-          resource.data.userId == request.auth.uid
-          || resource.data.supplierId == request.auth.uid
-        );
-
-      allow update: if isSignedIn()
-        && request.auth.uid == resource.data.supplierId;
-
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId); // Keep this to allow user-side updates if needed later
       allow delete: if false;
     }
     

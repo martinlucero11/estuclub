@@ -34,7 +34,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
           <CardFooter className="flex flex-col items-start gap-4">
              {perk.location && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 flex-shrink-0 text-accent" />
+                    <MapPin className="h-4 w-4 flex-shrink-0 text-primary" />
                     <span>{perk.location}</span>
                 </div>
             )}

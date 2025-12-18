@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
 import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
@@ -31,7 +31,6 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   dni: string;
-  displayName?: string;
 }
 
 const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -91,8 +90,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setRedemptionId(null);
     setQrCodeUrl(null);
 
-    let successfulRedemptionId: string | null = null;
-
     try {
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
@@ -126,7 +123,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
-        supplierId: perk.ownerId,
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         benefitId: perk.id,
@@ -143,8 +139,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
       batch.update(benefitRef, { redemptionCount: increment(1) });
       await batch.commit();
-
-      successfulRedemptionId = newRedemptionRef.id;
+      
       setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
@@ -162,23 +157,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     } finally {
       setIsRedeeming(false);
     }
-
-    if (successfulRedemptionId) {
-        try {
-            const redemptionLogData = {
-                benefitId: perk.id,
-                benefitName: perk.title,
-                merchantId: perk.ownerId,
-                userId: user.uid,
-                userDisplayName: user.displayName || `${userProfile.firstName} ${userProfile.lastName}`,
-                redeemedAt: new Date() 
-            };
-            await addDoc(collection(firestore, 'benefitRedemptions'), redemptionLogData);
-        } catch (error) {
-            console.error("Error al registrar el canje para el comercio:", error);
-            // No notificar al usuario, el canje principal fue exitoso.
-        }
-    }
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -194,7 +172,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   const triggerButton = (
-      <Button className="w-full" variant="outline" onClick={() => setIsOpen(true)} disabled={isLoading || !user}>
+      <Button className="w-full" variant="default" onClick={() => setIsOpen(true)} disabled={isLoading || !user}>
         {isLoading ? 'Cargando...' : 'Canjear Beneficio'}
         {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
       </Button>
