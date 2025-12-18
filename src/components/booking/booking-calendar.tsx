@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, doc, writeBatch, serverTimestamp, query, where } from 'firebase/firestore';
+import { collection, doc, writeBatch, serverTimestamp, query, where, Timestamp } from 'firebase/firestore';
 import type { Service, Availability, Appointment } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -35,7 +35,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
   const firestore = useFirestore();
   const { toast } = useToast();
   
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(startOfDay(new Date()));
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(services[0]?.id);
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -142,6 +142,8 @@ export default function BookingCalendar({ services, availability, supplierId }: 
     if (date) {
         setSelectedDate(startOfDay(date));
         setSelectedSlot(null); // Reset selected slot when date changes
+    } else {
+        setSelectedDate(undefined);
     }
   }
 
@@ -183,7 +185,7 @@ export default function BookingCalendar({ services, availability, supplierId }: 
         </div>
         <div className='space-y-4'>
           <label className="text-sm font-medium">3. Selecciona un horario</label>
-          {selectedDate && selectedServiceId ? (
+          {selectedDate ? (
             <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto">
               {availableSlots.length > 0 ? availableSlots.map(slot => (
                 <Button 
@@ -198,7 +200,9 @@ export default function BookingCalendar({ services, availability, supplierId }: 
               )}
             </div>
           ) : (
-            <p className='text-sm text-muted-foreground text-center p-4'>Selecciona un servicio y una fecha para ver los horarios.</p>
+            <div className="flex items-center justify-center h-full text-sm text-muted-foreground border-2 border-dashed rounded-md p-4">
+                <p>Selecciona una fecha para ver los horarios disponibles.</p>
+            </div>
           )}
 
           {selectedSlot && (
