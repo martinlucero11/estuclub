@@ -101,6 +101,26 @@ export interface Appointment {
     status: 'confirmed' | 'cancelled';
 }
 
+export interface BenefitRedemption {
+  id: string;
+  benefitId: string;
+  benefitTitle: string;
+  supplierId: string;
+  userId: string;
+  userName: string;
+  redeemedAt: Timestamp;
+}
+
+export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt'> & {
+  redeemedAt: string;
+};
+
+export function makeBenefitRedemptionSerializable(redemption: BenefitRedemption): SerializableBenefitRedemption {
+  return {
+    ...redemption,
+    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
+  };
+}
 
 // This is now just for initial data seeding or as a fallback.
 // The app will primarily use Firestore.

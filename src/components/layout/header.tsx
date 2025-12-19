@@ -1,6 +1,6 @@
-
 'use client';
 
+import React from 'react';
 import { GraduationCap, Menu, User, Settings, LogOut, ShieldQuestion, Trophy, Briefcase, History } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -119,9 +119,9 @@ function MainMenu() {
     const { isSupplier } = useSupplier();
 
     const navItems = [
-        { href: '/redeemed', label: 'Tus Canjes', icon: History, requiresAuth: true },
         { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true },
         { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
+        { href: '/supplier/redemptions', label: 'Historial de Canjes', icon: History, requiresAuth: true, show: isSupplier },
         { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
     ];
 
@@ -148,14 +148,16 @@ function MainMenu() {
                         if (show === false) return null; // Explicitly check for false to handle undefined
 
                         return (
-                             <SheetClose asChild key={href}>
-                                <Link href={href}>
-                                    <Button variant="ghost" className="w-full justify-start text-base">
-                                        <Icon className="mr-3 h-5 w-5" />
-                                        {label}
-                                    </Button>
-                                </Link>
-                            </SheetClose>
+                            <React.Fragment key={href}>
+                                <SheetClose asChild>
+                                    <Link href={href}>
+                                        <Button variant="ghost" className="w-full justify-start text-base">
+                                            <Icon className="mr-3 h-5 w-5" />
+                                            {label}
+                                        </Button>
+                                    </Link>
+                                </SheetClose>
+                            </React.Fragment>
                         );
                     })}
                 </nav>
