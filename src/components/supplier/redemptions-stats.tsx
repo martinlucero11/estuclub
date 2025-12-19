@@ -1,101 +1,185 @@
-
 'use client';
 
-import { useMemo, useState } from 'react';
-import { type SerializableBenefitRedemption } from '@/lib/data';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from 'react';
+import { GraduationCap, Menu, User, Settings, LogOut, ShieldQuestion, Trophy, Briefcase, History } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { useAuth, useUser } from '@/firebase';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import { useSupplier } from '@/firebase/auth/use-supplier';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { Skeleton } from '../ui/skeleton';
+import NotificationBell from './notification-bell';
 
-type TimeRange = 'today' | 'week' | 'month' | 'all';
-
-interface RedemptionsStatsProps {
-    redemptions: SerializableBenefitRedemption[];
+function Logo() {
+    return (
+        <Link href="/" className="flex items-center justify-center gap-2 text-primary">
+            <GraduationCap className="h-7 w-7" />
+             <div className="flex items-center gap-1">
+                <h1 className="flex items-center text-center font-bold text-primary font-headline">
+                    <span className="text-[1.8rem]">Estu</span>
+                    <span className="font-logo-script text-[1.8rem] text-primary">Club</span>
+                </h1>
+            </div>
+        </Link>
+    )
 }
 
-export default function RedemptionsStats({ redemptions }: RedemptionsStatsProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('all');
+function UserMenu() {
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
 
-  const filteredRedemptions = useMemo(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay());
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
 
-    return redemptions.filter(r => {
-        const redeemedDate = new Date(r.redeemedAt);
-        switch (timeRange) {
-            case 'today':
-                return redeemedDate >= today;
-            case 'week':
-                return redeemedDate >= weekStart;
-            case 'month':
-                return redeemedDate >= monthStart;
-            case 'all':
-            default:
-                return true;
-        }
-    });
-  }, [redemptions, timeRange]);
+  if (isUserLoading) {
+    return <Skeleton className="h-9 w-9 rounded-full" />;
+  }
 
-  const totalRedemptions = filteredRedemptions.length;
+  if (!user) {
+    return (
+      <Button asChild variant="ghost" size="icon">
+        <Link href="/login">
+            <User className="h-6 w-6" />
+        </Link>
+      </Button>
+    );
+  }
 
-  const redemptionsByBenefit = useMemo(() => {
-    return filteredRedemptions.reduce((acc, redemption) => {
-      acc[redemption.benefitTitle] = (acc[redemption.benefitTitle] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-  }, [filteredRedemptions]);
+  const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Estadísticas de Canjes</CardTitle>
-          <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrar por fecha" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="today">Hoy</SelectItem>
-              <SelectItem value="week">Esta semana</SelectItem>
-              <SelectItem value="month">Este mes</SelectItem>
-            </SelectContent>
-          </Select>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar className="h-9 w-9">
+                {user.photoURL && (
+                <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                )}
+                <AvatarFallback>{userInitial}</AvatarFallback>
+            </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user.displayName || 'Estudiante'}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/profile')}>
+          <User className="mr-2 h-4 w-4" />
+          <span>Mi Perfil</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings')}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Ajustes</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Cerrar sesión</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+
+function MainMenu() {
+    const { user } = useUser();
+    const { isAdmin } = useAdmin();
+    const { isSupplier } = useSupplier();
+
+    const navItems = [
+        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
+        { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
+        { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
+    ];
+
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Abrir menú</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+                <SheetHeader>
+                    <SheetTitle>
+                        <Logo />
+                    </SheetTitle>
+                    <SheetDescription>
+                        Navega por las secciones de la aplicación.
+                    </SheetDescription>
+                </SheetHeader>
+                <nav className="mt-8 flex flex-col gap-2">
+                    {navItems.map(({ href, label, icon: Icon, requiresAuth, show }) => {
+                        if (requiresAuth && !user) return null;
+                        if (show === false) return null; // Explicitly check for false to handle undefined
+
+                        return (
+                            <React.Fragment key={href}>
+                                <SheetClose asChild>
+                                    <Link href={href}>
+                                        <Button variant="ghost" className="w-full justify-start text-base">
+                                            <Icon className="mr-3 h-5 w-5" />
+                                            {label}
+                                        </Button>
+                                    </Link>
+                                </SheetClose>
+                            </React.Fragment>
+                        );
+                    })}
+                </nav>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
+export default function Header() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        <div className="w-1/3">
+             <MainMenu />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total de Canjes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{totalRedemptions}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Canjes por Beneficio</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {Object.entries(redemptionsByBenefit).length > 0 ? (
-                <ul className="space-y-2">
-                  {Object.entries(redemptionsByBenefit).map(([title, count]) => (
-                    <li key={title} className="flex justify-between">
-                      <span>{title}</span>
-                      <span className="font-bold">{count}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">No hay canjes en este período.</p>
-              )}
-            </CardContent>
-          </Card>
+        <div className="w-1/3 flex justify-center">
+            <Logo />
         </div>
-      </CardContent>
-    </Card>
+        <div className="w-1/3 flex justify-end items-center gap-2">
+            <NotificationBell />
+            <UserMenu />
+        </div>
+      </div>
+    </header>
   );
 }

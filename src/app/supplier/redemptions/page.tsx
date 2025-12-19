@@ -1,161 +1,185 @@
-
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import { useMemo } from 'react';
-import MainLayout from '@/components/layout/main-layout';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { makeBenefitRedemptionSerializable, type SerializableBenefitRedemption, type BenefitRedemption } from '@/lib/data';
-import { History, ShieldAlert } from 'lucide-react';
-import RedemptionsStats from '@/components/supplier/redemptions-stats';
+import React from 'react';
+import { GraduationCap, Menu, User, Settings, LogOut, ShieldQuestion, Trophy, Briefcase, History } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '../ui/button';
+import { useAuth, useUser } from '@/firebase';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { useSupplier } from '@/firebase/auth/use-supplier';
-import { Skeleton } from '@/components/ui/skeleton';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
+import { Skeleton } from '../ui/skeleton';
+import NotificationBell from './notification-bell';
 
-function RedemptionRow({ redemption }: { redemption: SerializableBenefitRedemption }) {
-  const redeemedAt = new Date(redemption.redeemedAt);
-
-  return (
-    <TableRow>
-      <TableCell className="font-medium">{redemption.benefitTitle}</TableCell>
-      <TableCell>{redemption.userName}</TableCell>
-      <TableCell>{redeemedAt.toLocaleDateString('es-ES')}</TableCell>
-      <TableCell className="text-right">{redeemedAt.toLocaleTimeString('es-ES')}</TableCell>
-    </TableRow>
-  );
-}
-
-function AccessDenied() {
+function Logo() {
     return (
-        <div className="flex flex-col items-center justify-center pt-16">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                        <ShieldAlert className="h-6 w-6 text-destructive" />
-                    </div>
-                    <CardTitle className="mt-4">Acceso Denegado</CardTitle>
-                    <CardDescription>
-                        No tienes permisos para ver el historial de canjes.
-                    </CardDescription>
-                </CardHeader>
-            </Card>
-        </div>
-    );
-}
-
-function RedemptionsList() {
-  const { user, isUserLoading: isAuthLoading } = useUser();
-  const firestore = useFirestore();
-
-  const redemptionsQuery = useMemoFirebase(() => {
-    if (!user) return null;
-    return query(
-      collection(firestore, 'benefitRedemptions'),
-      where('supplierId', '==', user.uid),
-      orderBy('redeemedAt', 'desc')
-    );
-  }, [user, firestore]);
-
-  const { data: redemptions, isLoading: isDataLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
-
-  const serializableRedemptions = useMemo(() => {
-    return redemptions?.map(makeBenefitRedemptionSerializable) || [];
-  }, [redemptions]);
-
-  const isLoading = isAuthLoading || isDataLoading;
-
-  if (isLoading) {
-    return (
-        <div className="space-y-4">
-            <Card>
-                <CardHeader>
-                    <Skeleton className="h-6 w-1/4" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-40 w-full" />
-                </CardContent>
-            </Card>
-             <Card>
-                <CardHeader>
-                    <Skeleton className="h-6 w-1/3" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-20 w-full" />
-                </CardContent>
-            </Card>
-        </div>
-    );
-  }
-
-  if (serializableRedemptions.length === 0) {
-    return (
-      <div className="text-center py-8 rounded-lg border-2 border-dashed">
-        <p className='font-medium'>No tienes canjes registrados a tu nombre.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      <RedemptionsStats redemptions={serializableRedemptions} />
-      <Card>
-        <CardHeader>
-          <CardTitle>Historial de Canjes</CardTitle>
-          <CardDescription>Aquí puedes ver todos los canjes de tus beneficios.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Beneficio</TableHead>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead className="text-right">Hora</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {serializableRedemptions.map(redemption => (
-                <RedemptionRow key={redemption.id} redemption={redemption} />
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-export default function SupplierRedemptionsPage() {
-  const { isAdmin, isLoading: isAdminLoading } = useAdmin();
-  const { isSupplier, isLoading: isSupplierLoading } = useSupplier();
-
-  const isLoading = isAdminLoading || isSupplierLoading;
-
-  return (
-    <MainLayout>
-      <div className="flex-1 space-y-8 p-4 md:p-8">
-        <header className="space-y-2">
-            <div className="flex items-center gap-3">
-                <History className="h-8 w-8 text-primary" />
-                <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                    Canjes de Beneficios
+        <Link href="/" className="flex items-center justify-center gap-2 text-primary">
+            <GraduationCap className="h-7 w-7" />
+             <div className="flex items-center gap-1">
+                <h1 className="flex items-center text-center font-bold text-primary font-headline">
+                    <span className="text-[1.8rem]">Estu</span>
+                    <span className="font-logo-script text-[1.8rem] text-primary">Club</span>
                 </h1>
             </div>
-            <p className="text-muted-foreground">
-                Visualiza el historial de todos los beneficios que han sido canjeados por los estudiantes.
+        </Link>
+    )
+}
+
+function UserMenu() {
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+
+  if (isUserLoading) {
+    return <Skeleton className="h-9 w-9 rounded-full" />;
+  }
+
+  if (!user) {
+    return (
+      <Button asChild variant="ghost" size="icon">
+        <Link href="/login">
+            <User className="h-6 w-6" />
+        </Link>
+      </Button>
+    );
+  }
+
+  const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar className="h-9 w-9">
+                {user.photoURL && (
+                <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                )}
+                <AvatarFallback>{userInitial}</AvatarFallback>
+            </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user.displayName || 'Estudiante'}
             </p>
-        </header>
-        {isLoading ? (
-             <Skeleton className="h-64 w-full" />
-        ) : (isAdmin || isSupplier) ? (
-            <RedemptionsList />
-        ) : (
-            <AccessDenied />
-        )}
+            <p className="text-xs leading-none text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/profile')}>
+          <User className="mr-2 h-4 w-4" />
+          <span>Mi Perfil</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/settings')}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Ajustes</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Cerrar sesión</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+
+function MainMenu() {
+    const { user } = useUser();
+    const { isAdmin } = useAdmin();
+    const { isSupplier } = useSupplier();
+
+    const navItems = [
+        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
+        { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
+        { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
+    ];
+
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Abrir menú</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+                <SheetHeader>
+                    <SheetTitle>
+                        <Logo />
+                    </SheetTitle>
+                    <SheetDescription>
+                        Navega por las secciones de la aplicación.
+                    </SheetDescription>
+                </SheetHeader>
+                <nav className="mt-8 flex flex-col gap-2">
+                    {navItems.map(({ href, label, icon: Icon, requiresAuth, show }) => {
+                        if (requiresAuth && !user) return null;
+                        if (show === false) return null; // Explicitly check for false to handle undefined
+
+                        return (
+                            <React.Fragment key={href}>
+                                <SheetClose asChild>
+                                    <Link href={href}>
+                                        <Button variant="ghost" className="w-full justify-start text-base">
+                                            <Icon className="mr-3 h-5 w-5" />
+                                            {label}
+                                        </Button>
+                                    </Link>
+                                </SheetClose>
+                            </React.Fragment>
+                        );
+                    })}
+                </nav>
+            </SheetContent>
+        </Sheet>
+    )
+}
+
+export default function Header() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+        <div className="w-1/3">
+             <MainMenu />
+        </div>
+        <div className="w-1/3 flex justify-center">
+            <Logo />
+        </div>
+        <div className="w-1/3 flex justify-end items-center gap-2">
+            <NotificationBell />
+            <UserMenu />
+        </div>
       </div>
-    </MainLayout>
+    </header>
   );
 }

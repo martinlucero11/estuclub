@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -76,11 +75,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
 
   const handleRedeem = async () => {
-    if (!user || !userProfile || !firestore || !perk.ownerId) {
+    if (!user || !userProfile || !firestore) {
       toast({ 
           variant: 'destructive', 
           title: 'Error de datos',
-          description: 'No se pudo cargar la información completa del beneficio. Inténtalo de nuevo.' 
+          description: 'No se pudo cargar la información completa para el canje. Inténtalo de nuevo.' 
       });
       return;
     }
@@ -139,19 +138,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
       batch.update(benefitRef, { redemptionCount: increment(1) });
       await batch.commit();
-      
-      // --- INICIO: Lógica para registrar el canje para el comercio ---
-      const benefitRedemptionData = {
-        benefitId: perk.id,
-        benefitTitle: perk.title,
-        supplierId: perk.ownerId, // Corregido: usar ownerId
-        userId: user.uid,
-        userName: `${userProfile.firstName} ${userProfile.lastName}`,
-        redeemedAt: serverTimestamp(),
-      };
-      addDoc(collection(firestore, 'benefitRedemptions'), benefitRedemptionData)
-        .catch(e => console.error("Error writing to benefitRedemptions: ", e));
-      // --- FIN: Lógica para registrar el canje para el comercio ---
 
       setRedemptionId(newRedemptionRef.id);
       toast({
