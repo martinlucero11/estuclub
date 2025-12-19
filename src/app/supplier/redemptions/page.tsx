@@ -1,186 +1,176 @@
 
 'use client';
 
-import React from 'react';
-import { GraduationCap, Menu, User, Settings, LogOut, ShieldQuestion, Trophy, Briefcase, History } from 'lucide-react';
-import Link from 'next/link';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { useAuth, useUser } from '@/firebase';
+import MainLayout from '@/components/layout/main-layout';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { useSupplier } from '@/firebase/auth/use-supplier';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import NotificationBell from '@/components/layout/notification-bell';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { ShieldAlert, History, User, Calendar, Tag, Fingerprint } from 'lucide-react';
+import { makeBenefitRedemptionSerializable, type SerializableBenefitRedemption, type BenefitRedemption } from '@/lib/data';
+import { useMemo } from 'react';
 
-function Logo() {
+function RedemptionsListSkeleton() {
     return (
-        <Link href="/" className="flex items-center justify-center gap-2 text-primary">
-            <GraduationCap className="h-7 w-7" />
-             <div className="flex items-center gap-1">
-                <h1 className="flex items-center text-center font-bold text-primary font-headline">
-                    <span className="text-[1.8rem]">Estu</span>
-                    <span className="font-logo-script text-[1.8rem] text-primary">Club</span>
-                </h1>
-            </div>
-        </Link>
-    )
-}
-
-function UserMenu() {
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
-  const router = useRouter();
-
-  const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
-  };
-
-  if (isUserLoading) {
-    return <Skeleton className="h-9 w-9 rounded-full" />;
-  }
-
-  if (!user) {
-    return (
-      <Button asChild variant="ghost" size="icon">
-        <Link href="/login">
-            <User className="h-6 w-6" />
-        </Link>
-      </Button>
+        <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i} className="p-4">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-12 w-12 rounded-full" />
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                    </div>
+                </Card>
+            ))}
+        </div>
     );
-  }
-
-  const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar className="h-9 w-9">
-                {user.photoURL && (
-                <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
-                )}
-                <AvatarFallback>{userInitial}</AvatarFallback>
-            </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {user.displayName || 'Estudiante'}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/profile')}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Mi Perfil</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/settings')}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Ajustes</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Cerrar sesión</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
-
-function MainMenu() {
-    const { user } = useUser();
-    const { isAdmin } = useAdmin();
-    const { isSupplier } = useSupplier();
-
-    const navItems = [
-        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
-        { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
-        { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
-    ];
-
+function AccessDenied() {
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Abrir menú</span>
-                </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-                <SheetHeader>
-                    <SheetTitle>
-                        <Logo />
-                    </SheetTitle>
-                    <SheetDescription>
-                        Navega por las secciones de la aplicación.
-                    </SheetDescription>
-                </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-2">
-                    {navItems.map(({ href, label, icon: Icon, requiresAuth, show }) => {
-                        if (requiresAuth && !user) return null;
-                        if (show === false) return null; // Explicitly check for false to handle undefined
+        <div className="flex flex-col items-center justify-center pt-16">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                        <ShieldAlert className="h-6 w-6 text-destructive" />
+                    </div>
+                    <CardTitle className="mt-4">Acceso Denegado</CardTitle>
+                    <CardDescription>
+                        No tienes permisos para acceder a esta sección.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        </div>
+    );
+}
 
-                        return (
-                            <React.Fragment key={href}>
-                                <SheetClose asChild>
-                                    <Link href={href}>
-                                        <Button variant="ghost" className="w-full justify-start text-base">
-                                            <Icon className="mr-3 h-5 w-5" />
-                                            {label}
-                                        </Button>
-                                    </Link>
-                                </SheetClose>
-                            </React.Fragment>
-                        );
-                    })}
-                </nav>
-            </SheetContent>
-        </Sheet>
+function RedemptionsContent() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const redemptionsQuery = useMemoFirebase(() => {
+        if (!user) return null;
+        return query(
+            collection(firestore, 'redeemed_benefits'),
+            where('ownerId', '==', user.uid),
+            orderBy('redeemedAt', 'desc')
+        );
+    }, [user, firestore]);
+
+    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+    
+    const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
+        if (!redemptions) return [];
+        return redemptions.map(makeBenefitRedemptionSerializable);
+    }, [redemptions]);
+
+
+    if (isLoading) {
+        return <RedemptionsListSkeleton />;
+    }
+
+    if (!serializableRedemptions || serializableRedemptions.length === 0) {
+        return (
+            <Alert>
+                <History className="h-4 w-4" />
+                <AlertTitle>No hay canjes</AlertTitle>
+                <AlertDescription>
+                    No tienes canjes registrados a tu nombre.
+                </AlertDescription>
+            </Alert>
+        );
+    }
+    
+    return (
+        <div className="space-y-4">
+            {serializableRedemptions.map(redemption => {
+                 const userInitial = redemption.userName ? redemption.userName.charAt(0).toUpperCase() : 'U';
+                 const redeemedDate = new Date(redemption.redeemedAt);
+
+                return (
+                <Card key={redemption.id} className="p-4">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div className="md:col-span-1 flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                                <AvatarFallback>{userInitial}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold text-foreground">{redemption.userName}</p>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Fingerprint className="h-4 w-4" />
+                                    <span>{redemption.userDni}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="md:col-span-1">
+                             <div className="flex items-center gap-2 text-sm font-medium">
+                                <Tag className="h-4 w-4 text-primary" />
+                                <p className="text-foreground">{redemption.benefitTitle}</p>
+                            </div>
+                        </div>
+                        <div className="md:col-span-1 md:text-right">
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground md:justify-end">
+                                <Calendar className="h-4 w-4" />
+                                <span>{redeemedDate.toLocaleDateString('es-ES')} - {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        </div>
+                     </div>
+                </Card>
+            )})}
+        </div>
     )
 }
 
-export default function Header() {
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <div className="w-1/3">
-             <MainMenu />
-        </div>
-        <div className="w-1/3 flex justify-center">
-            <Logo />
-        </div>
-        <div className="w-1/3 flex justify-end items-center gap-2">
-            <NotificationBell />
-            <UserMenu />
-        </div>
-      </div>
-    </header>
-  );
+
+export default function RedemptionsPage() {
+    const { user, isUserLoading } = useUser();
+    const { isSupplier, isLoading: isSupplierLoading } = useSupplier();
+    const { isAdmin, isLoading: isAdminLoading } = useAdmin();
+
+    const isLoading = isUserLoading || isSupplierLoading || isAdminLoading;
+    
+    if (isLoading) {
+        return (
+            <MainLayout>
+                <div className="flex-1 space-y-8 p-4 md:p-8">
+                    <RedemptionsListSkeleton />
+                </div>
+            </MainLayout>
+        )
+    }
+
+    if (!user || (!isSupplier && !isAdmin)) {
+        return (
+            <MainLayout>
+                <AccessDenied />
+            </MainLayout>
+        )
+    }
+
+    return (
+        <MainLayout>
+            <div className="flex-1 space-y-8 p-4 md:p-8">
+                <header className="space-y-2">
+                    <div className="flex items-center gap-3">
+                        <History className="h-8 w-8 text-primary" />
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+                            Historial de Canjes
+                        </h1>
+                    </div>
+                    <p className="text-muted-foreground">
+                        Revisa todos los beneficios que han sido canjeados por los estudiantes.
+                    </p>
+                </header>
+
+                <RedemptionsContent />
+            </div>
+        </MainLayout>
+    );
 }
+
