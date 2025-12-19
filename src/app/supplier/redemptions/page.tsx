@@ -100,7 +100,7 @@ function RedemptionsList() {
 
   return (
     <div className="space-y-8">
-      <RedemptionsStats redemptions={serializableRedemptions} userId={user!.uid} />
+      <RedemptionsStats redemptions={serializableRedemptions} />
       <Card>
         <CardHeader>
           <CardTitle>Historial de Canjes</CardTitle>

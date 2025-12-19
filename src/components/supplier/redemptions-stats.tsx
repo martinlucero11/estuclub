@@ -10,10 +10,9 @@ type TimeRange = 'today' | 'week' | 'month' | 'all';
 
 interface RedemptionsStatsProps {
     redemptions: SerializableBenefitRedemption[];
-    userId: string;
 }
 
-export default function RedemptionsStats({ redemptions, userId }: RedemptionsStatsProps) {
+export default function RedemptionsStats({ redemptions }: RedemptionsStatsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
   const filteredRedemptions = useMemo(() => {
@@ -25,8 +24,6 @@ export default function RedemptionsStats({ redemptions, userId }: RedemptionsSta
 
     return redemptions.filter(r => {
         const redeemedDate = new Date(r.redeemedAt);
-        if (r.supplierId !== userId) return false;
-
         switch (timeRange) {
             case 'today':
                 return redeemedDate >= today;
@@ -39,7 +36,7 @@ export default function RedemptionsStats({ redemptions, userId }: RedemptionsSta
                 return true;
         }
     });
-  }, [redemptions, timeRange, userId]);
+  }, [redemptions, timeRange]);
 
   const totalRedemptions = filteredRedemptions.length;
 
