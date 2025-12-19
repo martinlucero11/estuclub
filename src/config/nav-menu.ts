@@ -38,13 +38,6 @@ export const navConfig: NavConfig = {
           items: [],
         },
         {
-          title: "Estadísticas",
-          href: "/admin/stats",
-          icon: BarChart2,
-          role: "admin",
-          items: [],
-        },
-        {
           title: "Proveedores",
           href: "/admin/suppliers",
           icon: Building,
