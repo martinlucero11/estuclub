@@ -25,11 +25,11 @@ function RedemptionRow({ redemption }: { redemption: SerializableBenefitRedempti
 }
 
 function RedemptionsList() {
-  const { user } = useUser();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
 
   const redemptionsQuery = useMemoFirebase(() => {
-    if (!user) return undefined;
+    if (!user) return null; // Wait for user to be available
     return query(
       collection(firestore, 'benefitRedemptions'),
       where('supplierId', '==', user.uid),
@@ -37,11 +37,13 @@ function RedemptionsList() {
     );
   }, [user, firestore]);
 
-  const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+  const { data: redemptions, isLoading: isDataLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
 
   const serializableRedemptions = useMemo(() => {
     return redemptions?.map(makeBenefitRedemptionSerializable) || [];
   }, [redemptions]);
+
+  const isLoading = isAuthLoading || isDataLoading;
 
   if (isLoading) {
     return <div>Cargando canjes...</div>;
