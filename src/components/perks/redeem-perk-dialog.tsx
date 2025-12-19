@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -122,6 +123,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
+        supplierId: perk.ownerId, // IMPORTANT: Add supplier ID
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         benefitId: perk.id,
@@ -267,3 +269,5 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
+
+    

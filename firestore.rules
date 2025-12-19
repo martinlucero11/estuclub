@@ -39,15 +39,6 @@ service cloud.firestore {
       allow update: if isSignedIn(); 
       allow create, delete: if isAdmin();
     }
-
-    match /benefitRedemptions/{redemptionId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isSignedIn() && 
-                  (request.auth.uid == resource.data.supplierId || 
-                   request.auth.uid == resource.data.userId || 
-                   isAdmin());
-      allow update, delete: if false;
-    }
     
     match /announcements/{announcementId} {
         allow read: if true;
@@ -57,7 +48,13 @@ service cloud.firestore {
 
     match /redeemed_benefits/{id} {
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
+      
+      // USER: Can read their own redemptions.
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // SUPPLIER/ADMIN: Can list redemptions for their benefits.
+      allow list: if (isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid);
+      
       allow update: if isOwner(resource.data.userId);
       allow delete: if false;
     }
@@ -92,3 +89,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

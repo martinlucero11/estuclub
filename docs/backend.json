@@ -377,6 +377,10 @@
           "type": "string",
           "description": "The ID of the user who redeemed the benefit. (Relationship: UserProfile 1:N RedeemedBenefit)"
         },
+        "supplierId": {
+          "type": "string",
+          "description": "The ID of the supplier who owns the benefit."
+        },
         "benefitId": {
           "type": "string",
           "description": "The ID of the redeemed benefit. (Relationship: Benefit 1:N RedeemedBenefit)"
@@ -410,6 +414,7 @@
       "required": [
         "id",
         "userId",
+        "supplierId",
         "benefitId",
         "redeemedAt",
         "status",
@@ -473,6 +478,14 @@
         "queryScope": "COLLECTION",
         "fields": [
           { "fieldPath": "userId", "order": "ASCENDING" },
+          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
+        ]
+      },
+      {
+        "collectionGroup": "redeemed_benefits",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "supplierId", "order": "ASCENDING" },
           { "fieldPath": "redeemedAt", "order": "DESCENDING" }
         ]
       },
@@ -664,4 +677,5 @@
   }
 }
 
+    
     

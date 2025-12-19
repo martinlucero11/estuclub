@@ -58,7 +58,7 @@ function RedemptionsContent() {
         if (!user) return null;
         return query(
             collection(firestore, 'redeemed_benefits'),
-            where('ownerId', '==', user.uid),
+            where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
@@ -174,3 +174,4 @@ export default function RedemptionsPage() {
     );
 }
 
+    
