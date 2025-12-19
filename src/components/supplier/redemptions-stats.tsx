@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -7,7 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 type TimeRange = 'today' | 'week' | 'month' | 'all';
 
-export default function RedemptionsStats({ redemptions }: { redemptions: SerializableBenefitRedemption[] }) {
+interface RedemptionsStatsProps {
+    redemptions: SerializableBenefitRedemption[];
+    userId: string;
+}
+
+export default function RedemptionsStats({ redemptions, userId }: RedemptionsStatsProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
   const filteredRedemptions = useMemo(() => {
@@ -17,18 +23,23 @@ export default function RedemptionsStats({ redemptions }: { redemptions: Seriali
     weekStart.setDate(today.getDate() - today.getDay());
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    switch (timeRange) {
-      case 'today':
-        return redemptions.filter(r => new Date(r.redeemedAt) >= today);
-      case 'week':
-        return redemptions.filter(r => new Date(r.redeemedAt) >= weekStart);
-      case 'month':
-        return redemptions.filter(r => new Date(r.redeemedAt) >= monthStart);
-      case 'all':
-      default:
-        return redemptions;
-    }
-  }, [redemptions, timeRange]);
+    return redemptions.filter(r => {
+        const redeemedDate = new Date(r.redeemedAt);
+        if (r.supplierId !== userId) return false;
+
+        switch (timeRange) {
+            case 'today':
+                return redeemedDate >= today;
+            case 'week':
+                return redeemedDate >= weekStart;
+            case 'month':
+                return redeemedDate >= monthStart;
+            case 'all':
+            default:
+                return true;
+        }
+    });
+  }, [redemptions, timeRange, userId]);
 
   const totalRedemptions = filteredRedemptions.length;
 
