@@ -119,9 +119,9 @@ function MainMenu() {
     const { isSupplier } = useSupplier();
 
     const navItems = [
-        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true },
+        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
         { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
-        { href: '/supplier/redemptions', label: 'Historial de Canjes', icon: History, requiresAuth: true, show: isSupplier },
+        { href: '/supplier/redemptions', label: 'Historial de Canjes', icon: History, requiresAuth: true, show: isSupplier || isAdmin },
         { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
     ];
 
