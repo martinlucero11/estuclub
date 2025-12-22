@@ -133,7 +133,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       const redemptionData = {
         id: newRedemptionRef.id,
         userId: user.uid,
-        supplierId: perk.ownerId, // IMPORTANT: Add supplier ID
+        supplierId: perk.ownerId,
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         userPhone: userProfile.phone,
