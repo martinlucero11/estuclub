@@ -27,12 +27,22 @@ interface RedeemPerkDialogProps {
   isCarouselTrigger?: boolean;
 }
 
+// Complete UserProfile interface to match Firestore document
 interface UserProfile {
-  firstName: string;
-  lastName: string;
-  dni: string;
-  phone: string;
+    id: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    dni: string;
+    phone: string;
+    gender: string;
+    dateOfBirth: string;
+    university: string;
+    major: string;
+    points: number;
 }
+
 
 const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const dayAbbreviations: { [key: string]: string } = {
@@ -127,6 +137,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         supplierId: perk.ownerId, // IMPORTANT: Add supplier ID
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
+        userPhone: userProfile.phone,
         benefitId: perk.id,
         benefitTitle: perk.title,
         redeemedAt: serverTimestamp(),
@@ -139,7 +150,9 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       if (perk.points && perk.points > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(perk.points) });
       }
-      batch.update(benefitRef, { redemptionCount: increment(1) });
+      // This was causing the permission error. A user cannot update a benefit document.
+      // This metric should be handled by a backend function if needed.
+      // batch.update(benefitRef, { redemptionCount: increment(1) });
       await batch.commit();
 
       setRedemptionId(newRedemptionRef.id);
