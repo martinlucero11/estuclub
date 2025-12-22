@@ -3,50 +3,36 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
     }
 
     function isSupplier() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    // --- Specific Collection Rules ---
-
-    // CORRECT RULE FOR BENEFIT REDEMPTIONS
-    // This explicitly allows the supplier's query, fixing the "permission denied" error.
     match /benefitRedemptions/{redemptionId} {
-      
-      // GET: Allow user, supplier, or admin to get a single document.
-      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid)
-                    || (isSupplier() && resource.data.supplierId == request.auth.uid)
-                    || isAdmin();
 
-      // LIST: THE CORE FIX. Explicitly allows the filtered query for suppliers.
-      allow list: if (isSupplier() && request.query.where("supplierId", "==", request.auth.uid));
+      // LIST (queries)
+      allow list: if isSupplier()
+        && request.query.where("supplierId", "==", request.auth.uid);
 
-      // WRITE: Allow users to create, and suppliers/admins to update.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
-      allow delete: if false;
+      // GET (doc individual)
+      allow get: if isSupplier()
+        && resource.data.supplierId == request.auth.uid;
+
+      allow write: if false;
+    }
+
+    match /roles_supplier/{uid} {
+      allow read: if isSignedIn() && uid == request.auth.uid;
+      allow write: if false;
     }
     
-    // Rule for supplier roles (allows admin to manage them).
-    match /roles_supplier/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // --- Fallback Rule ---
-    // This general rule applies to all other collections (users, benefits, etc.)
-    // to ensure the rest of the application continues to work as before.
+    // Regla de seguridad para permitir que el resto de la app funcione
     match /{document=**} {
-      allow read, write: if isSignedIn();
+        allow read, write: if isSignedIn();
     }
   }
 }
