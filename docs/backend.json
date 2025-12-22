@@ -228,6 +228,10 @@
           "type": "number",
           "description": "The number of points awarded for redeeming this benefit."
         },
+        "cost": {
+          "type": "number",
+          "description": "The number of points required to redeem this benefit."
+        },
         "redemptionLimit": {
             "type": "number",
             "description": "Maximum number of times a user can redeem this benefit. 0 or undefined means unlimited."
@@ -366,16 +370,15 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "RedeemedBenefit",
       "type": "object",
-      "description": "Tracks a benefit that has been redeemed by a user.",
+      "description": "Tracks a benefit that has been redeemed by a user. This is the user-facing record.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the redemption event.",
-          "format": "uuid"
+          "description": "Unique identifier for the redemption event (matches BenefitRedemption id)."
         },
         "userId": {
           "type": "string",
-          "description": "The ID of the user who redeemed the benefit. (Relationship: UserProfile 1:N RedeemedBenefit)"
+          "description": "The ID of the user who redeemed the benefit."
         },
         "supplierId": {
           "type": "string",
@@ -383,32 +386,26 @@
         },
         "benefitId": {
           "type": "string",
-          "description": "The ID of the redeemed benefit. (Relationship: Benefit 1:N RedeemedBenefit)"
+          "description": "The ID of the redeemed benefit."
+        },
+        "benefitTitle": {
+          "type": "string"
         },
         "redeemedAt": {
           "type": "string",
-          "description": "The date and time the benefit was redeemed.",
+          "format": "date-time"
+        },
+        "usedAt": {
+          "type": "string",
           "format": "date-time"
         },
         "status": {
           "type": "string",
-          "description": "The status of the redemption.",
-          "enum": [
-            "valid",
-            "used"
-          ]
+          "enum": ["pending", "used"]
         },
-        "userName": {
+        "qrCodeValue": {
           "type": "string",
-          "description": "The name of the user at the time of redemption."
-        },
-        "userDni": {
-          "type": "string",
-          "description": "The DNI of the user at the time of redemption."
-        },
-        "benefitTitle": {
-          "type": "string",
-          "description": "The title of the benefit at the time of redemption."
+          "description": "The stringified JSON value for the QR code."
         }
       },
       "required": [
@@ -416,11 +413,59 @@
         "userId",
         "supplierId",
         "benefitId",
+        "benefitTitle",
         "redeemedAt",
         "status",
+        "qrCodeValue"
+      ]
+    },
+    "BenefitRedemption": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BenefitRedemption",
+      "type": "object",
+      "description": "Operational record for a redemption, used by suppliers for validation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the redemption event (matches RedeemedBenefit id)."
+        },
+        "benefitId": {
+          "type": "string"
+        },
+        "supplierId": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "userName": {
+          "type": "string"
+        },
+        "userDni": {
+          "type": "string"
+        },
+        "redeemedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "usedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "used"]
+        }
+      },
+      "required": [
+        "id",
+        "benefitId",
+        "supplierId",
+        "userId",
         "userName",
         "userDni",
-        "benefitTitle"
+        "redeemedAt",
+        "status"
       ]
     },
     "Notification": {
@@ -481,8 +526,8 @@
           { "fieldPath": "redeemedAt", "order": "DESCENDING" }
         ]
       },
-      {
-        "collectionGroup": "redeemed_benefits",
+       {
+        "collectionGroup": "benefitRedemptions",
         "queryScope": "COLLECTION",
         "fields": [
           { "fieldPath": "supplierId", "order": "ASCENDING" },
@@ -585,7 +630,23 @@
           "schema": {
             "$ref": "#/backend/entities/RedeemedBenefit"
           },
-          "description": "Stores a record of each benefit redemption. This is a root collection for efficient querying by users.",
+          "description": "User-facing record of a benefit redemption.",
+          "params": [
+            {
+              "name": "redemptionId",
+              "description": "The unique identifier for the redemption event."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/benefitRedemptions/{redemptionId}",
+        "definition": {
+          "entityName": "BenefitRedemption",
+          "schema": {
+            "$ref": "#/backend/entities/BenefitRedemption"
+          },
+          "description": "Supplier-facing operational record of a benefit redemption.",
           "params": [
             {
               "name": "redemptionId",
@@ -676,5 +737,3 @@
     ]
   }
 }
-
-    

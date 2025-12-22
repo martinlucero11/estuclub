@@ -1,0 +1,112 @@
+
+'use client';
+
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { History, Tag, Calendar, CheckCircle } from 'lucide-react';
+import type { RedeemedBenefit, SerializableRedeemedBenefit } from '@/lib/data';
+import { makeRedeemedBenefitSerializable } from '@/lib/data';
+import { useMemo, useState } from 'react';
+import { Badge } from '../ui/badge';
+import RedemptionQRCodeDialog from './redemption-qr-code-dialog';
+
+function RedemptionsListSkeleton() {
+    return (
+        <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i} className="p-4">
+                    <div className="flex items-center gap-4">
+                        <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                        </div>
+                        <Skeleton className="h-10 w-24" />
+                    </div>
+                </Card>
+            ))}
+        </div>
+    );
+}
+
+
+export default function MyRedemptionsList() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const redemptionsQuery = useMemoFirebase(() => {
+        if (!user) return null;
+        return query(
+            collection(firestore, 'redeemed_benefits'),
+            where('userId', '==', user.uid),
+            orderBy('redeemedAt', 'desc')
+        );
+    }, [user, firestore]);
+
+    const { data: redemptions, isLoading } = useCollection<RedeemedBenefit>(redemptionsQuery);
+    
+    const serializableRedemptions: SerializableRedeemedBenefit[] = useMemo(() => {
+        if (!redemptions) return [];
+        return redemptions.map(makeRedeemedBenefitSerializable);
+    }, [redemptions]);
+
+
+    if (isLoading) {
+        return <RedemptionsListSkeleton />;
+    }
+
+    if (!serializableRedemptions || serializableRedemptions.length === 0) {
+        return (
+            <Alert>
+                <History className="h-4 w-4" />
+                <AlertTitle>No tienes canjes</AlertTitle>
+                <AlertDescription>
+                   Aún no has canjeado ningún beneficio. ¡Explora y empieza a disfrutar!
+                </AlertDescription>
+            </Alert>
+        );
+    }
+    
+    return (
+        <div className="space-y-4">
+            {serializableRedemptions.map(redemption => {
+                 const redeemedDate = new Date(redemption.redeemedAt);
+
+                return (
+                <Card key={redemption.id} className="p-4">
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                        <div className="md:col-span-1">
+                             <div className="flex items-center gap-2 text-sm font-medium">
+                                <Tag className="h-4 w-4 text-primary" />
+                                <p className="text-foreground">{redemption.benefitTitle}</p>
+                            </div>
+                        </div>
+                        <div className="md:col-span-1 flex flex-col items-start md:items-center">
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                <span>{redeemedDate.toLocaleDateString('es-ES')} - {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        </div>
+                        <div className="md:col-span-1 flex items-center justify-start md:justify-end gap-4">
+                           <Badge variant={redemption.status === 'used' ? 'secondary' : 'default'}>
+                                {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
+                           </Badge>
+                           {redemption.status === 'pending' ? (
+                               <RedemptionQRCodeDialog
+                                    redemptionId={redemption.id}
+                                    qrCodeValue={redemption.qrCodeValue}
+                               />
+                           ) : (
+                               <div className="flex items-center text-green-600">
+                                   <CheckCircle className="h-5 w-5" />
+                               </div>
+                           )}
+                        </div>
+                     </div>
+                </Card>
+            )})}
+        </div>
+    )
+}

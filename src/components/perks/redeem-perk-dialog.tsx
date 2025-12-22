@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
 import { CheckCircle, CalendarDays } from 'lucide-react';
@@ -22,7 +22,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 interface RedeemPerkDialogProps {
-  perk: SerializablePerk;
+  perk: SerializablePerk & { cost?: number };
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
@@ -70,7 +70,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   useEffect(() => {
     if (!redemptionId || typeof window === 'undefined') return;
     
-    // The QR code contains ONLY the redemptionId as a JSON object
     const qrCodeValue = JSON.stringify({ redemptionId: redemptionId });
 
     QRCode.toDataURL(qrCodeValue, {
@@ -134,12 +133,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
           throw new Error(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
         }
       }
-
+      
+      const batch = writeBatch(firestore);
       const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
       const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionRef.id });
       
       const redemptionData = {
-        redemptionId: newRedemptionRef.id,
+        id: newRedemptionRef.id,
         benefitId: perk.id,
         benefitTitle: perk.title,
         userId: user.uid,
@@ -148,27 +148,25 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         qrCodeValue: qrCodeValue,
         status: 'pending',
       };
-      
-      const batch = writeBatch(firestore);
       batch.set(newRedemptionRef, redemptionData);
+
+      // Create operational record for supplier
+      const supplierRedemptionRef = doc(firestore, 'benefitRedemptions', newRedemptionRef.id);
+      batch.set(supplierRedemptionRef, {
+        id: newRedemptionRef.id,
+        benefitId: perk.id,
+        supplierId: perk.ownerId,
+        userId: user.uid,
+        userName: `${userProfile.firstName} ${userProfile.lastName}`,
+        userDni: userProfile.dni,
+        redeemedAt: serverTimestamp(),
+        status: 'pending',
+      });
       
       // Deduct points
       if (cost > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(-cost) });
       }
-
-      // Add to supplier's redemption collection for auditing
-      const supplierRedemptionRef = doc(collection(firestore, 'benefitRedemptions'));
-      batch.set(supplierRedemptionRef, {
-        redemptionId: newRedemptionRef.id,
-        benefitId: perk.id,
-        supplierId: perk.ownerId,
-        userId: user.uid,
-        userName: `${userProfile.firstName} ${userProfile.lastName}`,
-        redeemedAt: serverTimestamp(),
-        status: 'pending',
-      });
-
 
       await batch.commit();
 

@@ -10,9 +10,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { ShieldAlert, History, User, Calendar, Tag, Fingerprint } from 'lucide-react';
+import { ShieldAlert, History, User, Calendar, Tag, Fingerprint, CheckCircle, Hourglass } from 'lucide-react';
 import { makeBenefitRedemptionSerializable, type SerializableBenefitRedemption, type BenefitRedemption } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 function RedemptionsListSkeleton() {
     return (
@@ -50,38 +52,14 @@ function AccessDenied() {
     );
 }
 
-function RedemptionsContent() {
-    const { user } = useUser();
-    const firestore = useFirestore();
-
-    const redemptionsQuery = useMemoFirebase(() => {
-        if (!user) return null;
-        return query(
-            collection(firestore, 'redeemed_benefits'),
-            where('supplierId', '==', user.uid),
-            orderBy('redeemedAt', 'desc')
-        );
-    }, [user, firestore]);
-
-    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
-    
-    const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
-        if (!redemptions) return [];
-        return redemptions.map(makeBenefitRedemptionSerializable);
-    }, [redemptions]);
-
-
-    if (isLoading) {
-        return <RedemptionsListSkeleton />;
-    }
-
-    if (!serializableRedemptions || serializableRedemptions.length === 0) {
+function RedemptionList({ redemptions }: { redemptions: SerializableBenefitRedemption[] }) {
+     if (!redemptions || redemptions.length === 0) {
         return (
             <Alert>
                 <History className="h-4 w-4" />
                 <AlertTitle>No hay canjes</AlertTitle>
                 <AlertDescription>
-                    No tienes canjes registrados a tu nombre.
+                    No se encontraron canjes en esta categoría.
                 </AlertDescription>
             </Alert>
         );
@@ -89,9 +67,10 @@ function RedemptionsContent() {
     
     return (
         <div className="space-y-4">
-            {serializableRedemptions.map(redemption => {
+            {redemptions.map(redemption => {
                  const userInitial = redemption.userName ? redemption.userName.charAt(0).toUpperCase() : 'U';
                  const redeemedDate = new Date(redemption.redeemedAt);
+                 const usedDate = redemption.usedAt ? new Date(redemption.usedAt) : null;
 
                 return (
                 <Card key={redemption.id} className="p-4">
@@ -109,21 +88,88 @@ function RedemptionsContent() {
                             </div>
                         </div>
                         <div className="md:col-span-1">
-                             <div className="flex items-center gap-2 text-sm font-medium">
-                                <Tag className="h-4 w-4 text-primary" />
+                             <div className="flex items-center gap-2 text-sm font-medium text-primary">
+                                <Tag className="h-4 w-4" />
                                 <p className="text-foreground">{redemption.benefitTitle}</p>
                             </div>
                         </div>
-                        <div className="md:col-span-1 md:text-right">
-                             <div className="flex items-center gap-2 text-sm text-muted-foreground md:justify-end">
+                        <div className="md:col-span-1 flex items-center justify-start md:justify-end gap-4">
+                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
-                                <span>{redeemedDate.toLocaleDateString('es-ES')} - {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+                                <span>{usedDate ? usedDate.toLocaleDateString('es-ES') : redeemedDate.toLocaleDateString('es-ES')}</span>
                             </div>
+                            <Badge variant={redemption.status === 'used' ? 'secondary' : 'default'}>
+                                {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
+                           </Badge>
                         </div>
                      </div>
                 </Card>
             )})}
         </div>
+    )
+}
+
+function RedemptionsContent() {
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const redemptionsQuery = useMemoFirebase(() => {
+        if (!user) return null;
+        return query(
+            collection(firestore, 'benefitRedemptions'),
+            where('supplierId', '==', user.uid),
+            orderBy('redeemedAt', 'desc')
+        );
+    }, [user, firestore]);
+
+    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+    
+    const { pendingRedemptions, usedRedemptions } = useMemo(() => {
+        if (!redemptions) return { pendingRedemptions: [], usedRedemptions: [] };
+        
+        const serializable = redemptions.map(makeBenefitRedemptionSerializable);
+        return {
+            pendingRedemptions: serializable.filter(r => r.status === 'pending'),
+            usedRedemptions: serializable.filter(r => r.status === 'used'),
+        }
+    }, [redemptions]);
+
+
+    if (isLoading) {
+        return <RedemptionsListSkeleton />;
+    }
+
+    if (!redemptions || redemptions.length === 0) {
+        return (
+            <Alert>
+                <History className="h-4 w-4" />
+                <AlertTitle>No hay canjes</AlertTitle>
+                <AlertDescription>
+                    No tienes canjes registrados a tu nombre.
+                </AlertDescription>
+            </Alert>
+        );
+    }
+    
+    return (
+       <Tabs defaultValue="pending">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="pending">
+                    <Hourglass className="mr-2 h-4 w-4" />
+                    Pendientes ({pendingRedemptions.length})
+                </TabsTrigger>
+                <TabsTrigger value="used">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Usados ({usedRedemptions.length})
+                </TabsTrigger>
+            </TabsList>
+            <TabsContent value="pending" className="mt-4">
+                <RedemptionList redemptions={pendingRedemptions} />
+            </TabsContent>
+            <TabsContent value="used" className="mt-4">
+                 <RedemptionList redemptions={usedRedemptions} />
+            </TabsContent>
+       </Tabs>
     )
 }
 
@@ -164,7 +210,7 @@ export default function RedemptionsPage() {
                         </h1>
                     </div>
                     <p className="text-muted-foreground">
-                        Revisa todos los beneficios que han sido canjeados por los estudiantes.
+                        Revisa todos los beneficios que han sido canjeados por los estudiantes en tu comercio.
                     </p>
                 </header>
 
@@ -173,5 +219,3 @@ export default function RedemptionsPage() {
         </MainLayout>
     );
 }
-
-    

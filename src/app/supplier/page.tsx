@@ -3,7 +3,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, User, CalendarClock, BookUser, ConciergeBell } from 'lucide-react';
+import { ShieldAlert, User, CalendarClock, BookUser, ConciergeBell, QrCode } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,9 @@ import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import { useUser } from '@/firebase';
+import RedemptionStats from '@/components/supplier/redemptions-stats';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 function SupplierAccessDenied() {
     return (
@@ -85,14 +88,24 @@ export default function SupplierPage() {
   return (
     <MainLayout>
       <div className="flex-1 space-y-8 p-4 md:p-8">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Panel de Proveedor
-          </h1>
-          <p className="text-muted-foreground">
-            Gestiona tus servicios, turnos y revisa los canjes de tus clientes.
-          </p>
+        <header className="flex justify-between items-center">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              Panel de Proveedor
+            </h1>
+            <p className="text-muted-foreground">
+              Gestiona tus servicios, turnos y revisa los canjes de tus clientes.
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/supplier/scan">
+              <QrCode className="mr-2 h-4 w-4" />
+              Escanear QR
+            </Link>
+          </Button>
         </header>
+
+        <RedemptionStats />
 
         <Tabs defaultValue="profile" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-4 h-auto flex-wrap">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -98,6 +99,10 @@ function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
         </DropdownMenuItem>
+         <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
+          <History className="mr-2 h-4 w-4" />
+          <span>Mis Canjes</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Ajustes</span>
@@ -121,6 +126,7 @@ function MainMenu() {
     const navItems = [
         { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
         { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
+        { href: '/supplier/redemptions', label: 'Historial de Canjes', icon: History, requiresAuth: true, show: isSupplier },
         { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
     ];
 
