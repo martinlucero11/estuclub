@@ -3,12 +3,11 @@ import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SerializablePerk } from '@/lib/data';
 import RedeemPerkDialog from './redeem-perk-dialog';
-import { MapPin } from 'lucide-react';
+import { MapPin, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { Button } from '../ui/button';
 import { ArrowRight } from 'lucide-react';
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 
 interface PerkCardProps {
   perk: SerializablePerk;
@@ -35,6 +34,10 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
                 fill
                 className="object-cover"
             />
+             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
+                <Award className="h-3 w-3" />
+                <span>{perk.points} PTS</span>
+            </div>
         </div>
         <div className='flex flex-1 flex-col'>
           <CardHeader>
@@ -71,6 +74,10 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
           />
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 flex h-full flex-col justify-between p-4">
+             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
+                <Award className="h-3 w-3" />
+                <span>{perk.points} PTS</span>
+            </div>
             <div className='flex-grow'>
               <CardTitle className="text-xl line-clamp-2">{perk.title}</CardTitle>
               <CardDescription className='text-gray-300'>{perk.category}</CardDescription>

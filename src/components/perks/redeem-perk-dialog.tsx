@@ -17,12 +17,12 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
-import { CheckCircle, CalendarDays } from 'lucide-react';
+import { CheckCircle, CalendarDays, Award } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 interface RedeemPerkDialogProps {
-  perk: SerializablePerk & { cost?: number };
+  perk: SerializablePerk;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
@@ -101,13 +101,9 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setRedemptionId(null);
     setQrCodeUrl(null);
 
-    const cost = perk.cost || 0;
+    const pointsToGrant = perk.points || 0;
 
     try {
-      if ((userProfile.points || 0) < cost) {
-          throw new Error(`No tienes puntos suficientes. Necesitas ${cost} puntos.`);
-      }
-
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
       const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
@@ -147,10 +143,10 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
         status: 'pending',
+        points: pointsToGrant
       };
       batch.set(newRedemptionRef, redemptionData);
 
-      // Create operational record for supplier
       const supplierRedemptionRef = doc(firestore, 'benefitRedemptions', newRedemptionRef.id);
       batch.set(supplierRedemptionRef, {
         id: newRedemptionRef.id,
@@ -161,11 +157,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         userDni: userProfile.dni,
         redeemedAt: serverTimestamp(),
         status: 'pending',
+        pointsGranted: pointsToGrant,
       });
       
-      // Deduct points
-      if (cost > 0 && userProfileRef) {
-        batch.update(userProfileRef, { points: increment(-cost) });
+      if (pointsToGrant > 0 && userProfileRef) {
+        batch.update(userProfileRef, { points: increment(pointsToGrant) });
       }
 
       await batch.commit();
@@ -173,7 +169,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
-        description: `Muestra el código QR al proveedor para validarlo. Se han descontado ${cost} puntos de tu cuenta.`,
+        description: `Muestra el código QR al proveedor para validarlo. Se han sumado ${pointsToGrant} puntos a tu cuenta.`,
       });
 
     } catch (e: any) {
@@ -229,7 +225,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       </div>
   );
 
-  const cost = perk.cost || 0;
+  const points = perk.points || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -242,7 +238,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                 <DialogHeader>
                     <DialogTitle>Canjear: {perk.title}</DialogTitle>
                     <DialogDescription>
-                    Este beneficio tiene un costo de <span className="font-bold text-primary">{cost}</span> puntos.
+                    Al canjear este beneficio, ganarás <span className="font-bold text-primary">{points}</span> puntos.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -280,8 +276,8 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user || (userProfile && userProfile.points < cost)}>
-                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
+                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
+                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : <> <Award className='mr-2 h-4 w-4'/>Confirmar Canje</>)}
                     </Button>
                 </DialogFooter>
             </>

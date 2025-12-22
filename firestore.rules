@@ -55,31 +55,30 @@ service cloud.firestore {
     }
     
     match /benefitRedemptions/{redemptionId} {
-      // READ (GET): User can get their own, supplier can get their own.
-      allow get: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.supplierId == request.auth.uid
-      );
+      // Allow any authenticated user to create their own redemption record.
+      // Status must be 'pending' on creation.
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending";
+
+      // Allow a user to list/get their own redemptions.
+      allow list: if request.auth != null && request.query.where("userId", "==", request.auth.uid);
+      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      // Allow a supplier to list/get redemptions for their benefits.
+      allow list: if request.auth != null && request.query.where("supplierId", "==", request.auth.uid);
+      allow get: if request.auth != null && resource.data.supplierId == request.auth.uid;
       
-      // READ (LIST): User can list their own, supplier can list their own.
-      allow list: if isSignedIn() && (
-        request.query.where("userId", "==", request.auth.uid) ||
-        request.query.where("supplierId", "==", request.auth.uid)
-      );
-
-      // READ (ADMIN): Admin can read everything.
-      allow read: if isAdmin();
-
-      // CREATE: Any authenticated user can create their own redemption record.
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-
-      // UPDATE: Supplier can update status from 'pending' to 'used'.
-      allow update: if isSupplier() 
+      // Allow a supplier to update a 'pending' redemption to 'used'.
+      allow update: if request.auth != null
         && resource.data.supplierId == request.auth.uid
         && resource.data.status == "pending"
         && request.resource.data.status == "used";
 
-      // DELETE: Nobody can delete redemption records.
+      // Allow admin to read and write everything.
+      allow read, write: if isAdmin();
+
+      // Nobody can delete.
       allow delete: if false;
     }
 

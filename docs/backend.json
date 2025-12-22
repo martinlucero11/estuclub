@@ -228,10 +228,6 @@
           "type": "number",
           "description": "The number of points awarded for redeeming this benefit."
         },
-        "cost": {
-          "type": "number",
-          "description": "The number of points required to redeem this benefit."
-        },
         "redemptionLimit": {
             "type": "number",
             "description": "Maximum number of times a user can redeem this benefit. 0 or undefined means unlimited."
@@ -391,6 +387,10 @@
         "benefitTitle": {
           "type": "string"
         },
+        "points": {
+          "type": "number",
+          "description": "Points granted by this redemption."
+        },
         "redeemedAt": {
           "type": "string",
           "format": "date-time"
@@ -416,7 +416,8 @@
         "benefitTitle",
         "redeemedAt",
         "status",
-        "qrCodeValue"
+        "qrCodeValue",
+        "points"
       ]
     },
     "BenefitRedemption": {
@@ -444,6 +445,10 @@
         "userDni": {
           "type": "string"
         },
+        "pointsGranted": {
+          "type": "number",
+          "description": "Points granted by this redemption."
+        },
         "redeemedAt": {
           "type": "string",
           "format": "date-time"
@@ -465,7 +470,8 @@
         "userName",
         "userDni",
         "redeemedAt",
-        "status"
+        "status",
+        "pointsGranted"
       ]
     },
     "Notification": {
@@ -531,6 +537,14 @@
         "queryScope": "COLLECTION",
         "fields": [
           { "fieldPath": "supplierId", "order": "ASCENDING" },
+          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
+        ]
+      },
+       {
+        "collectionGroup": "benefitRedemptions",
+        "queryScope": "COLLECTION",
+        "fields": [
+          { "fieldPath": "userId", "order": "ASCENDING" },
           { "fieldPath": "redeemedAt", "order": "DESCENDING" }
         ]
       },
@@ -737,5 +751,3 @@
     ]
   }
 }
-
-    
