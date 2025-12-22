@@ -1,5 +1,4 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -7,9 +6,43 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    match /{document=**} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    function isSupplier() {
+      return exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    match /benefitRedemptions/{docId} {
+
+      allow get: if
+        isSignedIn() &&
+        (
+          resource.data.userId == request.auth.uid ||
+          resource.data.supplierId == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow list: if
+        isSignedIn() &&
+        (
+          isSupplier() ||
+          isAdmin()
+        );
+
+      allow create: if
+        isSignedIn() &&
+        request.resource.data.userId == request.auth.uid;
+
+      allow update: if
+        isSignedIn() &&
+        (
+          resource.data.supplierId == request.auth.uid ||
+          isAdmin()
+        );
+
+      allow delete: if isAdmin();
     }
   }
 }
