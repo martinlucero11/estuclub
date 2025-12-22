@@ -89,17 +89,23 @@ function RedemptionList({ redemptions }: { redemptions: SerializableBenefitRedem
                                 </div>
                             </div>
                         </div>
-                        <div className="md:col-span-1">
+                        <div className="md:col-span-1 space-y-1">
                              <div className="flex items-center gap-2 text-sm font-medium text-primary">
                                 <Tag className="h-4 w-4" />
                                 <p className="text-foreground">{redemption.benefitTitle}</p>
                             </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" />
+                                <span>Canjeado: {redeemedDate.toLocaleString('es-ES')}</span>
+                            </div>
+                            {usedDate && (
+                                 <div className="flex items-center gap-2 text-xs text-green-600">
+                                    <CheckCircle className="h-3 w-3" />
+                                    <span>Usado: {usedDate.toLocaleString('es-ES')}</span>
+                                </div>
+                            )}
                         </div>
                         <div className="md:col-span-1 flex items-center justify-start md:justify-end gap-4">
-                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                <span>{usedDate ? usedDate.toLocaleDateString('es-ES') : redeemedDate.toLocaleDateString('es-ES')}</span>
-                            </div>
                             <Badge variant={redemption.status === 'used' ? 'secondary' : 'default'}>
                                 {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
                            </Badge>
@@ -142,7 +148,7 @@ function RedemptionsContent({ user, isAdmin, isSupplier }: { user: FirebaseUser,
         return <RedemptionsListSkeleton />;
     }
 
-    if (!redemptions) {
+    if (!redemptions && !isLoading) {
         return (
             <Alert>
                 <History className="h-4 w-4" />
@@ -224,5 +230,3 @@ export default function RedemptionsPage() {
         </MainLayout>
     );
 }
-
-    
