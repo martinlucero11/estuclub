@@ -1,7 +1,6 @@
 
 'use client';
 import MainLayout from '@/components/layout/main-layout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -119,38 +118,17 @@ export default function LeaderboardPage() {
           </p>
         </header>
 
-        <Tabs defaultValue="historical" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="historical">Ranking Histórico</TabsTrigger>
-            <TabsTrigger value="weekly">Ranking Semanal</TabsTrigger>
-          </TabsList>
-          <TabsContent value="historical">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Estudiantes</CardTitle>
-                <CardDescription>
-                  Los usuarios con la mayor cantidad de puntos acumulados.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="weekly">
-             <Card>
-              <CardHeader>
-                <CardTitle>Top de la Semana</CardTitle>
-                <CardDescription>
-                  Los usuarios que más puntos han ganado esta semana. (Función en desarrollo)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                 {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle>Top Estudiantes</CardTitle>
+            <CardDescription>
+              Los usuarios con la mayor cantidad de puntos acumulados.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
