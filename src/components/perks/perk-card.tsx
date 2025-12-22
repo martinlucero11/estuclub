@@ -5,6 +5,10 @@ import type { SerializablePerk } from '@/lib/data';
 import RedeemPerkDialog from './redeem-perk-dialog';
 import { MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAdmin } from '@/firebase';
+import { Button } from '../ui/button';
+import { ArrowRight } from 'lucide-react';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '../ui/tooltip';
 
 interface PerkCardProps {
   perk: SerializablePerk;
@@ -13,6 +17,28 @@ interface PerkCardProps {
 }
 
 export default function PerkCard({ perk, className, variant = 'default' }: PerkCardProps) {
+  const { isAdmin, isLoading } = useAdmin();
+
+  const redeemButton = (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {/* The wrapping div is necessary for Tooltip to work on a disabled button */}
+            <div className='w-full'> 
+              <Button className="w-full" variant="default" disabled={isLoading || !isAdmin}>
+                {isLoading ? 'Cargando...' : 'Canjear Beneficio'}
+                {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          {!isAdmin && (
+            <TooltipContent>
+              <p>Solo los administradores pueden canjear beneficios.</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+    );
 
   const cardContent = (
       <Card className={cn("flex h-full flex-col overflow-hidden transition-all hover:shadow-lg", className)}>
@@ -39,7 +65,9 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
                     <span>{perk.location}</span>
                 </div>
             )}
-            <RedeemPerkDialog perk={perk} />
+            <RedeemPerkDialog perk={perk} isAdmin={isAdmin}>
+                {redeemButton}
+            </RedeemPerkDialog>
           </CardFooter>
         </div>
       </Card>
@@ -47,7 +75,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
 
   if (variant === 'carousel') {
     const carouselCardContent = (
-      <RedeemPerkDialog perk={perk} isCarouselTrigger>
+      <RedeemPerkDialog perk={perk} isAdmin={isAdmin} isCarouselTrigger>
         <Card className={cn("relative h-full overflow-hidden text-white transition-all hover:shadow-lg cursor-pointer", className)}>
           <Image
             src={perk.imageUrl}

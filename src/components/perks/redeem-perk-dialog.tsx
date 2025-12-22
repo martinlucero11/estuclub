@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase, useAdmin } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
@@ -25,6 +25,7 @@ interface RedeemPerkDialogProps {
   perk: SerializablePerk;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
+  isAdmin: boolean;
 }
 
 // Complete UserProfile interface to match Firestore document
@@ -55,7 +56,7 @@ const dayAbbreviations: { [key: string]: string } = {
   "Domingo": "D"
 };
 
-export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false }: RedeemPerkDialogProps) {
+export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false, isAdmin }: RedeemPerkDialogProps) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -96,6 +97,15 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       return;
     }
 
+     if (!isAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Acción no permitida',
+        description: 'Solo los administradores pueden canjear beneficios.',
+      });
+      return;
+    }
+
     setIsRedeeming(true);
     setError(null);
     setRedemptionId(null);
@@ -129,7 +139,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
 
       const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
-      const benefitRef = doc(firestore, 'benefits', perk.id);
       
       const redemptionData = {
         id: newRedemptionRef.id,
@@ -150,9 +159,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       if (perk.points && perk.points > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(perk.points) });
       }
-      // This was causing the permission error. A user cannot update a benefit document.
-      // This metric should be handled by a backend function if needed.
-      // batch.update(benefitRef, { redemptionCount: increment(1) });
+
       await batch.commit();
 
       setRedemptionId(newRedemptionRef.id);
@@ -217,12 +224,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <TriggerWrapper>
-        {isCarouselTrigger ? children : (
-          <Button className="w-full" variant="default" disabled={isLoading || !user}>
-            {isLoading ? 'Cargando...' : 'Canjear Beneficio'}
-            {!isLoading && <ArrowRight className="ml-2 h-4 w-4" />}
-          </Button>
-        )}
+        {children}
       </TriggerWrapper>
       <DialogContent className="sm:max-w-md">
         {!redemptionId ? (
@@ -261,7 +263,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading}>
+                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !isAdmin}>
                         {isRedeeming ? 'Validando...' : (isLoading ? 'Cargando perfil...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
                     </Button>
                 </DialogFooter>
