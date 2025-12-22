@@ -52,6 +52,9 @@ service cloud.firestore {
       // USER: Can read their own redemptions.
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       
+      // USER: Can list their own redemptions
+      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+      
       // SUPPLIER/ADMIN: Can list redemptions for their benefits.
       allow list: if (isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid);
       
