@@ -49,8 +49,8 @@ service cloud.firestore {
     match /redeemed_benefits/{id} {
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
       
-      // USER: Can read their own redemptions.
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // USER: Can read their own redemptions (get single doc)
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       
       // USER: Can list their own redemptions
       allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
