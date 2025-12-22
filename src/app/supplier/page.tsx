@@ -12,7 +12,6 @@ import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import { useUser } from '@/firebase';
-import RedemptionStats from '@/components/supplier/redemptions-stats';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -113,8 +112,6 @@ export default function SupplierPage() {
           </div>
         </header>
 
-        <RedemptionStats />
-
         <Tabs defaultValue="profile" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-4 h-auto flex-wrap">
              <TabsTrigger value="profile">
@@ -176,7 +173,7 @@ export default function SupplierPage() {
               <CardHeader>
                 <CardTitle>Añadir Nuevo Servicio</CardTitle>
                 <CardDescription>Crea un servicio que los estudiantes puedan reservar (ej: consulta, clase, etc.).</CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <AddServiceForm />
               </CardContent>
