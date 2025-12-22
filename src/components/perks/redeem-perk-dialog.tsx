@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useAdmin } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
@@ -25,7 +25,6 @@ interface RedeemPerkDialogProps {
   perk: SerializablePerk;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
-  isAdmin: boolean;
 }
 
 // Complete UserProfile interface to match Firestore document
@@ -56,7 +55,7 @@ const dayAbbreviations: { [key: string]: string } = {
   "Domingo": "D"
 };
 
-export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false, isAdmin }: RedeemPerkDialogProps) {
+export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false }: RedeemPerkDialogProps) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -93,15 +92,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
           variant: 'destructive', 
           title: 'Error de datos',
           description: 'No se pudo cargar la información completa para el canje. Inténtalo de nuevo.' 
-      });
-      return;
-    }
-
-     if (!isAdmin) {
-      toast({
-        variant: 'destructive',
-        title: 'Acción no permitida',
-        description: 'Solo los administradores pueden canjear beneficios.',
       });
       return;
     }
@@ -263,7 +253,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !isAdmin}>
+                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
                         {isRedeeming ? 'Validando...' : (isLoading ? 'Cargando perfil...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
                     </Button>
                 </DialogFooter>
