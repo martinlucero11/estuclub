@@ -34,49 +34,36 @@ service cloud.firestore {
 
     match /benefits/{benefitId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isAdmin() || isSupplier();
     }
     
     match /announcements/{announcementId} {
         allow read: if true;
-        allow create, update, delete: if isSignedIn() && (request.auth.uid == resource.data.authorId || isAdmin());
+        allow create: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
+        allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
-
-    match /redeemed_benefits/{id} {
-      allow create: if isSignedIn()
-        && request.auth.uid == request.resource.data.userId;
-
-      // USER: lista solo sus canjes
-      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-
-      // SUPPLIER: lista solo canjes de sus beneficios
-      allow list: if isSupplier() && request.query.where("supplierId", "==", request.auth.uid);
-
-      allow get: if isSignedIn()
-        && (
-          request.auth.uid == resource.data.userId
-          || request.auth.uid == resource.data.supplierId
-        );
-
-      allow update: if isSignedIn()
-        && request.auth.uid == resource.data.supplierId;
-
-      allow delete: if false;
-    }
-
-    match /benefitRedemptions/{docId} {
-      allow list: if isSupplier() && request.query.where("supplierId", "==", request.auth.uid);
-      allow get: if isSupplier() && request.auth.uid == resource.data.supplierId;
-    }
-
-    match /redemptions/{redemptionId} {
-        // Allow suppliers to read redemptions associated with them
-        allow read: if isSupplier() && resource.data.supplierId == request.auth.uid;
+    
+     match /redeemed_benefits/{redemptionId} {
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
         
-        // Allow admins to read all redemptions
-        allow read: if isAdmin();
+        // USER: Can list their own redemptions
+        allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+        
+        // SUPPLIER/ADMIN: Can list redemptions for their benefits.
+        allow list: if (isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid);
 
-        allow write: if false;
+        // USER: Can get their own redemption
+        // SUPPLIER/ADMIN: Can get a redemption for one of their benefits
+        allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid || isAdmin());
+
+        allow update: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
+        
+        allow delete: if false;
+    }
+    
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /roles_admin/{uid} {
