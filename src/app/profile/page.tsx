@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { AtSign, Copy, Save, Upload, User as UserIcon, Award, Trophy, QrCode } from 'lucide-react';
+import { AtSign, Copy, Save, Upload, User as UserIcon, Award, Trophy, QrCode, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -26,6 +26,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useUserRank } from '@/hooks/use-user-rank';
 import UserQRCodeDialog from '@/components/profile/user-qr-code-dialog';
+import Link from 'next/link';
 
 const profileFormSchema = z.object({
     firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -93,7 +94,7 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
         <CardTitle>Estadísticas</CardTitle>
         <CardDescription>Tus puntos y posición en el ranking.</CardDescription>
       </CardHeader>
-      <CardContent className="flex justify-around">
+      <CardContent className="grid grid-cols-2 gap-4">
         <div className="text-center">
           <div className="flex items-center justify-center gap-2">
             <Award className="h-6 w-6 text-primary" />
@@ -109,6 +110,14 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
           <p className="text-sm text-muted-foreground">Ranking</p>
         </div>
       </CardContent>
+      <CardFooter>
+        <Button asChild className="w-full" variant="outline">
+            <Link href="/my-redemptions">
+                <History className="mr-2 h-4 w-4" />
+                Ver Mis Canjes
+            </Link>
+        </Button>
+      </CardFooter>
     </Card>
   )
 }
