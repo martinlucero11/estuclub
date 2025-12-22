@@ -52,13 +52,6 @@ export const navConfig: NavConfig = {
           items: [],
         },
         {
-          title: "Historial de Canjes",
-          href: "/supplier/redemptions", 
-          icon: History, 
-          role: "supplier",
-          items: [],
-        },
-        {
           title: "Anuncios",
           href: "/admin/announcements",
           icon: Megaphone,
