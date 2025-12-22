@@ -10,7 +10,7 @@ import { Card, CardContent } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { CameraOff, CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { Button } from '../ui/button';
-import type { BenefitRedemption, RedeemedBenefit } from '@/lib/data';
+import type { BenefitRedemption } from '@/lib/data';
 
 const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number) => {
     const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
@@ -101,12 +101,10 @@ export default function QrScanner() {
             }
 
             if (redemptionData.status !== "pending") {
-                throw new Error(`Este canje ya ha sido utilizado el ${new Date(redemptionData.usedAt!.toDate()).toLocaleString()}.`);
+                throw new Error(`Este canje ya ha sido utilizado el ${redemptionData.usedAt ? new Date(redemptionData.usedAt.toDate()).toLocaleString() : 'N/A'}.`);
             }
             
-            // Validation successful, update both collections
             const batch = writeBatch(firestore);
-            const userRedemptionRef = doc(firestore, "redeemed_benefits", redemptionId);
             
             const updateData = {
                 status: 'used' as const,
@@ -114,7 +112,6 @@ export default function QrScanner() {
             };
             
             batch.update(redemptionRef, updateData);
-            batch.update(userRedemptionRef, updateData);
 
             await batch.commit();
 

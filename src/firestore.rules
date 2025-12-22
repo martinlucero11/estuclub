@@ -46,19 +46,30 @@ service cloud.firestore {
         allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
-    match /redeemed_benefits/{id} {
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
-      
-      // USER: Can read their own redemptions (get single doc)
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid || isAdmin());
-      
-      // USER: Can list their own redemptions
-      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-      
-      // SUPPLIER/ADMIN: Can list redemptions for their benefits.
-      allow list: if (isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid);
-      
-      allow update: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
+    match /benefitRedemptions/{id} {
+
+      // CREATE — cualquiera logueado puede canjear
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending";
+
+      // GET — usuario, supplier dueño o admin
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // LIST — usuario ve los suyos O supplier/admin ve los suyos
+      allow list: if (isSignedIn() && request.query.where("userId", "==", request.auth.uid)) ||
+                  ((isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid));
+
+      // UPDATE — supplier escanea QR / admin
+      allow update: if (
+        (isSupplier() && resource.data.supplierId == request.auth.uid && request.resource.data.status == "used") ||
+        isAdmin()
+      );
+
       allow delete: if false;
     }
     
@@ -71,8 +82,6 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
-
-
 
     match /roles_supplier/{uid} {
       allow read: if isSignedIn();

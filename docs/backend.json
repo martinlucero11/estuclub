@@ -362,32 +362,23 @@
         "updatedAt"
       ]
     },
-    "RedeemedBenefit": {
+    "BenefitRedemption": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "RedeemedBenefit",
+      "title": "BenefitRedemption",
       "type": "object",
-      "description": "Tracks a benefit that has been redeemed by a user. This is the user-facing record.",
+      "description": "Operational record for a redemption, used by suppliers for validation and by users for history.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the redemption event (matches BenefitRedemption id)."
+          "description": "Unique identifier for the redemption event."
         },
-        "userId": {
-          "type": "string",
-          "description": "The ID of the user who redeemed the benefit."
-        },
-        "supplierId": {
-          "type": "string",
-          "description": "The ID of the supplier who owns the benefit."
-        },
-        "benefitId": {
-          "type": "string",
-          "description": "The ID of the redeemed benefit."
-        },
-        "benefitTitle": {
-          "type": "string"
-        },
-        "points": {
+        "benefitId": { "type": "string" },
+        "benefitTitle": { "type": "string" },
+        "supplierId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userDni": { "type": "string" },
+        "pointsGranted": {
           "type": "number",
           "description": "Points granted by this redemption."
         },
@@ -410,67 +401,15 @@
       },
       "required": [
         "id",
-        "userId",
-        "supplierId",
         "benefitId",
         "benefitTitle",
-        "redeemedAt",
-        "status",
-        "qrCodeValue",
-        "points"
-      ]
-    },
-    "BenefitRedemption": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BenefitRedemption",
-      "type": "object",
-      "description": "Operational record for a redemption, used by suppliers for validation.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the redemption event (matches RedeemedBenefit id)."
-        },
-        "benefitId": {
-          "type": "string"
-        },
-        "supplierId": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        },
-        "userName": {
-          "type": "string"
-        },
-        "userDni": {
-          "type": "string"
-        },
-        "pointsGranted": {
-          "type": "number",
-          "description": "Points granted by this redemption."
-        },
-        "redeemedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "usedAt": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["pending", "used"]
-        }
-      },
-      "required": [
-        "id",
-        "benefitId",
         "supplierId",
         "userId",
         "userName",
         "userDni",
         "redeemedAt",
         "status",
+        "qrCodeValue",
         "pointsGranted"
       ]
     },
@@ -522,14 +461,6 @@
         "fields": [
           { "fieldPath": "ownerId", "order": "ASCENDING" },
           { "fieldPath": "createdAt", "order": "DESCENDING" }
-        ]
-      },
-      {
-        "collectionGroup": "redeemed_benefits",
-        "queryScope": "COLLECTION",
-        "fields": [
-          { "fieldPath": "userId", "order": "ASCENDING" },
-          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
         ]
       },
        {
@@ -638,29 +569,13 @@
         }
       },
       {
-        "path": "/redeemed_benefits/{redemptionId}",
-        "definition": {
-          "entityName": "RedeemedBenefit",
-          "schema": {
-            "$ref": "#/backend/entities/RedeemedBenefit"
-          },
-          "description": "User-facing record of a benefit redemption.",
-          "params": [
-            {
-              "name": "redemptionId",
-              "description": "The unique identifier for the redemption event."
-            }
-          ]
-        }
-      },
-      {
         "path": "/benefitRedemptions/{redemptionId}",
         "definition": {
           "entityName": "BenefitRedemption",
           "schema": {
             "$ref": "#/backend/entities/BenefitRedemption"
           },
-          "description": "Supplier-facing operational record of a benefit redemption.",
+          "description": "Operational record of a benefit redemption, used by all roles with different access levels.",
           "params": [
             {
               "name": "redemptionId",

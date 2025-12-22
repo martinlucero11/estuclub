@@ -103,7 +103,7 @@ export interface Appointment {
     status: 'confirmed' | 'cancelled';
 }
 
-export interface RedeemedBenefit {
+export interface BenefitRedemption {
   id: string;
   benefitId: string;
   benefitTitle: string;
@@ -115,31 +115,7 @@ export interface RedeemedBenefit {
   qrCodeValue: string;
   status: 'pending' | 'used';
   usedAt?: Timestamp;
-}
-
-export type SerializableRedeemedBenefit = Omit<RedeemedBenefit, 'redeemedAt' | 'usedAt'> & {
-  redeemedAt: string;
-  usedAt?: string;
-};
-
-export function makeRedeemedBenefitSerializable(redemption: RedeemedBenefit): SerializableRedeemedBenefit {
-  return {
-    ...redemption,
-    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
-    usedAt: redemption.usedAt?.toDate().toISOString(),
-  };
-}
-
-export interface BenefitRedemption {
-  id: string;
-  benefitId: string;
-  supplierId: string;
-  userId: string;
-  userName: string;
-  userDni: string;
-  redeemedAt: Timestamp;
-  status: 'pending' | 'used';
-  usedAt?: Timestamp;
+  pointsGranted: number;
 }
 
 export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> & {

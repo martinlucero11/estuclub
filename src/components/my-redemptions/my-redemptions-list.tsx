@@ -7,8 +7,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { History, Tag, Calendar, CheckCircle } from 'lucide-react';
-import type { RedeemedBenefit, SerializableRedeemedBenefit } from '@/lib/data';
-import { makeRedeemedBenefitSerializable } from '@/lib/data';
+import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
+import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState } from 'react';
 import { Badge } from '../ui/badge';
 import RedemptionQRCodeDialog from './redemption-qr-code-dialog';
@@ -39,17 +39,17 @@ export default function MyRedemptionsList() {
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
         return query(
-            collection(firestore, 'redeemed_benefits'),
+            collection(firestore, 'benefitRedemptions'),
             where('userId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
 
-    const { data: redemptions, isLoading } = useCollection<RedeemedBenefit>(redemptionsQuery);
+    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
     
-    const serializableRedemptions: SerializableRedeemedBenefit[] = useMemo(() => {
+    const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
         if (!redemptions) return [];
-        return redemptions.map(makeRedeemedBenefitSerializable);
+        return redemptions.map(makeBenefitRedemptionSerializable);
     }, [redemptions]);
 
 

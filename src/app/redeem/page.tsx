@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFirestore, useMemoFirebase } from '@/firebase';
@@ -10,20 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, Fingerprint, Award, University } from 'lucide-react';
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import type { BenefitRedemption } from '@/lib/data';
 
 export const dynamic = 'force-dynamic';
 
-interface RedeemedBenefit {
-    id: string;
-    userId: string;
-    userName: string;
-    userDni: string;
-    benefitId: string;
-    benefitTitle: string;
-    redeemedAt: Timestamp;
-    status: 'valid' | 'used';
-    points: number;
-}
 
 interface UserProfile {
     id: string;
@@ -60,16 +51,15 @@ function ValidationSkeleton() {
 function RedemptionValidationContent() {
     const searchParams = useSearchParams();
     const redemptionId = searchParams.get('redemptionId');
-    const userId = searchParams.get('userId');
 
     const firestore = useFirestore();
 
     const redemptionRef = useMemoFirebase(
-        () => (userId && redemptionId ? doc(firestore, 'users', userId, 'redeemed_benefits', redemptionId) : null),
-        [firestore, userId, redemptionId]
+        () => (redemptionId ? doc(firestore, 'benefitRedemptions', redemptionId) : null),
+        [firestore, redemptionId]
     );
 
-    const { data: redemption, isLoading: isRedemptionLoading, error: redemptionError } = useDocOnce<RedeemedBenefit>(redemptionRef);
+    const { data: redemption, isLoading: isRedemptionLoading, error: redemptionError } = useDocOnce<BenefitRedemption>(redemptionRef);
 
     const userProfileRef = useMemoFirebase(
         () => (redemption ? doc(firestore, 'users', redemption.userId) : null),
@@ -80,7 +70,7 @@ function RedemptionValidationContent() {
     const isLoading = isRedemptionLoading || isProfileLoading;
     const error = redemptionError || profileError;
     
-    if (!userId || !redemptionId) {
+    if (!redemptionId) {
          return (
             <Card className="w-full max-w-md text-center">
                 <CardHeader>

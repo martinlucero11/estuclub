@@ -47,49 +47,31 @@ service cloud.firestore {
         allow create: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
         allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
-
-    match /redeemed_benefits/{redemptionId} {
-      // User can create their own redemption record
-      allow create: if isOwner(request.resource.data.userId);
-
-      // User can read their own records, Supplier can read records for their benefits
-      allow get: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
-      
-      // User can list their own records
-      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-      
-      // Supplier can update status from pending to used
-      allow update: if isOwner(resource.data.supplierId)
-                    && resource.data.status == "pending"
-                    && request.resource.data.status == "used";
-
-      allow delete: if false;
-    }
     
-    match /benefitRedemptions/{redemptionId} {
-      // CREATE: Any authenticated user can create their own redemption record.
+    match /benefitRedemptions/{id} {
+
+      // CREATE — cualquiera logueado puede canjear
       allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "pending";
 
-      // READ (USER): A user can list/get their own redemptions.
-      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      // GET — usuario, supplier dueño o admin
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid ||
+        isAdmin()
+      );
 
-      // READ (SUPPLIER): A supplier can list/get redemptions for their benefits.
-      allow list: if isSupplier() && request.query.where("supplierId", "==", request.auth.uid);
-      allow get: if isSupplier() && resource.data.supplierId == request.auth.uid;
-      
-      // UPDATE (SUPPLIER): A supplier can update a 'pending' redemption to 'used'.
-      allow update: if isSupplier()
-        && resource.data.supplierId == request.auth.uid
-        && resource.data.status == "pending"
-        && request.resource.data.status == "used";
+      // LIST — usuario ve los suyos O supplier/admin ve los suyos
+      allow list: if (isSignedIn() && request.query.where("userId", "==", request.auth.uid)) ||
+                  ((isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid));
 
-      // ADMIN: Admins can read/write everything.
-      allow read, write: if isAdmin();
+      // UPDATE — supplier escanea QR / admin
+      allow update: if (
+        (isSupplier() && resource.data.supplierId == request.auth.uid && request.resource.data.status == "used") ||
+        isAdmin()
+      );
 
-      // DELETE: Nobody can delete.
       allow delete: if false;
     }
 

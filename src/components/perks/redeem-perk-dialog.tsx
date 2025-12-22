@@ -116,11 +116,11 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
       
-      const redeemedBenefitsRef = collection(firestore, 'redeemed_benefits');
+      const redemptionsRef = collection(firestore, 'benefitRedemptions');
       
       if (perk.redemptionLimit && perk.redemptionLimit > 0) {
         const q = query(
-          redeemedBenefitsRef, 
+          redemptionsRef, 
           where("benefitId", "==", perk.id),
           where("userId", "==", user.uid)
         );
@@ -131,7 +131,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
       
       const batch = writeBatch(firestore);
-      const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
+      const newRedemptionRef = doc(redemptionsRef);
       const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionRef.id });
       
       const redemptionData = {
@@ -139,26 +139,15 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         benefitId: perk.id,
         benefitTitle: perk.title,
         userId: user.uid,
+        userName: `${userProfile.firstName} ${userProfile.lastName}`,
+        userDni: userProfile.dni,
         supplierId: perk.ownerId,
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
-        status: 'pending',
-        points: pointsToGrant
+        status: 'pending' as const,
+        pointsGranted: pointsToGrant
       };
       batch.set(newRedemptionRef, redemptionData);
-
-      const supplierRedemptionRef = doc(firestore, 'benefitRedemptions', newRedemptionRef.id);
-      batch.set(supplierRedemptionRef, {
-        id: newRedemptionRef.id,
-        benefitId: perk.id,
-        supplierId: perk.ownerId,
-        userId: user.uid,
-        userName: `${userProfile.firstName} ${userProfile.lastName}`,
-        userDni: userProfile.dni,
-        redeemedAt: serverTimestamp(),
-        status: 'pending',
-        pointsGranted: pointsToGrant,
-      });
       
       if (pointsToGrant > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(pointsToGrant) });
