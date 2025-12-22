@@ -6,6 +6,7 @@ import MyRedemptionsList from '@/components/my-redemptions/my-redemptions-list';
 import { History, ShieldAlert } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function NotLoggedIn() {
      return (
@@ -32,7 +33,23 @@ export default function MyRedemptionsPage() {
         return (
             <MainLayout>
                 <div className="flex-1 space-y-8 p-4 md:p-8">
-                     {/* You can add a skeleton loader here */}
+                     <header className="space-y-2">
+                        <Skeleton className="h-10 w-1/2" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </header>
+                    <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i} className="p-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-5 w-3/4" />
+                                        <Skeleton className="h-4 w-1/2" />
+                                    </div>
+                                    <Skeleton className="h-10 w-24" />
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
                 </div>
             </MainLayout>
         )

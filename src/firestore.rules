@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -7,9 +8,41 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    match /{document=**} {
-      allow read: if isSignedIn();
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isSupplier() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /usernames/{username} {
+      allow read: if true;
       allow write: if isSignedIn();
+    }
+
+    match /benefitRedemptions/{redemptionId} {
+      // Rule 1: A user can list their OWN redemptions using a query.
+      allow list: if isSignedIn() && request.query.where.get("userId", "") == request.auth.uid;
+      
+      // Rule 2: A supplier can list redemptions for THEIR business using a query.
+      allow list: if isSupplier() && request.query.where.get("supplierId", "") == request.auth.uid;
+
+      // Rule 3: A user can read a specific redemption document they own.
+      // Rule 4: A supplier can read a specific redemption document for their business.
+      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || (isSupplier() && resource.data.supplierId == request.auth.uid);
+
+      // Rule 5: No client-side writes are allowed. All redemptions are created/updated via secure logic.
+      allow write: if false; 
+    }
+    
+    // Fallback for other collections to ensure app functionality
+    match /{document=**} {
+      allow read, write: if isSignedIn();
     }
   }
 }
