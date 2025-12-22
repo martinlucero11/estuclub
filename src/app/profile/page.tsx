@@ -110,14 +110,6 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
           <p className="text-sm text-muted-foreground">Ranking</p>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button asChild className="w-full" variant="outline">
-            <Link href="/my-redemptions">
-                <History className="mr-2 h-4 w-4" />
-                Ver Mis Canjes
-            </Link>
-        </Button>
-      </CardFooter>
     </Card>
   )
 }
