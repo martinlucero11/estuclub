@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Html5Qrcode, Html5QrcodeError, Html5QrcodeResult } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
 import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -128,7 +128,7 @@ export default function QrScanner() {
         }
     };
 
-    const handleScanError = (errorMessage: string, error: Html5QrcodeError) => {
+    const handleScanError = (errorMessage: string, error: any) => {
        // Ignore common errors like "QR code not found"
        if (!errorMessage.includes("NotFoundException")) {
            console.error(`QR Scan Error: ${errorMessage}`);

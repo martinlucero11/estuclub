@@ -3,20 +3,18 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { useAdmin } from '@/firebase/auth/use-admin';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { ShieldAlert, History, User, Calendar, Tag, Fingerprint, CheckCircle, Hourglass } from 'lucide-react';
+import { ShieldAlert, History, Calendar, Tag, Fingerprint, CheckCircle, Hourglass } from 'lucide-react';
 import { makeBenefitRedemptionSerializable, type SerializableBenefitRedemption, type BenefitRedemption } from '@/lib/data';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { User as FirebaseUser } from 'firebase/auth';
-
 
 function RedemptionsListSkeleton() {
     return (
@@ -46,7 +44,7 @@ function AccessDenied() {
                     </div>
                     <CardTitle className="mt-4">Acceso Denegado</CardTitle>
                     <CardDescription>
-                        No tienes permisos para acceder a esta sección.
+                        No tienes permisos de proveedor para acceder a esta sección.
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -117,19 +115,16 @@ function RedemptionList({ redemptions }: { redemptions: SerializableBenefitRedem
     )
 }
 
-function RedemptionsContent({ user, isAdmin, isSupplier }: { user: FirebaseUser, isAdmin: boolean, isSupplier: boolean }) {
+function RedemptionsContent({ user }: { user: FirebaseUser }) {
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemoFirebase(() => {
-        const baseCollection = collection(firestore, 'benefitRedemptions');
-        if (isAdmin) {
-            return query(baseCollection, orderBy('redeemedAt', 'desc'));
-        }
-        if (isSupplier) {
-            return query(baseCollection, where('supplierId', '==', user.uid), orderBy('redeemedAt', 'desc'));
-        }
-        return null; // Return null if the user is neither admin nor supplier
-    }, [user, isAdmin, isSupplier, firestore]);
+        return query(
+            collection(firestore, 'benefitRedemptions'), 
+            where('supplierId', '==', user.uid), 
+            orderBy('redeemedAt', 'desc')
+        );
+    }, [firestore, user.uid]);
 
     const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
     
@@ -154,7 +149,7 @@ function RedemptionsContent({ user, isAdmin, isSupplier }: { user: FirebaseUser,
                 <History className="h-4 w-4" />
                 <AlertTitle>No hay canjes</AlertTitle>
                 <AlertDescription>
-                    No tienes canjes registrados a tu nombre.
+                    Aún no se han registrado canjes en tu comercio.
                 </AlertDescription>
             </Alert>
         );
@@ -186,9 +181,8 @@ function RedemptionsContent({ user, isAdmin, isSupplier }: { user: FirebaseUser,
 export default function RedemptionsPage() {
     const { user, isUserLoading } = useUser();
     const { isSupplier, isLoading: isSupplierLoading } = useSupplier();
-    const { isAdmin, isLoading: isAdminLoading } = useAdmin();
 
-    const isLoading = isUserLoading || isSupplierLoading || isAdminLoading;
+    const isLoading = isUserLoading || isSupplierLoading;
     
     if (isLoading) {
         return (
@@ -200,7 +194,7 @@ export default function RedemptionsPage() {
         )
     }
 
-    if (!user || (!isSupplier && !isAdmin)) {
+    if (!user || !isSupplier) {
         return (
             <MainLayout>
                  <div className="flex-1 space-y-8 p-4 md:p-8">
@@ -224,8 +218,7 @@ export default function RedemptionsPage() {
                         Revisa todos los beneficios que han sido canjeados por los estudiantes en tu comercio.
                     </p>
                 </header>
-
-                <RedemptionsContent user={user} isAdmin={isAdmin} isSupplier={isSupplier} />
+                <RedemptionsContent user={user} />
             </div>
         </MainLayout>
     );

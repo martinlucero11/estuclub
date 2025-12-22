@@ -10,6 +10,7 @@ export function FirebaseErrorListener() {
 
   useEffect(() => {
     const handleError = (error: FirestorePermissionError) => {
+      // Set the error in state. This will trigger a re-render.
       setError(error);
     };
 
@@ -20,9 +21,14 @@ export function FirebaseErrorListener() {
     };
   }, []);
 
-  if (error) {
-    throw error;
-  }
+  // This effect will run *after* the render phase, once `error` state has been updated.
+  // This is the correct place to throw an error to be caught by an error boundary.
+  useEffect(() => {
+    if (error) {
+      throw error;
+    }
+  }, [error]);
 
+  // The component itself renders nothing.
   return null;
 }

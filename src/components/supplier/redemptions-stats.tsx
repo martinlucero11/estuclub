@@ -2,7 +2,8 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { useSupplier } from '@/firebase/auth/use-supplier';
+import { collection, query, where } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { Ticket, Users, TrendingUp } from 'lucide-react';
@@ -23,18 +24,30 @@ function StatsCard({ title, value, icon: Icon }: { title: string, value: string 
 }
 
 export default function RedemptionStats() {
-    const { user } = useUser();
+    const { user, isUserLoading: isUserLoadingAuth } = useUser();
+    const { isSupplier, isLoading: isSupplierLoading } = useSupplier();
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        // Double guard: only build the query if the user is authenticated AND is a supplier.
+        if (!user?.uid || !isSupplier) {
+            return null;
+        }
         return query(
             collection(firestore, 'benefitRedemptions'),
             where('supplierId', '==', user.uid)
         );
-    }, [user, firestore]);
+    }, [user?.uid, isSupplier, firestore]);
 
-    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+    const { data: redemptions, isLoading: isLoadingData } = useCollection<BenefitRedemption>(redemptionsQuery);
+    
+    // Combined loading state
+    const isLoading = isUserLoadingAuth || isSupplierLoading || (!!redemptionsQuery && isLoadingData);
+
+    // If we're not a supplier, and not loading, render nothing. This component shouldn't show.
+    if (!isSupplier && !isLoading) {
+        return null; 
+    }
 
     if (isLoading) {
         return (
@@ -43,7 +56,7 @@ export default function RedemptionStats() {
                 <Skeleton className="h-28" />
                 <Skeleton className="h-28" />
             </div>
-        )
+        );
     }
 
     const totalRedemptions = redemptions?.length || 0;
