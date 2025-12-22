@@ -24,7 +24,9 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
-      allow update, delete: if isOwner(userId) || isAdmin();
+      // Allow a user to update their own profile (e.g., for points)
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isOwner(userId) || isAdmin();
     }
     
     match /usernames/{username} {
@@ -47,38 +49,47 @@ service cloud.firestore {
     }
 
     match /redeemed_benefits/{redemptionId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      // User can create their own redemption record
+      allow create: if isOwner(request.resource.data.userId);
+
+      // User can read their own records, Supplier can read records for their benefits
       allow get: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
+      
+      // User can list their own records
       allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
-      allow update: if isOwner(resource.data.supplierId) || isAdmin();
+      
+      // Supplier can update status from pending to used
+      allow update: if isOwner(resource.data.supplierId)
+                    && resource.data.status == "pending"
+                    && request.resource.data.status == "used";
+
       allow delete: if false;
     }
     
     match /benefitRedemptions/{redemptionId} {
-      // Allow any authenticated user to create their own redemption record.
-      // Status must be 'pending' on creation.
-      allow create: if request.auth != null
+      // CREATE: Any authenticated user can create their own redemption record.
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.status == "pending";
 
-      // Allow a user to list/get their own redemptions.
-      allow list: if request.auth != null && request.query.where("userId", "==", request.auth.uid);
-      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
+      // READ (USER): A user can list/get their own redemptions.
+      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
 
-      // Allow a supplier to list/get redemptions for their benefits.
-      allow list: if request.auth != null && request.query.where("supplierId", "==", request.auth.uid);
-      allow get: if request.auth != null && resource.data.supplierId == request.auth.uid;
+      // READ (SUPPLIER): A supplier can list/get redemptions for their benefits.
+      allow list: if isSupplier() && request.query.where("supplierId", "==", request.auth.uid);
+      allow get: if isSupplier() && resource.data.supplierId == request.auth.uid;
       
-      // Allow a supplier to update a 'pending' redemption to 'used'.
-      allow update: if request.auth != null
+      // UPDATE (SUPPLIER): A supplier can update a 'pending' redemption to 'used'.
+      allow update: if isSupplier()
         && resource.data.supplierId == request.auth.uid
         && resource.data.status == "pending"
         && request.resource.data.status == "used";
 
-      // Allow admin to read and write everything.
+      // ADMIN: Admins can read/write everything.
       allow read, write: if isAdmin();
 
-      // Nobody can delete.
+      // DELETE: Nobody can delete.
       allow delete: if false;
     }
 
