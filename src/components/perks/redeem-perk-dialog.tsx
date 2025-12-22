@@ -31,6 +31,7 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   dni: string;
+  phone: string;
 }
 
 const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -269,5 +270,3 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
-
-    
