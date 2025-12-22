@@ -15,6 +15,8 @@ import { makeBenefitRedemptionSerializable, type SerializableBenefitRedemption, 
 import { useMemo, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { User as FirebaseUser } from 'firebase/auth';
+
 
 function RedemptionsListSkeleton() {
     return (
@@ -109,18 +111,17 @@ function RedemptionList({ redemptions }: { redemptions: SerializableBenefitRedem
     )
 }
 
-function RedemptionsContent() {
-    const { user } = useUser();
+function RedemptionsContent({ user, isAdmin }: { user: FirebaseUser, isAdmin: boolean }) {
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemoFirebase(() => {
-        if (!user) return null;
-        return query(
-            collection(firestore, 'benefitRedemptions'),
-            where('supplierId', '==', user.uid),
-            orderBy('redeemedAt', 'desc')
-        );
-    }, [user, firestore]);
+        const baseQuery = collection(firestore, 'benefitRedemptions');
+        if (isAdmin) {
+            return query(baseQuery, orderBy('redeemedAt', 'desc'));
+        }
+        // For suppliers
+        return query(baseQuery, where('supplierId', '==', user.uid), orderBy('redeemedAt', 'desc'));
+    }, [user, isAdmin, firestore]);
 
     const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
     
@@ -194,7 +195,9 @@ export default function RedemptionsPage() {
     if (!user || (!isSupplier && !isAdmin)) {
         return (
             <MainLayout>
-                <AccessDenied />
+                 <div className="flex-1 space-y-8 p-4 md:p-8">
+                    <AccessDenied />
+                 </div>
             </MainLayout>
         )
     }
@@ -214,7 +217,7 @@ export default function RedemptionsPage() {
                     </p>
                 </header>
 
-                <RedemptionsContent />
+                <RedemptionsContent user={user} isAdmin={isAdmin} />
             </div>
         </MainLayout>
     );
