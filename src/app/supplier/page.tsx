@@ -3,7 +3,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, User, CalendarClock, BookUser, ConciergeBell, QrCode } from 'lucide-react';
+import { ShieldAlert, User, CalendarClock, BookUser, ConciergeBell, QrCode, History } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupplier } from '@/firebase/auth/use-supplier';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -97,12 +97,20 @@ export default function SupplierPage() {
               Gestiona tus servicios, turnos y revisa los canjes de tus clientes.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/supplier/scan">
-              <QrCode className="mr-2 h-4 w-4" />
-              Escanear QR
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+                <Link href="/supplier/redemptions">
+                    <History className="mr-2 h-4 w-4" />
+                    Ver Canjes
+                </Link>
+            </Button>
+            <Button asChild>
+                <Link href="/supplier/scan">
+                <QrCode className="mr-2 h-4 w-4" />
+                Escanear QR
+                </Link>
+            </Button>
+          </div>
         </header>
 
         <RedemptionStats />
