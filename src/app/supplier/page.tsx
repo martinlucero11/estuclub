@@ -1,3 +1,4 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -114,12 +115,6 @@ export default function SupplierPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-             <Button asChild>
-                <Link href="/supplier/redemptions">
-                    <History className="mr-2 h-4 w-4" />
-                    Ver Canjes
-                </Link>
-            </Button>
             <Button asChild>
               <Link href="/supplier/scan">
                 <QrCode className="mr-2 h-4 w-4" />

@@ -11,37 +11,38 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
+    
     function isSupplier() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+    
+    match /usernames/{username} {
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     match /benefitRedemptions/{redemptionId} {
+      // Rule 1: A user can list their OWN redemptions using a query.
+      allow list: if isSignedIn() && request.query.where.get("userId", "") == request.auth.uid;
+      
+      // Rule 2: A supplier can list redemptions for THEIR business using a query.
+      allow list: if isSupplier() && request.query.where.get("supplierId", "") == request.auth.uid;
 
-      // Users can list their OWN redemptions.
-      allow list: if isSignedIn()
-        && request.query.where("userId", "==", request.auth.uid);
+      // Rule 3: A user can read a specific redemption document they own.
+      // Rule 4: A supplier can read a specific redemption document for their business.
+      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || (isSupplier() && resource.data.supplierId == request.auth.uid);
 
-      // Suppliers can list redemptions for THEIR business.
-      allow list: if isSupplier()
-        && request.query.where("supplierId", "==", request.auth.uid);
-
-      // A user can read their own redemption doc. A supplier can read a redemption for their business.
-      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid)
-                  || (isSupplier() && resource.data.supplierId == request.auth.uid);
-
-      allow write: if false; // Writes are handled by secure backend logic, not directly by clients.
-    }
-
-    match /roles_supplier/{uid} {
-      allow read: if isSignedIn() && uid == request.auth.uid;
-      allow write: if false;
+      // Rule 5: No client-side writes are allowed. All redemptions are created/updated via secure logic.
+      allow write: if false; 
     }
     
-    // Regla de seguridad para permitir que el resto de la app funcione
+    // Fallback for other collections to ensure app functionality
     match /{document=**} {
-        allow read, write: if isSignedIn();
+      allow read, write: if isSignedIn();
     }
   }
 }

@@ -99,10 +99,6 @@ function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
-          <History className="mr-2 h-4 w-4" />
-          <span>Mis Canjes</span>
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Ajustes</span>
