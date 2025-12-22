@@ -17,7 +17,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
-import { ArrowRight, CheckCircle, CalendarDays } from 'lucide-react';
+import { CheckCircle, CalendarDays } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
@@ -27,7 +27,6 @@ interface RedeemPerkDialogProps {
   isCarouselTrigger?: boolean;
 }
 
-// Complete UserProfile interface to match Firestore document
 interface UserProfile {
     id: string;
     username: string;
@@ -69,10 +68,12 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    if (!redemptionId || !user || typeof window === 'undefined') return;
+    if (!redemptionId || typeof window === 'undefined') return;
+    
+    // The QR code contains ONLY the redemptionId as a JSON object
+    const qrCodeValue = JSON.stringify({ redemptionId: redemptionId });
 
-    const validationUrl = `${window.location.origin}/redeem?redemptionId=${redemptionId}&userId=${user.uid}`;
-    QRCode.toDataURL(validationUrl, {
+    QRCode.toDataURL(qrCodeValue, {
         errorCorrectionLevel: 'H',
         width: 256,
     })
@@ -83,7 +84,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         console.error("QR Code Generation Error:", err);
         setError("No se pudo generar el código QR.");
     });
-  }, [redemptionId, user]);
+  }, [redemptionId]);
 
 
   const handleRedeem = async () => {
@@ -101,7 +102,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setRedemptionId(null);
     setQrCodeUrl(null);
 
+    const cost = perk.cost || 0;
+
     try {
+      if ((userProfile.points || 0) < cost) {
+          throw new Error(`No tienes puntos suficientes. Necesitas ${cost} puntos.`);
+      }
+
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
       const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
@@ -129,33 +136,46 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
 
       const newRedemptionRef = doc(collection(firestore, 'redeemed_benefits'));
+      const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionRef.id });
       
       const redemptionData = {
-        id: newRedemptionRef.id,
-        userId: user.uid,
-        supplierId: perk.ownerId,
-        userName: `${userProfile.firstName} ${userProfile.lastName}`,
-        userDni: userProfile.dni,
-        userPhone: userProfile.phone,
+        redemptionId: newRedemptionRef.id,
         benefitId: perk.id,
         benefitTitle: perk.title,
+        userId: user.uid,
+        supplierId: perk.ownerId,
         redeemedAt: serverTimestamp(),
-        status: 'valid',
-        points: perk.points || 0,
+        qrCodeValue: qrCodeValue,
+        status: 'pending',
       };
       
       const batch = writeBatch(firestore);
       batch.set(newRedemptionRef, redemptionData);
-      if (perk.points && perk.points > 0 && userProfileRef) {
-        batch.update(userProfileRef, { points: increment(perk.points) });
+      
+      // Deduct points
+      if (cost > 0 && userProfileRef) {
+        batch.update(userProfileRef, { points: increment(-cost) });
       }
+
+      // Add to supplier's redemption collection for auditing
+      const supplierRedemptionRef = doc(collection(firestore, 'benefitRedemptions'));
+      batch.set(supplierRedemptionRef, {
+        redemptionId: newRedemptionRef.id,
+        benefitId: perk.id,
+        supplierId: perk.ownerId,
+        userId: user.uid,
+        userName: `${userProfile.firstName} ${userProfile.lastName}`,
+        redeemedAt: serverTimestamp(),
+        status: 'pending',
+      });
+
 
       await batch.commit();
 
       setRedemptionId(newRedemptionRef.id);
       toast({
         title: '¡Beneficio Canjeado!',
-        description: `Muestra el código QR al proveedor para validarlo.`,
+        description: `Muestra el código QR al proveedor para validarlo. Se han descontado ${cost} puntos de tu cuenta.`,
       });
 
     } catch (e: any) {
@@ -211,6 +231,8 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       </div>
   );
 
+  const cost = perk.cost || 0;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <TriggerWrapper>
@@ -222,7 +244,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                 <DialogHeader>
                     <DialogTitle>Canjear: {perk.title}</DialogTitle>
                     <DialogDescription>
-                    Confirma para canjear este beneficio y ganar {perk.points || 0} puntos.
+                    Este beneficio tiene un costo de <span className="font-bold text-primary">{cost}</span> puntos.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -241,6 +263,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                         </div>
                     </div>
                 )}
+                
+                {userProfile && (
+                     <p className="text-sm text-center text-muted-foreground">
+                        Tus puntos actuales: <span className="font-bold text-foreground">{userProfile.points || 0}</span>
+                    </p>
+                )}
+
 
                 {error && (
                     <Alert variant="destructive">
@@ -253,8 +282,8 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
-                        {isRedeeming ? 'Validando...' : (isLoading ? 'Cargando perfil...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
+                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user || (userProfile && userProfile.points < cost)}>
+                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : <> <CheckCircle className='mr-2'/>Confirmar Canje</>)}
                     </Button>
                 </DialogFooter>
             </>
