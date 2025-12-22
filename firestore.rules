@@ -50,7 +50,7 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
       
       // USER: Can read their own redemptions (get single doc)
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid || isAdmin());
       
       // USER: Can list their own redemptions
       allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
@@ -58,7 +58,7 @@ service cloud.firestore {
       // SUPPLIER/ADMIN: Can list redemptions for their benefits.
       allow list: if (isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid);
       
-      allow update: if isOwner(resource.data.userId);
+      allow update: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
       allow delete: if false;
     }
     
@@ -92,5 +92,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

@@ -19,7 +19,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, writeBatch, setDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, setDoc } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -67,34 +67,13 @@ export default function SignupForm() {
     setIsSubmitting(true);
     
     try {
-      // Check for uniqueness before creating auth user
-      const usersRef = collection(firestore, 'users');
-      const usernameQuery = query(usersRef, where('username', '==', values.username.toLowerCase()));
-      const dniQuery = query(usersRef, where('dni', '==', values.dni));
-      const phoneQuery = query(usersRef, where('phone', '==', values.phone));
-
-      const [usernameSnapshot, dniSnapshot, phoneSnapshot] = await Promise.all([
-        getDocs(usernameQuery),
-        getDocs(dniQuery),
-        getDocs(phoneQuery),
-      ]);
-
-      if (!usernameSnapshot.empty) {
-        form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
-        setIsSubmitting(false);
-        return;
+      const usernameDocRef = doc(firestore, 'usernames', values.username.toLowerCase());
+      const usernameDoc = await getDoc(usernameDocRef);
+      if (usernameDoc.exists()) {
+          form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
+          setIsSubmitting(false);
+          return;
       }
-      if (!dniSnapshot.empty) {
-        form.setError('dni', { message: 'Este DNI ya está registrado.' });
-        setIsSubmitting(false);
-        return;
-      }
-      if (!phoneSnapshot.empty) {
-        form.setError('phone', { message: 'Este número de teléfono ya está en uso.' });
-        setIsSubmitting(false);
-        return;
-      }
-
 
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
@@ -110,7 +89,7 @@ export default function SignupForm() {
         const batch = writeBatch(firestore);
 
         const userProfileRef = doc(firestore, 'users', user.uid);
-        const usernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
+        const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
 
         const userProfile = {
           id: user.uid,
@@ -129,7 +108,7 @@ export default function SignupForm() {
         };
 
         batch.set(userProfileRef, userProfile);
-        batch.set(usernameRef, { userId: user.uid });
+        batch.set(newUsernameRef, { userId: user.uid });
 
         await batch.commit();
 
