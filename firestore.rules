@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -7,6 +8,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     function isSupplier() {
       return isSignedIn()
         && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
@@ -14,15 +19,19 @@ service cloud.firestore {
 
     match /benefitRedemptions/{redemptionId} {
 
-      // LIST (queries)
+      // Users can list their OWN redemptions.
+      allow list: if isSignedIn()
+        && request.query.where("userId", "==", request.auth.uid);
+
+      // Suppliers can list redemptions for THEIR business.
       allow list: if isSupplier()
         && request.query.where("supplierId", "==", request.auth.uid);
 
-      // GET (doc individual)
-      allow get: if isSupplier()
-        && resource.data.supplierId == request.auth.uid;
+      // A user can read their own redemption doc. A supplier can read a redemption for their business.
+      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid)
+                  || (isSupplier() && resource.data.supplierId == request.auth.uid);
 
-      allow write: if false;
+      allow write: if false; // Writes are handled by secure backend logic, not directly by clients.
     }
 
     match /roles_supplier/{uid} {
