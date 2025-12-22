@@ -44,7 +44,7 @@ export default function RedemptionStats() {
     // Combined loading state
     const isLoading = isUserLoadingAuth || isSupplierLoading || (!!redemptionsQuery && isLoadingData);
 
-    // If we're not a supplier, and not loading, render nothing. This component shouldn't show.
+    // If we're not a supplier, and not loading, render nothing. This component shouldn't show for non-suppliers.
     if (!isSupplier && !isLoading) {
         return null; 
     }
