@@ -26,17 +26,13 @@ service cloud.firestore {
     }
 
     match /benefitRedemptions/{redemptionId} {
-      // Rule 1: A user can list their OWN redemptions using a query.
-      allow list: if isSignedIn() && request.query.where.get("userId", "") == request.auth.uid;
-      
-      // Rule 2: A supplier can list redemptions for THEIR business using a query.
-      allow list: if isSupplier() && request.query.where.get("supplierId", "") == request.auth.uid;
+      // USER: puede leer sus propios canjes
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
 
-      // Rule 3: A user can read a specific redemption document they own.
-      // Rule 4: A supplier can read a specific redemption document for their business.
-      allow get: if (isSignedIn() && resource.data.userId == request.auth.uid) || (isSupplier() && resource.data.supplierId == request.auth.uid);
+      // SUPPLIER: puede leer canjes de sus beneficios
+      allow get, list: if isSupplier() && resource.data.supplierId == request.auth.uid;
 
-      // Rule 5: No client-side writes are allowed. All redemptions are created/updated via secure logic.
+      // No client-side writes are allowed. All redemptions are created/updated via secure logic.
       allow write: if false; 
     }
     
