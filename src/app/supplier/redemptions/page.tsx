@@ -111,17 +111,19 @@ function RedemptionList({ redemptions }: { redemptions: SerializableBenefitRedem
     )
 }
 
-function RedemptionsContent({ user, isAdmin }: { user: FirebaseUser, isAdmin: boolean }) {
+function RedemptionsContent({ user, isAdmin, isSupplier }: { user: FirebaseUser, isAdmin: boolean, isSupplier: boolean }) {
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemoFirebase(() => {
-        const baseQuery = collection(firestore, 'benefitRedemptions');
+        const baseCollection = collection(firestore, 'benefitRedemptions');
         if (isAdmin) {
-            return query(baseQuery, orderBy('redeemedAt', 'desc'));
+            return query(baseCollection, orderBy('redeemedAt', 'desc'));
         }
-        // For suppliers
-        return query(baseQuery, where('supplierId', '==', user.uid), orderBy('redeemedAt', 'desc'));
-    }, [user, isAdmin, firestore]);
+        if (isSupplier) {
+            return query(baseCollection, where('supplierId', '==', user.uid), orderBy('redeemedAt', 'desc'));
+        }
+        return null; // Return null if the user is neither admin nor supplier
+    }, [user, isAdmin, isSupplier, firestore]);
 
     const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
     
@@ -140,7 +142,7 @@ function RedemptionsContent({ user, isAdmin }: { user: FirebaseUser, isAdmin: bo
         return <RedemptionsListSkeleton />;
     }
 
-    if (!redemptions || redemptions.length === 0) {
+    if (!redemptions) {
         return (
             <Alert>
                 <History className="h-4 w-4" />
@@ -217,8 +219,10 @@ export default function RedemptionsPage() {
                     </p>
                 </header>
 
-                <RedemptionsContent user={user} isAdmin={isAdmin} />
+                <RedemptionsContent user={user} isAdmin={isAdmin} isSupplier={isSupplier} />
             </div>
         </MainLayout>
     );
 }
+
+    

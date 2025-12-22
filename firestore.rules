@@ -48,24 +48,18 @@ service cloud.firestore {
 
     match /redeemed_benefits/{id} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow get: if isOwner(resource.data.userId);
-      allow list: if isOwner(request.query.userId);
-      // Allow supplier to update status after validation
-      allow update: if isSupplier() && resource.data.supplierId == request.auth.uid;
+      allow get: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
+      allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
+      allow update: if isOwner(resource.data.supplierId) || isAdmin();
       allow delete: if false;
     }
     
     match /benefitRedemptions/{id} {
-      // User creates the redemption record for the supplier at the same time
-      allow create: if isSignedIn();
-      allow get: if isSupplier() && resource.data.supplierId == request.auth.uid;
-      // Supplier can list their own redemptions
-      allow list: if isSupplier() && request.query.where("supplierId", "==", request.auth.uid);
-      // Admin can list any redemptions
-      allow list: if isAdmin();
-       // Supplier can update status to "used"
-      allow update(diff): if isSupplier() && resource.data.supplierId == request.auth.uid && diff.affectedKeys().hasOnly(['status', 'usedAt']);
-      allow delete: if false;
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow get: if isOwner(resource.data.supplierId) || isAdmin();
+        allow list: if (isSupplier() && request.query.where("supplierId", "==", request.auth.uid)) || isAdmin();
+        allow update(diff): if isSupplier() && resource.data.supplierId == request.auth.uid && diff.affectedKeys().hasOnly(['status', 'usedAt']);
+        allow delete: if false;
     }
 
     match /notifications/{notificationId} {
@@ -98,3 +92,5 @@ service cloud.firestore {
     }
   }
 }
+
+    
