@@ -46,7 +46,7 @@ service cloud.firestore {
         allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
 
-    match /redeemed_benefits/{id} {
+    match /redeemed_benefits/{redemptionId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow get: if isOwner(resource.data.userId) || isOwner(resource.data.supplierId) || isAdmin();
       allow list: if isSignedIn() && request.query.where("userId", "==", request.auth.uid);
@@ -54,12 +54,33 @@ service cloud.firestore {
       allow delete: if false;
     }
     
-    match /benefitRedemptions/{id} {
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        allow get: if isOwner(resource.data.supplierId) || isAdmin();
-        allow list: if (isSupplier() && request.query.where("supplierId", "==", request.auth.uid)) || isAdmin();
-        allow update(diff): if isSupplier() && resource.data.supplierId == request.auth.uid && diff.affectedKeys().hasOnly(['status', 'usedAt']);
-        allow delete: if false;
+    match /benefitRedemptions/{redemptionId} {
+      // READ (GET): User can get their own, supplier can get their own.
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      );
+      
+      // READ (LIST): User can list their own, supplier can list their own.
+      allow list: if isSignedIn() && (
+        request.query.where("userId", "==", request.auth.uid) ||
+        request.query.where("supplierId", "==", request.auth.uid)
+      );
+
+      // READ (ADMIN): Admin can read everything.
+      allow read: if isAdmin();
+
+      // CREATE: Any authenticated user can create their own redemption record.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+
+      // UPDATE: Supplier can update status from 'pending' to 'used'.
+      allow update: if isSupplier() 
+        && resource.data.supplierId == request.auth.uid
+        && resource.data.status == "pending"
+        && request.resource.data.status == "used";
+
+      // DELETE: Nobody can delete redemption records.
+      allow delete: if false;
     }
 
     match /notifications/{notificationId} {
@@ -92,5 +113,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
