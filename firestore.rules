@@ -1,5 +1,5 @@
-
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -7,101 +7,9 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(uid) {
-      return isSignedIn() && request.auth.uid == uid;
-    }
-
-    function isAdmin() {
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    function isSupplier() {
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
-    }
-
-    match /users/{userId} {
+    match /{document=**} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      // Allow a user to update their own profile (e.g., for points)
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isOwner(userId) || isAdmin();
-    }
-    
-    match /usernames/{username} {
-        allow read: if true;
-        allow create: if isSignedIn() && !exists(path);
-        allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
-        allow update: if false;
-    }
-
-    match /benefits/{benefitId} {
-      allow read: if true;
-      allow update: if isSupplier() || isAdmin(); 
-      allow create, delete: if isAdmin();
-    }
-    
-    match /announcements/{announcementId} {
-        allow read: if true;
-        allow create: if isSignedIn() && (request.resource.data.authorId == request.auth.uid || isAdmin());
-        allow update, delete: if isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin());
-    }
-    
-    match /benefitRedemptions/{id} {
-
-      // CREATE — cualquiera logueado puede canjear
-      allow create: if isSignedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == "pending";
-
-      // GET — usuario, supplier dueño o admin
-      allow get: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.supplierId == request.auth.uid ||
-        isAdmin()
-      );
-
-      // LIST — usuario ve los suyos O supplier/admin ve los suyos
-      allow list: if (isSignedIn() && request.query.where("userId", "==", request.auth.uid)) ||
-                  ((isSupplier() || isAdmin()) && request.query.where("supplierId", "==", request.auth.uid));
-
-      // UPDATE — supplier escanea QR / admin
-      allow update: if (
-        (isSupplier() && resource.data.supplierId == request.auth.uid && request.resource.data.status == "used") ||
-        isAdmin()
-      );
-
-      allow delete: if false;
-    }
-
-    match /notifications/{notificationId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /roles_admin/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /roles_supplier/{uid} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-      
-      match /services/{serviceId} {
-        allow read: if true;
-        allow write: if isOwner(uid) || isAdmin();
-      }
-      
-      match /availability/schedule {
-         allow read: if true;
-         allow write: if isOwner(uid) || isAdmin();
-      }
-      
-      match /appointments/{appointmentId} {
-        allow read, write: if isOwner(uid) || isSignedIn();
-      }
+      allow write: if isSignedIn();
     }
   }
 }
