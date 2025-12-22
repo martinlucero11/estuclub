@@ -28,7 +28,9 @@ const formSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres.'),
   username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.').regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos.'),
-  email: z.string().email('Por favor, introduce un correo electrónico válido.'),
+  email: z.string().min(1, { message: "El correo electrónico es obligatorio." }).refine(email => /.+@.+\..+/.test(email), {
+    message: "Por favor, introduce un correo electrónico válido.",
+  }),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
   dni: z.string().regex(/^\d{7,8}$/, 'El DNI debe tener entre 7 y 8 dígitos numéricos.'),
   phone: z.string().min(6, 'El número de teléfono no es válido.'),
