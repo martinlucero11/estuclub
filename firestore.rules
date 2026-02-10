@@ -10,44 +10,34 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
+    
     function isSupplier() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    // --- USER-SPECIFIC SUBCOLLECTION ---
-    match /users/{userId}/redeemed_benefits/{redemptionId} {
-      // Allow a user to read their own redeemed benefits.
-      allow read: if isOwner(userId);
-      // Disallow write operations from the client for now.
-      allow write: if false;
-    }
-
-    // --- GLOBAL REDEMPTIONS (FOR SUPPLIERS) ---
-    match /benefitRedemptions/{redemptionId} {
-      // Keep this rule for suppliers to be able to read redemptions.
-      allow read: if isSupplier() && resource.data.supplierId == request.auth.uid;
-      allow write: if false;
-    }
-
-    // --- OTHER COLLECTIONS ---
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
-
+    
     match /usernames/{username} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    match /roles_supplier/{userId} {
-      allow read: if isOwner(userId);
-    }
+    match /benefitRedemptions/{redemptionId} {
+      // USER: can read their own redemptions (get and list)
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
 
-    // Fallback for other collections to ensure app functionality.
+      // SUPPLIER: can read redemptions for their benefits (get and list)
+      allow get, list: if isSupplier() && resource.data.supplierId == request.auth.uid;
+
+      // No client-side writes are allowed.
+      allow write: if false; 
+    }
+    
+    // Fallback for other collections to ensure app functionality
     match /{document=**} {
-      allow read: if isSignedIn();
-      allow write: if false;
+      allow read, write: if isSignedIn();
     }
   }
 }
