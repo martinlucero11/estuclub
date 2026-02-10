@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -7,13 +6,17 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
     
     function isSupplier() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
     
     match /usernames/{username} {
@@ -22,10 +25,11 @@ service cloud.firestore {
     }
 
     match /benefitRedemptions/{redemptionId} {
-      // USER: can read/list their own redemptions
-      // SUPPLIER: can read/list redemptions for their benefits
-      allow get, list: if (isSignedIn() && resource.data.userId == request.auth.uid) || 
-                         (isSupplier() && resource.data.supplierId == request.auth.uid);
+      // USER: can read their own redemptions
+      allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
+
+      // SUPPLIER: can read redemptions for their benefits
+      allow get, list: if isSupplier() && resource.data.supplierId == request.auth.uid;
 
       // No client-side writes are allowed.
       allow write: if false; 
