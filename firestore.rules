@@ -4,40 +4,34 @@ service cloud.firestore {
   match /databases/{database}/documents {
     
     function isSignedIn() { return request.auth != null; }
-    
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)); }
 
-    function isSupplier() { 
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); 
-    }
-
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    // Collection for all redemption records
+    // --- Colección Raíz: benefitRedemptions (Para Admins y Proveedores) ---
     match /benefitRedemptions/{redemptionId} {
-      // ADMIN: Can read/list all redemptions
-      allow read: if isAdmin();
-
-      // SUPPLIER: Can list redemptions for their own benefits if they filter by their ID
+      // ADMIN: tiene acceso total de lectura a la colección completa.
+      allow list, get: if isAdmin();
+      
+      // SUPPLIER: puede listar si filtra por su ID y leer documentos individuales que le pertenecen.
       allow list: if isSupplier() && request.query.where.supplierId == request.auth.uid;
+      allow get: if isSupplier() && resource.data.supplierId == request.auth.uid;
 
-      // USER/SUPPLIER: Can read a single redemption if they are the user or the supplier involved
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid);
+      // USER: solo puede leer un documento individual si es suyo (para la validación del QR).
+      allow get: if isOwner(resource.data.userId);
 
-      // No client-side writes.
+      // Nadie puede escribir directamente en esta colección desde el cliente.
       allow write: if false;
     }
 
-    // Subcollection for user's private history
+    // --- Subcolección: redeemed_benefits (Para historial personal del usuario) ---
     match /users/{userId}/redeemed_benefits/{redemptionId} {
+      // Solo el dueño del perfil puede leer su historial.
       allow read: if isOwner(userId);
       allow write: if false;
     }
 
+    // Resto de reglas...
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
@@ -47,7 +41,7 @@ service cloud.firestore {
         allow write: if isSignedIn();
     }
     
-    // Fallback for other collections to ensure app functionality
+    // Fallback para otras colecciones para asegurar la funcionalidad de la app
     match /{document=**} {
       allow read, write: if isSignedIn();
     }
