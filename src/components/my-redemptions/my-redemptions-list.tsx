@@ -2,14 +2,14 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { History, Tag, Calendar, CheckCircle } from 'lucide-react';
 import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Badge } from '../ui/badge';
 import RedemptionQRCodeDialog from './redemption-qr-code-dialog';
 
@@ -38,10 +38,9 @@ export default function MyRedemptionsList() {
 
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
-        // This query is now on the root collection.
+        // CORRECTED QUERY: Point to the user's subcollection
         return query(
-            collection(firestore, 'benefitRedemptions'),
-            where('userId', '==', user.uid),
+            collection(firestore, 'users', user.uid, 'redeemed_benefits'),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
