@@ -1,4 +1,3 @@
-
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -30,6 +29,7 @@ import AddServiceForm from '@/components/supplier/add-service-form';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
+import RedemptionList from '@/components/supplier/redemption-list';
 import { useUser } from '@/firebase';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -125,7 +125,7 @@ export default function SupplierPage() {
         </header>
 
         <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto flex-wrap">
             <TabsTrigger value="profile">
               <User className="mr-2 h-4 w-4" />
               Mi Perfil
@@ -141,6 +141,10 @@ export default function SupplierPage() {
             <TabsTrigger value="add-service">
               <ConciergeBell className="mr-2 h-4 w-4" />
               Añadir Servicio
+            </TabsTrigger>
+            <TabsTrigger value="redemptions">
+              <History className="mr-2 h-4 w-4" />
+              Historial de Canjes
             </TabsTrigger>
           </TabsList>
 
@@ -199,6 +203,21 @@ export default function SupplierPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="redemptions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Historial de Canjes</CardTitle>
+                <CardDescription>
+                  Revisa todos los beneficios que los estudiantes han canjeado en tu comercio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <RedemptionList />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
         </Tabs>
       </div>
     </MainLayout>
