@@ -1,50 +1,33 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
     
-    function isSupplier() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
+    function isSignedIn() { return request.auth != null; }
+    function isSupplier() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); 
     }
 
-    // User profile and private subcollection rules
-    match /users/{userId} {
-      allow read, write: if isOwner(userId);
-
-      // Rule for user's own redemption history subcollection
-      match /redeemed_benefits/{redemptionId} {
-        allow read: if isOwner(userId);
-        allow write: if false; // Writes are handled by secure logic
-      }
-    }
-    
-    match /usernames/{username} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    // Root collection for redemptions, primarily for supplier queries
-    match /benefitRedemptions/{redemptionId} {
-      // SUPPLIER: can list redemptions for THEIR benefits if the query includes their ID
+    // 1. HISTORIAL PARA EL PROVEEDOR (Colección Raíz)
+    match /benefitRedemptions/{id} {
+      // El proveedor puede listar SI su query incluye el filtro de su propio ID
       allow list: if isSupplier() && request.query.where.supplierId == request.auth.uid;
-      
-      // USER: can read a specific redemption they own (e.g., via QR code scan)
-      // SUPPLIER: can read a specific redemption for their business
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || (isSupplier() && resource.data.supplierId == request.auth.uid));
-
-      allow write: if false; // All writes are handled via secure logic (the redeem dialog)
+      // Lectura individual para validación
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid);
+      allow write: if false;
     }
-    
-    // Fallback for other collections to ensure app functionality
+
+    // 2. HISTORIAL PARA EL USUARIO (Subcolección detectada en imagen)
+    match /users/{userId}/redeemed_benefits/{id} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      // Las escrituras se hacen con la lógica de doble escritura, no directamente por el usuario.
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Fallback para el resto de colecciones
     match /{document=**} {
       allow read, write: if isSignedIn();
     }
