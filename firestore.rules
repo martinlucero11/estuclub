@@ -16,13 +16,14 @@ service cloud.firestore {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
+    // User profile and private subcollection rules
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
       // Rule for user's own redemption history subcollection
       match /redeemed_benefits/{redemptionId} {
         allow read: if isOwner(userId);
-        allow write: if false; // Writes handled by secure logic
+        allow write: if false; // Writes are handled by secure logic
       }
     }
     
@@ -31,7 +32,7 @@ service cloud.firestore {
       allow write: if isSignedIn();
     }
 
-    // Root collection for supplier queries
+    // Root collection for redemptions, primarily for supplier queries
     match /benefitRedemptions/{redemptionId} {
       // SUPPLIER: can list redemptions for THEIR benefits if the query includes their ID
       allow list: if isSupplier() && request.query.where.supplierId == request.auth.uid;
