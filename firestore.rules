@@ -15,27 +15,22 @@ service cloud.firestore {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    // --- BENEFIT REDEMPTIONS (EL FOCO DEL ERROR) ---
-    match /benefitRedemptions/{redemptionId} {
-      
-      // Regla para LISTAR: Forzamos a que la consulta incluya el filtro de seguridad
-      allow list: if isSignedIn() && (
-        request.query.limit <= 100 && (
-          request.query.where.userId == request.auth.uid || 
-          (isSupplier() && request.query.where.supplierId == request.auth.uid)
-        )
-      );
-
-      // Regla para obtener un documento INDIVIDUAL
-      allow get: if isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
-        resource.data.supplierId == request.auth.uid
-      );
-
+    // --- USER-SPECIFIC SUBCOLLECTION ---
+    match /users/{userId}/redeemed_benefits/{redemptionId} {
+      // Allow a user to read their own redeemed benefits.
+      allow read: if isOwner(userId);
+      // Disallow write operations from the client for now.
       allow write: if false;
     }
 
-    // --- OTRAS COLECCIONES ---
+    // --- GLOBAL REDEMPTIONS (FOR SUPPLIERS) ---
+    match /benefitRedemptions/{redemptionId} {
+      // Keep this rule for suppliers to be able to read redemptions.
+      allow read: if isSupplier() && resource.data.supplierId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // --- OTHER COLLECTIONS ---
     match /users/{userId} {
       allow read, write: if isOwner(userId);
     }
@@ -49,8 +44,10 @@ service cloud.firestore {
       allow read: if isOwner(userId);
     }
 
+    // Fallback for other collections to ensure app functionality.
     match /{document=**} {
-      allow read, write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }

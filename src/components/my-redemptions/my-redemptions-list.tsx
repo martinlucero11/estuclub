@@ -38,9 +38,9 @@ export default function MyRedemptionsList() {
 
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
+        // CORRECTED QUERY: Point to the user's subcollection
         return query(
-            collection(firestore, 'benefitRedemptions'),
-            where('userId', '==', user.uid),
+            collection(firestore, 'users', user.uid, 'redeemed_benefits'),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
@@ -64,7 +64,7 @@ export default function MyRedemptionsList() {
                 <AlertTitle>No tienes canjes</AlertTitle>
                 <AlertDescription>
                    Aún no has canjeado ningún beneficio. ¡Explora y empieza a disfrutar!
-                </AlertDescription>
+                </AlerDescription>
             </Alert>
         );
     }
