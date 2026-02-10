@@ -41,7 +41,6 @@ service cloud.firestore {
         allow write: if isSignedIn();
     }
     
-    // Fallback para otras colecciones para asegurar la funcionalidad de la app
     match /{document=**} {
       allow read, write: if isSignedIn();
     }
