@@ -108,6 +108,7 @@ export interface BenefitRedemption {
   benefitId: string;
   benefitTitle: string;
   supplierId: string;
+  supplierName: string;
   userId: string;
   userName: string;
   userDni: string;

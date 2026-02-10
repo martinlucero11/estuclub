@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
 import { CheckCircle, CalendarDays, Award } from 'lucide-react';
@@ -87,7 +87,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
 
   const handleRedeem = async () => {
-    if (!user || !userProfile || !firestore) {
+    if (!user || !userProfile || !firestore || !perk.ownerId) {
       toast({ 
           variant: 'destructive', 
           title: 'Error de datos',
@@ -130,8 +130,14 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
       
       const batch = writeBatch(firestore);
+
+      const supplierRef = doc(firestore, 'roles_supplier', perk.ownerId);
+      const supplierSnap = await getDoc(supplierRef);
+      if (!supplierSnap.exists()) {
+          throw new Error("No se pudo encontrar el proveedor del beneficio.");
+      }
+      const supplierName = supplierSnap.data().name;
       
-      // Dual Write: Create a document in the root collection and the user's subcollection
       const newRedemptionId = doc(collection(firestore, 'benefitRedemptions')).id;
       const rootRedemptionRef = doc(firestore, "benefitRedemptions", newRedemptionId);
       const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', newRedemptionId);
@@ -146,22 +152,20 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         supplierId: perk.ownerId,
+        supplierName: supplierName,
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
         status: 'pending' as const,
         pointsGranted: pointsToGrant
       };
 
-      // Write to both locations
       batch.set(rootRedemptionRef, redemptionData);
       batch.set(userRedemptionRef, redemptionData);
       
-      // Update user points
       if (pointsToGrant > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(pointsToGrant) });
       }
 
-      // Update benefit redemption count
       const benefitRef = doc(firestore, 'benefits', perk.id);
       batch.update(benefitRef, { redemptionCount: increment(1) });
 

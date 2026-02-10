@@ -1,33 +1,53 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
     function isSignedIn() { return request.auth != null; }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     function isSupplier() { 
       return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); 
     }
 
-    // 1. HISTORIAL PARA EL PROVEEDOR (Colección Raíz)
-    match /benefitRedemptions/{id} {
-      // El proveedor puede listar SI su query incluye el filtro de su propio ID
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    // Collection for all redemption records
+    match /benefitRedemptions/{redemptionId} {
+      // ADMIN: Can read/list all redemptions
+      allow read: if isAdmin();
+
+      // SUPPLIER: Can list redemptions for their own benefits if they filter by their ID
       allow list: if isSupplier() && request.query.where.supplierId == request.auth.uid;
-      // Lectura individual para validación
+
+      // USER/SUPPLIER: Can read a single redemption if they are the user or the supplier involved
       allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid);
+
+      // No client-side writes.
       allow write: if false;
     }
 
-    // 2. HISTORIAL PARA EL USUARIO (Subcolección detectada en imagen)
-    match /users/{userId}/redeemed_benefits/{id} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
-      // Las escrituras se hacen con la lógica de doble escritura, no directamente por el usuario.
+    // Subcollection for user's private history
+    match /users/{userId}/redeemed_benefits/{redemptionId} {
+      allow read: if isOwner(userId);
       allow write: if false;
     }
 
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isOwner(userId);
     }
-
-    // Fallback para el resto de colecciones
+    
+    match /usernames/{username} {
+        allow read: if true;
+        allow write: if isSignedIn();
+    }
+    
+    // Fallback for other collections to ensure app functionality
     match /{document=**} {
       allow read, write: if isSignedIn();
     }

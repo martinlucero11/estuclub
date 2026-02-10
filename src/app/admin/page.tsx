@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, List, PlusCircle, Briefcase, Users } from 'lucide-react';
+import { ShieldAlert, List, PlusCircle, Briefcase, Users, History } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
@@ -13,6 +13,7 @@ import { useAdmin } from '@/firebase/auth/use-admin';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddSupplierForm from '@/components/admin/add-supplier-form';
 import SupplierList from '@/components/admin/supplier-list';
+import AllRedemptionsList from '@/components/admin/all-redemptions-list';
 
 
 function AdminAccessDenied() {
@@ -105,7 +106,7 @@ export default function AdminPage() {
         </header>
 
         <Tabs defaultValue="manage-benefits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 h-auto flex-wrap">
             <TabsTrigger value="manage-benefits">
               <List className="mr-2 h-4 w-4" />
               Beneficios
@@ -129,6 +130,10 @@ export default function AdminPage() {
             <TabsTrigger value="add-supplier">
               <Users className="mr-2 h-4 w-4" />
               Añadir Proveedor
+            </TabsTrigger>
+            <TabsTrigger value="all-redemptions">
+              <History className="mr-2 h-4 w-4" />
+              Todos los Canjes
             </TabsTrigger>
           </TabsList>
 
@@ -200,6 +205,18 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                     <AddSupplierForm />
+                </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="all-redemptions">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Historial de Todos los Canjes</CardTitle>
+                    <CardDescription>Revisa todos los canjes realizados en la plataforma.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AllRedemptionsList />
                 </CardContent>
             </Card>
           </TabsContent>
