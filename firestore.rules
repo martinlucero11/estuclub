@@ -26,10 +26,10 @@ service cloud.firestore {
     }
 
     match /benefitRedemptions/{redemptionId} {
-      // USER: puede leer sus propios canjes
+      // USER: can read/list their own redemptions
       allow get, list: if isSignedIn() && resource.data.userId == request.auth.uid;
 
-      // SUPPLIER: puede leer canjes de sus beneficios
+      // SUPPLIER: can read/list redemptions for their benefits
       allow get, list: if isSupplier() && resource.data.supplierId == request.auth.uid;
 
       // No client-side writes are allowed. All redemptions are created/updated via secure logic.
