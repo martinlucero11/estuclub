@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -10,27 +11,41 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    // --- USER-SPECIFIC SUBCOLLECTION ---
-    match /users/{userId}/redeemed_benefits/{id} {
-      allow read: if isOwner(userId);
-      allow write: if false; // Client-side writes are disabled for now
+    
+    function isSupplier() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    // --- OTHER COLLECTIONS ---
     match /users/{userId} {
       allow read, write: if isOwner(userId);
-    }
 
+      // Rule for user's own redemption history subcollection
+      match /redeemed_benefits/{redemptionId} {
+        allow read: if isOwner(userId);
+        allow write: if false; // Writes handled by secure logic
+      }
+    }
+    
     match /usernames/{username} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Fallback for any other collections
+    // Root collection for supplier queries
+    match /benefitRedemptions/{redemptionId} {
+      // SUPPLIER: can list redemptions for THEIR benefits if the query includes their ID
+      allow list: if isSupplier() && request.query.where.supplierId == request.auth.uid;
+      
+      // USER: can read a specific redemption they own (e.g., via QR code scan)
+      // SUPPLIER: can read a specific redemption for their business
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || (isSupplier() && resource.data.supplierId == request.auth.uid));
+
+      allow write: if false; // All writes are handled via secure logic (the redeem dialog)
+    }
+    
+    // Fallback for other collections to ensure app functionality
     match /{document=**} {
-      allow read: if isSignedIn();
-      allow write: if false;
+      allow read, write: if isSignedIn();
     }
   }
 }

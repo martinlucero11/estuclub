@@ -505,6 +505,20 @@
         }
       },
       {
+        "path": "/users/{userId}/redeemed_benefits/{redemptionId}",
+        "definition": {
+          "entityName": "BenefitRedemption",
+          "schema": {
+            "$ref": "#/backend/entities/BenefitRedemption"
+          },
+          "description": "A copy of a benefit redemption, stored in a user's subcollection for their private history.",
+          "params": [
+            { "name": "userId", "description": "The user's unique ID." },
+            { "name": "redemptionId", "description": "The redemption event's unique ID." }
+          ]
+        }
+      },
+      {
         "path": "/usernames/{username}",
         "definition": {
           "entityName": "Username",

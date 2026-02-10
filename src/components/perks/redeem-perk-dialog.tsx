@@ -116,13 +116,12 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
       
-      const redemptionsRef = collection(firestore, 'benefitRedemptions');
+      const userRedemptionsRef = collection(firestore, 'users', user.uid, 'redeemed_benefits');
       
       if (perk.redemptionLimit && perk.redemptionLimit > 0) {
         const q = query(
-          redemptionsRef, 
+          userRedemptionsRef, 
           where("benefitId", "==", perk.id),
-          where("userId", "==", user.uid)
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.size >= perk.redemptionLimit) {
@@ -131,11 +130,16 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       }
       
       const batch = writeBatch(firestore);
-      const newRedemptionRef = doc(redemptionsRef);
-      const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionRef.id });
+      
+      // Dual Write: Create a document in the root collection and the user's subcollection
+      const newRedemptionId = doc(collection(firestore, 'benefitRedemptions')).id;
+      const rootRedemptionRef = doc(firestore, "benefitRedemptions", newRedemptionId);
+      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', newRedemptionId);
+      
+      const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionId });
       
       const redemptionData = {
-        id: newRedemptionRef.id,
+        id: newRedemptionId,
         benefitId: perk.id,
         benefitTitle: perk.title,
         userId: user.uid,
@@ -147,15 +151,24 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         status: 'pending' as const,
         pointsGranted: pointsToGrant
       };
-      batch.set(newRedemptionRef, redemptionData);
+
+      // Write to both locations
+      batch.set(rootRedemptionRef, redemptionData);
+      batch.set(userRedemptionRef, redemptionData);
       
+      // Update user points
       if (pointsToGrant > 0 && userProfileRef) {
         batch.update(userProfileRef, { points: increment(pointsToGrant) });
       }
 
+      // Update benefit redemption count
+      const benefitRef = doc(firestore, 'benefits', perk.id);
+      batch.update(benefitRef, { redemptionCount: increment(1) });
+
+
       await batch.commit();
 
-      setRedemptionId(newRedemptionRef.id);
+      setRedemptionId(newRedemptionId);
       toast({
         title: '¡Beneficio Canjeado!',
         description: `Muestra el código QR al proveedor para validarlo. Se han sumado ${pointsToGrant} puntos a tu cuenta.`,
