@@ -1,4 +1,3 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -43,5 +42,3 @@ export * from './auth/use-admin';
 export * from './auth/use-supplier';
 export * from './auth/use-supplier-profile';
 export * from '@/hooks/use-user-rank';
-export * from './client-side-init';
-
