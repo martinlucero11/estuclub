@@ -1,12 +1,13 @@
+
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase, useDocOnce } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { History, Tag, Calendar, CheckCircle, MapPin, Building, QrCode } from 'lucide-react';
-import type { BenefitRedemption, SerializableBenefitRedemption, Perk } from '@/lib/data';
+import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
@@ -38,11 +39,8 @@ function RedemptionsListSkeleton() {
     );
 }
 
-// New component to fetch and display benefit details
+// Use denormalized data from the redemption object
 function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefitRedemption }) {
-    const firestore = useFirestore();
-    const benefitRef = useMemoFirebase(() => doc(firestore, 'benefits', redemption.benefitId), [firestore, redemption.benefitId]);
-    const { data: benefit, isLoading } = useDocOnce<Perk>(benefitRef);
     const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
     useEffect(() => {
@@ -59,24 +57,6 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
             });
         }
     }, [redemption]);
-
-
-    if (isLoading) {
-        return (
-            <div className="flex gap-4 p-4">
-                <Skeleton className="h-24 w-24 rounded-md" />
-                <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                </div>
-            </div>
-        );
-    }
-
-    if (!benefit) {
-        return <div className="p-4 text-sm text-muted-foreground">Detalles del beneficio no disponibles.</div>;
-    }
     
     const redeemedDate = new Date(redemption.redeemedAt);
 
@@ -85,14 +65,14 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                      <div className="relative h-32 w-full sm:w-32 flex-shrink-0">
-                         <Image src={benefit.imageUrl} alt={benefit.title} fill className="rounded-md object-cover" />
+                         <Image src={redemption.benefitImageUrl} alt={redemption.benefitTitle} fill className="rounded-md object-cover" />
                     </div>
                     <div className="space-y-2">
-                         <p className="text-sm text-muted-foreground">{benefit.description}</p>
-                         {benefit.location && (
+                         <p className="text-sm text-muted-foreground">{redemption.benefitDescription}</p>
+                         {redemption.benefitLocation && (
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                 <MapPin className="h-3 w-3" />
-                                <span>{benefit.location}</span>
+                                <span>{redemption.benefitLocation}</span>
                             </div>
                          )}
                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
