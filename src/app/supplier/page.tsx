@@ -1,13 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import {
   ShieldAlert,
   User,
@@ -16,21 +10,22 @@ import {
   ConciergeBell,
   QrCode,
   History,
+  Gift,
+  Megaphone,
+  List,
 } from 'lucide-react';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import { useSupplier } from '@/firebase/auth/use-supplier';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSupplierProfile } from '@/firebase/auth/use-supplier-profile';
 import { Skeleton } from '@/components/ui/skeleton';
 import AddServiceForm from '@/components/supplier/add-service-form';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import RedemptionList from '@/components/supplier/redemption-list';
-import { useUser } from '@/firebase';
+import AddPerkForm from '@/components/admin/add-perk-form';
+import BenefitAdminList from '@/components/admin/benefit-admin-list';
+import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
+import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -81,8 +76,7 @@ function SupplierLoadingSkeleton() {
 }
 
 export default function SupplierPage() {
-  const { user } = useUser();
-  const { isSupplier, isLoading } = useSupplier();
+  const { supplierProfile, isLoading } = useSupplierProfile();
 
   if (isLoading) {
     return (
@@ -94,14 +88,18 @@ export default function SupplierPage() {
     );
   }
 
-  if (!isSupplier) {
+  if (!supplierProfile) {
     return (
       <MainLayout>
         <SupplierAccessDenied />
       </MainLayout>
     );
   }
-  
+
+  const isInstitution = supplierProfile.type === 'Institucion';
+  const canBook = supplierProfile.allowsBooking;
+  const defaultTab = 'profile';
+
   return (
     <MainLayout>
       <div className="flex-1 space-y-8 p-4 md:p-8">
@@ -111,7 +109,7 @@ export default function SupplierPage() {
               Panel de Proveedor
             </h1>
             <p className="text-muted-foreground">
-              Gestiona tus servicios, turnos y revisa los canjes de tus clientes.
+              Gestiona tu perfil, beneficios, y servicios en la plataforma.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -124,30 +122,29 @@ export default function SupplierPage() {
           </div>
         </header>
 
-        <Tabs defaultValue="profile" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto flex-wrap">
-            <TabsTrigger value="profile">
-              <User className="mr-2 h-4 w-4" />
-              Mi Perfil
-            </TabsTrigger>
-            <TabsTrigger value="appointments">
-              <BookUser className="mr-2 h-4 w-4" />
-              Mis Turnos
-            </TabsTrigger>
-            <TabsTrigger value="availability">
-              <CalendarClock className="mr-2 h-4 w-4" />
-              Disponibilidad
-            </TabsTrigger>
-            <TabsTrigger value="add-service">
-              <ConciergeBell className="mr-2 h-4 w-4" />
-              Añadir Servicio
-            </TabsTrigger>
-            <TabsTrigger value="redemptions">
-              <History className="mr-2 h-4 w-4" />
-              Historial de Canjes
-            </TabsTrigger>
+        <Tabs defaultValue={defaultTab} className="space-y-4">
+          <TabsList className="grid w-full h-auto flex-wrap grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9">
+            <TabsTrigger value="profile"><User className="mr-2 h-4 w-4" />Mi Perfil</TabsTrigger>
+            <TabsTrigger value="manage-benefits"><List className="mr-2 h-4 w-4" />Beneficios</TabsTrigger>
+            <TabsTrigger value="add-benefit"><Gift className="mr-2 h-4 w-4" />Añadir Beneficio</TabsTrigger>
+            <TabsTrigger value="redemptions"><History className="mr-2 h-4 w-4" />Canjes</TabsTrigger>
+            
+            {isInstitution && (
+              <>
+                <TabsTrigger value="manage-announcements"><List className="mr-2 h-4 w-4" />Anuncios</TabsTrigger>
+                <TabsTrigger value="add-announcement"><Megaphone className="mr-2 h-4 w-4" />Añadir Anuncio</TabsTrigger>
+              </>
+            )}
+            
+            {canBook && (
+              <>
+                <TabsTrigger value="appointments"><BookUser className="mr-2 h-4 w-4" />Mis Turnos</TabsTrigger>
+                <TabsTrigger value="availability"><CalendarClock className="mr-2 h-4 w-4" />Disponibilidad</TabsTrigger>
+                <TabsTrigger value="add-service"><ConciergeBell className="mr-2 h-4 w-4" />Añadir Servicio</TabsTrigger>
+              </>
+            )}
           </TabsList>
-
+          
           <TabsContent value="profile">
             <Card>
               <CardHeader>
@@ -156,67 +153,96 @@ export default function SupplierPage() {
                   Modifica tu información pública que ven los estudiantes.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <EditSupplierProfileForm />
-              </CardContent>
+              <CardContent><EditSupplierProfileForm /></CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="appointments">
+          <TabsContent value="manage-benefits">
             <Card>
               <CardHeader>
-                <CardTitle>Turnos Reservados</CardTitle>
-                <CardDescription>
-                  Aquí puedes ver todos los turnos que han reservado contigo.
-                </CardDescription>
+                <CardTitle>Gestionar Beneficios</CardTitle>
+                <CardDescription>Edita o elimina los beneficios que has creado.</CardDescription>
               </CardHeader>
               <CardContent>
-                <AppointmentList />
+                <BenefitAdminList supplierId={supplierProfile.id} />
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="availability">
+          <TabsContent value="add-benefit">
             <Card>
               <CardHeader>
-                <CardTitle>Gestionar Disponibilidad</CardTitle>
-                <CardDescription>
-                  Define tus horarios de trabajo para que los estudiantes puedan reservar turnos.
-                </CardDescription>
+                <CardTitle>Añadir Nuevo Beneficio</CardTitle>
+                <CardDescription>Crea un nuevo beneficio para los estudiantes.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <AvailabilityManager />
-              </CardContent>
+              <CardContent><AddPerkForm /></CardContent>
             </Card>
           </TabsContent>
-
-          <TabsContent value="add-service">
-            <Card>
-              <CardHeader>
-                <CardTitle>Añadir Nuevo Servicio</CardTitle>
-                <CardDescription>
-                  Crea un servicio que los estudiantes puedan reservar (ej: consulta, clase, etc.).
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AddServiceForm />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
+          
           <TabsContent value="redemptions">
             <Card>
               <CardHeader>
                 <CardTitle>Historial de Canjes</CardTitle>
-                <CardDescription>
-                  Revisa todos los beneficios que los estudiantes han canjeado en tu comercio.
-                </CardDescription>
+                <CardDescription>Revisa todos los beneficios que los estudiantes han canjeado en tu comercio.</CardDescription>
               </CardHeader>
-              <CardContent>
-                <RedemptionList />
-              </CardContent>
+              <CardContent><RedemptionList /></CardContent>
             </Card>
           </TabsContent>
+
+          {isInstitution && (
+            <>
+              <TabsContent value="manage-announcements">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gestionar Anuncios</CardTitle>
+                    <CardDescription>Edita o elimina los anuncios que has creado.</CardDescription>
+                  </CardHeader>
+                  <CardContent><AnnouncementAdminList authorId={supplierProfile.id} /></CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="add-announcement">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Publicar Nuevo Anuncio</CardTitle>
+                    <CardDescription>Comparte novedades con la comunidad estudiantil.</CardDescription>
+                  </CardHeader>
+                  <CardContent><AddAnnouncementForm /></CardContent>
+                </Card>
+              </TabsContent>
+            </>
+          )}
+
+          {canBook && (
+            <>
+              <TabsContent value="appointments">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Turnos Reservados</CardTitle>
+                    <CardDescription>Aquí puedes ver todos los turnos que han reservado contigo.</CardDescription>
+                  </CardHeader>
+                  <CardContent><AppointmentList /></CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="availability">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Gestionar Disponibilidad</CardTitle>
+                    <CardDescription>Define tus horarios de trabajo para que los estudiantes puedan reservar turnos.</CardDescription>
+                  </CardHeader>
+                  <CardContent><AvailabilityManager /></CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="add-service">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Añadir Nuevo Servicio</CardTitle>
+                    <CardDescription>Crea un servicio que los estudiantes puedan reservar (ej: consulta, clase, etc.).</CardDescription>
+                  </CardHeader>
+                  <CardContent><AddServiceForm /></CardContent>
+                </Card>
+              </TabsContent>
+            </>
+          )}
 
         </Tabs>
       </div>
