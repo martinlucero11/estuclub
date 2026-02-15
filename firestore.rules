@@ -51,7 +51,8 @@ service cloud.firestore {
 
     // --- Private User Data ---
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read: if true; // Publicly readable for leaderboards, profiles, etc.
+      allow write: if isOwner(userId); // Only owner can edit their own profile.
     }
     
     match /users/{userId}/redeemed_benefits/{redemptionId} {
