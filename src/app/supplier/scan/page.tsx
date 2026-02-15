@@ -4,6 +4,7 @@
 import MainLayout from '@/components/layout/main-layout';
 import QrScanner from '@/components/supplier/qr-scanner';
 import { useSupplier } from '@/firebase/auth/use-supplier';
+import { useAdmin } from '@/firebase/auth/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldAlert } from 'lucide-react';
@@ -18,7 +19,7 @@ function AccessDenied() {
                     </div>
                     <CardTitle className="mt-4">Acceso Denegado</CardTitle>
                     <CardDescription>
-                        Solo los proveedores pueden acceder a esta función.
+                        Solo los proveedores y administradores pueden acceder a esta función.
                     </CardDescription>
                 </CardHeader>
             </Card>
@@ -39,7 +40,11 @@ function LoadingSkeleton() {
 }
 
 export default function ScanPage() {
-    const { isSupplier, isLoading } = useSupplier();
+    const { isSupplier, isLoading: isSupplierLoading } = useSupplier();
+    const { isAdmin, isLoading: isAdminLoading } = useAdmin();
+
+    const isLoading = isSupplierLoading || isAdminLoading;
+    const canAccess = isSupplier || isAdmin;
 
     if (isLoading) {
         return (
@@ -51,7 +56,7 @@ export default function ScanPage() {
         );
     }
     
-    if (!isSupplier) {
+    if (!canAccess) {
         return (
             <MainLayout>
                 <AccessDenied />
@@ -71,7 +76,7 @@ export default function ScanPage() {
                     </p>
                 </header>
                 <div className="w-full max-w-lg">
-                    <QrScanner />
+                    <QrScanner userIsAdmin={isAdmin} />
                 </div>
             </div>
         </MainLayout>

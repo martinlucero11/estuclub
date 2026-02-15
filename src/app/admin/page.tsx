@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, List, PlusCircle, Briefcase, Users, History } from 'lucide-react';
+import { ShieldAlert, List, PlusCircle, Briefcase, Users, History, QrCode } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import AddSupplierForm from '@/components/admin/add-supplier-form';
 import SupplierList from '@/components/admin/supplier-list';
 import AllRedemptionsList from '@/components/admin/all-redemptions-list';
+import QrScanner from '@/components/supplier/qr-scanner';
 
 
 function AdminAccessDenied() {
@@ -106,7 +107,7 @@ export default function AdminPage() {
         </header>
 
         <Tabs defaultValue="manage-benefits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-7 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto flex-wrap">
             <TabsTrigger value="manage-benefits">
               <List className="mr-2 h-4 w-4" />
               Beneficios
@@ -134,6 +135,10 @@ export default function AdminPage() {
             <TabsTrigger value="all-redemptions">
               <History className="mr-2 h-4 w-4" />
               Todos los Canjes
+            </TabsTrigger>
+            <TabsTrigger value="scan-qr">
+                <QrCode className="mr-2 h-4 w-4" />
+                Escanear QR
             </TabsTrigger>
           </TabsList>
 
@@ -217,6 +222,20 @@ export default function AdminPage() {
                 </CardHeader>
                 <CardContent>
                     <AllRedemptionsList />
+                </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="scan-qr">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Escanear Código QR de Canje</CardTitle>
+                    <CardDescription>
+                        Apunta la cámara al código QR del estudiante para validar el canje.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <QrScanner userIsAdmin={isAdmin} />
                 </CardContent>
             </Card>
           </TabsContent>
