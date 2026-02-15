@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -286,7 +285,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                         Cancelar
                     </Button>
                     <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
-                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : <> <Award className='mr-2 h-4 w-4'/>Confirmar Canje</>)}
+                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : <> <Award className='mr-2 h-4 w-4' />Confirmar Canje</>)}
                     </Button>
                 </DialogFooter>
             </>
