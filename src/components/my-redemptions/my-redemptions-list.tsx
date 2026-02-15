@@ -5,12 +5,11 @@ import { collection, query, orderBy, doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { History, Tag, Calendar, CheckCircle, MapPin } from 'lucide-react';
+import { History, Tag, Calendar, CheckCircle, MapPin, Building, QrCode } from 'lucide-react';
 import type { BenefitRedemption, SerializableBenefitRedemption, Perk } from '@/lib/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
-import RedemptionQRCodeDialog from './redemption-qr-code-dialog';
 import {
   Accordion,
   AccordionContent,
@@ -18,6 +17,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from 'next/image';
+import QRCode from 'qrcode';
+
 
 function RedemptionsListSkeleton() {
     return (
@@ -38,10 +39,27 @@ function RedemptionsListSkeleton() {
 }
 
 // New component to fetch and display benefit details
-function RedeemedBenefitDetails({ benefitId }: { benefitId: string }) {
+function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefitRedemption }) {
     const firestore = useFirestore();
-    const benefitRef = useMemoFirebase(() => doc(firestore, 'benefits', benefitId), [firestore, benefitId]);
+    const benefitRef = useMemoFirebase(() => doc(firestore, 'benefits', redemption.benefitId), [firestore, redemption.benefitId]);
     const { data: benefit, isLoading } = useDocOnce<Perk>(benefitRef);
+    const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (redemption.status === 'pending' && redemption.qrCodeValue) {
+            QRCode.toDataURL(redemption.qrCodeValue, {
+                errorCorrectionLevel: 'H',
+                width: 160, // smaller size for inline display
+            })
+            .then(url => {
+                setQrCodeUrl(url);
+            })
+            .catch(err => {
+                console.error("QR Code Generation Error:", err);
+            });
+        }
+    }, [redemption]);
+
 
     if (isLoading) {
         return (
@@ -59,23 +77,49 @@ function RedeemedBenefitDetails({ benefitId }: { benefitId: string }) {
     if (!benefit) {
         return <div className="p-4 text-sm text-muted-foreground">Detalles del beneficio no disponibles.</div>;
     }
+    
+    const redeemedDate = new Date(redemption.redeemedAt);
 
     return (
-        <div className="flex flex-col sm:flex-row gap-4 px-4 pb-4">
-            <div className="relative h-32 w-full sm:w-32 flex-shrink-0">
-                 <Image src={benefit.imageUrl} alt={benefit.title} fill className="rounded-md object-cover" />
-            </div>
-            <div className="space-y-2">
-                 <p className="text-sm text-muted-foreground">{benefit.description}</p>
-                 {benefit.location && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        <span>{benefit.location}</span>
+        <div className="flex flex-col md:flex-row gap-6 px-4 pb-4">
+            <div className="flex-1 space-y-4">
+                <div className="flex flex-col sm:flex-row gap-4">
+                     <div className="relative h-32 w-full sm:w-32 flex-shrink-0">
+                         <Image src={benefit.imageUrl} alt={benefit.title} fill className="rounded-md object-cover" />
                     </div>
-                 )}
+                    <div className="space-y-2">
+                         <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                         {benefit.location && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <MapPin className="h-3 w-3" />
+                                <span>{benefit.location}</span>
+                            </div>
+                         )}
+                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Building className="h-3 w-3" />
+                            <span>Vendido por: {redemption.supplierName}</span>
+                         </div>
+                    </div>
+                </div>
+                 <div>
+                    <h4 className="font-semibold mb-2">Detalles del Canje</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                        <li><span className="font-medium text-foreground">Fecha:</span> {redeemedDate.toLocaleDateString('es-ES')}</li>
+                        <li><span className="font-medium text-foreground">Hora:</span> {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs</li>
+                        <li><span className="font-medium text-foreground">Puntos Otorgados:</span> {redemption.pointsGranted}</li>
+                         <li><span className="font-medium text-foreground">ID de Transacción:</span> <span className="font-mono text-xs">{redemption.id}</span></li>
+                    </ul>
+                </div>
             </div>
+            
+            {redemption.status === 'pending' && qrCodeUrl && (
+                <div className="w-full md:w-48 flex flex-col items-center justify-center text-center p-4 bg-background rounded-lg">
+                    <img src={qrCodeUrl} alt={`Código QR para ${redemption.benefitTitle}`} className="rounded-lg" />
+                    <p className="mt-2 text-xs text-muted-foreground">Muestra este QR en el comercio para validarlo.</p>
+                </div>
+            )}
         </div>
-    )
+    );
 }
 
 
@@ -143,11 +187,8 @@ export default function MyRedemptionsList() {
                                             {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
                                         </Badge>
                                         {redemption.status === 'pending' ? (
-                                            <div onClick={(e) => e.stopPropagation()}>
-                                                <RedemptionQRCodeDialog
-                                                    redemptionId={redemption.id}
-                                                    qrCodeValue={redemption.qrCodeValue}
-                                                />
+                                            <div className="flex items-center text-primary">
+                                                <QrCode className="h-5 w-5" />
                                             </div>
                                         ) : (
                                             <div className="flex items-center text-green-600">
@@ -158,7 +199,7 @@ export default function MyRedemptionsList() {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
-                                <RedeemedBenefitDetails benefitId={redemption.benefitId} />
+                                <RedeemedBenefitDetails redemption={redemption} />
                             </AccordionContent>
                         </Card>
                     </AccordionItem>
