@@ -11,22 +11,36 @@ export default function BottomNav() {
   const navItems = [
     { href: '/benefits', label: 'Beneficios', icon: Gift },
     { href: '/proveedores', label: 'Suppliers', icon: Store },
-    { href: '/supplier/scan', label: 'QR', icon: QrCode },
+    { href: '/supplier/scan', label: 'QR', icon: QrCode, isSpecial: true },
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/announcements', label: 'Anuncios', icon: Megaphone },
   ];
 
   return (
     <nav className="fixed bottom-0 z-40 w-full border-t bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto grid grid-cols-5 h-16 items-center justify-around px-4">
-        {navItems.map(({ href, label, icon: Icon }) => {
+      <div className="container mx-auto grid h-16 grid-cols-5 items-center justify-items-center px-4">
+        {navItems.map(({ href, label, icon: Icon, isSpecial }) => {
+          if (isSpecial) {
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="relative -top-5 flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform hover:scale-105"
+                aria-label={label}
+              >
+                <Icon className="h-7 w-7" />
+                <span className="text-xs font-bold">{label}</span>
+              </Link>
+            );
+          }
+
           const isActive = href === '/' ? pathname === href : pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                'flex flex-col items-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
+                'flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
                 isActive && 'text-primary'
               )}
             >
