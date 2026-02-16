@@ -39,7 +39,7 @@ export default function RedemptionList() {
         return query(
             collection(firestore, 'benefitRedemptions'),
             where('supplierId', '==', user.uid),
-            orderBy('redeemedAt', 'desc')
+            orderBy('usedAt', 'desc')
         );
     }, [user, firestore]);
 
@@ -64,7 +64,7 @@ export default function RedemptionList() {
     return (
         <div className="space-y-4">
             {redemptions.map(redemption => {
-                const redeemedAt = (redemption.redeemedAt as Timestamp)?.toDate();
+                const usedAt = (redemption.usedAt as Timestamp)?.toDate();
                 const userInitial = redemption.userName.charAt(0).toUpperCase();
 
                 return (
@@ -89,7 +89,7 @@ export default function RedemptionList() {
                                 </div>
                                 <div className='flex items-center gap-2 text-muted-foreground'>
                                     <Calendar className='h-4 w-4'/>
-                                    {redeemedAt ? redeemedAt.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Fecha pendiente'}
+                                    {usedAt ? usedAt.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Fecha pendiente'}
                                 </div>
                             </div>
                              <div className="col-span-1 flex items-center justify-start sm:justify-end">
