@@ -56,9 +56,11 @@ service cloud.firestore {
     
     match /users/{userId}/redeemed_benefits/{redemptionId} {
       // This is a private copy for the user's history, only they can read it.
-      // It's written via a batch write, so direct client writes are disallowed.
       allow read: if isOwner(userId);
-      allow write: if false; 
+      // A user can create their own redemption record as part of a batch write.
+      allow create: if isOwner(userId);
+      // But they cannot update or delete it from the client side.
+      allow update, delete: if false;
     }
 
     // --- Operational/Mixed-Access Data ---
