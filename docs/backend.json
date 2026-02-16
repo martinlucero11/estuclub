@@ -475,7 +475,7 @@
         "queryScope": "COLLECTION",
         "fields": [
           { "fieldPath": "supplierId", "order": "ASCENDING" },
-          { "fieldPath": "redeemedAt", "order": "DESCENDING" }
+          { "fieldPath": "usedAt", "order": "DESCENDING" }
         ]
       },
        {
