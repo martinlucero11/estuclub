@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -168,9 +169,10 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         batch.update(userProfileRef, { points: increment(pointsToGrant) });
       }
 
-      const benefitRef = doc(firestore, 'benefits', perk.id);
-      batch.update(benefitRef, { redemptionCount: increment(1) });
-
+      // The redemptionCount update is removed to prevent permission errors for non-admin/non-supplier users.
+      // The count can be calculated on the backend if needed, but client-side updates are unreliable here.
+      // const benefitRef = doc(firestore, 'benefits', perk.id);
+      // batch.update(benefitRef, { redemptionCount: increment(1) });
 
       await batch.commit();
 
