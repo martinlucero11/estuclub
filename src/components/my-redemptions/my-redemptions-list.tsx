@@ -2,7 +2,7 @@
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -109,7 +109,7 @@ export default function MyRedemptionsList() {
 
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
-        // CORRECTED QUERY: Point to the user's subcollection
+        // Point to the user's subcollection for secure, isolated data fetching.
         return query(
             collection(firestore, 'users', user.uid, 'redeemed_benefits'),
             orderBy('redeemedAt', 'desc')

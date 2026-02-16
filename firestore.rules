@@ -9,7 +9,7 @@ service cloud.firestore {
     function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)); }
 
     // --- Publicly Readable Data ---
-    // Benefits, Announcements, and Supplier profiles/services are public
+    // Benefits, Announcements, and Supplier profiles/services are public (verified rule)
     match /benefits/{benefitId} {
       allow get, list: if true;
       allow write: if isSupplier() || isAdmin();
