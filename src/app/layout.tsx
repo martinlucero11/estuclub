@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { PT_Sans, Lobster } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FirebaseClientProvider } from '@/firebase';
+import { FirebaseProvider } from '@/firebase/provider';
 import { ThemeProvider } from '@/components/theme-provider';
 
 const ptSans = PT_Sans({
@@ -39,9 +39,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
+          <FirebaseProvider>
             {children}
-          </FirebaseClientProvider>
+          </FirebaseProvider>
           <Toaster />
         </ThemeProvider>
       </body>
