@@ -1,3 +1,4 @@
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,8 +35,8 @@ export default function DeleteConfirmationDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={(e) => {e.stopPropagation(); onOpenChange(false);}}>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={(e) => {e.stopPropagation(); onConfirm();}}>Confirmar</AlertDialogAction>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Confirmar</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

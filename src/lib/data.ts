@@ -70,6 +70,7 @@ export function makeAnnouncementSerializable(announcement: Announcement): Serial
   };
 }
 
+export type CarouselItem = (SerializablePerk & { type: 'perk' }) | (SerializableAnnouncement & { type: 'announcement' });
 
 export interface Service {
   id: string;

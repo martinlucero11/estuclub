@@ -7,12 +7,10 @@ import AnnouncementsList from '@/components/announcements/announcements-list';
 import { Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import type { Perk, SerializablePerk, Announcement, SerializableAnnouncement } from '@/lib/data';
+import type { Perk, SerializablePerk, Announcement, SerializableAnnouncement, CarouselItem } from '@/lib/data';
 import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import PerksCarousel from '@/components/perks/perks-carousel';
-
-export type CarouselItem = (SerializablePerk & { type: 'perk' }) | (SerializableAnnouncement & { type: 'announcement' });
 
 function HomePageContent() {
     const firestore = useFirestore();

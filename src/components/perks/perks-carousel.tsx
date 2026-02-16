@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/carousel';
 import PerkCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
-import type { CarouselItem as CarouselItemType } from '@/app/page';
+import type { CarouselItem as CarouselItemType } from '@/lib/data';
 import Autoplay from "embla-carousel-autoplay"
 
 export default function PerksCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
