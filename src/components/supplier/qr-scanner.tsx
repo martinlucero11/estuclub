@@ -7,7 +7,7 @@ import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag, AlertTriangle, Camera } from 'lucide-react';
 import { Button } from '../ui/button';
 import type { BenefitRedemption } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -90,25 +90,62 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
-    const scannerRef = useRef<Html5Qrcode | null>(null);
-    const [scanError, setScanError] = useState<string | null>(null);
-    const [isProcessing, setIsProcessing] = useState(false);
+    
+    const [scannerState, setScannerState] = useState<'idle' | 'scanning' | 'processing' | 'error'>('idle');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [validationData, setValidationData] = useState<ValidationData | null>(null);
     const [wasJustValidated, setWasJustValidated] = useState(false);
+    
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const qrReaderElementId = 'qr-reader';
 
-    const handleScanSuccess = async (decodedText: string, result: Html5QrcodeResult) => {
-        if (isProcessing) return;
-        setIsProcessing(true);
-        setScanError(null);
-        setWasJustValidated(false);
+    const stopScanner = () => {
+        if (scannerRef.current && scannerRef.current.isScanning) {
+            scannerRef.current.stop().catch(err => {
+                console.error("Error stopping the scanner.", err);
+            });
+        }
+    };
+    
+    const startScanner = async () => {
+        setScannerState('scanning');
+        setErrorMessage(null);
 
-        let finalRedemptionData: BenefitRedemption | null = null;
-        let finalProfileData: UserProfile | null = null;
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        if (!scannerRef.current) {
+            scannerRef.current = new Html5Qrcode(qrReaderElementId, { verbose: false });
+        }
 
         try {
-            if (scannerRef.current && scannerRef.current.isScanning) {
-                await scannerRef.current.stop();
-            }
+            await scannerRef.current.start(
+                { facingMode: "environment" },
+                { fps: 10, qrbox: qrboxFunction, aspectRatio: 1.0 },
+                (decodedText: string, result: Html5QrcodeResult) => {
+                    handleScanSuccess(decodedText, result);
+                },
+                (errorMsg: string, errorObj: any) => { 
+                    if (errorMsg.includes("NotFoundException")) return;
+                }
+            );
+        } catch (err: any) {
+            stopScanner();
+            setScannerState('error');
+            let message = "No se pudo iniciar la cámara.";
+            if (err.name === 'NotAllowedError') message = 'Permiso de cámara denegado. Por favor, habilita el acceso a la cámara en los ajustes de tu navegador.';
+            else if (err.name === 'NotFoundError') message = 'No se encontró una cámara en este dispositivo.';
+            else if (err.name === 'NotReadableError') message = 'La cámara ya está en uso por otra aplicación.';
+            setErrorMessage(message);
+        }
+    };
+    
+    const handleScanSuccess = async (decodedText: string, result: Html5QrcodeResult) => {
+        if (scannerState !== 'scanning') return;
+        
+        setScannerState('processing');
+        stopScanner();
+
+        try {
             const { redemptionId } = JSON.parse(decodedText);
             if (!redemptionId) throw new Error("Código QR inválido. No contiene un ID de canje.");
             if (!user) throw new Error("Debes estar autenticado para validar un canje.");
@@ -123,7 +160,9 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             const userProfileRef = doc(firestore, "users", redemptionData.userId);
             const userProfileSnap = await getDoc(userProfileRef);
             if (!userProfileSnap.exists()) throw new Error("Perfil de usuario no encontrado.");
-            finalProfileData = userProfileSnap.data() as UserProfile;
+            const profileData = userProfileSnap.data() as UserProfile;
+
+            let finalRedemptionData = { ...redemptionData };
 
             if (redemptionData.status === 'pending') {
                 const batch = writeBatch(firestore);
@@ -133,11 +172,11 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 batch.update(userRedemptionRef, updateData);
                 await batch.commit();
                 
-                finalRedemptionData = { ...redemptionData, status: 'used' };
+                finalRedemptionData.status = 'used';
                 setWasJustValidated(true);
                 toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
             } else {
-                finalRedemptionData = redemptionData;
+                setWasJustValidated(false);
                 toast({
                     variant: 'default',
                     title: "Canje ya validado",
@@ -145,71 +184,26 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 });
             }
             
-            if (finalRedemptionData && finalProfileData) {
-                setValidationData({ redemption: finalRedemptionData, profile: finalProfileData });
-            }
-
+            setValidationData({ redemption: finalRedemptionData, profile: profileData });
+            setScannerState('idle');
         } catch (e: any) {
-            console.error("Scan validation error:", e);
-            setScanError(e.message || "Ocurrió un error al validar el canje.");
+            setScannerState('error');
+            setErrorMessage(e.message || "Ocurrió un error al validar el canje.");
             toast({ variant: 'destructive', title: "Error de validación", description: e.message });
-            setIsProcessing(false);
         }
     };
-
-    const handleScanError = (errorMessage: string, error: any) => {
-        if (errorMessage.includes("NotFoundException")) return;
-        setScanError("Ocurrió un error con el escáner. Intenta recargar la página.");
-        console.error(`QR Scan Error: ${errorMessage}`, error);
-    };
-
-    useEffect(() => {
-        const qrCodeElementId = 'qr-reader';
-        scannerRef.current = new Html5Qrcode(qrCodeElementId, { verbose: false });
-        let isCancelled = false;
-
-        const startScanner = async () => {
-            if (isCancelled || document.getElementById(qrCodeElementId) === null) return;
-            try {
-                await scannerRef.current?.start(
-                    { facingMode: "environment" },
-                    { fps: 10, qrbox: qrboxFunction, aspectRatio: 1.0 },
-                    handleScanSuccess,
-                    handleScanError
-                );
-                 if (isCancelled) {
-                    await scannerRef.current?.stop();
-                }
-            } catch (err) {
-                console.error("Error starting scanner:", err);
-                let message = "No se pudo iniciar la cámara.";
-                if (err instanceof Error) {
-                     if (err.name === 'NotAllowedError') message = 'Permiso de cámara denegado. Habilítalo en tu navegador.';
-                     else if (err.name === 'NotFoundError') message = 'No se encontró una cámara. Conecta una para continuar.';
-                     else if (err.name === 'NotReadableError') message = 'La cámara ya está en uso por otra aplicación.';
-                }
-                setScanError(message);
-            }
-        };
-
-        if (!validationData) {
-            startScanner();
-        }
-
-        return () => {
-            isCancelled = true;
-            if (scannerRef.current?.isScanning) {
-                scannerRef.current.stop().catch(console.error);
-            }
-        };
-    }, [validationData]);
-
+    
     const handleReset = () => {
+        stopScanner();
+        setScannerState('idle');
+        setErrorMessage(null);
         setValidationData(null);
-        setIsProcessing(false);
-        setScanError(null);
         setWasJustValidated(false);
     };
+    
+    useEffect(() => {
+        return () => stopScanner();
+    }, []);
 
     if (validationData) {
         return <ValidationResult data={validationData} onScanAgain={handleReset} wasJustValidated={wasJustValidated} />;
@@ -217,21 +211,36 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
 
     return (
         <Card>
-            <CardContent className="p-4 relative aspect-square flex items-center justify-center">
-                <div id="qr-reader" className="w-full h-full rounded-lg overflow-hidden bg-muted" />
-                {scanError ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 p-4">
+            <CardContent className="p-4 relative aspect-square flex items-center justify-center overflow-hidden">
+                <div id={qrReaderElementId} className={`w-full h-full ${scannerState !== 'scanning' ? 'invisible' : ''}`} />
+                
+                {scannerState === 'idle' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 p-4 text-center">
+                        <Camera className="h-12 w-12 text-muted-foreground mb-4" />
+                        <Button onClick={startScanner}>Activar Escáner</Button>
+                    </div>
+                )}
+                
+                {scannerState === 'error' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 p-4">
                         <Alert variant="destructive">
                             <XCircle className="h-4 w-4" />
                             <AlertTitle>Error del Escáner</AlertTitle>
-                            <AlertDescription>{scanError}</AlertDescription>
+                            <AlertDescription>{errorMessage}</AlertDescription>
                         </Alert>
-                        <Button className="w-full mt-4" onClick={handleReset}>Volver a Intentar</Button>
+                        <Button className="w-full mt-4" onClick={startScanner}>Volver a Intentar</Button>
                     </div>
-                ) : !isProcessing && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                         <Loader2 className="h-10 w-10 text-muted-foreground animate-spin mb-4" />
-                        <p className="text-muted-foreground">Apuntando a un código QR...</p>
+                )}
+
+                {(scannerState === 'scanning' || scannerState === 'processing') && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none bg-black/20">
+                        <div className="w-2/3 h-2/3 border-4 border-dashed border-white/50 rounded-lg" />
+                        {scannerState === 'processing' && (
+                            <div className='absolute inset-0 bg-background/80 flex flex-col items-center justify-center'>
+                                <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                                <p className="mt-4 font-medium text-foreground">Procesando...</p>
+                            </div>
+                        )}
                     </div>
                 )}
             </CardContent>
