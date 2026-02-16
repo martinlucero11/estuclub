@@ -2,7 +2,9 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeResult, Html5QrcodeError } from 'html5-qrcode';
+// HACK: Removed `Html5QrcodeError` as it's not exported from the library anymore.
+// The error object will be treated as `any` in the handler.
+import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
 import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -171,7 +173,7 @@ export default function QrScanner({ userIsAdmin = false }: QrScannerProps) {
             await batch.commit();
 
             // Set data for result view
-            setValidationData({ redemption: redemptionData, profile: userProfileData });
+            setValidationData({ redemption: { ...redemptionData, id: redemptionId }, profile: userProfileData });
             
             toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
 
@@ -184,7 +186,7 @@ export default function QrScanner({ userIsAdmin = false }: QrScannerProps) {
         }
     };
 
-    const handleScanError = (errorMessage: string, error: Html5QrcodeError) => {
+    const handleScanError = (errorMessage: string, error: any) => {
        if (!errorMessage.includes("NotFoundException")) {
            setScanError("Hubo un problema con la cámara. Intenta recargar la página.");
            console.error(`QR Scan Error: ${errorMessage}`, error);
