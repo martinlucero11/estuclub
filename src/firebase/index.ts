@@ -6,23 +6,18 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-let _firebaseApp: FirebaseApp;
-
-function getFirebaseApp() {
-    if (_firebaseApp) {
-        return _firebaseApp;
-    }
-    if (getApps().length > 0) {
-        _firebaseApp = getApp();
-        return _firebaseApp;
-    }
-    // Se inicializa siempre con la configuración explícita para evitar discrepancias.
-    _firebaseApp = initializeApp(firebaseConfig); 
-    return _firebaseApp;
-}
-
+/**
+ * Initializes and returns Firebase services. It ensures that Firebase is initialized
+ * only once, which is crucial in a Next.js environment with server-side rendering
+ * and Fast Refresh.
+ *
+ * @returns An object containing the initialized Firebase services.
+ */
 export function initializeFirebase() {
-  const firebaseApp = getFirebaseApp();
+  // Check if any Firebase app has already been initialized.
+  // If not, initialize a new one. If so, use the existing one.
+  const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  
   return {
     firebaseApp,
     firestore: getFirestore(firebaseApp),
@@ -31,6 +26,7 @@ export function initializeFirebase() {
   };
 }
 
+// Re-export all the necessary providers, hooks, and utilities.
 export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
