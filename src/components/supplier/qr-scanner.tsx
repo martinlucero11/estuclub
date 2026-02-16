@@ -39,7 +39,6 @@ const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number): any =
 function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: ValidationData, onScanAgain: () => void, alreadyUsed: boolean }) {
     const { redemption, profile } = data;
 
-    // Defensive check in case data is incomplete
     if (!redemption || !profile) {
         return (
             <div className="flex flex-col items-center justify-center bg-background/90 p-4">
@@ -123,7 +122,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             try {
                  const jsonData = JSON.parse(decodedText);
                  redemptionId = jsonData.redemptionId;
-                 if (!redemptionId) throw new Error(); // Fall to catch block
+                 if (!redemptionId) throw new Error();
             } catch (error) {
                 throw new Error("El código QR no es válido o tiene un formato incorrecto.");
             }
@@ -158,7 +157,6 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 toast({ variant: 'default', title: "Canje Ya Verificado", description: "Este canje ya había sido marcado como usado." });
             }
 
-            // Ensure all data is present before setting state
             const finalValidationData = { 
                 redemption: { ...redemptionData, id: redemptionId }, 
                 profile: userProfileData 
@@ -175,16 +173,21 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             const errorMessage = e instanceof Error ? e.message : "Ocurrió un error desconocido durante la validación.";
             setScanError(errorMessage);
             toast({ variant: 'destructive', title: "Error de Validación", description: errorMessage });
-            // Do not set processing to false here, let the user click the reset button
         }
     };
     
-    const handleScanError = (errorMessage: string, error: any) => {
-        if (errorMessage.includes("NotFoundException")) return; // Ignore "QR not found"
-        // Only set an error if one isn't already being displayed from the success flow
+    const handleScanError = (errorMessage: string) => {
+        // This error happens every frame where a QR code is not detected. We can safely ignore it.
+        const isNormalScanningError = errorMessage.includes("NotFoundException") || 
+                                    errorMessage.includes("No MultiFormat Readers were able to detect the code");
+        if (isNormalScanningError) {
+            return; // Silently ignore
+        }
+
+        // Only set a real error if one isn't already being displayed from the validation flow
         if (!scanError && !isProcessing) {
-            setScanError("Ocurrió un error con el escáner. Intenta recargar la página.");
-            console.error(`[QR SCANNER ERROR]: ${errorMessage}`, error);
+            setScanError("Ocurrió un error inesperado con el escáner.");
+            console.error(`[QR SCANNER UNHANDLED ERROR]: ${errorMessage}`);
         }
     };
 
@@ -218,7 +221,6 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             }
         };
 
-        // Only start if not already showing a result or a critical error
         if (!validationData && !scanError) {
             startScanner();
         }
@@ -229,12 +231,13 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 html5Qrcode.stop().catch(e => console.error("[QR STOP ERROR]:", e));
             }
         };
-    }, [validationData, scanError]); // Rerun if the user resets after an error
+    }, [validationData, scanError]);
 
     const handleReset = () => {
         setValidationData(null);
         setIsProcessing(false);
-        setScanError(null); // This will trigger the useEffect to restart the scanner
+        setScanError(null);
+        setWasAlreadyUsed(false);
     };
 
     if (validationData) {
