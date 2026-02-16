@@ -1,9 +1,7 @@
-
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
-import type { QrDimensions, Html5QrcodeError, Html5QrcodeScannerState } from 'html5-qrcode/esm/types';
 import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +29,7 @@ interface ValidationData {
     profile: UserProfile;
 }
 
-const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number): QrDimensions => {
+const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number): any => {
     const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
     const qrboxSize = Math.floor(minEdge * 0.8);
     return { width: qrboxSize, height: qrboxSize };
@@ -159,7 +157,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
         }
     };
 
-    const handleScanError = (errorMessage: string, error: Html5QrcodeError) => {
+    const handleScanError = (errorMessage: string, error: any) => {
         if (errorMessage.includes("NotFoundException")) return;
         setScanError("Ocurrió un error con el escáner. Intenta recargar la página.");
         console.error(`QR Scan Error: ${errorMessage}`, error);
