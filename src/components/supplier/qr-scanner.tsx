@@ -9,7 +9,7 @@ import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag } from 'lucide-react';
+import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/button';
 import type { BenefitRedemption } from '@/lib/data';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -38,18 +38,31 @@ const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number): QrDim
 };
 
 // Validation Result Component
-function ValidationResult({ data, onScanAgain }: { data: ValidationData, onScanAgain: () => void }) {
+function ValidationResult({ data, onScanAgain, wasJustValidated }: { data: ValidationData; onScanAgain: () => void; wasJustValidated: boolean }) {
     const { redemption, profile } = data;
     const userInitial = profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'U';
+
+    const title = wasJustValidated ? "Canje Validado" : "Canje Ya Validado";
+    const description = wasJustValidated
+        ? "El beneficio ha sido marcado como usado."
+        : "Este beneficio ya fue utilizado anteriormente.";
+    const Icon = wasJustValidated ? CheckCircle : AlertTriangle;
+    const iconColor = wasJustValidated
+        ? "text-green-600 dark:text-green-400"
+        : "text-yellow-600 dark:text-yellow-400";
+    const bgColor = wasJustValidated
+        ? "bg-green-100 dark:bg-green-900/50"
+        : "bg-yellow-100 dark:bg-yellow-900/50";
+
 
     return (
         <Card className="w-full">
             <CardHeader className="text-center pb-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 mb-4">
-                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className={`mx-auto flex h-12 w-12 items-center justify-center rounded-full ${bgColor} mb-4`}>
+                    <Icon className={`h-6 w-6 ${iconColor}`} />
                 </div>
-                <CardTitle>Canje Validado</CardTitle>
-                <CardDescription>El beneficio ha sido marcado como usado.</CardDescription>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-6">
                 <div className="flex w-full flex-col sm:flex-row items-center gap-6">
@@ -83,11 +96,16 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     const [scanError, setScanError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [validationData, setValidationData] = useState<ValidationData | null>(null);
+    const [wasJustValidated, setWasJustValidated] = useState(false);
 
     const handleScanSuccess = async (decodedText: string, result: Html5QrcodeResult) => {
         if (isProcessing) return;
         setIsProcessing(true);
         setScanError(null);
+        setWasJustValidated(false);
+
+        let finalRedemptionData: BenefitRedemption | null = null;
+        let finalProfileData: UserProfile | null = null;
 
         try {
             if (scannerRef.current && scannerRef.current.isScanning) {
@@ -101,24 +119,38 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             const redemptionSnap = await getDoc(redemptionRef);
             if (!redemptionSnap.exists()) throw new Error("Canje no encontrado.");
 
-            const redemptionData = redemptionSnap.data() as BenefitRedemption;
+            const redemptionData = { id: redemptionSnap.id, ...redemptionSnap.data() } as BenefitRedemption;
             if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("Este canje no pertenece a tu comercio.");
-            if (redemptionData.status !== "pending") throw new Error(`Este canje ya fue utilizado.`);
 
             const userProfileRef = doc(firestore, "users", redemptionData.userId);
             const userProfileSnap = await getDoc(userProfileRef);
             if (!userProfileSnap.exists()) throw new Error("Perfil de usuario no encontrado.");
-            const userProfileData = userProfileSnap.data() as UserProfile;
+            finalProfileData = userProfileSnap.data() as UserProfile;
 
-            const batch = writeBatch(firestore);
-            const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
-            const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
-            batch.update(redemptionRef, updateData);
-            batch.update(userRedemptionRef, updateData);
-            await batch.commit();
+            if (redemptionData.status === 'pending') {
+                const batch = writeBatch(firestore);
+                const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
+                const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
+                batch.update(redemptionRef, updateData);
+                batch.update(userRedemptionRef, updateData);
+                await batch.commit();
+                
+                finalRedemptionData = { ...redemptionData, status: 'used' };
+                setWasJustValidated(true);
+                toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
+            } else {
+                finalRedemptionData = redemptionData;
+                toast({
+                    variant: 'default',
+                    title: "Canje ya validado",
+                    description: "Este código QR fue utilizado anteriormente.",
+                });
+            }
+            
+            if (finalRedemptionData && finalProfileData) {
+                setValidationData({ redemption: finalRedemptionData, profile: finalProfileData });
+            }
 
-            setValidationData({ redemption: { ...redemptionData, id: redemptionId }, profile: userProfileData });
-            toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
         } catch (e: any) {
             console.error("Scan validation error:", e);
             setScanError(e.message || "Ocurrió un error al validar el canje.");
@@ -128,14 +160,11 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     };
 
     const handleScanError = (errorMessage: string, error: Html5QrcodeError) => {
-        // Ignore the common "QR code not found" error
         if (errorMessage.includes("NotFoundException")) return;
-        // Handle other errors
         setScanError("Ocurrió un error con el escáner. Intenta recargar la página.");
         console.error(`QR Scan Error: ${errorMessage}`, error);
     };
 
-    // Effect to manage the scanner lifecycle
     useEffect(() => {
         const qrCodeElementId = 'qr-reader';
         scannerRef.current = new Html5Qrcode(qrCodeElementId, { verbose: false });
@@ -181,10 +210,11 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
         setValidationData(null);
         setIsProcessing(false);
         setScanError(null);
+        setWasJustValidated(false);
     };
 
     if (validationData) {
-        return <ValidationResult data={validationData} onScanAgain={handleReset} />;
+        return <ValidationResult data={validationData} onScanAgain={handleReset} wasJustValidated={wasJustValidated} />;
     }
 
     return (
