@@ -3,105 +3,136 @@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
-import { Card } from '../ui/card';
-import { Avatar, AvatarFallback } from '../ui/avatar';
-import { History, Calendar, Fingerprint, Tag } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Badge } from '../ui/badge';
+import { History, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from 'lucide-react';
 import type { BenefitRedemption } from '@/lib/data';
 
-function RedemptionListSkeleton() {
+// Skeleton Loader for the table
+function ScanHistorySkeleton() {
     return (
-        <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-                <Card key={i} className="p-4">
-                    <div className="flex items-center gap-4">
-                        <Skeleton className="h-12 w-12 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-5 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                            <Skeleton className="h-4 w-2/3" />
-                        </div>
-                    </div>
-                </Card>
-            ))}
-        </div>
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-7 w-1/2" />
+                <Skeleton className="h-4 w-3/4" />
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            {[...Array(4)].map((_, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {[...Array(3)].map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     );
 }
 
-export default function RedemptionList() {
+// Main Component: Supplier's Scan History
+export default function SupplierScanHistory() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    // The query MUST be filtered by the supplier's UID for this component.
-    // This ensures that even a user with an Admin role, when in the supplier
-    // view, queries only for their own data, complying with security rules.
-    const redemptionsQuery = useMemoFirebase(() => {
+    // Query for benefit redemptions, filtered by the current supplier's ID
+    // and ordered by the scan time. This requires a composite index.
+    const scansQuery = useMemoFirebase(() => {
         if (!user) return null;
 
         return query(
             collection(firestore, 'benefitRedemptions'),
             where('supplierId', '==', user.uid),
-            orderBy('usedAt', 'desc')
+            orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
 
-    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
-    
-    if (isLoading) {
-        return <RedemptionListSkeleton />;
+    const { data: scans, isLoading, error } = useCollection<BenefitRedemption>(scansQuery);
+
+    // Proactive error handling for missing Firestore index
+    if (error && error.code === 'failed-precondition') {
+        const indexUrl = `https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/indexes/composite-create?collectionId=benefitRedemptions&field[0].fieldPath=supplierId&field[0].order=ASCENDING&field[1].fieldPath=redeemedAt&field[1].order=DESCENDING`;
+        return (
+            <Card className="border-destructive">
+                 <CardHeader>
+                    <CardTitle className="text-destructive">Error de Configuración</CardTitle>
+                    <CardDescription className="text-destructive">
+                        La base de datos requiere un índice para realizar esta consulta. Sin él, el historial de escaneos no funcionará.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="mb-4 text-sm">Para solucionarlo, un administrador debe crear el siguiente índice compuesto en Firestore:</p>
+                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all">{indexUrl}</a>
+                    <p className="mt-4 text-xs text-muted-foreground">Haz clic en el enlace y presiona "Crear índice" en la consola de Firebase.</p>
+                </CardContent>
+            </Card>
+        );
     }
 
-    if (!redemptions || redemptions.length === 0) {
+    if (isLoading) {
+        return <ScanHistorySkeleton />;
+    }
+
+    if (!scans || scans.length === 0) {
         return (
              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
                 <History className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-xl font-semibold">Sin canjes todavía</h3>
+                <h3 className="mt-4 text-xl font-semibold">Sin Escaneos Registrados</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    Aún no se ha canjeado ninguno de tus beneficios.
+                    Aún no has escaneado ningún código QR de canje.
                 </p>
             </div>
-        )
+        );
     }
 
     return (
-        <div className="space-y-4">
-            {redemptions.map(redemption => {
-                const usedAt = (redemption.usedAt as Timestamp)?.toDate();
-                const userInitial = redemption.userName.charAt(0).toUpperCase();
-
-                return (
-                    <Card key={redemption.id} className="p-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-                             <div className="col-span-1 flex items-center gap-3">
-                                 <Avatar className='h-12 w-12'>
-                                    <AvatarFallback>{userInitial}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-semibold">{redemption.userName}</p>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Fingerprint className="h-4 w-4" />
-                                        <span>{redemption.userDni}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-span-1 space-y-2 text-sm">
-                                <div className='flex items-center gap-2 text-muted-foreground'>
-                                    <Tag className='h-4 w-4'/>
-                                    <span className="font-medium text-foreground">{redemption.benefitTitle}</span>
-                                </div>
-                                <div className='flex items-center gap-2 text-muted-foreground'>
-                                    <Calendar className='h-4 w-4'/>
-                                    {usedAt ? usedAt.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Fecha pendiente'}
-                                </div>
-                            </div>
-                             <div className="col-span-1 flex items-center justify-start sm:justify-end">
-                                <p className="text-sm font-bold text-primary">
-                                    + {redemption.pointsGranted} PTS
-                                </p>
-                            </div>
-                        </div>
-                    </Card>
-                )
-            })}
-        </div>
-    )
+        <Card>
+            <CardHeader>
+                <CardTitle>Historial de Escaneos</CardTitle>
+                <CardDescription>Aquí puedes ver todos los beneficios que has validado.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Beneficio</TableHead>
+                            <TableHead>Cliente</TableHead>
+                            <TableHead>Fecha de Escaneo</TableHead>
+                            <TableHead>Estado</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {scans.map(scan => {
+                            const redeemedAt = (scan.redeemedAt as Timestamp)?.toDate();
+                            return (
+                                <TableRow key={scan.id}>
+                                    <TableCell className="font-medium flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{scan.benefitTitle}</TableCell>
+                                    <TableCell className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-muted-foreground"/>{scan.userName}</TableCell>
+                                    <TableCell>
+                                        {redeemedAt ? redeemedAt.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'Fecha no disponible'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={scan.status === 'used' ? 'success' : 'outline'} className="flex items-center gap-1 w-fit">
+                                            {scan.status === 'used' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                                            {scan.status === 'used' ? 'Completado' : 'Pendiente'}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+    );
 }
