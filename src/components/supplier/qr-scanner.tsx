@@ -148,8 +148,11 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 const batch = writeBatch(firestore);
                 const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
                 const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
-                batch.update(redemptionRef, updateData);
-                batch.update(userRedemptionRef, updateData);
+                
+                // Use SET with MERGE to prevent errors on non-existent documents (UPSERT)
+                batch.set(redemptionRef, updateData, { merge: true });
+                batch.set(userRedemptionRef, updateData, { merge: true });
+
                 await batch.commit();
                 toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
             } else {
@@ -177,14 +180,12 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     };
     
     const handleScanError = (errorMessage: string) => {
-        // This error happens every frame where a QR code is not detected. We can safely ignore it.
         const isNormalScanningError = errorMessage.includes("NotFoundException") || 
                                     errorMessage.includes("No MultiFormat Readers were able to detect the code");
         if (isNormalScanningError) {
             return; // Silently ignore
         }
 
-        // Only set a real error if one isn't already being displayed from the validation flow
         if (!scanError && !isProcessing) {
             setScanError("Ocurrió un error inesperado con el escáner.");
             console.error(`[QR SCANNER UNHANDLED ERROR]: ${errorMessage}`);
