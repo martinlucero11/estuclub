@@ -60,23 +60,17 @@ service cloud.firestore {
 
     // --- Operational/Mixed-Access Data ---
     match /benefitRedemptions/{redemptionId} {
-      // Allow individual read if user, supplier, or admin.
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.supplierId == request.auth.uid || 
         isAdmin()
       );
       
-      // Allow list for suppliers and admins. Client-side query must filter.
-      allow list: if isSupplier() || isAdmin();
+      // Allow list for admins, OR for suppliers who are filtering by their own ID.
+      allow list: if isAdmin() || (isSupplier() && request.query.where.supplierId == request.auth.uid);
 
-      // Allow creation by the user for themselves.
       allow create: if isOwner(request.resource.data.userId);
-
-      // Allow update by the supplier owner or an admin.
       allow update: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
-
-      // Deletion from client is not allowed.
       allow delete: if false;
     }
 
