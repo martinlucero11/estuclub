@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -34,8 +33,12 @@ export default function RedemptionList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
+    // This query is memoized and re-runs when the user or firestore instance changes.
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
+
+        // The query correctly filters redemptions by the logged-in supplier's UID.
+        // This ensures compliance with Firestore security rules.
         return query(
             collection(firestore, 'benefitRedemptions'),
             where('supplierId', '==', user.uid),
