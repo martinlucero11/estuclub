@@ -66,7 +66,7 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
                         <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
                 )}
-                <CardTitle>{alreadyUsed ? 'Canje Ya Validado' : 'Canje Validado'}</CardTitle>
+                <CardTitle>{alreadyUsed ? 'Canje Ya Utilizado' : 'Canje Validado'}</CardTitle>
                 <CardDescription>
                     {alreadyUsed
                         ? 'Este beneficio ya fue marcado como usado anteriormente.'
@@ -114,6 +114,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
         setWasAlreadyUsed(false);
 
         try {
+            // --- Step 1: Stop scanner and parse QR ---
             if (scannerRef.current?.isScanning) {
                 await scannerRef.current.stop();
             }
@@ -122,54 +123,61 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             try {
                  const jsonData = JSON.parse(decodedText);
                  redemptionId = jsonData.redemptionId;
-                 if (!redemptionId) throw new Error();
+                 if (!redemptionId) throw new Error("El código QR no contiene un ID de canje válido.");
             } catch (error) {
-                throw new Error("El código QR no es válido o tiene un formato incorrecto.");
+                throw new Error("El formato del código QR es incorrecto.");
             }
 
-            if (!user) throw new Error("Debes estar autenticado para validar un canje.");
+            // --- Step 2: Fetch all required data ---
+            if (!user) throw new Error("Debes iniciar sesión para validar un canje.");
 
             const redemptionRef = doc(firestore, "benefitRedemptions", redemptionId);
             const redemptionSnap = await getDoc(redemptionRef);
-            if (!redemptionSnap.exists()) throw new Error("Canje no encontrado en la base de datos. El código puede ser antiguo o inválido.");
+            if (!redemptionSnap.exists()) throw new Error("Canje no encontrado. El código puede ser antiguo o inválido.");
 
             const redemptionData = redemptionSnap.data() as BenefitRedemption;
             if (!redemptionData) throw new Error("No se pudieron leer los datos del canje.");
 
-            if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("Este canje no pertenece a tu comercio.");
+            if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este canje.");
             
             const userProfileRef = doc(firestore, "users", redemptionData.userId);
             const userProfileSnap = await getDoc(userProfileRef);
-            if (!userProfileSnap.exists()) throw new Error("El perfil del estudiante asociado a este canje no fue encontrado.");
+            if (!userProfileSnap.exists()) throw new Error("El perfil del estudiante no fue encontrado.");
+
             const userProfileData = userProfileSnap.data() as UserProfile;
-             if (!userProfileData) throw new Error("No se pudieron leer los datos del perfil del estudiante.");
-            
-            if (redemptionData.status === "pending") {
-                const batch = writeBatch(firestore);
-                const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
-                const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
-                
-                // Use SET with MERGE to prevent errors on non-existent documents (UPSERT)
-                batch.set(redemptionRef, updateData, { merge: true });
-                batch.set(userRedemptionRef, updateData, { merge: true });
+            if (!userProfileData) throw new Error("No se pudieron leer los datos del perfil del estudiante.");
 
-                await batch.commit();
-                toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
-            } else {
-                setWasAlreadyUsed(true);
-                toast({ variant: 'default', title: "Canje Ya Verificado", description: "Este canje ya había sido marcado como usado." });
-            }
-
+            // --- Step 3: Show validation card to the user IMMEDIATELY ---
             const finalValidationData = { 
                 redemption: { ...redemptionData, id: redemptionId }, 
                 profile: userProfileData 
             };
-
-            if (!finalValidationData.redemption || !finalValidationData.profile) {
-                 throw new Error("Ocurrió un error al ensamblar los datos de validación finales.");
-            }
-
             setValidationData(finalValidationData);
+            
+            // --- Step 4: Handle DB write in the background ---
+            if (redemptionData.status === "pending") {
+                try {
+                    const batch = writeBatch(firestore);
+                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
+                    const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
+                    
+                    batch.set(redemptionRef, updateData, { merge: true });
+                    batch.set(userRedemptionRef, updateData, { merge: true });
+
+                    await batch.commit();
+                    toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
+                } catch (dbError) {
+                    console.error("[DATABASE WRITE ERROR]:", dbError);
+                    toast({ 
+                        variant: 'destructive',
+                        title: "Error al Guardar", 
+                        description: "Se validó el canje, pero hubo un error al guardarlo. Contacta a soporte."
+                    });
+                }
+            } else {
+                setWasAlreadyUsed(true);
+                toast({ variant: 'default', title: "Canje Ya Verificado", description: "Este beneficio ya había sido utilizado.", duration: 5000 });
+            }
 
         } catch (e: any) {
             console.error("[SCAN VALIDATION ERROR]:", e);
@@ -180,11 +188,8 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     };
     
     const handleScanError = (errorMessage: string) => {
-        const isNormalScanningError = errorMessage.includes("NotFoundException") || 
-                                    errorMessage.includes("No MultiFormat Readers were able to detect the code");
-        if (isNormalScanningError) {
-            return; // Silently ignore
-        }
+        const isNormalScanningError = errorMessage.includes("NotFoundException") || errorMessage.includes("No MultiFormat Readers were able to detect the code");
+        if (isNormalScanningError) return; // Silently ignore
 
         if (!scanError && !isProcessing) {
             setScanError("Ocurrió un error inesperado con el escáner.");
@@ -193,6 +198,8 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     };
 
     useEffect(() => {
+        if (validationData || scanError) return;
+
         const qrCodeElementId = 'qr-reader';
         const html5Qrcode = new Html5Qrcode(qrCodeElementId, { verbose: false });
         scannerRef.current = html5Qrcode;
@@ -207,9 +214,6 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                     handleScanSuccess,
                     handleScanError
                 );
-                 if (isCancelled && html5Qrcode.isScanning) {
-                    await html5Qrcode.stop();
-                }
             } catch (err) {
                 console.error("[QR START ERROR]:", err);
                 let message = "No se pudo iniciar la cámara.";
@@ -222,9 +226,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             }
         };
 
-        if (!validationData && !scanError) {
-            startScanner();
-        }
+        startScanner();
 
         return () => {
             isCancelled = true;
