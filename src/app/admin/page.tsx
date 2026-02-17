@@ -132,9 +132,9 @@ export default function AdminPage() {
               <Users className="mr-2 h-4 w-4" />
               Añadir Proveedor
             </TabsTrigger>
-            <TabsTrigger value="all-redemptions">
+            <TabsTrigger value="my-redemptions">
               <History className="mr-2 h-4 w-4" />
-              Todos los Canjes
+              Mis Canjes
             </TabsTrigger>
             <TabsTrigger value="scan-qr">
                 <QrCode className="mr-2 h-4 w-4" />
@@ -214,11 +214,11 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="all-redemptions">
+          <TabsContent value="my-redemptions">
             <Card>
                 <CardHeader>
-                    <CardTitle>Historial de Todos los Canjes</CardTitle>
-                    <CardDescription>Revisa todos los canjes realizados en la plataforma.</CardDescription>
+                    <CardTitle>Historial de Mis Canjes</CardTitle>
+                    <CardDescription>Revisa todos los canjes asociados a tu cuenta de proveedor.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <AllRedemptionsList />

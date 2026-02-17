@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
@@ -34,27 +34,42 @@ function AllRedemptionsListSkeleton() {
 
 export default function AllRedemptionsList() {
     const firestore = useFirestore();
+    const { user } = useUser();
 
     const redemptionsQuery = useMemoFirebase(() => {
+        if (!user) return null;
         return query(
             collection(firestore, 'benefitRedemptions'),
+            where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
-    }, [firestore]);
+    }, [firestore, user]);
 
     const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
     
     if (isLoading) {
         return <AllRedemptionsListSkeleton />;
     }
+    
+    if (!user) {
+        return (
+             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
+                <History className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-xl font-semibold">Inicia sesión</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Debes iniciar sesión para ver los canjes.
+                </p>
+            </div>
+        )
+    }
 
     if (!redemptions || redemptions.length === 0) {
         return (
              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
                 <History className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-xl font-semibold">No hay canjes registrados</h3>
+                <h3 className="mt-4 text-xl font-semibold">No hay canjes para mostrar</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
-                    Aún no se ha realizado ningún canje en la plataforma.
+                    No se encontraron canjes asociados a tu cuenta de proveedor.
                 </p>
             </div>
         )
