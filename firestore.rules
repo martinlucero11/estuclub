@@ -59,8 +59,9 @@ service cloud.firestore {
       allow read: if isOwner(userId);
       // A user can create their own redemption record as part of a batch write.
       allow create: if isOwner(userId);
-      // But they cannot update or delete it from the client side.
-      allow update, delete: if false;
+      // An admin or supplier can update the status to 'used', but a user cannot modify it.
+      allow update: if isSupplier() || isAdmin();
+      allow delete: if false;
     }
 
     // --- Operational/Mixed-Access Data ---
