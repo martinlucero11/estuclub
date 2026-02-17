@@ -1,5 +1,5 @@
 rules_version = '2';
-// Final, consolidated ruleset. Deployed to resolve dual-role permission issue.
+
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -8,6 +8,11 @@ service cloud.firestore {
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
     function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)); }
+    
+    // Función para evitar que el usuario cambie campos sensibles
+    function onlyUpdatingAllowedFields(allowedFields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedFields);
+    }
 
     // --- Publicly Readable Data ---
     match /benefits/{benefitId} {
@@ -37,8 +42,11 @@ service cloud.firestore {
     
     match /usernames/{username} {
       allow read: if true;
+      // BLOQUEO: El creador debe ser el dueño del UID enviado
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isOwner(resource.data.userId) || isAdmin();
+      // BLOQUEO: No se puede cambiar el userId de un nombre ya registrado
+      allow update: if (isOwner(resource.data.userId) || isAdmin()) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
     
     match /notifications/{notificationId} {
@@ -48,13 +56,17 @@ service cloud.firestore {
 
     // --- Private User Data ---
     match /users/{userId} {
-      allow read: if true;
-      allow write: if isOwner(userId);
+      // CORREGIDO: Solo el dueño o un admin puede leer datos privados
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId);
+      // BLOQUEO: El usuario NO puede cambiarse sus puntos, rol ni email desde el cliente
+      allow update: if isOwner(userId) && onlyUpdatingAllowedFields(['displayName', 'photoURL', 'phoneNumber', 'about', 'firstName', 'lastName', 'dni', 'phone', 'gender', 'dateOfBirth', 'university', 'major']);
     }
     
     match /users/{userId}/redeemed_benefits/{redemptionId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
+      // BLOQUEO: Solo puedes registrar canjes para TI mismo
+      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
       allow update: if isSupplier() || isAdmin();
       allow delete: if false;
     }
@@ -67,18 +79,19 @@ service cloud.firestore {
         isAdmin()
       );
       
-      // Allow list for admins, OR for suppliers who are filtering by their own ID.
       allow list: if isAdmin() || (isSupplier() && request.query.where.supplierId == request.auth.uid);
 
-      allow create: if isOwner(request.resource.data.userId);
+      // BLOQUEO: El campo userId debe ser el tuyo real
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
       allow delete: if false;
     }
 
     match /roles_supplier/{supplierId}/appointments/{appointmentId} {
-        allow read: if isOwner(resource.data.userId) || isOwner(supplierId);
-        allow create: if isSignedIn(); 
-        allow update, delete: if isOwner(resource.data.userId) || isOwner(supplierId); 
+        allow read: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin();
+        // BLOQUEO: Solo puedes pedir citas para TI (evita spam a nombre de otros)
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid; 
+        allow update, delete: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin(); 
     }
 
     // --- Admin-Only Data ---

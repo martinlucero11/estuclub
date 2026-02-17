@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -66,15 +67,18 @@ export default function SupplierScanHistory() {
         return (
             <Card className="border-destructive">
                  <CardHeader>
-                    <CardTitle className="text-destructive">Error de Configuración</CardTitle>
+                    <CardTitle className="text-destructive">Error de Configuración de Base de Datos</CardTitle>
                     <CardDescription className="text-destructive">
-                        La base de datos requiere un índice para realizar esta consulta. Sin él, el historial de escaneos no funcionará.
+                        La consulta para mostrar el historial de escaneos requiere un índice compuesto en Firestore que no ha sido creado.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="mb-4 text-sm">Para solucionarlo, un administrador debe crear el siguiente índice compuesto en Firestore:</p>
-                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all">{indexUrl}</a>
-                    <p className="mt-4 text-xs text-muted-foreground">Haz clic en el enlace y presiona "Crear índice" en la consola de Firebase.</p>
+                    <p className="mb-4 text-sm font-medium">Para solucionar este problema, un administrador del proyecto de Firebase debe crear el índice requerido.</p>
+                    <p className='text-sm mb-2'>Haz clic en el siguiente enlace para ir directamente a la página de creación de índices con los campos correctos pre-rellenados:</p>
+                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
+                        Crear Índice en Firebase Console
+                    </a>
+                    <p className="mt-4 text-xs text-muted-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active.</p>
                 </CardContent>
             </Card>
         );

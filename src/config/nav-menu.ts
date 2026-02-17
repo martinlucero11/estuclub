@@ -45,13 +45,6 @@ export const navConfig: NavConfig = {
           items: [],
         },
         {
-          title: "Beneficios",
-          href: "/supplier/benefits",
-          icon: Gift,
-          role: "supplier",
-          items: [],
-        },
-        {
           title: "Anuncios",
           href: "/admin/announcements",
           icon: Megaphone,

@@ -128,7 +128,6 @@ export default function SupplierPage() {
             <TabsTrigger value="profile"><User className="mr-2 h-4 w-4" />Mi Perfil</TabsTrigger>
             <TabsTrigger value="manage-benefits"><List className="mr-2 h-4 w-4" />Beneficios</TabsTrigger>
             <TabsTrigger value="add-benefit"><Gift className="mr-2 h-4 w-4" />Añadir Beneficio</TabsTrigger>
-            <TabsTrigger value="redemptions"><History className="mr-2 h-4 w-4" />Canjes</TabsTrigger>
             
             {isInstitution && (
               <>
@@ -177,16 +176,6 @@ export default function SupplierPage() {
                 <CardDescription>Crea un nuevo beneficio para los estudiantes.</CardDescription>
               </CardHeader>
               <CardContent><AddPerkForm /></CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="redemptions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Historial de Canjes</CardTitle>
-                <CardDescription>Revisa todos los beneficios que los estudiantes han canjeado en tu comercio.</CardDescription>
-              </CardHeader>
-              <CardContent><RedemptionList /></CardContent>
             </Card>
           </TabsContent>
 
