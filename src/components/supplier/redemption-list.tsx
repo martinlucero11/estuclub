@@ -123,7 +123,7 @@ export default function SupplierScanHistory() {
                                         {redeemedAt ? redeemedAt.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'Fecha no disponible'}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={scan.status === 'used' ? 'success' : 'outline'} className="flex items-center gap-1 w-fit">
+                                        <Badge variant={scan.status === 'used' ? 'default' : 'outline'} className="flex items-center gap-1 w-fit">
                                             {scan.status === 'used' ? <CheckCircle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
                                             {scan.status === 'used' ? 'Completado' : 'Pendiente'}
                                         </Badge>
