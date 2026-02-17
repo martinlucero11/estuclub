@@ -5,9 +5,8 @@ import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore
 import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { History, Calendar, Fingerprint, Tag, User as UserIcon } from 'lucide-react';
+import { History, Calendar, Fingerprint, Tag } from 'lucide-react';
 import type { BenefitRedemption } from '@/lib/data';
-import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
 
 function RedemptionListSkeleton() {
     return (
@@ -28,17 +27,16 @@ function RedemptionListSkeleton() {
     );
 }
 
-
 export default function RedemptionList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    // This query is memoized and re-runs when the user or firestore instance changes.
+    // The query MUST be filtered by the supplier's UID for this component.
+    // This ensures that even a user with an Admin role, when in the supplier
+    // view, queries only for their own data, complying with security rules.
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
 
-        // The query correctly filters redemptions by the logged-in supplier's UID.
-        // This ensures compliance with Firestore security rules.
         return query(
             collection(firestore, 'benefitRedemptions'),
             where('supplierId', '==', user.uid),
