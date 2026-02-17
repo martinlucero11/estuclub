@@ -60,8 +60,9 @@ export default function SupplierScanHistory() {
     const { data: scans, isLoading, error } = useCollection<BenefitRedemption>(scansQuery);
 
     // Proactive error handling for missing Firestore index
-    if (error && error.code === 'failed-precondition') {
-        const indexUrl = `https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/indexes/composite-create?collectionId=benefitRedemptions&field[0].fieldPath=supplierId&field[0].order=ASCENDING&field[1].fieldPath=redeemedAt&field[1].order=DESCENDING`;
+    if (error && 'code' in error && error.code === 'failed-precondition') {
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'estuclub';
+        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=benefitRedemptions&field[0].fieldPath=supplierId&field[0].order=ASCENDING&field[1].fieldPath=redeemedAt&field[1].order=DESCENDING`;
         return (
             <Card className="border-destructive">
                  <CardHeader>
