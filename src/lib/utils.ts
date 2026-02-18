@@ -32,3 +32,13 @@ export function hasRequiredRole(userRoles: string[], requiredRole?: string | str
   // If an array of roles is required, check if the user has at least one of them.
   return requiredRole.some(role => userRoles.includes(role));
 }
+
+/**
+ * Capitalizes the first letter of a string.
+ * @param str The string to capitalize.
+ * @returns The capitalized string.
+ */
+export function capitalize(str: string): string {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

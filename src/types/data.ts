@@ -6,6 +6,11 @@
 import { Timestamp } from "firebase/firestore";
 
 /**
+ * Defines the possible roles a user can have within the application.
+ */
+export type UserRole = 'admin' | 'supplier' | 'user';
+
+/**
  * Represents the profile data stored in /roles_supplier/{uid}
  */
 export interface SupplierProfile {
