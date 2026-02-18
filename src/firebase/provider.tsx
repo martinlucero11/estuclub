@@ -13,7 +13,7 @@ import { firebaseConfig } from '@/firebase/config';
 
 interface UserAuthState {
   user: User | null;
-  roles: string[]; // ADDED: To store user roles from custom claims
+  roles: string[]; 
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -25,7 +25,7 @@ export interface FirebaseContextState {
   auth: Auth | null;
   storage: FirebaseStorage | null;
   user: User | null;
-  roles: string[]; // ADDED: Pass roles through context
+  roles: string[];
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -36,16 +36,34 @@ export interface FirebaseServicesAndUser {
   auth: Auth;
   storage: FirebaseStorage;
   user: User | null;
-  roles: string[]; // ADDED: Pass roles through hook
+  roles: string[];
   isUserLoading: boolean;
   userError: Error | null;
 }
 
 export interface UserHookResult {
   user: User | null;
-  roles: string[]; // ADDED: The missing piece for the header
+  roles: string[];
   isUserLoading: boolean;
   userError: Error | null;
+}
+
+// --- UTILITY FUNCTION --- 
+
+const getRolesFromClaims = (claims: IdTokenResult["claims"]): string[] => {
+  // --- CRITICAL DEBUGGING ---
+  console.log("Firebase Custom Claims received from token:", JSON.stringify(claims, null, 2));
+  // --------------------------
+
+  const rawRoles = claims.roles || claims.role; // Look for `roles` (plural) first, then `role` (singular)
+
+  if (Array.isArray(rawRoles)) {
+    return rawRoles;
+  }
+  if (typeof rawRoles === 'string') {
+    return rawRoles.split(/[,\s]+/).filter(Boolean); // Split by comma or space, and remove empty strings
+  }
+  return []; // Default to no roles
 }
 
 // --- REACT CONTEXT ---
@@ -67,7 +85,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
-    roles: [], // Initial state for roles
+    roles: [], 
     isUserLoading: true,
     userError: null,
   });
@@ -78,16 +96,15 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       async (firebaseUser) => {
         if (firebaseUser) {
           try {
-            // Get custom claims from the ID token.
-            const tokenResult: IdTokenResult = await firebaseUser.getIdTokenResult();
-            const userRoles = (tokenResult.claims.roles || []) as string[];
+            const tokenResult = await firebaseUser.getIdTokenResult(true);
+            const userRoles = getRolesFromClaims(tokenResult.claims);
+            console.log("ROLES PROCESADOS", userRoles);
             setUserAuthState({ user: firebaseUser, roles: userRoles, isUserLoading: false, userError: null });
           } catch (error) {
             console.error("FirebaseProvider: Error getting user roles:", error);
             setUserAuthState({ user: firebaseUser, roles: [], isUserLoading: false, userError: error as Error });
           }
         } else {
-          // No user, clear state
           setUserAuthState({ user: null, roles: [], isUserLoading: false, userError: null });
         }
       },
@@ -114,7 +131,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 };
 
 
-// --- HOOKS ---
+// --- HOOKS (unchanged) ---
 
 export const useFirebase = (): FirebaseServicesAndUser => {
   const context = useContext(FirebaseContext);
@@ -133,7 +150,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     auth: context.auth,
     storage: context.storage,
     user: context.user,
-    roles: context.roles, // Pass roles down
+    roles: context.roles, 
     isUserLoading: context.isUserLoading,
     userError: context.userError,
   };
@@ -161,5 +178,5 @@ export const useFirebaseApp = (): FirebaseApp => {
 
 export const useUser = (): UserHookResult => {
   const { user, roles, isUserLoading, userError } = useFirebase();
-  return { user, roles, isUserLoading, userError }; // CORRECTED: Return roles
+  return { user, roles, isUserLoading, userError };
 };
