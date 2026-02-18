@@ -22,7 +22,7 @@ export interface SidebarNavItemLink {
   title: string;
   href: string;
   icon: LucideIcon;
-  role?: string | string[]; // CORRECTED: Now accepts a string or an array of strings.
+  role?: string | string[]; // Role is flexible for items
   items?: SidebarNavItemLink[]; 
 }
 
@@ -31,7 +31,14 @@ export interface SidebarNavItemLink {
  */
 export interface SidebarNavItem {
   title: string;
-  // This property allows sections to be restricted by role.
-  role?: string | string[]; // CORRECTED: Also updated here for consistency.
+  role?: string | string[]; // Role is flexible for sections
   items: SidebarNavItemLink[];
+}
+
+/**
+ * Defines the overall navigation structure for the entire application.
+ */
+export interface NavConfig {
+  mainNav: NavItem[];
+  sidebarNav: SidebarNavItem[];
 }
