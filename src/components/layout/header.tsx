@@ -30,7 +30,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
-import type { SidebarNavItem, SidebarNavItemLink } from '@/types/nav'; // CORRECTED: Import SidebarNavItem
+// CORRECTED: Import all necessary types from the nav types definition
+import type { NavItem, SidebarNavItem, SidebarNavItemLink } from '@/types/nav'; 
 
 function Logo() {
     return (
@@ -72,7 +73,6 @@ function UserMenu() {
 
   const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
 
-  // CORRECTED: Explicitly type 'section' parameter
   const dashboardItems = navConfig.sidebarNav.flatMap((section: SidebarNavItem) => section.items);
   const accessibleDashboardItem = dashboardItems.find((item: SidebarNavItemLink) => hasRequiredRole(roles, item.role));
 
@@ -131,7 +131,6 @@ function UserMenu() {
 function MainMenu() {
     const { user, roles } = useUser();
 
-    // CORRECTED: Explicitly type parameters to avoid 'implicit any'
     const accessibleNavItems: SidebarNavItemLink[] = navConfig.sidebarNav
         .filter((section: SidebarNavItem) => hasRequiredRole(roles, section.role))
         .flatMap((section: SidebarNavItem) => section.items)
@@ -152,11 +151,10 @@ function MainMenu() {
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-2">
                     {/* Main navigation links that are always visible */}
-                    {navConfig.mainNav.map(({ href, title }) => (
+                    {navConfig.mainNav.map(({ href, title }: NavItem) => (
                         <SheetClose asChild key={href}>
                             <Link href={href}>
                                 <Button variant="ghost" className="w-full justify-start text-base">
-                                    {/* You might want to add icons to mainNav as well */}
                                     {title}
                                 </Button>
                             </Link>
