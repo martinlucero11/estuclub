@@ -28,9 +28,9 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
-import { navConfig } from '@/config/nav-menu'; // CORRECTED: Import navConfig
+import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
-import type { SidebarNavItemLink } from '@/types/nav';
+import type { SidebarNavItem, SidebarNavItemLink } from '@/types/nav'; // CORRECTED: Import SidebarNavItem
 
 function Logo() {
     return (
@@ -72,9 +72,9 @@ function UserMenu() {
 
   const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
 
-  // CORRECTED: Find the first accessible dashboard item from navConfig.sidebarNav
-  const dashboardItems = navConfig.sidebarNav.flatMap(section => section.items);
-  const accessibleDashboardItem = dashboardItems.find(item => hasRequiredRole(roles, item.role));
+  // CORRECTED: Explicitly type 'section' parameter
+  const dashboardItems = navConfig.sidebarNav.flatMap((section: SidebarNavItem) => section.items);
+  const accessibleDashboardItem = dashboardItems.find((item: SidebarNavItemLink) => hasRequiredRole(roles, item.role));
 
   return (
     <DropdownMenu>
@@ -131,11 +131,11 @@ function UserMenu() {
 function MainMenu() {
     const { user, roles } = useUser();
 
-    // CORRECTED: Flatten all items from all sections and filter based on role
+    // CORRECTED: Explicitly type parameters to avoid 'implicit any'
     const accessibleNavItems: SidebarNavItemLink[] = navConfig.sidebarNav
-        .filter(section => hasRequiredRole(roles, section.role))
-        .flatMap(section => section.items)
-        .filter(item => hasRequiredRole(roles, item.role));
+        .filter((section: SidebarNavItem) => hasRequiredRole(roles, section.role))
+        .flatMap((section: SidebarNavItem) => section.items)
+        .filter((item: SidebarNavItemLink) => hasRequiredRole(roles, item.role));
 
     return (
         <Sheet>
