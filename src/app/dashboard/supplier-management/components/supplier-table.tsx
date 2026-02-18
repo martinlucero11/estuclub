@@ -5,9 +5,9 @@ import React, { useState, useMemo } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { columns } from './columns'; 
-import { DataTable } from '@/components/ui/data-table'; // Assuming a reusable DataTable component exists
+import { DataTable } from '@/components/ui/data-table';
 import { SupplierProfile } from '@/types/data';
-import { toast } from 'sonner'; // Using a toast library for feedback
+import { toast } from 'sonner';
 
 interface SupplierTableProps {
   initialData: SupplierProfile[];
@@ -55,7 +55,8 @@ export function SupplierTable({ initialData }: SupplierTableProps) {
     <DataTable
       columns={memoizedColumns}
       data={suppliers}
-      // You would add filter inputs here and pass them to the DataTable
+      filterColumn="displayName"
+      filterPlaceholder="Filtrar por nombre de proveedor..."
     />
   );
 }
