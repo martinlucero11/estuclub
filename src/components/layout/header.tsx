@@ -24,13 +24,14 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
-import { useAdmin } from '@/firebase/auth/use-admin';
-import { useSupplier } from '@/firebase/auth/use-supplier';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
+import { DASHBOARD_NAV_ITEMS } from '@/config/nav-menu';
+import { hasRequiredRole } from '@/lib/utils'; // Import a utility function for role checking
 
+// Logo Component
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center gap-2 text-primary">
@@ -45,8 +46,9 @@ function Logo() {
     )
 }
 
+// UserMenu Component
 function UserMenu() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, roles } = useUser(); // Assuming useUser() now provides roles
   const auth = useAuth();
   const router = useRouter();
 
@@ -70,6 +72,10 @@ function UserMenu() {
   }
 
   const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+
+  const dashboardItem = DASHBOARD_NAV_ITEMS.items.find(item => {
+      return hasRequiredRole(roles, item.role)
+  });
 
   return (
     <DropdownMenu>
@@ -95,6 +101,12 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {dashboardItem && (
+             <DropdownMenuItem onClick={() => router.push(dashboardItem.href)}>
+                <dashboardItem.icon className="mr-2 h-4 w-4" />
+                <span>{dashboardItem.title}</span>
+            </DropdownMenuItem>
+        )}
         <DropdownMenuItem onClick={() => router.push('/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
@@ -117,17 +129,12 @@ function UserMenu() {
   );
 }
 
-
+// MainMenu Component (Mobile)
 function MainMenu() {
-    const { user } = useUser();
-    const { isAdmin } = useAdmin();
-    const { isSupplier } = useSupplier();
+    const { user, roles } = useUser();
 
-    const navItems = [
-        { href: '/leaderboard', label: 'Ranking', icon: Trophy, requiresAuth: true, show: true },
-        { href: '/supplier', label: 'Panel de Proveedor', icon: Briefcase, requiresAuth: true, show: isSupplier },
-        { href: '/admin', label: 'Panel de Administración', icon: ShieldQuestion, requiresAuth: true, show: isAdmin },
-    ];
+    // Filtered navigation items based on user roles
+    const navItems = DASHBOARD_NAV_ITEMS.items.filter(item => hasRequiredRole(roles, item.role));
 
     return (
         <Sheet>
@@ -147,29 +154,34 @@ function MainMenu() {
                     </SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-2">
-                    {navItems.map(({ href, label, icon: Icon, requiresAuth, show }) => {
-                        if (requiresAuth && !user) return null;
-                        if (show === false) return null; // Explicitly check for false to handle undefined
+                    {/* Common link for all users */}
+                    <SheetClose asChild>
+                        <Link href="/leaderboard">
+                            <Button variant="ghost" className="w-full justify-start text-base">
+                                <Trophy className="mr-3 h-5 w-5" />
+                                Ranking
+                            </Button>
+                        </Link>
+                    </SheetClose>
 
-                        return (
-                            <React.Fragment key={href}>
-                                <SheetClose asChild>
-                                    <Link href={href}>
-                                        <Button variant="ghost" className="w-full justify-start text-base">
-                                            <Icon className="mr-3 h-5 w-5" />
-                                            {label}
-                                        </Button>
-                                    </Link>
-                                </SheetClose>
-                            </React.Fragment>
-                        );
-                    })}
+                    {/* Role-based links */}
+                    {user && navItems.map(({ href, title, icon: Icon }) => (
+                        <SheetClose asChild key={href}>
+                            <Link href={href}>
+                                <Button variant="ghost" className="w-full justify-start text-base">
+                                    <Icon className="mr-3 h-5 w-5" />
+                                    {title}
+                                </Button>
+                            </Link>
+                        </SheetClose>
+                    ))}
                 </nav>
             </SheetContent>
         </Sheet>
     )
 }
 
+// Header Component
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">

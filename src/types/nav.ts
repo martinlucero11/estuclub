@@ -22,8 +22,8 @@ export interface SidebarNavItemLink {
   title: string;
   href: string;
   icon: LucideIcon;
-  role: "admin" | "supplier"; // Specifies which role can see the link
-  items: SidebarNavItemLink[]; // Allows for nested sidebar links
+  role?: string | string[]; // CORRECTED: Now accepts a string or an array of strings.
+  items?: SidebarNavItemLink[]; 
 }
 
 /**
@@ -31,5 +31,7 @@ export interface SidebarNavItemLink {
  */
 export interface SidebarNavItem {
   title: string;
+  // This property allows sections to be restricted by role.
+  role?: string | string[]; // CORRECTED: Also updated here for consistency.
   items: SidebarNavItemLink[];
 }
