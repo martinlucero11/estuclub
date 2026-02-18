@@ -1,6 +1,6 @@
 
 import type { NavItem, SidebarNavItem } from "@/types/nav";
-import { BarChart, Building, Gift, Megaphone, Users, History, BarChart2 } from 'lucide-react';
+import { BarChart, Gift, History } from 'lucide-react';
 
 interface NavConfig {
   mainNav: NavItem[];
@@ -28,41 +28,23 @@ export const navConfig: NavConfig = {
   ],
   sidebarNav: [
     {
-      title: "Panel de Control",
+      title: "Dashboard",
+      // This section will be visible to both admins and suppliers.
+      // The logic within the components at these routes will handle role-specific views.
+      role: ["admin", "supplier"],
       items: [
         {
-          title: "Dashboard",
-          href: "/admin",
-          icon: BarChart,
-          role: "admin",
-          items: [],
-        },
-        {
-          title: "Proveedores",
-          href: "/admin/suppliers",
-          icon: Building,
-          role: "admin",
-          items: [],
-        },
-        {
-          title: "Anuncios",
-          href: "/admin/announcements",
-          icon: Megaphone,
-          role: "admin",
-          items: [],
-        },
-        {
-          title: "Usuarios",
-          href: "/admin/users",
-          icon: Users,
-          role: "admin",
+          title: "Beneficios",
+          href: "/dashboard/benefits",
+          icon: Gift,
+          role: ["admin", "supplier"],
           items: [],
         },
         {
           title: "Canjes",
-          href: "/supplier/redemptions",
+          href: "/dashboard/redemptions",
           icon: History,
-          role: "supplier",
+          role: ["admin", "supplier"],
           items: [],
         },
       ],

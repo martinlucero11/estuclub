@@ -1,78 +1,101 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // --- FUNCIONES DE AYUDA ---
+    
+    // --- Helper Functions ---
     function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
     function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)); }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    
+    function onlyUpdatingAllowedFields(allowedFields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedFields);
+    }
 
-    // --- BENEFICIOS (Tu lógica corregida) ---
+    // --- Publicly Readable Data ---
     match /benefits/{benefitId} {
-      // 1. CUALQUIERA puede ver (para la Landing Page)
+      // 1. PUBLICO: Cualquiera puede verlos en la Landing Page
       allow read: if true;
-      
-      // 2. CREAR: Solo Proveedores, y deben firmarlo con su propio ID
+
+      // 2. CREAR: Cualquier Supplier puede crear, PERO debe firmarlo con su ID
       allow create: if isSupplier() && request.resource.data.supplierId == request.auth.uid;
-      
-      // 3. EDITAR/BORRAR: Solo el DUEÑO del beneficio o un Admin
-      allow update, delete: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
+
+      // 3. EDITAR/BORRAR: Solo el Supplier propietario puede tocarlo.
+      allow update, delete: if isSupplier() && resource.data.supplierId == request.auth.uid;
     }
 
-    // --- CANJES (Historial) ---
-    match /benefitRedemptions/{redemptionId} {
-      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid || isAdmin());
-      // Esta regla requiere el índice que YA CREASTE (supplierId + redeemedAt)
-      allow list: if isAdmin() || (isSupplier() && request.query.where.supplierId == request.auth.uid);
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
+    match /announcements/{announcementId} {
+      allow get, list: if true;
+      allow write: if isSupplier() || isAdmin();
     }
-
-    // --- PERFILES DE USUARIO ---
-    match /users/{userId} {
-      allow read: if true;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId); // Protege campos sensibles desde el frontend si es necesario
-    }
-
-    // --- OTROS ROLES Y DATOS ---
+    
     match /roles_supplier/{supplierId} {
-      allow read: if true;
+      allow get, list: if true;
       allow write: if isAdmin() || isOwner(supplierId);
     }
-    match /roles_admin/{adminId} {
-      allow read, write: if isAdmin();
-    }
-    match /announcements/{id} {
+
+    match /roles_supplier/{supplierId}/services/{serviceId} {
       allow read: if true;
-      allow write: if isSupplier() || isAdmin();
+      allow write: if isOwner(supplierId) || isAdmin();
     }
-    match /notifications/{id} {
-      allow read: if true;
-      allow write: if isSupplier() || isAdmin();
-    }
-    match /usernames/{username} {
-      allow read: if true;
-      allow write: if isSignedIn(); 
-    }
-     match /roles_supplier/{supplierId}/appointments/{appointmentId} {
-        allow read: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin();
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid; 
-        allow update, delete: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin(); 
-    }
+
     match /roles_supplier/{supplierId}/availability/{schedule} {
       allow read: if true;
       allow write: if isOwner(supplierId) || isAdmin();
     }
-     match /roles_supplier/{supplierId}/services/{serviceId} {
+    
+    match /usernames/{username} {
       allow read: if true;
-      allow write: if isOwner(supplierId) || isAdmin();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if (isOwner(resource.data.userId) || isAdmin()) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
-     match /users/{userId}/redeemed_benefits/{redemptionId} {
+    
+    match /notifications/{notificationId} {
+        allow list, get: if true;
+        allow write: if isSupplier() || isAdmin();
+    }
+
+    // --- Private User Data ---
+    match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && onlyUpdatingAllowedFields(['displayName', 'photoURL', 'phoneNumber', 'about', 'firstName', 'lastName', 'dni', 'phone', 'gender', 'dateOfBirth', 'university', 'major']);
+    }
+    
+    match /users/{userId}/redeemed_benefits/{redemptionId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
       allow update: if isSupplier() || isAdmin();
+      allow delete: if false;
+    }
+
+    // --- Operational/Mixed-Access Data ---
+    match /benefitRedemptions/{redemptionId} {
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.supplierId == request.auth.uid || 
+        isAdmin()
+      );
+      
+      allow list: if isAdmin() || (isSupplier() && request.query.where.supplierId == request.auth.uid);
+
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
+      allow delete: if false;
+    }
+
+    match /roles_supplier/{supplierId}/appointments/{appointmentId} {
+        allow read: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid; 
+        allow update, delete: if isOwner(resource.data.userId) || isOwner(supplierId) || isAdmin(); 
+    }
+
+    // --- Admin-Only Data ---
+    match /roles_admin/{adminId} {
+      allow read, write: if isAdmin();
     }
   }
 }
