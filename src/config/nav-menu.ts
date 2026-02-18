@@ -1,25 +1,18 @@
 
-import type { NavItem, SidebarNavItem } from "@/types/nav";
-import { BarChart, Gift, History } from 'lucide-react';
+import { Gift, History } from "lucide-react";
+import type { NavConfig } from "@/types/nav";
 
-interface NavConfig {
-  mainNav: NavItem[];
-  sidebarNav: SidebarNavItem[];
-}
+/**
+ * @file Defines the navigation structure for the application, including main navigation
+ * and the role-based dashboard sidebar.
+ */
 
+// The single, unified navigation configuration for the entire application.
 export const navConfig: NavConfig = {
   mainNav: [
     {
       title: "Leaderboard",
       href: "/leaderboard",
-    },
-    {
-      title: "Beneficios",
-      href: "/benefits",
-    },
-    {
-        title: "Anuncios",
-        href: "/announcements",
     },
     {
       title: "Proveedores",
