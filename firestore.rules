@@ -16,7 +16,7 @@ service cloud.firestore {
 
     // --- Publicly Readable Data ---
     match /benefits/{benefitId} {
-      allow get, list: if true;
+      allow read: if true;
       allow write: if isSupplier() || isAdmin();
     }
 
@@ -71,7 +71,7 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // --- Operational/Mixed-Access Data ---
+    // --- Operational/Mixed-access Data ---
     match /benefitRedemptions/{redemptionId} {
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 

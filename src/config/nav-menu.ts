@@ -58,6 +58,13 @@ export const navConfig: NavConfig = {
           role: "admin",
           items: [],
         },
+        {
+          title: "Canjes",
+          href: "/supplier/redemptions",
+          icon: History,
+          role: "supplier",
+          items: [],
+        },
       ],
     },
   ],
