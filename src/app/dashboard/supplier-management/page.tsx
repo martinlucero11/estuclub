@@ -1,20 +1,21 @@
 
-import { getDocs, collection } from "firebase/firestore";
-import { firestore } from "@/firebase/server-config";
+// Remove client-side imports
+import { firestore } from "@/firebase/server-config"; // Keep admin import
 import { SupplierProfile } from "@/types/data";
 import { SupplierTable } from "./components/supplier-table";
 
 /**
- * Server component to fetch all supplier profiles from Firestore.
+ * Server component to fetch all supplier profiles from Firestore using the Admin SDK.
  */
 async function getSuppliers(): Promise<SupplierProfile[]> {
-  const suppliersCollection = collection(firestore, "roles_supplier");
-  const snapshot = await getDocs(suppliersCollection);
+  // Use the Admin SDK syntax to get the collection and documents
+  const snapshot = await firestore.collection("roles_supplier").get();
   
   if (snapshot.empty) {
     return [];
   }
 
+  // The rest of the mapping logic is compatible
   return snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
