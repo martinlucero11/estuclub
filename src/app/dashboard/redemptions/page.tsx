@@ -1,10 +1,10 @@
 
-import { वर्तमान_उपयोगकर्ता_प्राप्त_करें } from '@/firebase/auth/current-user';
+import { getCurrentUser } from '@/firebase/auth/current-user';
 import RedemptionList from '@/components/dashboard/redemption-list';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardRedemptionsPage() {
-  const user = await वर्तमान_उपयोगकर्ता_प्राप्त_करें();
+  const user = await getCurrentUser();
 
   if (!user || (!user.roles.includes('admin') && !user.roles.includes('supplier'))) {
     redirect('/');
