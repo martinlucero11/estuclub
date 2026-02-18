@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRole } from '@/context/role-context';
-import { useAuth } from '@/firebase'; // Assuming a hook that provides user data including supplier capabilities
+import { useAuth } from '@/context/auth-context'; // Corrected import path
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Store, 

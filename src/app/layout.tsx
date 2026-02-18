@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import { PT_Sans, Lobster } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FirebaseProvider } from '@/firebase/provider';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AuthProvider } from '@/context/auth-context';
 
@@ -41,9 +40,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <FirebaseProvider>
-              {children}
-            </FirebaseProvider>
+            {children}
           </AuthProvider>
           <Toaster />
         </ThemeProvider>

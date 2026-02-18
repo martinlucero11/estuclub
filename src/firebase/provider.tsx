@@ -11,13 +11,12 @@ import { firebaseConfig } from '@/firebase/config';
 
 // --- TYPE DEFINITIONS ---
 
-// This will hold the data from the /roles_supplier/{uid} document
 export type SupplierData = Record<string, any>;
 
 interface UserAuthState {
   user: User | null;
   roles: string[];
-  supplierData: SupplierData | null; // <-- ADDED: Full supplier profile data
+  supplierData: SupplierData | null;
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -59,7 +58,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
     roles: [],
-    supplierData: null, // <-- ADDED: Initialize as null
+    supplierData: null,
     isUserLoading: true,
     userError: null,
   });
@@ -76,7 +75,6 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             const adminDocRef = doc(services.firestore, "roles_admin", firebaseUser.uid);
             const supplierDocRef = doc(services.firestore, "roles_supplier", firebaseUser.uid);
 
-            // Fetch both documents in parallel
             const [adminDoc, supplierDoc] = await Promise.all([
                 getDoc(adminDocRef),
                 getDoc(supplierDocRef)
@@ -87,7 +85,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             }
             if (supplierDoc.exists()) {
                 userRoles.push("supplier");
-                supplierData = supplierDoc.data(); // <-- ADDED: Store supplier document data
+                supplierData = supplierDoc.data();
             }
 
             setUserAuthState({ user: firebaseUser, roles: userRoles, supplierData, isUserLoading: false, userError: null });
@@ -97,7 +95,6 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             setUserAuthState({ user: firebaseUser, roles: [], supplierData: null, isUserLoading: false, userError: error as Error });
           }
         } else {
-          // No user, clear all state
           setUserAuthState({ user: null, roles: [], supplierData: null, isUserLoading: false, userError: null });
         }
       },
@@ -126,8 +123,6 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
 // --- HOOKS ---
 
-// The rest of the hooks will now automatically pass through the new `supplierData` field.
-
 export const useFirebase = (): FirebaseServicesAndUser => {
   const context = useContext(FirebaseContext);
 
@@ -152,7 +147,14 @@ export const useFirebase = (): FirebaseServicesAndUser => {
   };
 };
 
-export const useAuth = (): Auth => {
+// CORRECTED: Returns the user state, which is what components expect from `useAuth`
+export const useAuth = (): UserHookResult => {
+  const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
+  return { user, roles, supplierData, isUserLoading, userError };
+};
+
+// ADDED: A hook for accessing the auth service directly, consistent with other service hooks
+export const useAuthService = (): Auth => {
   const { auth } = useFirebase();
   return auth;
 };
@@ -172,6 +174,7 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
+// This hook is now redundant as useAuth provides the same functionality, but we keep it for now.
 export const useUser = (): UserHookResult => {
   const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
   return { user, roles, supplierData, isUserLoading, userError };
