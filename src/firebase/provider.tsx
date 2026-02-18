@@ -3,8 +3,8 @@
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth, IdTokenResult } from 'firebase/auth';
+import { Firestore, getFirestore, doc, getDoc } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/firebase/error-listener';
 import { firebaseConfig } from '@/firebase/config';
@@ -48,24 +48,6 @@ export interface UserHookResult {
   userError: Error | null;
 }
 
-// --- UTILITY FUNCTION --- 
-
-const getRolesFromClaims = (claims: IdTokenResult["claims"]): string[] => {
-  // --- CRITICAL DEBUGGING ---
-  console.log("Firebase Custom Claims received from token:", JSON.stringify(claims, null, 2));
-  // --------------------------
-
-  const rawRoles = claims.roles || claims.role; // Look for `roles` (plural) first, then `role` (singular)
-
-  if (Array.isArray(rawRoles)) {
-    return rawRoles;
-  }
-  if (typeof rawRoles === 'string') {
-    return rawRoles.split(/[,\s]+/).filter(Boolean); // Split by comma or space, and remove empty strings
-  }
-  return []; // Default to no roles
-}
-
 // --- REACT CONTEXT ---
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
@@ -96,15 +78,33 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       async (firebaseUser) => {
         if (firebaseUser) {
           try {
-            const tokenResult = await firebaseUser.getIdTokenResult(true);
-            const userRoles = getRolesFromClaims(tokenResult.claims);
-            console.log("ROLES PROCESADOS", userRoles);
+            // --- CORRECT LOGIC: Fetch roles from Firestore collections ---
+            const userRoles: string[] = [];
+            const adminDocRef = doc(services.firestore, "roles_admin", firebaseUser.uid);
+            const supplierDocRef = doc(services.firestore, "roles_supplier", firebaseUser.uid);
+
+            const [adminDoc, supplierDoc] = await Promise.all([
+                getDoc(adminDocRef),
+                getDoc(supplierDocRef)
+            ]);
+
+            if (adminDoc.exists()) {
+                userRoles.push("admin");
+            }
+            if (supplierDoc.exists()) {
+                userRoles.push("supplier");
+            }
+
+            console.log("ROLES PROCESADOS DESDE FIRESTORE:", userRoles);
             setUserAuthState({ user: firebaseUser, roles: userRoles, isUserLoading: false, userError: null });
+            // --- END OF CORRECT LOGIC ---
+
           } catch (error) {
-            console.error("FirebaseProvider: Error getting user roles:", error);
+            console.error("FirebaseProvider: Error fetching user roles from Firestore:", error);
             setUserAuthState({ user: firebaseUser, roles: [], isUserLoading: false, userError: error as Error });
           }
         } else {
+          // No user, clear state
           setUserAuthState({ user: null, roles: [], isUserLoading: false, userError: null });
         }
       },
@@ -114,7 +114,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       }
     );
     return () => unsubscribe();
-  }, [services.auth]);
+  }, [services.auth, services.firestore]);
 
   const contextValue = useMemo((): FirebaseContextState => ({
     areServicesAvailable: true,
@@ -131,7 +131,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 };
 
 
-// --- HOOKS (unchanged) ---
+// --- HOOKS ---
 
 export const useFirebase = (): FirebaseServicesAndUser => {
   const context = useContext(FirebaseContext);
