@@ -4,7 +4,7 @@
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
 import { Firestore, getFirestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
+import { Auth, User, onAuthStateChanged, getAuth, IdTokenResult } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/firebase/error-listener';
 import { firebaseConfig } from '@/firebase/config';
@@ -13,6 +13,7 @@ import { firebaseConfig } from '@/firebase/config';
 
 interface UserAuthState {
   user: User | null;
+  roles: string[]; // ADDED: To store user roles from custom claims
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -24,6 +25,7 @@ export interface FirebaseContextState {
   auth: Auth | null;
   storage: FirebaseStorage | null;
   user: User | null;
+  roles: string[]; // ADDED: Pass roles through context
   isUserLoading: boolean;
   userError: Error | null;
 }
@@ -34,21 +36,21 @@ export interface FirebaseServicesAndUser {
   auth: Auth;
   storage: FirebaseStorage;
   user: User | null;
+  roles: string[]; // ADDED: Pass roles through hook
   isUserLoading: boolean;
   userError: Error | null;
 }
 
 export interface UserHookResult {
   user: User | null;
+  roles: string[]; // ADDED: The missing piece for the header
   isUserLoading: boolean;
   userError: Error | null;
 }
 
-
 // --- REACT CONTEXT ---
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
-
 
 // --- MAIN PROVIDER COMPONENT ---
 
@@ -65,6 +67,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
   const [userAuthState, setUserAuthState] = useState<UserAuthState>({
     user: null,
+    roles: [], // Initial state for roles
     isUserLoading: true,
     userError: null,
   });
@@ -72,12 +75,25 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(
       services.auth,
-      (firebaseUser) => {
-        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+      async (firebaseUser) => {
+        if (firebaseUser) {
+          try {
+            // Get custom claims from the ID token.
+            const tokenResult: IdTokenResult = await firebaseUser.getIdTokenResult();
+            const userRoles = (tokenResult.claims.roles || []) as string[];
+            setUserAuthState({ user: firebaseUser, roles: userRoles, isUserLoading: false, userError: null });
+          } catch (error) {
+            console.error("FirebaseProvider: Error getting user roles:", error);
+            setUserAuthState({ user: firebaseUser, roles: [], isUserLoading: false, userError: error as Error });
+          }
+        } else {
+          // No user, clear state
+          setUserAuthState({ user: null, roles: [], isUserLoading: false, userError: null });
+        }
       },
       (error) => {
         console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error });
+        setUserAuthState({ user: null, roles: [], isUserLoading: false, userError: error });
       }
     );
     return () => unsubscribe();
@@ -85,13 +101,8 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
   const contextValue = useMemo((): FirebaseContextState => ({
     areServicesAvailable: true,
-    firebaseApp: services.firebaseApp,
-    firestore: services.firestore,
-    auth: services.auth,
-    storage: services.storage,
-    user: userAuthState.user,
-    isUserLoading: userAuthState.isUserLoading,
-    userError: userAuthState.userError,
+    ...services,
+    ...userAuthState,
   }), [services, userAuthState]);
 
   return (
@@ -122,6 +133,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     auth: context.auth,
     storage: context.storage,
     user: context.user,
+    roles: context.roles, // Pass roles down
     isUserLoading: context.isUserLoading,
     userError: context.userError,
   };
@@ -148,6 +160,6 @@ export const useFirebaseApp = (): FirebaseApp => {
 };
 
 export const useUser = (): UserHookResult => {
-  const { user, isUserLoading, userError } = useFirebase();
-  return { user, isUserLoading, userError };
+  const { user, roles, isUserLoading, userError } = useFirebase();
+  return { user, roles, isUserLoading, userError }; // CORRECTED: Return roles
 };
