@@ -1,34 +1,47 @@
 
 import { redirect } from "next/navigation";
-import { auth } from "@/auth"; // Assuming NextAuth setup
-import { Sidebar } from "@/components/layout/sidebar";
+import { cookies } from 'next/headers';
+import { firestore } from "@/firebase/server-config";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { RoleProvider } from "@/context/role-context";
-import { navConfig } from "@/config/nav-menu";
+import { UserRole } from "@/types/data";
+
+async function getUserRoles(uid: string): Promise<UserRole[]> {
+    const userDoc = await firestore.collection('users').doc(uid).get();
+    const userData = userDoc.data();
+    return userData?.roles || [];
+}
 
 export default async function DashboardLayout({
   children,
 }: { 
   children: React.ReactNode;
 }) {
-  const session = await auth(); // Server-side session check
-  
-  if (!session?.user) {
+  const cookieStore = cookies();
+  const sessionCookie = cookieStore.get('session')?.value;
+
+  // For this example, we'll assume the cookie value is the user's UID.
+  // In a real app, you'd verify this cookie with Firebase Auth Admin SDK.
+  const uid = sessionCookie;
+
+  if (!uid) {
     redirect("/");
   }
 
-  // Determine available roles from session
-  const userRoles = session.user.roles || [];
+  const userRoles = await getUserRoles(uid);
+
+  if (userRoles.length === 0) {
+      // This case might happen if roles are not yet assigned.
+      // Redirect or show a default non-privileged view.
+      redirect("/");
+  }
 
   return (
     <RoleProvider availableRoles={userRoles}>
-      <div className="flex min-h-screen">
-        <Sidebar items={navConfig.sidebarNav} />
-        <main className="flex-1 flex flex-col">
-          <DashboardHeader />
-          <div className="flex-1 p-8 pt-6">
+      <div className="flex min-h-screen flex-col">
+        <DashboardHeader />
+        <main className="flex-1 p-8 pt-6">
             {children}
-          </div>
         </main>
       </div>
     </RoleProvider>
