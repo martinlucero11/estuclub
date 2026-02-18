@@ -1,84 +1,78 @@
 
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
-import { SupplierProfile } from '@/types/data';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ColumnDef } from "@tanstack/react-table";
+import { SupplierProfile } from "@/types/data";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+
+// Define a type for the toggle handler to ensure type safety
+type ToggleHandler = (
+  supplierId: string, 
+  capability: keyof SupplierProfile, 
+  isEnabled: boolean
+) => void;
+
+// Define a type for the loading states
+type LoadingStates = Record<string, Record<string, boolean>>;
 
 interface ColumnsProps {
-  onToggle: (supplierId: string, capability: keyof SupplierProfile, isEnabled: boolean) => void;
-  loadingStates: Record<string, Record<string, boolean>>;
+  onToggle: ToggleHandler;
+  loadingStates: LoadingStates;
 }
 
 export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
   {
-    accessorKey: 'displayName',
-    header: 'Proveedor',
+    accessorKey: "displayName",
+    header: "Proveedor",
+    cell: ({ row }) => (
+        <div className="font-medium">{row.original.displayName}</div>
+    ),
+  },
+  {
+    id: "announcements",
+    header: () => <div className="text-center">Anuncios</div>,
     cell: ({ row }) => {
-      const { displayName, email } = row.original;
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.announcementsEnabled;
+
       return (
-        <div className="flex flex-col">
-          <span className="font-medium">{displayName}</span>
-          <span className="text-sm text-muted-foreground">{email}</span>
+        <div className="flex justify-center">
+          <Switch
+            checked={supplier.announcementsEnabled}
+            onCheckedChange={(value) => onToggle(supplier.id, 'announcementsEnabled', value)}
+            disabled={isLoading}
+            aria-label="Toggle para Anuncios"
+          />
         </div>
       );
     },
   },
   {
-    id: 'announcements',
-    header: () => <div className="text-center">Anuncios</div>,
+    id: "appointments",
+    header: () => <div className="text-center">Turnos</div>,
     cell: ({ row }) => {
       const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.announcementsEnabled || false;
+      const isLoading = loadingStates[supplier.id]?.appointmentsEnabled;
 
       return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                     <div className="flex justify-center">
-                        <Switch
-                            checked={supplier.announcementsEnabled}
-                            onCheckedChange={(isChecked) => onToggle(supplier.id, 'announcementsEnabled', isChecked)}
-                            disabled={isLoading}
-                            aria-label="Toggle announcements capability"
-                        />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{supplier.announcementsEnabled ? 'Deshabilitar' : 'Habilitar'} módulo de anuncios</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+        <div className="flex justify-center">
+            <Switch
+                checked={supplier.appointmentsEnabled}
+                onCheckedChange={(value) => onToggle(supplier.id, 'appointmentsEnabled', value)}
+                disabled={isLoading}
+                aria-label="Toggle para Turnos"
+            />
+        </div>
       );
     },
   },
   {
-    id: 'appointments',
-    header: () => <div className="text-center">Turnos</div>,
+    id: "status",
+    header: "Estado",
     cell: ({ row }) => {
-      const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.appointmentsEnabled || false;
-
-      return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <div className="flex justify-center">
-                        <Switch
-                        checked={supplier.appointmentsEnabled}
-                        onCheckedChange={(isChecked) => onToggle(supplier.id, 'appointmentsEnabled', isChecked)}
-                        disabled={isLoading}
-                        aria-label="Toggle appointments capability"
-                        />
-                    </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{supplier.appointmentsEnabled ? 'Deshabilitar' : 'Habilitar'} módulo de turnos</p>
-                </TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
-      );
+        const isActive = row.original.announcementsEnabled || row.original.appointmentsEnabled;
+        return <Badge variant={isActive ? 'default' : 'outline'}>{isActive ? "Activo" : "Inactivo"}</Badge>;
     },
   },
 ];
