@@ -1,78 +1,75 @@
 
-import { Gift, History, LayoutDashboard, Megaphone, CalendarClock, Users } from "lucide-react";
-import type { NavConfig } from "@/types/nav";
-
-/**
- * @file Defines the navigation structure for the application, including the role-based dashboard sidebar.
- * 
- * Each item can have a `role` property. If not present, it's visible to all.
- * For suppliers, items can also have a `supplierCapability` property which is checked against their profile.
- */
+import { NavConfig } from "@/types/nav";
+import {
+    LayoutDashboard,
+    Store,
+    Receipt,
+    Megaphone,
+    CalendarClock,
+    Users,
+    CheckCheck, // Added for approve-announcements
+} from 'lucide-react';
 
 export const navConfig: NavConfig = {
   mainNav: [
     {
-      title: "Leaderboard",
-      href: "/leaderboard",
+      title: "Inicio",
+      href: "/",
     },
     {
-      title: "Proveedores",
-      href: "/proveedores",
+      title: "Beneficios",
+      href: "/benefits",
+    },
+    {
+      title: "Anuncios",
+      href: "/announcements",
     },
   ],
   sidebarNav: [
     {
       title: "Dashboard",
+      href: "/dashboard", // <-- ADDED: Satisfy TypeScript requirement
       icon: LayoutDashboard,
       role: ["admin", "supplier"], 
       items: [
-        // --- Common to Admin & Supplier ---
         {
           title: "Beneficios",
           href: "/dashboard/benefits",
-          icon: Gift,
+          icon: Store,
           role: ["admin", "supplier"],
-          items: [],
         },
         {
           title: "Canjes",
           href: "/dashboard/redemptions",
-          icon: History,
+          icon: Receipt,
           role: ["admin", "supplier"],
-          items: [],
         },
-        // --- Supplier-specific capabilities ---
         {
           title: "Anuncios",
           href: "/dashboard/announcements",
           icon: Megaphone,
-          role: ["supplier"], 
-          supplierCapability: "announcementsEnabled", // Custom flag to check in supplierData
-          items: [],
+          role: ["supplier"],
+          supplierCapability: "announcementsEnabled",
+        },
+        {
+          title: "Aprobar Anuncios",
+          href: "/dashboard/approve-announcements",
+          icon: CheckCheck,
+          role: ["admin"],
         },
         {
           title: "Turnos",
           href: "/dashboard/appointments",
           icon: CalendarClock,
-          role: ["supplier"], 
-          supplierCapability: "appointmentsEnabled", // Custom flag to check in supplierData
-          items: [],
+          role: ["supplier"],
+          supplierCapability: "appointmentsEnabled",
         },
-        // --- Admin-only modules ---
         {
           title: "Gestión de Proveedores",
           href: "/dashboard/supplier-management",
           icon: Users,
-          role: ["admin"], 
-          items: [],
+          role: ["admin"],
         },
-        {
-            title: "Aprobar Anuncios",
-            href: "/dashboard/approval/announcements",
-            icon: Megaphone,
-            role: ["admin"], 
-            items: [],
-        }
       ],
     },
   ],
