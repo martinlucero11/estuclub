@@ -1,10 +1,9 @@
-
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import { useRole } from '@/context/role-context';
-import { useAuth } from '@/context/auth-context'; // Corrected import path
+import { useAuth, AppUser } from '@/context/auth-context'; // Import AppUser type
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { 
   Store, 
@@ -34,7 +33,8 @@ const supplierNavItems = (
 
 export default function DashboardPage() {
   const { activeRole } = useRole();
-  const { user } = useAuth(); // Provides user profile, including supplier capabilities
+  // Explicitly cast the user to the AppUser type
+  const { user } = useAuth() as { user: AppUser | null };
 
   const navItems = activeRole === 'admin' 
     ? adminNavItems 
