@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { GraduationCap, Menu, User, Settings, LogOut, History, Trophy } from 'lucide-react';
+import { GraduationCap, Menu, User, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -21,6 +21,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
@@ -30,8 +36,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
-// CORRECTED: Import all necessary types from the nav types definition
-import type { NavItem, SidebarNavItem, SidebarNavItemLink } from '@/types/nav'; 
+import type { NavItem, SidebarNavItem, SidebarNavItemLink } from '@/types/nav';
 
 function Logo() {
     return (
@@ -48,7 +53,7 @@ function Logo() {
 }
 
 function UserMenu() {
-  const { user, isUserLoading, roles } = useUser(); 
+  const { user, isUserLoading } = useUser(); 
   const auth = useAuth();
   const router = useRouter();
 
@@ -72,9 +77,6 @@ function UserMenu() {
   }
 
   const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
-
-  const dashboardItems = navConfig.sidebarNav.flatMap((section: SidebarNavItem) => section.items);
-  const accessibleDashboardItem = dashboardItems.find((item: SidebarNavItemLink) => hasRequiredRole(roles, item.role));
 
   return (
     <DropdownMenu>
@@ -100,19 +102,9 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {accessibleDashboardItem && (
-             <DropdownMenuItem onClick={() => router.push(accessibleDashboardItem.href)}>
-                <accessibleDashboardItem.icon className="mr-2 h-4 w-4" />
-                <span>{accessibleDashboardItem.title}</span>
-            </DropdownMenuItem>
-        )}
         <DropdownMenuItem onClick={() => router.push('/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
-          <History className="mr-2 h-4 w-4" />
-          <span>Mis Canjes</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
@@ -129,12 +121,21 @@ function UserMenu() {
 }
 
 function MainMenu() {
-    const { user, roles } = useUser();
+    const { user, roles, supplierData } = useUser();
 
-    const accessibleNavItems: SidebarNavItemLink[] = navConfig.sidebarNav
-        .filter((section: SidebarNavItem) => hasRequiredRole(roles, section.role))
-        .flatMap((section: SidebarNavItem) => section.items)
-        .filter((item: SidebarNavItemLink) => hasRequiredRole(roles, item.role));
+    const isItemVisible = (item: SidebarNavItemLink): boolean => {
+        const roleMatch = hasRequiredRole(roles, item.role);
+        if (!roleMatch) return false;
+
+        if (item.supplierCapability && roles.includes('supplier')) {
+            return supplierData ? !!supplierData[item.supplierCapability] : false;
+        }
+
+        return true;
+    }
+
+    const accessibleSidebarSections = navConfig.sidebarNav
+        .filter((section) => hasRequiredRole(roles, section.role));
 
     return (
         <Sheet>
@@ -149,36 +150,59 @@ function MainMenu() {
                     <SheetTitle><Logo /></SheetTitle>
                     <SheetDescription>Navega por la aplicación.</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-2">
-                    {/* Main navigation links that are always visible */}
+                <nav className="mt-8 flex flex-col gap-1">
                     {navConfig.mainNav.map(({ href, title }: NavItem) => (
                         <SheetClose asChild key={href}>
                             <Link href={href}>
-                                <Button variant="ghost" className="w-full justify-start text-base">
+                                <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
                                     {title}
                                 </Button>
                             </Link>
                         </SheetClose>
                     ))}
                     
-                    {/* Separator if there are role-based links to show */}
-                    {user && accessibleNavItems.length > 0 && <DropdownMenuSeparator />}
+                    {user && accessibleSidebarSections.length > 0 && <DropdownMenuSeparator className="my-2" />}
 
-                    {/* Role-based dashboard links */}
-                    {user && accessibleNavItems.map(({ href, title, icon: Icon }) => (
-                        <SheetClose asChild key={href}>
-                            <Link href={href}>
-                                <Button variant="ghost" className="w-full justify-start text-base">
-                                    <Icon className="mr-3 h-5 w-5" />
-                                    {title}
-                                </Button>
-                            </Link>
-                        </SheetClose>
-                    ))}
+                    {user && accessibleSidebarSections.map((section) => {
+                        const visibleItems = section.items?.filter(isItemVisible) || [];
+                        if (visibleItems.length === 0) return null;
+
+                        const Icon = section.icon;
+
+                        return (
+                            <Accordion type="single" collapsible className="w-full" key={section.title} defaultValue='item-0'>
+                                <AccordionItem value='item-0' className="border-b-0">
+                                    <AccordionTrigger className="w-full flex items-center justify-between text-base font-medium hover:no-underline px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
+                                         <div className="flex items-center">
+                                            {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                            <span>{section.title}</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="pt-1 pb-0">
+                                        <div className="ml-4 flex flex-col gap-1 border-l pl-4">
+                                            {visibleItems.map((item) => {
+                                                const ItemIcon = item.icon;
+                                                return (
+                                                    <SheetClose asChild key={item.href}>
+                                                        <Link href={item.href}>
+                                                            <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                                                                {ItemIcon && <ItemIcon className="mr-3 h-5 w-5 text-muted-foreground" />}
+                                                                {item.title}
+                                                            </Button>
+                                                        </Link>
+                                                    </SheetClose>
+                                                );
+                                            })}
+                                        </div>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </Accordion>
+                        );
+                    })}
                 </nav>
             </SheetContent>
         </Sheet>
-    )
+    );
 }
 
 export default function Header() {

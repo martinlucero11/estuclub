@@ -1,13 +1,14 @@
 
-import { Gift, History } from "lucide-react";
+import { Gift, History, LayoutDashboard, Megaphone, CalendarClock, Users } from "lucide-react";
 import type { NavConfig } from "@/types/nav";
 
 /**
- * @file Defines the navigation structure for the application, including main navigation
- * and the role-based dashboard sidebar.
+ * @file Defines the navigation structure for the application, including the role-based dashboard sidebar.
+ * 
+ * Each item can have a `role` property. If not present, it's visible to all.
+ * For suppliers, items can also have a `supplierCapability` property which is checked against their profile.
  */
 
-// The single, unified navigation configuration for the entire application.
 export const navConfig: NavConfig = {
   mainNav: [
     {
@@ -22,10 +23,10 @@ export const navConfig: NavConfig = {
   sidebarNav: [
     {
       title: "Dashboard",
-      // This section will be visible to both admins and suppliers.
-      // The logic within the components at these routes will handle role-specific views.
-      role: ["admin", "supplier"],
+      icon: LayoutDashboard,
+      role: ["admin", "supplier"], 
       items: [
+        // --- Common to Admin & Supplier ---
         {
           title: "Beneficios",
           href: "/dashboard/benefits",
@@ -40,6 +41,38 @@ export const navConfig: NavConfig = {
           role: ["admin", "supplier"],
           items: [],
         },
+        // --- Supplier-specific capabilities ---
+        {
+          title: "Anuncios",
+          href: "/dashboard/announcements",
+          icon: Megaphone,
+          role: ["supplier"], 
+          supplierCapability: "announcementsEnabled", // Custom flag to check in supplierData
+          items: [],
+        },
+        {
+          title: "Turnos",
+          href: "/dashboard/appointments",
+          icon: CalendarClock,
+          role: ["supplier"], 
+          supplierCapability: "appointmentsEnabled", // Custom flag to check in supplierData
+          items: [],
+        },
+        // --- Admin-only modules ---
+        {
+          title: "Gestión de Proveedores",
+          href: "/dashboard/supplier-management",
+          icon: Users,
+          role: ["admin"], 
+          items: [],
+        },
+        {
+            title: "Aprobar Anuncios",
+            href: "/dashboard/approval/announcements",
+            icon: Megaphone,
+            role: ["admin"], 
+            items: [],
+        }
       ],
     },
   ],
