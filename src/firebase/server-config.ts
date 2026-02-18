@@ -1,10 +1,18 @@
 
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { firebaseConfig } from './config';
+import * as admin from 'firebase-admin';
 
-// Initialize Firebase for the server
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const firestore = getFirestore(app);
+// In a deployed Google Cloud environment (like App Hosting or Cloud Functions),
+// the Firebase Admin SDK is automatically configured with the project's
+// service account credentials. We don't need to pass them manually.
 
-export { app, firestore };
+// We check if the app is already initialized to prevent re-initialization errors.
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+// Get the Firestore instance from the initialized admin app.
+// This instance has privileged access to the database.
+const firestore = admin.firestore();
+
+// We can also export the admin object itself for other uses (e.g., Auth).
+export { admin, firestore };
