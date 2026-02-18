@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -13,6 +12,7 @@ import { makePerkSerializable } from '@/lib/data';
 import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -126,12 +126,40 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
   }
 
   if (error) {
+    // Proactive error handling for missing Firestore index.
+    // Firestore often returns "permission-denied" when an index is missing for a complex query,
+    // so we check for both `failed-precondition` and `permission-denied` (but only if we are filtering).
+    const isPreconditionFailed = 'code' in error && error.code === 'failed-precondition';
+    const isMaskedPermissionError = 'message' in error && error.message.includes('firestore/permission-denied') && !!supplierId;
+
+    if (isPreconditionFailed || isMaskedPermissionError) {
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'studio-7814845508-d173f'; // Using the known project ID
+        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=benefits&field[0].fieldPath=ownerId&field[0].order=ASCENDING&field[1].fieldPath=createdAt&field[1].order=DESCENDING`;
+        return (
+            <Card className="border-destructive">
+                 <CardHeader>
+                    <CardTitle className="text-destructive">Error de Configuración de Base de Datos</CardTitle>
+                    <CardDescription className="text-destructive">
+                        La consulta para mostrar tus beneficios requiere un índice compuesto en Firestore que no ha sido creado. Este es un error común.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="mb-4 text-sm font-medium">Para solucionar este problema, un administrador del proyecto de Firebase debe crear el índice requerido.</p>
+                    <p className='text-sm mb-2'>Haz clic en el siguiente enlace para ir directamente a la página de creación de índices con los campos correctos pre-rellenados:</p>
+                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
+                        Crear Índice en Firebase Console
+                    </a>
+                    <p className="mt-4 text-xs text-muted-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active. Luego, recarga esta página.</p>
+                </CardContent>
+            </Card>
+        );
+    }
     return <p className="text-destructive">Error al cargar los beneficios: {error.message}</p>;
   }
 
   if (!serializablePerks || serializablePerks.length === 0) {
     return (
-      <p className="text-center text-muted-foreground">No hay beneficios para mostrar.</p>
+      <p className="text-center text-muted-foreground">No has creado ningún beneficio todavía.</p>
     );
   }
 
