@@ -18,9 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
+// CORRECTED IMPORT: Import the auth service instance directly
+import { auth } from '@/firebase/client-config'; 
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState } from 'react';
 import ResetPasswordDialog from './reset-password-dialog';
 
 const formSchema = z.object({
@@ -30,7 +30,7 @@ const formSchema = z.object({
 
 export default function LoginForm() {
   const router = useRouter();
-  const auth = useAuth();
+  // REMOVED: No longer need to call the problematic hook here
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,6 +43,7 @@ export default function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      // CORRECTED: 'auth' now refers to the imported service instance
       await signInWithEmailAndPassword(auth, values.email, values.password);
       
       toast({
