@@ -5,6 +5,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseProvider } from '@/firebase/provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { AuthProvider } from '@/context/auth-context';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -39,9 +40,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseProvider>
-            {children}
-          </FirebaseProvider>
+          <AuthProvider>
+            <FirebaseProvider>
+              {children}
+            </FirebaseProvider>
+          </AuthProvider>
           <Toaster />
         </ThemeProvider>
       </body>
