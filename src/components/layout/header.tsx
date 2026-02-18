@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { GraduationCap, Menu, User, Settings, LogOut, ShieldQuestion, Trophy, Briefcase, History } from 'lucide-react';
+import { GraduationCap, Menu, User, Settings, LogOut, History, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -28,10 +28,10 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
-import { DASHBOARD_NAV_ITEMS } from '@/config/nav-menu';
-import { hasRequiredRole } from '@/lib/utils'; // Import a utility function for role checking
+import { navConfig } from '@/config/nav-menu'; // CORRECTED: Import navConfig
+import { hasRequiredRole } from '@/lib/utils';
+import type { SidebarNavItemLink } from '@/types/nav';
 
-// Logo Component
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center gap-2 text-primary">
@@ -46,9 +46,8 @@ function Logo() {
     )
 }
 
-// UserMenu Component
 function UserMenu() {
-  const { user, isUserLoading, roles } = useUser(); // Assuming useUser() now provides roles
+  const { user, isUserLoading, roles } = useUser(); 
   const auth = useAuth();
   const router = useRouter();
 
@@ -73,9 +72,9 @@ function UserMenu() {
 
   const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
 
-  const dashboardItem = DASHBOARD_NAV_ITEMS.items.find(item => {
-      return hasRequiredRole(roles, item.role)
-  });
+  // CORRECTED: Find the first accessible dashboard item from navConfig.sidebarNav
+  const dashboardItems = navConfig.sidebarNav.flatMap(section => section.items);
+  const accessibleDashboardItem = dashboardItems.find(item => hasRequiredRole(roles, item.role));
 
   return (
     <DropdownMenu>
@@ -101,10 +100,10 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {dashboardItem && (
-             <DropdownMenuItem onClick={() => router.push(dashboardItem.href)}>
-                <dashboardItem.icon className="mr-2 h-4 w-4" />
-                <span>{dashboardItem.title}</span>
+        {accessibleDashboardItem && (
+             <DropdownMenuItem onClick={() => router.push(accessibleDashboardItem.href)}>
+                <accessibleDashboardItem.icon className="mr-2 h-4 w-4" />
+                <span>{accessibleDashboardItem.title}</span>
             </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={() => router.push('/profile')}>
@@ -129,12 +128,14 @@ function UserMenu() {
   );
 }
 
-// MainMenu Component (Mobile)
 function MainMenu() {
     const { user, roles } = useUser();
 
-    // Filtered navigation items based on user roles
-    const navItems = DASHBOARD_NAV_ITEMS.items.filter(item => hasRequiredRole(roles, item.role));
+    // CORRECTED: Flatten all items from all sections and filter based on role
+    const accessibleNavItems: SidebarNavItemLink[] = navConfig.sidebarNav
+        .filter(section => hasRequiredRole(roles, section.role))
+        .flatMap(section => section.items)
+        .filter(item => hasRequiredRole(roles, item.role));
 
     return (
         <Sheet>
@@ -146,26 +147,27 @@ function MainMenu() {
             </SheetTrigger>
             <SheetContent side="left">
                 <SheetHeader>
-                    <SheetTitle>
-                        <Logo />
-                    </SheetTitle>
-                    <SheetDescription>
-                        Navega por las secciones de la aplicación.
-                    </SheetDescription>
+                    <SheetTitle><Logo /></SheetTitle>
+                    <SheetDescription>Navega por la aplicación.</SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-2">
-                    {/* Common link for all users */}
-                    <SheetClose asChild>
-                        <Link href="/leaderboard">
-                            <Button variant="ghost" className="w-full justify-start text-base">
-                                <Trophy className="mr-3 h-5 w-5" />
-                                Ranking
-                            </Button>
-                        </Link>
-                    </SheetClose>
+                    {/* Main navigation links that are always visible */}
+                    {navConfig.mainNav.map(({ href, title }) => (
+                        <SheetClose asChild key={href}>
+                            <Link href={href}>
+                                <Button variant="ghost" className="w-full justify-start text-base">
+                                    {/* You might want to add icons to mainNav as well */}
+                                    {title}
+                                </Button>
+                            </Link>
+                        </SheetClose>
+                    ))}
+                    
+                    {/* Separator if there are role-based links to show */}
+                    {user && accessibleNavItems.length > 0 && <DropdownMenuSeparator />}
 
-                    {/* Role-based links */}
-                    {user && navItems.map(({ href, title, icon: Icon }) => (
+                    {/* Role-based dashboard links */}
+                    {user && accessibleNavItems.map(({ href, title, icon: Icon }) => (
                         <SheetClose asChild key={href}>
                             <Link href={href}>
                                 <Button variant="ghost" className="w-full justify-start text-base">
@@ -181,17 +183,12 @@ function MainMenu() {
     )
 }
 
-// Header Component
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <div className="w-1/3">
-             <MainMenu />
-        </div>
-        <div className="w-1/3 flex justify-center">
-            <Logo />
-        </div>
+        <div className="w-1/3"><MainMenu /></div>
+        <div className="w-1/3 flex justify-center"><Logo /></div>
         <div className="w-1/3 flex justify-end items-center gap-2">
             <NotificationBell />
             <UserMenu />
