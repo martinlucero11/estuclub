@@ -4,7 +4,7 @@ import { PT_Sans, Lobster } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider } from '@/context/auth-context';
+import { FirebaseProvider } from '@/firebase/provider';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -39,9 +39,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
+          <FirebaseProvider>
             {children}
-          </AuthProvider>
+          </FirebaseProvider>
           <Toaster />
         </ThemeProvider>
       </body>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -147,13 +146,6 @@ export const useFirebase = (): FirebaseServicesAndUser => {
   };
 };
 
-// CORRECTED: Returns the user state, which is what components expect from `useAuth`
-export const useAuth = (): UserHookResult => {
-  const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
-  return { user, roles, supplierData, isUserLoading, userError };
-};
-
-// ADDED: A hook for accessing the auth service directly, consistent with other service hooks
 export const useAuthService = (): Auth => {
   const { auth } = useFirebase();
   return auth;
@@ -174,7 +166,6 @@ export const useFirebaseApp = (): FirebaseApp => {
   return firebaseApp;
 };
 
-// This hook is now redundant as useAuth provides the same functionality, but we keep it for now.
 export const useUser = (): UserHookResult => {
   const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
   return { user, roles, supplierData, isUserLoading, userError };

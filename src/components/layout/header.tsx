@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -29,7 +28,7 @@ import {
 } from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuth, useUser } from '@/firebase';
+import { useAuthService, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,7 +53,7 @@ function Logo() {
 
 function UserMenu() {
   const { user, isUserLoading } = useUser(); 
-  const auth = useAuth();
+  const auth = useAuthService();
   const router = useRouter();
 
   const handleSignOut = async () => {

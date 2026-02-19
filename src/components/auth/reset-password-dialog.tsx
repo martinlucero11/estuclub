@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -26,7 +25,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/firebase';
+import { auth } from '@/firebase/client-config';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { Mail } from 'lucide-react';
 
@@ -40,7 +39,6 @@ interface ResetPasswordDialogProps {
 
 export default function ResetPasswordDialog({ children }: ResetPasswordDialogProps) {
   const { toast } = useToast();
-  const auth = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
