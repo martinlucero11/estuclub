@@ -18,6 +18,7 @@ export default function BenefitList({ user }: BenefitListProps) {
   const isAdmin = user.roles.includes('admin');
 
   const benefitsQuery = useMemo(() => {
+    if (!firestore) return null;
     const baseQuery = query(collection(firestore, 'benefits'), orderBy('createdAt', 'desc'));
     if (isAdmin) {
       return baseQuery;
@@ -37,10 +38,13 @@ export default function BenefitList({ user }: BenefitListProps) {
     };
     if (isAdmin) {
       // Insert supplier column after the title column
-      // El cambio es poner (c: any) para que TypeScript no se queje
-const titleIndex = baseColumns.findIndex((c: any) => c.accessorKey === 'title');
+      const titleIndex = baseColumns.findIndex((c: any) => c.accessorKey === 'title');
       const newColumns = [...baseColumns];
-      newColumns.splice(titleIndex + 1, 0, supplierColumn);
+      if (titleIndex !== -1) {
+          newColumns.splice(titleIndex + 1, 0, supplierColumn);
+      } else {
+          newColumns.unshift(supplierColumn)
+      }
       return newColumns;
     }
     return baseColumns;

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "./skeleton"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -92,11 +93,15 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-                <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                        Cargando datos...
-                    </TableCell>
-                </TableRow>
+                [...Array(5)].map((_, i) => (
+                    <TableRow key={i}>
+                        {columns.map((column, j) => (
+                             <TableCell key={j}>
+                                <Skeleton className="h-5 w-full" />
+                            </TableCell>
+                        ))}
+                    </TableRow>
+                ))
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow

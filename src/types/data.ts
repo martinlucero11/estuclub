@@ -35,10 +35,12 @@ export interface Benefit {
   category: string;
   stock: number;
   status: 'active' | 'inactive';
+  supplierName?: string; // Denormalized for admin views
   // Tracking fields (optional)
   clicks?: number;
   totalRedemptions?: number;
   createdAt: Timestamp;
+  redemptionCount?: number;
 }
 
 /**
@@ -49,14 +51,12 @@ export interface BenefitRedemption {
   benefitId: string;
   supplierId: string;
   userId: string;
-  // For admin view
-  userDisplayName?: string;
+  // Denormalized data for admin views
+  userName?: string;
   benefitTitle?: string;
-  supplierDisplayName?: string;
+  supplierName?: string;
 
-  redemptionCode: string;
   redeemedAt: Timestamp;
-  validated: boolean; // True if the QR code was scanned and validated
 }
 
 /**

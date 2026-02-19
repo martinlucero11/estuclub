@@ -25,7 +25,7 @@ export interface NavItem {
  */
 export interface SidebarNavItemLink extends NavItem {
   items?: SidebarNavItemLink[];
-  supplierCapability?: string; // <-- ADDED: The missing property
+  supplierCapability?: keyof import('./data').SupplierProfile;
 }
 
 /**

@@ -134,7 +134,16 @@ function MainMenu() {
     }
 
     const accessibleSidebarSections = navConfig.sidebarNav
-        .filter((section) => hasRequiredRole(roles, section.role));
+        .map(section => ({
+            ...section,
+            items: section.items?.filter(isItemVisible)
+        }))
+        .filter(section => {
+            // A section is visible if it's a direct link and has the role,
+            // or if it's a group with at least one visible item.
+            return hasRequiredRole(roles, section.role) && (!section.items || section.items.length > 0);
+        });
+
 
     return (
         <Sheet>
@@ -163,11 +172,24 @@ function MainMenu() {
                     {user && accessibleSidebarSections.length > 0 && <DropdownMenuSeparator className="my-2" />}
 
                     {user && accessibleSidebarSections.map((section) => {
-                        const visibleItems = section.items?.filter(isItemVisible) || [];
-                        if (visibleItems.length === 0) return null;
+                       
+                        // If it's a direct link (no items), render a simple button
+                        if (!section.items) {
+                             const Icon = section.icon;
+                            return (
+                                <SheetClose asChild key={section.href}>
+                                    <Link href={section.href}>
+                                        <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
+                                             {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                            {section.title}
+                                        </Button>
+                                    </Link>
+                                </SheetClose>
+                            )
+                        }
 
+                        // If it's a group with items, render an accordion
                         const Icon = section.icon;
-
                         return (
                             <Accordion type="single" collapsible className="w-full" key={section.title} defaultValue='item-0'>
                                 <AccordionItem value='item-0' className="border-b-0">
@@ -179,7 +201,7 @@ function MainMenu() {
                                     </AccordionTrigger>
                                     <AccordionContent className="pt-1 pb-0">
                                         <div className="ml-4 flex flex-col gap-1 border-l pl-4">
-                                            {visibleItems.map((item) => {
+                                            {section.items.map((item) => {
                                                 const ItemIcon = item.icon;
                                                 return (
                                                     <SheetClose asChild key={item.href}>
