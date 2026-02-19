@@ -1,36 +1,45 @@
 import { cookies } from 'next/headers';
+import { admin } from '@/firebase/server-config';
+import type { UserRole } from '@/types/data';
 
 export interface User {
   uid: string;
   email: string | null;
-  roles: string[];
+  roles: UserRole[];
+}
+
+async function getUserRoles(uid: string): Promise<UserRole[]> {
+    const roles: UserRole[] = [];
+    const adminDoc = await admin.firestore().collection('roles_admin').doc(uid).get();
+    if (adminDoc.exists) {
+        roles.push('admin');
+    }
+    const supplierDoc = await admin.firestore().collection('roles_supplier').doc(uid).get();
+    if (supplierDoc.exists) {
+        roles.push('supplier');
+    }
+    return roles;
 }
 
 export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('session');
+  const sessionCookie = cookieStore.get('session')?.value;
 
   if (!sessionCookie) {
     return null; 
   }
   
-  // In a real production app, you would use firebase-admin to verify the session cookie.
-  // For this implementation, we assume the cookie's value is the UID.
-  // This is NOT secure for production but allows the server-side dashboard layout to function.
-  // You would replace this with: const decodedToken = await admin.auth().verifySessionCookie(sessionCookie.value);
-  const uid = sessionCookie.value;
-
-  if (!uid) {
+  try {
+    const decodedToken = await admin.auth().verifySessionCookie(sessionCookie, true);
+    const roles = await getUserRoles(decodedToken.uid);
+    
+    return {
+      uid: decodedToken.uid,
+      email: decodedToken.email || null,
+      roles: roles,
+    };
+  } catch (error) {
+    console.error("Error verifying session cookie:", error);
     return null;
   }
-
-  // This is a placeholder for demonstration. A real implementation would fetch roles
-  // from Firestore using the Admin SDK based on the decoded UID.
-  const mockRoles = ['admin', 'supplier'];
-  
-  return {
-    uid: uid,
-    email: null, // This would come from the decoded token
-    roles: mockRoles,
-  };
 }

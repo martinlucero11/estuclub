@@ -1,46 +1,46 @@
+'use client';
 
-import { redirect } from "next/navigation";
-import { cookies } from 'next/headers';
-import { firestore } from "@/firebase/server-config";
-import { DashboardHeader } from "@/components/layout/dashboard-header";
-import { RoleProvider } from "@/context/role-context";
-import { UserRole } from "@/types/data";
+import { useUser } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { DashboardHeader } from '@/components/layout/dashboard-header';
+import { RoleProvider } from '@/context/role-context';
+import SplashScreen from '@/components/layout/splash-screen';
+import { UserRole } from '@/types/data';
 
-async function getUserRoles(uid: string): Promise<UserRole[]> {
-    const userDoc = await firestore.collection('users').doc(uid).get();
-    const userData = userDoc.data();
-    return userData?.roles || [];
-}
-
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: { 
   children: React.ReactNode;
 }) {
-  const cookieStore = cookies();
-  const sessionCookie = cookieStore.get('session')?.value;
+  const { user, roles, isUserLoading } = useUser();
+  const router = useRouter();
 
-  // For this example, we'll assume the cookie value is the user's UID.
-  // In a real app, you'd verify this cookie with Firebase Auth Admin SDK.
-  const uid = sessionCookie;
+  const isAuthorized = roles.includes('admin') || roles.includes('supplier');
 
-  if (!uid) {
-    redirect("/");
+  useEffect(() => {
+    // If loading is finished and the user is not authorized, redirect them.
+    if (!isUserLoading && !isAuthorized) {
+      router.push('/');
+    }
+  }, [isUserLoading, isAuthorized, router]);
+
+  // While loading, or if the user is not authorized yet (to prevent content flashing),
+  // show a loading screen.
+  if (isUserLoading || !isAuthorized) {
+    return <SplashScreen />;
   }
 
-  const userRoles = await getUserRoles(uid);
-
-  if (userRoles.length === 0) {
-      // This case might happen if roles are not yet assigned.
-      // Redirect or show a default non-privileged view.
-      redirect("/");
-  }
+  // Ensure roles are correctly typed for the provider
+  const availableRoles: UserRole[] = roles.filter(
+      (role): role is UserRole => ['admin', 'supplier', 'user'].includes(role)
+  );
 
   return (
-    <RoleProvider availableRoles={userRoles}>
+    <RoleProvider availableRoles={availableRoles}>
       <div className="flex min-h-screen flex-col">
         <DashboardHeader />
-        <main className="flex-1 p-8 pt-6">
+        <main className="flex-1 p-4 md:p-8">
             {children}
         </main>
       </div>
