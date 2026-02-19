@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +29,6 @@ const formSchema = z.object({
 
 export default function LoginForm() {
   const router = useRouter();
-  // REMOVED: No longer need to call the problematic hook here
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
