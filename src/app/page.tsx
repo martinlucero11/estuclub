@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, SerializableBanner, Category } from '@/lib/data';
 import { makePerkSerializable, makeBannerSerializable } from '@/lib/data';
 import { useMemo } from 'react';
@@ -40,7 +40,7 @@ const HomeHeader = () => (
 // --- CATEGORY CAROUSEL ---
 const CategoryCarousel = () => {
     const firestore = useFirestore();
-    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
+    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
     if (isLoading) {

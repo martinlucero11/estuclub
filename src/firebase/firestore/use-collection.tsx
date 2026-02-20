@@ -68,7 +68,7 @@ export function useCollection<T = any>(
       (error: FirestoreError) => {
         // Log the original Firestore error for easier debugging,
         // especially for missing index issues which can be masked as permission errors.
-        console.error("Original Firestore Error in useCollection:", error);
+        console.error('Error real de Firebase:', error);
         
         const path: string = (targetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
 
