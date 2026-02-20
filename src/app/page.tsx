@@ -46,17 +46,15 @@ const CategoryGrid = () => {
 
     if (isLoading) {
         return (
-             <div className="px-4">
-                <div className="mt-2 grid grid-cols-4 gap-3">
-                    {[...Array(4)].map((_, i) => (
-                         <div key={i} className="flex-shrink-0">
-                            <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl">
-                                <Skeleton className="h-8 w-8 rounded-full" />
-                                <Skeleton className="h-4 w-16" />
-                            </Card>
-                        </div>
-                    ))}
-                </div>
+            <div className="mt-2 grid grid-cols-4 gap-3">
+                {[...Array(4)].map((_, i) => (
+                        <div key={i} className="flex-shrink-0">
+                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl">
+                            <Skeleton className="h-8 w-8 rounded-full" />
+                            <Skeleton className="h-4 w-16" />
+                        </Card>
+                    </div>
+                ))}
             </div>
         )
     }
@@ -64,21 +62,19 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <section className="px-4">
-            <div className="mt-2 grid grid-cols-4 gap-3">
-                {categories.map((category) => {
-                    const Icon = getIcon(category.iconName);
-                    return (
-                        <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
-                            <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
-                                <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
-                                <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
-                            </Card>
-                        </Link>
-                    );
-                })}
-            </div>
-        </section>
+        <div className="mt-2 grid grid-cols-4 gap-3">
+            {categories.map((category) => {
+                const Icon = getIcon(category.iconName);
+                return (
+                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
+                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
+                            <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
+                            <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
+                        </Card>
+                    </Link>
+                );
+            })}
+        </div>
     );
 };
 
@@ -228,13 +224,16 @@ const PageSkeleton = () => (
 // --- MAIN PAGE COMPONENT ---
 export default function HomePage() {
   const firestore = useFirestore();
-  const { isUserLoading } = useUser();
+  const { user, isUserLoading } = useUser();
 
-    const homeSectionsQuery = useMemoFirebase(() => query(
-        collection(firestore, 'home_sections'),
-        where('isActive', '==', true),
-        orderBy('order', 'asc')
-    ), [firestore]);
+    const homeSectionsQuery = useMemoFirebase(() => {
+        if (isUserLoading || user === undefined) return null;
+        return query(
+            collection(firestore, 'home_sections'),
+            where('isActive', '==', true),
+            orderBy('order', 'asc')
+        )
+    }, [firestore, user, isUserLoading]);
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
     
