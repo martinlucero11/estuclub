@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { GraduationCap, Menu, User, Settings, LogOut } from 'lucide-react';
+import { GraduationCap, Menu, User, Settings, LogOut, History } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -104,6 +104,10 @@ function UserMenu() {
         <DropdownMenuItem onClick={() => router.push('/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
+          <History className="mr-2 h-4 w-4" />
+          <span>Mis Canjes</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/settings')}>
           <Settings className="mr-2 h-4 w-4" />
