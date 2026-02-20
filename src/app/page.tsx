@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, ChevronDown, MapPin } from 'lucide-react';
@@ -6,10 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit } from 'firebase/firestore';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, SerializableBanner, Category } from '@/lib/data';
 import { makePerkSerializable, makeBannerSerializable } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { getIcon } from '@/components/icons';
@@ -40,8 +41,27 @@ const HomeHeader = () => (
 // --- CATEGORY CAROUSEL ---
 const CategoryCarousel = () => {
     const firestore = useFirestore();
-    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
-    const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore) return;
+        const fetchCategories = async () => {
+            setIsLoading(true);
+            try {
+                const categoriesCollection = collection(firestore, 'categories');
+                const querySnapshot = await getDocs(categoriesCollection);
+                const categoriesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
+                setCategories(categoriesData);
+                console.log('Categories fetched successfully via getDocs():', categoriesData);
+            } catch (error) {
+                console.error("Error fetching categories directly with getDocs():", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchCategories();
+    }, [firestore]);
 
     if (isLoading) {
         return (
@@ -249,3 +269,5 @@ export default function HomePageRedesign() {
     </MainLayout>
   );
 }
+
+    
