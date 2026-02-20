@@ -11,12 +11,12 @@ export const navConfig: NavConfig = {
       href: "/",
     },
     {
-      title: "Beneficios",
-      href: "/benefits",
+      title: "Proveedores",
+      href: "/proveedores",
     },
     {
-      title: "Anuncios",
-      href: "/announcements",
+      title: "Ranking",
+      href: "/leaderboard",
     },
   ],
   sidebarNav: [
