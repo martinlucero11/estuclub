@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
@@ -131,7 +131,21 @@ const BenefitsCarousel = ({ filter }: { filter?: string }) => {
     }, [perks]);
 
     if(isLoading) return <PerksSectionSkeleton title={filter || 'Beneficios'} />;
-    if(!serializablePerks || serializablePerks.length === 0) return null;
+    if(!serializablePerks || serializablePerks.length === 0) {
+        if (filter === 'featured') {
+             return (
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center h-48">
+                    <Gift className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">Nada destacado por ahora</h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        Vuelve más tarde para ver las últimas novedades.
+                    </p>
+                </div>
+            );
+        }
+        return null;
+    }
+
 
     return (
         <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -248,7 +262,7 @@ export default function HomePage() {
                             <div className="flex items-center justify-between px-4">
                                 <div className="flex items-center gap-2">
                                     <Layers className="h-5 w-5 text-muted-foreground"/>
-                                    <h2 className="text-lg font-bold tracking-tight text-foreground">{section.title}</h2>
+                                    <h2 className="text-xl font-bold tracking-tight text-foreground">{section.title}</h2>
                                 </div>
                                 {section.type === 'benefits_carousel' && (
                                     <Button variant="link" className="text-sm text-primary" asChild>
