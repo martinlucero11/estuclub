@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 // Correctly typed as a tuple for Zod compatibility
@@ -168,7 +167,7 @@ export interface Category {
   order?: number;
 }
 
-export const homeSectionTypes = ['categories', 'featured_perks', 'new_perks', 'promo_banners'] as const;
+export const homeSectionTypes = ['categories_grid', 'benefits_carousel', 'single_banner'] as const;
 export type HomeSectionType = typeof homeSectionTypes[number];
 
 export interface HomeSection {
@@ -177,6 +176,8 @@ export interface HomeSection {
   type: HomeSectionType;
   order: number;
   isActive: boolean;
+  filter?: string; // For category on benefits_carousel
+  bannerId?: string; // For single_banner
   createdAt?: Timestamp;
 }
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid } from 'lucide-react';
@@ -6,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
-import type { Perk, Banner, SerializablePerk, SerializableBanner, Category, HomeSection, SerializableHomeSection } from '@/lib/data';
-import { makePerkSerializable, makeBannerSerializable, makeHomeSectionSerializable } from '@/lib/data';
-import { useMemo, useState, useEffect } from 'react';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce } from '@/firebase';
+import { collection, query, where, limit, doc } from 'firebase/firestore';
+import type { Perk, Banner, SerializablePerk, Category, HomeSection } from '@/lib/data';
+import { makePerkSerializable } from '@/lib/data';
+import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { getIcon } from '@/components/icons';
@@ -38,24 +37,19 @@ const HomeHeader = () => (
   </div>
 );
 
-// --- CATEGORY CAROUSEL ---
-const CategoryCarousel = () => {
+// --- CATEGORY GRID ---
+const CategoryGrid = () => {
     const firestore = useFirestore();
-    const { isUserLoading } = useUser();
     const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
-    if (isLoading || isUserLoading) {
+    if (isLoading) {
         return (
              <div className="px-4">
-                <div className="flex items-center gap-2 mb-2">
-                    <LayoutGrid className="h-5 w-5 text-muted-foreground"/>
-                    <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
-                </div>
-                <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                    {[...Array(5)].map((_, i) => (
+                <div className="mt-2 grid grid-cols-4 gap-3">
+                    {[...Array(4)].map((_, i) => (
                          <div key={i} className="flex-shrink-0">
-                            <Card className="flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-2xl">
+                            <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl">
                                 <Skeleton className="h-8 w-8 rounded-full" />
                                 <Skeleton className="h-4 w-16" />
                             </Card>
@@ -66,24 +60,18 @@ const CategoryCarousel = () => {
         )
     }
     
-    if (!categories || categories.length === 0) {
-        return null; // Don't render the section if there are no categories
-    }
+    if (!categories || categories.length === 0) return null;
 
     return (
         <section className="px-4">
-            <div className="flex items-center gap-2 mb-2">
-                <LayoutGrid className="h-5 w-5 text-muted-foreground"/>
-                <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
-            </div>
-            <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="mt-2 grid grid-cols-4 gap-3">
                 {categories.map((category) => {
                     const Icon = getIcon(category.iconName);
                     return (
                         <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
-                            <Card className="flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
+                            <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
                                 <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
-                                <span className="text-xs font-medium text-muted-foreground">{category.name}</span>
+                                <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
                             </Card>
                         </Link>
                     );
@@ -93,8 +81,45 @@ const CategoryCarousel = () => {
     );
 };
 
+// --- SINGLE BANNER ---
+const SingleBanner = ({ bannerId }: { bannerId: string }) => {
+    const firestore = useFirestore();
+    const bannerRef = useMemoFirebase(() => doc(firestore, 'banners', bannerId), [firestore, bannerId]);
+    const { data: banner, isLoading } = useDocOnce<Banner>(bannerRef);
 
-const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any }) => {
+    if (isLoading) {
+        return <Skeleton className="h-24 w-full rounded-2xl" />;
+    }
+
+    if (!banner || !banner.isActive) {
+        return null;
+    }
+    
+    const colorClass = bannerColors[banner.colorScheme] || bannerColors.pink;
+    const Wrapper = banner.link ? ({ children }: {children: React.ReactNode}) => <Link href={banner.link!} target="_blank" rel="noopener noreferrer">{children}</Link> : ({ children }: {children: React.ReactNode}) => <>{children}</>;
+
+    return (
+        <Wrapper>
+            <div className={`${colorClass} rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1`}>
+                <h3 className="text-xl font-extrabold">{banner.title}</h3>
+                <p>{banner.description}</p>
+            </div>
+        </Wrapper>
+    )
+}
+
+
+const BenefitsCarousel = ({ filter }: { filter?: string }) => {
+    const firestore = useFirestore();
+    
+    const perksQuery = useMemoFirebase(() => {
+        let q = query(collection(firestore, 'benefits'), where('active', '==', true), limit(10));
+        if (filter) {
+            q = query(q, where('category', '==', filter));
+        }
+        return q;
+    }, [firestore, filter]);
+
     const { data: perks, isLoading } = useCollection<Perk>(perksQuery);
 
     const serializablePerks: SerializablePerk[] = useMemo(() => {
@@ -102,29 +127,15 @@ const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any })
         return perks.map(makePerkSerializable);
     }, [perks]);
 
-    if(isLoading) return <PerksSectionSkeleton title={title} />;
+    if(isLoading) return <PerksSectionSkeleton title={filter || 'Beneficios'} />;
     if(!serializablePerks || serializablePerks.length === 0) return null;
 
     return (
-        <section className="space-y-3 py-4">
-            <div className="flex items-center justify-between px-4">
-                 <div className="flex items-center gap-2">
-                    <Layers className="h-5 w-5 text-muted-foreground"/>
-                    <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
-                </div>
-                <Button variant="link" className="text-sm text-primary" asChild>
-                    <Link href="/benefits">
-                        Ver todos
-                        <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                </Button>
-            </div>
-            <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {serializablePerks.map((perk) => (
-                    <PerkCard key={perk.id} perk={perk} />
-                ))}
-            </div>
-        </section>
+        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {serializablePerks.map((perk) => (
+                <PerkCard key={perk.id} perk={perk} />
+            ))}
+        </div>
     );
 };
 
@@ -158,12 +169,12 @@ const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
 
 
 const PerksSectionSkeleton = ({ title }: { title: string }) => (
-    <div className="space-y-3 py-4">
-        <div className="flex items-center justify-between px-4">
+    <div className="space-y-3">
+        <div className="flex items-center justify-between">
             <Skeleton className="h-7 w-40" />
             <Skeleton className="h-5 w-20" />
         </div>
-        <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {[...Array(3)].map((_, i) => (
                 <Card key={i} className="h-full w-64 flex-shrink-0 rounded-2xl">
                     <CardContent className="flex h-full flex-col p-0">
@@ -181,62 +192,16 @@ const PerksSectionSkeleton = ({ title }: { title: string }) => (
 );
 
 
-const PromoBannersSection = () => {
-    const firestore = useFirestore();
-    const bannersQuery = useMemoFirebase(() =>
-        query(collection(firestore, 'banners'), where('isActive', '==', true), limit(5)),
-        [firestore]
-    );
-
-    const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
-    
-    const serializableBanners: SerializableBanner[] = useMemo(() => {
-        if (!banners) return [];
-        return banners.map(makeBannerSerializable);
-    }, [banners]);
-
-    if (isLoading) {
-        return (
-            <section className="space-y-4 p-4">
-                <Skeleton className="h-24 w-full rounded-2xl" />
-                <Skeleton className="h-24 w-full rounded-2xl" />
-            </section>
-        );
-    }
-
-    if (!serializableBanners || serializableBanners.length === 0) {
-        return null;
-    }
-
-    return (
-        <section className="space-y-4 p-4">
-            {serializableBanners.map(banner => {
-                const colorClass = bannerColors[banner.colorScheme] || bannerColors.pink;
-                const Wrapper = banner.link ? ({ children }: {children: React.ReactNode}) => <Link href={banner.link!} target="_blank" rel="noopener noreferrer">{children}</Link> : ({ children }: {children: React.ReactNode}) => <>{children}</>;
-                return (
-                    <Wrapper key={banner.id}>
-                        <div className={`${colorClass} rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1`}>
-                            <h3 className="text-xl font-extrabold">{banner.title}</h3>
-                            <p>{banner.description}</p>
-                        </div>
-                    </Wrapper>
-                )
-            })}
-        </section>
-    );
-};
-
 const PageSkeleton = () => (
     <MainLayout>
         <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
             <div className="mx-auto max-w-2xl space-y-4 pb-8">
                 <HomeHeader />
-                <PerksSectionSkeleton title="Categorías" />
-                <PerksSectionSkeleton title="Destacados" />
-                <PerksSectionSkeleton title="Nuevas Promociones" />
-                 <section className="space-y-4 p-4">
+                <div className="px-4 space-y-6">
+                    <PerksSectionSkeleton title="Cargando..." />
+                    <PerksSectionSkeleton title="Cargando..." />
                     <Skeleton className="h-24 w-full rounded-2xl" />
-                </section>
+                </div>
             </div>
         </div>
     </MainLayout>
@@ -244,40 +209,26 @@ const PageSkeleton = () => (
 
 
 // --- MAIN PAGE COMPONENT ---
-export default function HomePageRedesign() {
+export default function HomePage() {
   const firestore = useFirestore();
   const { isUserLoading } = useUser();
 
     const homeSectionsQuery = useMemoFirebase(() => query(
         collection(firestore, 'home_sections'),
-        where('isActive', '==', true),
-        orderBy('order', 'asc')
+        where('isActive', '==', true)
     ), [firestore]);
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
-    const serializableSections = useMemo(() => {
+
+    const sortedSections = useMemo(() => {
         if (!sections) return [];
-        return sections.map(makeHomeSectionSerializable);
+        return [...sections].sort((a, b) => a.order - b.order);
     }, [sections]);
-
-    const featuredPerksQuery = useMemoFirebase(() => query(
-        collection(firestore, 'benefits'),
-        where('isFeatured', '==', true),
-        where('active', '==', true),
-        limit(10)
-    ), [firestore]);
-
-    const newPerksQuery = useMemoFirebase(() => query(
-        collection(firestore, 'benefits'),
-        where('active', '==', true),
-        limit(10)
-    ), [firestore]);
     
-    const componentMap = {
-        categories: <CategoryCarousel />,
-        featured_perks: <PerksSection title="Destacados" perksQuery={featuredPerksQuery} />,
-        new_perks: <PerksSection title="Nuevas Promociones" perksQuery={newPerksQuery} />,
-        promo_banners: <PromoBannersSection />,
+    const componentMap: { [key in HomeSectionType]: (section: HomeSection) => React.ReactNode } = {
+        categories_grid: (section) => <CategoryGrid />,
+        benefits_carousel: (section) => <BenefitsCarousel filter={section.filter} />,
+        single_banner: (section) => section.bannerId ? <SingleBanner bannerId={section.bannerId} /> : null,
     };
 
     if (sectionsLoading || isUserLoading) {
@@ -289,10 +240,29 @@ export default function HomePageRedesign() {
         <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
             <div className="mx-auto max-w-2xl space-y-4 pb-8">
                 <HomeHeader />
-                {serializableSections && serializableSections.map(section => {
+                {sortedSections && sortedSections.map(section => {
                     const Component = componentMap[section.type];
-                    // Ensure you return a unique key for each element in the array
-                    return Component ? <div key={section.id}>{Component}</div> : null;
+                    return (
+                        <section key={section.id} className="space-y-3 py-4">
+                            <div className="flex items-center justify-between px-4">
+                                <div className="flex items-center gap-2">
+                                    <Layers className="h-5 w-5 text-muted-foreground"/>
+                                    <h2 className="text-lg font-bold tracking-tight text-foreground">{section.title}</h2>
+                                </div>
+                                {section.type === 'benefits_carousel' && (
+                                    <Button variant="link" className="text-sm text-primary" asChild>
+                                        <Link href="/benefits">
+                                            Ver todos
+                                            <ArrowRight className="ml-1 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="px-4">
+                                {Component ? Component(section) : null}
+                            </div>
+                        </section>
+                    )
                 })}
             </div>
         </div>

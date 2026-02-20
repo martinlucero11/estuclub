@@ -1,4 +1,3 @@
-
 import { NavConfig } from "@/types/nav";
 import {
     LayoutDashboard,
@@ -13,6 +12,7 @@ import {
     Trophy,
     Settings,
     Shapes,
+    LayoutTemplate,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -82,6 +82,12 @@ export const navConfig: NavConfig = {
             title: "Gestión de Proveedores",
             href: "/dashboard/supplier-management",
             icon: Users,
+            role: ["admin"],
+        },
+        {
+            title: "Diseño de Inicio",
+            href: "/dashboard/home-builder",
+            icon: LayoutTemplate,
             role: ["admin"],
         },
         {
