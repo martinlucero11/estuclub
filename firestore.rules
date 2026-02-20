@@ -26,16 +26,6 @@ service cloud.firestore {
       allow update, delete: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
     }
     
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /home_sections/{sectionId} {
-        allow read: if true;
-        allow write: if isAdmin();
-    }
-
     match /announcements/{announcementId} {
       allow get, list: if true;
       allow write: if isSupplier() || isAdmin();
@@ -66,6 +56,16 @@ service cloud.firestore {
     match /notifications/{notificationId} {
         allow list, get: if true;
         allow write: if isSupplier() || isAdmin();
+    }
+
+    // --- Home Modular ---
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /home_sections/{sectionId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // --- Private User Data ---
