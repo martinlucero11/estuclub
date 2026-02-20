@@ -1,14 +1,20 @@
-
 'use client';
 
 import { ArrowRight, Building, ChevronDown, Gift, MapPin, ShoppingCart, Fuel, Utensils, Shirt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import type { Perk, Banner, SerializablePerk, SerializableBanner } from '@/lib/data';
+import { makePerkSerializable, makeBannerSerializable } from '@/lib/data';
+import { useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import Image from 'next/image';
 
-// --- MOCK DATA (for design purposes) ---
+
+// --- STATIC DATA ---
 const categories = [
   { name: 'Mercado', icon: ShoppingCart, color: 'text-blue-500' },
   { name: 'Indumentaria', icon: Shirt, color: 'text-pink-500' },
@@ -17,49 +23,14 @@ const categories = [
   { name: 'Instituciones', icon: Building, color: 'text-purple-500' },
 ];
 
-const nearbyPerks = [
-  {
-    logo: 'https://cdn-icons-png.flaticon.com/512/732/732084.png',
-    name: 'Café Martínez',
-    category: 'Restaurantes',
-    discount: '15% de ahorro',
-  },
-  {
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Logo_de_YPF.svg/1200px-Logo_de_YPF.svg.png',
-    name: 'YPF',
-    category: 'Combustible',
-    discount: '10% OFF',
-  },
-  {
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Logo_Coto.svg/1200px-Logo_Coto.svg.png',
-    name: 'Supermercados Coto',
-    category: 'Mercado',
-    discount: '20% los Lunes',
-  },
-];
+const bannerColors: { [key: string]: string } = {
+    pink: "bg-pink-100 text-pink-800",
+    yellow: "bg-yellow-100 text-yellow-800",
+    blue: "bg-blue-100 text-blue-800",
+};
 
-const newPromos = [
-    {
-        logo: 'https://seeklogo.com/images/A/adidas-logo-107B082DA0-seeklogo.com.png',
-        name: 'Adidas',
-        category: 'Indumentaria',
-        discount: '25% en zapatillas',
-    },
-    {
-        logo: 'https://i.pinimg.com/originals/a7/23/b9/a723b9d78e344583a697241c88bd5bce.png',
-        name: 'Mostaza',
-        category: 'Restaurantes',
-        discount: '2x1 en Combos',
-    },
-    {
-        logo: 'https://www.ispc.edu.ar/wp-content/uploads/2021/08/logo-ispc.png',
-        name: 'ISPC',
-        category: 'Instituciones',
-        discount: '50% en Cursos',
-    },
-];
-// --- END MOCK DATA ---
 
+// --- HEADER ---
 const HomeHeader = () => (
   <div className="flex items-center justify-between p-4">
     <Button variant="ghost" className="flex items-center gap-2">
@@ -73,6 +44,7 @@ const HomeHeader = () => (
   </div>
 );
 
+// --- CATEGORY CAROUSEL ---
 const CategoryCarousel = () => (
     <div className="px-4">
         <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
@@ -92,65 +64,166 @@ const CategoryCarousel = () => (
     </div>
 );
 
+// --- DYNAMIC COMPONENTS ---
 
-const PerkCard = ({ perk }: { perk: (typeof nearbyPerks)[0] }) => (
-    <Card className="h-full w-64 flex-shrink-0 rounded-2xl border-gray-100 bg-white shadow-sm">
-        <CardContent className="flex h-full flex-col p-4">
-             <div className="relative mb-3 h-16 w-16 overflow-hidden rounded-xl">
-                 <img src={perk.logo} alt={`${perk.name} logo`} className="h-full w-full object-contain" />
-            </div>
-            <div className="flex-grow space-y-1">
-                <p className="font-semibold text-foreground">{perk.name}</p>
-                <p className="text-xs text-muted-foreground">{perk.category}</p>
-            </div>
-            <p className="mt-2 text-lg font-extrabold text-primary">{perk.discount}</p>
-        </CardContent>
-    </Card>
-);
+const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
+    const hasLogo = perk.imageUrl && perk.imageUrl !== '';
+    const initial = perk.title.charAt(0).toUpperCase();
+
+    return (
+        <Link href={`/benefits#${perk.id}`} passHref>
+            <Card className="h-full w-64 flex-shrink-0 rounded-2xl border-gray-100 bg-white shadow-sm overflow-hidden transition-transform hover:-translate-y-1">
+                <CardContent className="flex h-full flex-col p-0">
+                     <div className="relative h-32 w-full bg-muted flex items-center justify-center">
+                        {hasLogo ? (
+                             <Image src={perk.imageUrl} alt={`${perk.title} logo`} fill className="object-cover" />
+                        ) : (
+                            <span className="text-4xl font-bold text-muted-foreground">{initial}</span>
+                        )}
+                    </div>
+                    <div className="p-4 flex-grow flex flex-col">
+                        <div className="flex-grow space-y-1">
+                            <p className="font-semibold text-foreground line-clamp-2">{perk.title}</p>
+                            <p className="text-xs text-muted-foreground">{perk.category}</p>
+                        </div>
+                        <p className="mt-2 text-lg font-extrabold text-primary line-clamp-1">{perk.description.split('.')[0]}</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
+    );
+};
 
 
-const PerksSection = ({ title, perks }: { title: string, perks: (typeof nearbyPerks) }) => (
-    <section className="space-y-3 py-4">
+const PerksSectionSkeleton = () => (
+    <div className="space-y-3 py-4">
         <div className="flex items-center justify-between px-4">
-            <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
-            <Button variant="link" className="text-sm text-primary">
-                Ver todos
-                <ArrowRight className="ml-1 h-4 w-4" />
-            </Button>
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-5 w-20" />
         </div>
         <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {perks.map((perk, index) => (
-                <PerkCard key={index} perk={perk} />
+            {[...Array(3)].map((_, i) => (
+                <Card key={i} className="h-full w-64 flex-shrink-0 rounded-2xl">
+                    <CardContent className="flex h-full flex-col p-0">
+                        <Skeleton className="h-32 w-full rounded-t-2xl" />
+                        <div className="p-4 space-y-2">
+                             <Skeleton className="h-5 w-3/4" />
+                             <Skeleton className="h-4 w-1/2" />
+                             <Skeleton className="h-6 w-full mt-2" />
+                        </div>
+                    </CardContent>
+                </Card>
             ))}
         </div>
-    </section>
+    </div>
 );
 
+const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any }) => {
+    const { data: perks, isLoading } = useCollection<Perk>(perksQuery);
 
-const PromoBanners = () => (
-    <section className="space-y-4 p-4">
-        <div className="rounded-2xl bg-pink-100 p-6 shadow-sm">
-            <h3 className="text-xl font-extrabold text-pink-800">¿Hambre?</h3>
-            <p className="text-pink-700">Todos los promos de comida en un solo lugar.</p>
-        </div>
-        <div className="rounded-2xl bg-yellow-100 p-6 shadow-sm">
-            <h3 className="text-xl font-extrabold text-yellow-800">¡Acá hay descuentos!</h3>
-            <p className="text-yellow-700">Explora beneficios que no sabías que tenías.</p>
-        </div>
-    </section>
-);
+    const serializablePerks: SerializablePerk[] = useMemo(() => {
+        if (!perks) return [];
+        return perks.map(makePerkSerializable);
+    }, [perks]);
 
+    if(isLoading) return <PerksSectionSkeleton />;
+    if(!serializablePerks || serializablePerks.length === 0) return null;
+
+    return (
+        <section className="space-y-3 py-4">
+            <div className="flex items-center justify-between px-4">
+                <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
+                <Button variant="link" className="text-sm text-primary" asChild>
+                    <Link href="/benefits">
+                        Ver todos
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
+            <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {serializablePerks.map((perk) => (
+                    <PerkCard key={perk.id} perk={perk} />
+                ))}
+            </div>
+        </section>
+    );
+};
+
+
+const PromoBannersSection = () => {
+    const firestore = useFirestore();
+    const bannersQuery = useMemoFirebase(() =>
+        query(collection(firestore, 'banners'), where('isActive', '==', true), orderBy('createdAt', 'desc'), limit(5)),
+        [firestore]
+    );
+
+    const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
+    
+    const serializableBanners: SerializableBanner[] = useMemo(() => {
+        if (!banners) return [];
+        return banners.map(makeBannerSerializable);
+    }, [banners]);
+
+    if (isLoading) {
+        return (
+            <section className="space-y-4 p-4">
+                <Skeleton className="h-24 w-full rounded-2xl" />
+                <Skeleton className="h-24 w-full rounded-2xl" />
+            </section>
+        );
+    }
+
+    if (!serializableBanners || serializableBanners.length === 0) {
+        return null;
+    }
+
+    return (
+        <section className="space-y-4 p-4">
+            {serializableBanners.map(banner => {
+                const colorClass = bannerColors[banner.colorScheme] || bannerColors.pink;
+                const Wrapper = banner.link ? ({ children }: {children: React.ReactNode}) => <Link href={banner.link!} target="_blank" rel="noopener noreferrer">{children}</Link> : ({ children }: {children: React.ReactNode}) => <>{children}</>;
+                return (
+                    <Wrapper key={banner.id}>
+                        <div className={`${colorClass} rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1`}>
+                            <h3 className="text-xl font-extrabold">{banner.title}</h3>
+                            <p>{banner.description}</p>
+                        </div>
+                    </Wrapper>
+                )
+            })}
+        </section>
+    );
+};
+
+
+// --- MAIN PAGE COMPONENT ---
 export default function HomePageRedesign() {
+  const firestore = useFirestore();
+
+    const featuredPerksQuery = useMemoFirebase(() => query(
+        collection(firestore, 'benefits'),
+        where('isFeatured', '==', true),
+        where('active', '==', true),
+        limit(10)
+    ), [firestore]);
+
+    const newPerksQuery = useMemoFirebase(() => query(
+        collection(firestore, 'benefits'),
+        where('active', '==', true),
+        orderBy('createdAt', 'desc'),
+        limit(10)
+    ), [firestore]);
+
+
   return (
     <MainLayout>
-        {/* We use MainLayout to keep Header and BottomNav consistent */}
         <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
             <div className="mx-auto max-w-2xl space-y-4 pb-8">
                 <HomeHeader />
                 <CategoryCarousel />
-                <PerksSection title="Cerca Tuyo" perks={nearbyPerks} />
-                <PerksSection title="Nuevas Promociones" perks={newPromos} />
-                <PromoBanners />
+                <PerksSection title="Destacados" perksQuery={featuredPerksQuery} />
+                <PerksSection title="Nuevas Promociones" perksQuery={newPerksQuery} />
+                <PromoBannersSection />
             </div>
         </div>
     </MainLayout>

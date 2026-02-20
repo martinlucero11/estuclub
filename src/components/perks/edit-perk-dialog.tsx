@@ -36,6 +36,8 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import { Switch } from '../ui/switch';
 
 const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
@@ -52,6 +54,8 @@ const formSchema = z.object({
   redemptionLimit: z.coerce.number().min(0, 'El límite debe ser un número positivo.').optional(),
   validUntil: z.date().optional(),
   availableDays: z.array(z.string()).optional(),
+  active: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
 });
 
 interface EditPerkDialogProps {
@@ -63,6 +67,7 @@ interface EditPerkDialogProps {
 export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const { isAdmin } = useAdmin();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -77,6 +82,8 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
       redemptionLimit: perk.redemptionLimit || 0,
       validUntil: perk.validUntil ? new Date(perk.validUntil) : undefined,
       availableDays: perk.availableDays || [],
+      active: perk.active ?? true,
+      isFeatured: perk.isFeatured ?? false,
     },
   });
 
@@ -346,6 +353,50 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                         </FormItem>
                     )}
                     />
+                {isAdmin && (
+                    <div className='space-y-4'>
+                        <FormField
+                        control={form.control}
+                        name="isFeatured"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Beneficio Destacado</FormLabel>
+                                <FormDescription>
+                                Marcar para que aparezca en la sección principal del inicio.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="active"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Activo</FormLabel>
+                                <FormDescription>
+                                Desmarcar para ocultar el beneficio temporalmente.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                )}
                 <DialogFooter>
                     <Button type="button" variant="secondary" onClick={(e) => {e.stopPropagation(); onOpenChange(false);}}>
                         Cancelar

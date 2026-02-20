@@ -31,6 +31,7 @@ export interface Perk {
   availableDays?: string[];
   redemptionCount?: number;
   active?: boolean;
+  isFeatured?: boolean;
 }
 
 // Serializable type for client-side components
@@ -133,5 +134,28 @@ export function makeBenefitRedemptionSerializable(redemption: BenefitRedemption)
     ...redemption,
     redeemedAt: redemption.redeemedAt.toDate().toISOString(),
     usedAt: redemption.usedAt?.toDate().toISOString(),
+  };
+}
+
+
+export interface Banner {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  link?: string;
+  isActive: boolean;
+  colorScheme: 'pink' | 'yellow' | 'blue';
+  createdAt: Timestamp;
+}
+
+export type SerializableBanner = Omit<Banner, 'createdAt'> & {
+  createdAt: string;
+};
+
+export function makeBannerSerializable(banner: Banner): SerializableBanner {
+  return {
+    ...banner,
+    createdAt: banner.createdAt?.toDate().toISOString() || new Date().toISOString(),
   };
 }

@@ -28,6 +28,8 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import { Switch } from '../ui/switch';
 
 const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
@@ -45,12 +47,15 @@ const formSchema = z.object({
   redemptionLimit: z.coerce.number().min(0, 'El límite debe ser un número positivo.').optional(),
   validUntil: z.date().optional(),
   availableDays: z.array(z.string()).optional(),
+  active: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
 });
 
 export default function AddPerkForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { isAdmin } = useAdmin();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,6 +67,8 @@ export default function AddPerkForm() {
       points: 0,
       redemptionLimit: 0,
       availableDays: [],
+      active: true,
+      isFeatured: false,
     },
   });
 
@@ -351,6 +358,50 @@ export default function AddPerkForm() {
                 </FormItem>
             )}
         />
+        {isAdmin && (
+            <div className='space-y-4'>
+                <FormField
+                control={form.control}
+                name="isFeatured"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <FormLabel className="text-base">Beneficio Destacado</FormLabel>
+                        <FormDescription>
+                        Marcar para que aparezca en la sección principal del inicio.
+                        </FormDescription>
+                    </div>
+                    <FormControl>
+                        <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                    </FormItem>
+                )}
+                />
+                 <FormField
+                control={form.control}
+                name="active"
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <FormLabel className="text-base">Activo</FormLabel>
+                        <FormDescription>
+                        Desmarcar para ocultar el beneficio temporalmente.
+                        </FormDescription>
+                    </div>
+                    <FormControl>
+                        <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        />
+                    </FormControl>
+                    </FormItem>
+                )}
+                />
+            </div>
+        )}
         <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Añadiendo...' : (
                 <>
