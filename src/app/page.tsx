@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid } from 'lucide-react';
@@ -6,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce } from '@/firebase';
-import { collection, query, where, limit, doc } from 'firebase/firestore';
+import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, Category, HomeSection } from '@/lib/data';
 import { makePerkSerializable } from '@/lib/data';
 import { useMemo } from 'react';
@@ -114,7 +115,9 @@ const BenefitsCarousel = ({ filter }: { filter?: string }) => {
     
     const perksQuery = useMemoFirebase(() => {
         let q = query(collection(firestore, 'benefits'), where('active', '==', true), limit(10));
-        if (filter) {
+        if (filter === 'featured') {
+            q = query(q, where('isFeatured', '==', true));
+        } else if (filter) {
             q = query(q, where('category', '==', filter));
         }
         return q;
@@ -215,16 +218,14 @@ export default function HomePage() {
 
     const homeSectionsQuery = useMemoFirebase(() => query(
         collection(firestore, 'home_sections'),
-        where('isActive', '==', true)
+        where('isActive', '==', true),
+        orderBy('order', 'asc')
     ), [firestore]);
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
-
-    const sortedSections = useMemo(() => {
-        if (!sections) return [];
-        return [...sections].sort((a, b) => a.order - b.order);
-    }, [sections]);
     
+    type HomeSectionType = 'categories_grid' | 'benefits_carousel' | 'single_banner';
+
     const componentMap: { [key in HomeSectionType]: (section: HomeSection) => React.ReactNode } = {
         categories_grid: (section) => <CategoryGrid />,
         benefits_carousel: (section) => <BenefitsCarousel filter={section.filter} />,
@@ -240,8 +241,8 @@ export default function HomePage() {
         <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
             <div className="mx-auto max-w-2xl space-y-4 pb-8">
                 <HomeHeader />
-                {sortedSections && sortedSections.map(section => {
-                    const Component = componentMap[section.type];
+                {sections && sections.map(section => {
+                    const Component = componentMap[section.type as HomeSectionType];
                     return (
                         <section key={section.id} className="space-y-3 py-4">
                             <div className="flex items-center justify-between px-4">

@@ -7,10 +7,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { Perk, SerializablePerk } from '@/lib/data';
 import { makePerkSerializable } from '@/lib/data';
-import { collection, orderBy, query, OrderByDirection } from 'firebase/firestore';
+import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { Gift, ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useSearchParams } from 'next/navigation';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc';
 
@@ -34,6 +35,8 @@ function PerksList() {
     const firestore = useFirestore();
     const { isUserLoading } = useUser();
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
+    const searchParams = useSearchParams();
+    const categoryFilter = searchParams.get('category');
 
     const perksQuery = useMemoFirebase(() => {
         if (!firestore) return null;
@@ -52,8 +55,14 @@ function PerksList() {
                 break;
         }
         
-        return query(collection(firestore, 'benefits'), orderBy(field, direction));
-    }, [firestore, sortOption]);
+        let q = query(collection(firestore, 'benefits'), orderBy(field, direction));
+
+        if (categoryFilter) {
+            q = query(q, where('category', '==', categoryFilter));
+        }
+
+        return q;
+    }, [firestore, sortOption, categoryFilter]);
 
     const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
     
@@ -66,9 +75,10 @@ function PerksList() {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center flex-wrap gap-4">
+                 {categoryFilter && <h2 className="text-2xl font-bold">Categoría: {categoryFilter}</h2>}
                 <Select onValueChange={(value: SortOption) => setSortOption(value)} defaultValue={sortOption}>
-                    <SelectTrigger className="w-full md:w-[220px]">
+                    <SelectTrigger className="w-full md:w-[220px] ml-auto">
                         <ArrowDownUp className="mr-2 h-4 w-4 text-muted-foreground" />
                         <SelectValue placeholder="Ordenar por..." />
                     </SelectTrigger>

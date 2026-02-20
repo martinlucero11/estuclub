@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -123,8 +124,8 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Filtro de Categoría</FormLabel>
-                                <FormControl><Input {...field} placeholder="Ej: Comida" /></FormControl>
-                                <FormDescription>El nombre exacto de la categoría de beneficios a mostrar.</FormDescription>
+                                <FormControl><Input {...field} placeholder="Ej: Comida o featured" /></FormControl>
+                                <FormDescription>El nombre de la categoría a mostrar, o la palabra 'featured' para los destacados.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

@@ -1,3 +1,4 @@
+
 import { NavConfig } from "@/types/nav";
 import {
     LayoutDashboard,
@@ -21,11 +22,6 @@ export const navConfig: NavConfig = {
       title: "Inicio",
       href: "/",
       icon: Home,
-    },
-    {
-      title: "Proveedores",
-      href: "/proveedores",
-      icon: Store,
     },
     {
       title: "Ranking",
