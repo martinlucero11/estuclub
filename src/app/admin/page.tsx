@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, List, PlusCircle, Briefcase, Users, History, QrCode } from 'lucide-react';
+import { ShieldAlert, List, PlusCircle, Briefcase, Users, History, QrCode, Shapes, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
@@ -15,6 +15,8 @@ import AddSupplierForm from '@/components/admin/add-supplier-form';
 import SupplierList from '@/components/admin/supplier-list';
 import AllRedemptionsList from '@/components/admin/all-redemptions-list';
 import QrScanner from '@/components/supplier/qr-scanner';
+import { CategoryTable } from '../dashboard/categories/components/category-table';
+import { HomeSectionTable } from '@/components/admin/home-sections/home-section-table';
 
 
 function AdminAccessDenied() {
@@ -107,7 +109,7 @@ export default function AdminPage() {
         </header>
 
         <Tabs defaultValue="manage-benefits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:grid-cols-10 h-auto flex-wrap">
             <TabsTrigger value="manage-benefits">
               <List className="mr-2 h-4 w-4" />
               Beneficios
@@ -132,9 +134,17 @@ export default function AdminPage() {
               <Users className="mr-2 h-4 w-4" />
               Añadir Proveedor
             </TabsTrigger>
+             <TabsTrigger value="manage-categories">
+              <Shapes className="mr-2 h-4 w-4" />
+              Categorías
+            </TabsTrigger>
+            <TabsTrigger value="manage-home-sections">
+              <Layers className="mr-2 h-4 w-4" />
+              Home
+            </TabsTrigger>
             <TabsTrigger value="my-redemptions">
               <History className="mr-2 h-4 w-4" />
-              Mis Canjes
+              Canjes
             </TabsTrigger>
             <TabsTrigger value="scan-qr">
                 <QrCode className="mr-2 h-4 w-4" />
@@ -214,10 +224,34 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+            <TabsContent value="manage-categories">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Gestionar Categorías</CardTitle>
+                        <CardDescription>Crea, edita y elimina las categorías que agrupan los beneficios.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <CategoryTable />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="manage-home-sections">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Gestionar Secciones de la Home</CardTitle>
+                        <CardDescription>Organiza el contenido que se muestra en la página de inicio.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <HomeSectionTable />
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
           <TabsContent value="my-redemptions">
             <Card>
                 <CardHeader>
-                    <CardTitle>Historial de Mis Canjes</CardTitle>
+                    <CardTitle>Historial de Canjes de Proveedor</CardTitle>
                     <CardDescription>Revisa todos los canjes asociados a tu cuenta de proveedor.</CardDescription>
                 </CardHeader>
                 <CardContent>

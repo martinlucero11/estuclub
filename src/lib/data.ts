@@ -167,3 +167,26 @@ export interface Category {
   colorClass: string;
   order?: number;
 }
+
+export const homeSectionTypes = ['categories', 'featured_perks', 'new_perks', 'promo_banners'] as const;
+export type HomeSectionType = typeof homeSectionTypes[number];
+
+export interface HomeSection {
+  id: string;
+  title: string;
+  type: HomeSectionType;
+  order: number;
+  isActive: boolean;
+  createdAt?: Timestamp;
+}
+
+export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
+    createdAt: string;
+};
+
+export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
+    return {
+        ...section,
+        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    };
+}

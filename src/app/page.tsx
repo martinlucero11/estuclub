@@ -1,15 +1,15 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
-import type { Perk, Banner, SerializablePerk, SerializableBanner, Category } from '@/lib/data';
-import { makePerkSerializable, makeBannerSerializable } from '@/lib/data';
+import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
+import type { Perk, Banner, SerializablePerk, SerializableBanner, Category, HomeSection, SerializableHomeSection } from '@/lib/data';
+import { makePerkSerializable, makeBannerSerializable, makeHomeSectionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
@@ -41,32 +41,16 @@ const HomeHeader = () => (
 // --- CATEGORY CAROUSEL ---
 const CategoryCarousel = () => {
     const firestore = useFirestore();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!firestore) return;
-        const fetchCategories = async () => {
-            setIsLoading(true);
-            try {
-                const categoriesCollection = collection(firestore, 'categories');
-                const querySnapshot = await getDocs(categoriesCollection);
-                const categoriesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-                setCategories(categoriesData);
-                console.log('Categories fetched successfully via getDocs():', categoriesData);
-            } catch (error) {
-                console.error("Error fetching categories directly with getDocs():", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchCategories();
-    }, [firestore]);
+    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
+    const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
     if (isLoading) {
         return (
              <div className="px-4">
-                <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+                <div className="flex items-center gap-2 mb-2">
+                    <LayoutGrid className="h-5 w-5 text-muted-foreground"/>
+                    <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+                </div>
                 <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                     {[...Array(5)].map((_, i) => (
                          <div key={i} className="flex-shrink-0">
@@ -86,8 +70,11 @@ const CategoryCarousel = () => {
     }
 
     return (
-        <div className="px-4">
-            <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+        <section className="px-4">
+            <div className="flex items-center gap-2 mb-2">
+                <LayoutGrid className="h-5 w-5 text-muted-foreground"/>
+                <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+            </div>
             <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                 {categories.map((category) => {
                     const Icon = getIcon(category.iconName);
@@ -101,11 +88,44 @@ const CategoryCarousel = () => {
                     );
                 })}
             </div>
-        </div>
+        </section>
     );
 };
 
-// --- DYNAMIC COMPONENTS ---
+
+const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any }) => {
+    const { data: perks, isLoading } = useCollection<Perk>(perksQuery);
+
+    const serializablePerks: SerializablePerk[] = useMemo(() => {
+        if (!perks) return [];
+        return perks.map(makePerkSerializable);
+    }, [perks]);
+
+    if(isLoading) return <PerksSectionSkeleton title={title} />;
+    if(!serializablePerks || serializablePerks.length === 0) return null;
+
+    return (
+        <section className="space-y-3 py-4">
+            <div className="flex items-center justify-between px-4">
+                 <div className="flex items-center gap-2">
+                    <Layers className="h-5 w-5 text-muted-foreground"/>
+                    <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
+                </div>
+                <Button variant="link" className="text-sm text-primary" asChild>
+                    <Link href="/benefits">
+                        Ver todos
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
+            <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {serializablePerks.map((perk) => (
+                    <PerkCard key={perk.id} perk={perk} />
+                ))}
+            </div>
+        </section>
+    );
+};
 
 const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
     const hasLogo = perk.imageUrl && perk.imageUrl !== '';
@@ -136,7 +156,7 @@ const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
 };
 
 
-const PerksSectionSkeleton = () => (
+const PerksSectionSkeleton = ({ title }: { title: string }) => (
     <div className="space-y-3 py-4">
         <div className="flex items-center justify-between px-4">
             <Skeleton className="h-7 w-40" />
@@ -158,37 +178,6 @@ const PerksSectionSkeleton = () => (
         </div>
     </div>
 );
-
-const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any }) => {
-    const { data: perks, isLoading } = useCollection<Perk>(perksQuery);
-
-    const serializablePerks: SerializablePerk[] = useMemo(() => {
-        if (!perks) return [];
-        return perks.map(makePerkSerializable);
-    }, [perks]);
-
-    if(isLoading) return <PerksSectionSkeleton />;
-    if(!serializablePerks || serializablePerks.length === 0) return null;
-
-    return (
-        <section className="space-y-3 py-4">
-            <div className="flex items-center justify-between px-4">
-                <h2 className="text-lg font-bold tracking-tight text-foreground">{title}</h2>
-                <Button variant="link" className="text-sm text-primary" asChild>
-                    <Link href="/benefits">
-                        Ver todos
-                        <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                </Button>
-            </div>
-            <div className="flex w-full gap-4 overflow-x-auto pl-4 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {serializablePerks.map((perk) => (
-                    <PerkCard key={perk.id} perk={perk} />
-                ))}
-            </div>
-        </section>
-    );
-};
 
 
 const PromoBannersSection = () => {
@@ -236,10 +225,38 @@ const PromoBannersSection = () => {
     );
 };
 
+const PageSkeleton = () => (
+    <MainLayout>
+        <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
+            <div className="mx-auto max-w-2xl space-y-4 pb-8">
+                <HomeHeader />
+                <PerksSectionSkeleton title="Categorías" />
+                <PerksSectionSkeleton title="Destacados" />
+                <PerksSectionSkeleton title="Nuevas Promociones" />
+                 <section className="space-y-4 p-4">
+                    <Skeleton className="h-24 w-full rounded-2xl" />
+                </section>
+            </div>
+        </div>
+    </MainLayout>
+)
+
 
 // --- MAIN PAGE COMPONENT ---
 export default function HomePageRedesign() {
   const firestore = useFirestore();
+
+    const homeSectionsQuery = useMemoFirebase(() => query(
+        collection(firestore, 'home_sections'),
+        where('isActive', '==', true),
+        orderBy('order', 'asc')
+    ), [firestore]);
+
+    const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
+    const serializableSections = useMemo(() => {
+        if (!sections) return [];
+        return sections.map(makeHomeSectionSerializable);
+    }, [sections]);
 
     const featuredPerksQuery = useMemoFirebase(() => query(
         collection(firestore, 'benefits'),
@@ -253,21 +270,30 @@ export default function HomePageRedesign() {
         where('active', '==', true),
         limit(10)
     ), [firestore]);
+    
+    const componentMap = {
+        categories: <CategoryCarousel />,
+        featured_perks: <PerksSection title="Destacados" perksQuery={featuredPerksQuery} />,
+        new_perks: <PerksSection title="Nuevas Promociones" perksQuery={newPerksQuery} />,
+        promo_banners: <PromoBannersSection />,
+    };
 
+    if (sectionsLoading) {
+        return <PageSkeleton />;
+    }
 
   return (
     <MainLayout>
         <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
             <div className="mx-auto max-w-2xl space-y-4 pb-8">
                 <HomeHeader />
-                <CategoryCarousel />
-                <PerksSection title="Destacados" perksQuery={featuredPerksQuery} />
-                <PerksSection title="Nuevas Promociones" perksQuery={newPerksQuery} />
-                <PromoBannersSection />
+                {serializableSections && serializableSections.map(section => {
+                    const Component = componentMap[section.type];
+                    // Ensure you return a unique key for each element in the array
+                    return Component ? <div key={section.id}>{Component}</div> : null;
+                })}
             </div>
         </div>
     </MainLayout>
   );
 }
-
-    
