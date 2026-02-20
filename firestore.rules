@@ -15,25 +15,20 @@ service cloud.firestore {
     }
 
     // --- Publicly Readable Data ---
-    match /benefits/{benefitId} {
-      // 1. PUBLICO: Cualquiera puede verlos en la Landing Page
+    match /banners/{bannerId} {
       allow read: if true;
+      allow write: if isAdmin();
+    }
 
-      // 2. CREAR: Cualquier Supplier puede crear, PERO debe firmarlo con su ID
+    match /benefits/{benefitId} {
+      allow read: if true;
       allow create: if isSupplier() && request.resource.data.supplierId == request.auth.uid;
-
-      // 3. EDITAR/BORRAR: Solo el Supplier propietario puede tocarlo.
       allow update, delete: if isSupplier() && resource.data.supplierId == request.auth.uid;
     }
 
     match /announcements/{announcementId} {
       allow get, list: if true;
       allow write: if isSupplier() || isAdmin();
-    }
-
-    match /banners/{bannerId} {
-      allow read: if true;
-      allow write: if isAdmin();
     }
     
     match /roles_supplier/{supplierId} {
