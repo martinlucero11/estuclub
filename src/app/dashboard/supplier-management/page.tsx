@@ -1,32 +1,25 @@
+'use client';
 
-// Remove client-side imports
-import { firestore } from "@/firebase/server-config"; // Keep admin import
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { SupplierProfile } from "@/types/data";
 import { SupplierTable } from "./components/supplier-table";
-
-/**
- * Server component to fetch all supplier profiles from Firestore using the Admin SDK.
- */
-async function getSuppliers(): Promise<SupplierProfile[]> {
-  // Use the Admin SDK syntax to get the collection and documents
-  const snapshot = await firestore.collection("roles_supplier").get();
-  
-  if (snapshot.empty) {
-    return [];
-  }
-
-  // The rest of the mapping logic is compatible
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as SupplierProfile[];
-}
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Main page for the Supplier Management dashboard (Admin only).
+ * This has been converted to a client component to avoid server-side auth issues
+ * with the Firebase Admin SDK in the App Hosting environment.
  */
-export default async function SupplierManagementPage() {
-  const suppliers = await getSuppliers();
+export default function SupplierManagementPage() {
+  const firestore = useFirestore();
+
+  const suppliersQuery = useMemoFirebase(
+    () => query(collection(firestore, "roles_supplier"), orderBy("name")),
+    [firestore]
+  );
+
+  const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
 
   return (
     <div className="container mx-auto py-8">
@@ -34,7 +27,18 @@ export default async function SupplierManagementPage() {
       <p className="text-muted-foreground mb-8">
         Activa o desactiva módulos de funcionalidades para cada proveedor.
       </p>
-      <SupplierTable initialData={suppliers} />
+      
+      {isLoading ? (
+        <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+            ))}
+        </div>
+      ) : error ? (
+        <p className="text-destructive">Error al cargar proveedores: {error.message}</p>
+      ) : (
+        <SupplierTable initialData={suppliers || []} />
+      )}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -15,7 +14,7 @@ export type UserRole = 'admin' | 'supplier' | 'user';
  */
 export interface SupplierProfile {
   id: string; // Document ID (same as user UID)
-  displayName: string;
+  name: string; // This was displayName, corrected to match Firestore field
   email: string;
   // --- Module Capabilities ---
   announcementsEnabled?: boolean;

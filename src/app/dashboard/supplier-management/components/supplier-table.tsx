@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -55,7 +54,7 @@ export function SupplierTable({ initialData }: SupplierTableProps) {
     <DataTable
       columns={memoizedColumns}
       data={suppliers}
-      filterColumn="displayName"
+      filterColumn="name"
       filterPlaceholder="Filtrar por nombre de proveedor..."
     />
   );

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -23,10 +22,10 @@ interface ColumnsProps {
 
 export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
   {
-    accessorKey: "displayName",
+    accessorKey: "name",
     header: "Proveedor",
     cell: ({ row }) => (
-        <div className="font-medium">{row.original.displayName}</div>
+        <div className="font-medium">{row.original.name}</div>
     ),
   },
   {
