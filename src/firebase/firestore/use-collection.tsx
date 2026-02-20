@@ -66,22 +66,14 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // Log the original Firestore error for easier debugging,
-        // especially for missing index issues which can be masked as permission errors.
-        console.error('Error real de Firebase:', error);
+        // Silently log the actual error for debugging, without crashing the app.
+        console.error('Firebase useCollection error:', error);
         
-        const path: string = (targetRefOrQuery as unknown as InternalQuery)._query.path.canonicalString();
-
-        const contextualError = new FirestorePermissionError({
-          operation: 'list',
-          path,
-        });
-
-        setError(contextualError);
-        setData(null);
+        // Instead of throwing, set data to an empty array to prevent UI crashing
+        // on public pages with potential permission/index issues.
+        setData([]); 
+        setError(error); // Set the original error for potential component-level handling.
         setIsLoading(false);
-
-        errorEmitter.emit('permission-error', contextualError);
       }
     );
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, SerializableBanner, Category, HomeSection, SerializableHomeSection } from '@/lib/data';
 import { makePerkSerializable, makeBannerSerializable, makeHomeSectionSerializable } from '@/lib/data';
@@ -41,10 +41,11 @@ const HomeHeader = () => (
 // --- CATEGORY CAROUSEL ---
 const CategoryCarousel = () => {
     const firestore = useFirestore();
-    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
+    const { isUserLoading } = useUser();
+    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
-    if (isLoading) {
+    if (isLoading || isUserLoading) {
         return (
              <div className="px-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -245,6 +246,7 @@ const PageSkeleton = () => (
 // --- MAIN PAGE COMPONENT ---
 export default function HomePageRedesign() {
   const firestore = useFirestore();
+  const { isUserLoading } = useUser();
 
     const homeSectionsQuery = useMemoFirebase(() => query(
         collection(firestore, 'home_sections'),
@@ -278,7 +280,7 @@ export default function HomePageRedesign() {
         promo_banners: <PromoBannersSection />,
     };
 
-    if (sectionsLoading) {
+    if (sectionsLoading || isUserLoading) {
         return <PageSkeleton />;
     }
 
