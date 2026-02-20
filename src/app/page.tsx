@@ -153,7 +153,7 @@ const PerksSection = ({ title, perksQuery }: { title: string, perksQuery: any })
 const PromoBannersSection = () => {
     const firestore = useFirestore();
     const bannersQuery = useMemoFirebase(() =>
-        query(collection(firestore, 'banners'), where('isActive', '==', true), orderBy('createdAt', 'desc'), limit(5)),
+        query(collection(firestore, 'banners'), where('isActive', '==', true), limit(5)),
         [firestore]
     );
 
@@ -210,7 +210,6 @@ export default function HomePageRedesign() {
     const newPerksQuery = useMemoFirebase(() => query(
         collection(firestore, 'benefits'),
         where('active', '==', true),
-        orderBy('createdAt', 'desc'),
         limit(10)
     ), [firestore]);
 
