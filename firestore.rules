@@ -30,6 +30,11 @@ service cloud.firestore {
       allow get, list: if true;
       allow write: if isSupplier() || isAdmin();
     }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     
     match /roles_supplier/{supplierId} {
       allow get, list: if true;
