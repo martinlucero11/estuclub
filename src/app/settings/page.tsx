@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function SettingsPage() {
     const [notificationStatus, setNotificationStatus] = useState(true);
@@ -25,15 +27,10 @@ export default function SettingsPage() {
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
-                <header className="space-y-2">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                        Ajustes
-                    </h1>
-                    <p className="text-muted-foreground">
-                        Personaliza tu experiencia en la aplicación.
-                    </p>
-                </header>
-
+                <PageHeader title="Ajustes" />
+                <p className="text-muted-foreground -mt-8 mb-8">
+                    Personaliza tu experiencia en la aplicación.
+                </p>
                 <div className="grid gap-6">
                      <Card>
                         <CardHeader>

@@ -1,11 +1,11 @@
 
 'use client';
 
-import MainLayout from '@/components/layout/main-layout';
+import { PageHeader } from '@/components/ui/page-header';
 import AddPerkForm from '@/components/admin/add-perk-form';
 import AddAnnouncementForm from '@/components/announcements/add-announcement-form';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert, List, PlusCircle, Briefcase, Users, History, QrCode, Shapes, Layers } from 'lucide-react';
+import { List, PlusCircle, Briefcase, Users, History, QrCode, Shapes, Layers } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
 import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
@@ -17,30 +17,9 @@ import AllRedemptionsList from '@/components/admin/all-redemptions-list';
 import QrScanner from '@/components/supplier/qr-scanner';
 import { CategoryTable } from '../dashboard/categories/components/category-table';
 import { HomeSectionTable } from '@/components/admin/home-sections/home-section-table';
+import MainLayout from '@/components/layout/main-layout';
+import AdminAccessDenied from '@/components/admin/admin-access-denied';
 
-
-function AdminAccessDenied() {
-    return (
-        <div className="flex flex-col items-center justify-center pt-16">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
-                        <ShieldAlert className="h-6 w-6 text-destructive" />
-                    </div>
-                    <CardTitle className="mt-4">Acceso Denegado</CardTitle>
-                    <CardDescription>
-                        No tienes permisos para acceder al panel de administración.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm text-center text-muted-foreground">
-                        Ponte en contacto con el administrador de la aplicación para solicitar acceso.
-                    </p>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
 
 function AdminLoadingSkeleton() {
     return (
@@ -91,7 +70,7 @@ export default function AdminPage() {
     if (!isAdmin) {
         return (
              <MainLayout>
-                <AdminAccessDenied />
+                <AdminAccessDenied title="Acceso Denegado" description="No tienes permisos para acceder al panel de administración." />
             </MainLayout>
         );
     }
@@ -99,14 +78,10 @@ export default function AdminPage() {
   return (
     <MainLayout>
       <div className="flex-1 space-y-8 p-4 md:p-8">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-            Panel de Administración
-          </h1>
-          <p className="text-muted-foreground">
+        <PageHeader title="Panel de Administración" />
+        <p className="text-muted-foreground -mt-8 mb-8">
             Gestiona los beneficios, anuncios y proveedores de la plataforma.
-          </p>
-        </header>
+        </p>
 
         <Tabs defaultValue="manage-benefits" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:grid-cols-10 h-auto flex-wrap">

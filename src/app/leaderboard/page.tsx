@@ -6,8 +6,10 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Award, Medal, Trophy } from 'lucide-react';
+import { Award, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface UserProfile {
   id: string;
@@ -20,7 +22,7 @@ function RankingSkeleton() {
   return (
     <div className="space-y-4">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center space-x-4 rounded-md border p-4">
+        <div key={i} className="flex items-center space-x-4 rounded-2xl border p-4">
           <Skeleton className="h-12 w-12 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
@@ -46,12 +48,11 @@ function RankingList({ users, currentUserUid }: { users: UserProfile[] | null, c
 
   if (users.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-        <h3 className="text-xl font-semibold">El ranking está vacío</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          ¡Canjea beneficios para empezar a sumar puntos!
-        </p>
-      </div>
+      <EmptyState 
+        icon={Medal}
+        title="El ranking está vacío"
+        description="¡Canjea beneficios para empezar a sumar puntos!"
+      />
     );
   }
 
@@ -105,17 +106,10 @@ export default function LeaderboardPage() {
   return (
     <MainLayout>
       <div className="flex-1 space-y-8 p-4 md:p-8">
-        <header className="space-y-2">
-           <div className="flex items-center gap-3">
-             <Trophy className="h-8 w-8 text-yellow-500" />
-            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Ranking de Puntos
-            </h1>
-           </div>
-          <p className="text-muted-foreground">
+        <PageHeader title="Ranking de Puntos" />
+        <p className="text-muted-foreground -mt-8 mb-8">
             Mira quién está liderando la tabla de posiciones.
-          </p>
-        </header>
+        </p>
 
         <Card>
           <CardHeader>

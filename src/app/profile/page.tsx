@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { AtSign, Copy, Save, Upload, User as UserIcon, Award, Trophy, QrCode, History } from 'lucide-react';
+import { AtSign, Copy, Save, User as UserIcon, Award, Trophy, QrCode } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -24,10 +23,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { useUserRank } from '@/hooks/use-user-rank';
 import UserQRCodeDialog from '@/components/profile/user-qr-code-dialog';
-import Link from 'next/link';
+import { PageHeader } from '@/components/ui/page-header';
 
 const profileFormSchema = z.object({
     firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -119,7 +118,6 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
 export default function ProfilePage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
-    const storage = useStorage();
     const { toast } = useToast();
 
     const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
@@ -240,22 +238,17 @@ export default function ProfilePage() {
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
-                <header className="flex items-center justify-between">
-                    <div className="space-y-2">
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                            Mi Perfil
-                        </h1>
-                        <p className="text-muted-foreground">
-                            Gestiona la información de tu cuenta.
-                        </p>
-                    </div>
+                <PageHeader title="Mi Perfil">
                      <UserQRCodeDialog userId={user.uid} username={userProfile.username}>
                         <Button variant="outline">
                             <QrCode className="mr-2 h-4 w-4" />
                             Mi ID Card
                         </Button>
                     </UserQRCodeDialog>
-                </header>
+                </PageHeader>
+                <p className="text-muted-foreground -mt-8 mb-8">
+                    Gestiona la información de tu cuenta.
+                </p>
 
                 <UserStats points={userProfile.points} rank={rank} isLoading={isRankLoading} />
 

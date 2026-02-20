@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface SupplierProfile {
     id: string;
@@ -84,13 +86,11 @@ function SupplierListPage() {
             </div>
 
             {filteredSuppliers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                    <Search className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-xl font-semibold">No se encontraron suppliers</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        {searchTerm ? 'Intenta con otro término de búsqueda.' : 'Aún no se han registrado suppliers.'}
-                    </p>
-                </div>
+                <EmptyState
+                    icon={Search}
+                    title="No se encontraron suppliers"
+                    description={searchTerm ? 'Intenta con otro término de búsqueda.' : 'Aún no se han registrado suppliers.'}
+                />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredSuppliers.map(supplier => {
@@ -126,17 +126,10 @@ export default function SuppliersPage() {
     return (
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
-                <header className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <Store className="h-8 w-8 text-primary" />
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                            Suppliers
-                        </h1>
-                    </div>
-                    <p className="text-muted-foreground">
-                        Explora los comercios, instituciones y clubes asociados.
-                    </p>
-                </header>
+                <PageHeader title="Suppliers" />
+                <p className="text-muted-foreground -mt-8 mb-8">
+                    Explora los comercios, instituciones y clubes asociados.
+                </p>
 
                 <SupplierListPage />
             </div>

@@ -5,7 +5,6 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { History, Tag, Calendar, CheckCircle, MapPin, Building, QrCode } from 'lucide-react';
 import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
@@ -19,6 +18,7 @@ import {
 } from "@/components/ui/accordion";
 import Image from 'next/image';
 import QRCode from 'qrcode';
+import { EmptyState } from '../ui/empty-state';
 
 
 function RedemptionsListSkeleton() {
@@ -130,13 +130,11 @@ export default function MyRedemptionsList() {
 
     if (!serializableRedemptions || serializableRedemptions.length === 0) {
         return (
-            <Alert>
-                <History className="h-4 w-4" />
-                <AlertTitle>No tienes canjes</AlertTitle>
-                <AlertDescription>
-                   Aún no has canjeado ningún beneficio. ¡Explora y empieza a disfrutar!
-                </AlertDescription>
-            </Alert>
+            <EmptyState 
+                icon={History}
+                title="No tienes canjes"
+                description="Aún no has canjeado ningún beneficio. ¡Explora y empieza a disfrutar!"
+            />
         );
     }
     

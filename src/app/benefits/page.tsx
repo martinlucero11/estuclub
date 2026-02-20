@@ -9,9 +9,10 @@ import type { Perk, SerializablePerk } from '@/lib/data';
 import { makePerkSerializable } from '@/lib/data';
 import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
-import { Gift, ArrowDownUp } from 'lucide-react';
+import { ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams } from 'next/navigation';
+import { PageHeader } from '@/components/ui/page-header';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc';
 
@@ -20,7 +21,7 @@ function PerksGridSkeleton() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
                 <div key={i} className="space-y-4">
-                    <Skeleton className="h-48 w-full" />
+                    <Skeleton className="h-48 w-full rounded-2xl" />
                     <div className="space-y-2">
                         <Skeleton className="h-6 w-3/4" />
                         <Skeleton className="h-4 w-1/2" />
@@ -106,17 +107,10 @@ export default function BenefitsPage() {
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
-                <header className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <Gift className="h-8 w-8 text-primary" />
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-                            Todos los Beneficios
-                        </h1>
-                    </div>
-                    <p className="text-muted-foreground">
-                        Explora todos los descuentos, ofertas y eventos disponibles para ti.
-                    </p>
-                </header>
+                <PageHeader title="Todos los Beneficios" />
+                 <p className="text-muted-foreground -mt-8 mb-8">
+                    Explora todos los descuentos, ofertas y eventos disponibles para ti.
+                </p>
 
                 <Suspense fallback={<PerksGridSkeleton />}>
                     <PerksList />

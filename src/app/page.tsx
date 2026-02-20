@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Layers, LayoutGrid, Gift } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Layers, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
@@ -14,6 +14,7 @@ import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { getIcon } from '@/components/icons';
+import { EmptyState } from '@/components/ui/empty-state';
 
 
 // --- STATIC DATA ---
@@ -49,7 +50,7 @@ const CategoryGrid = () => {
             <div className="mt-2 grid grid-cols-4 gap-3">
                 {[...Array(4)].map((_, i) => (
                         <div key={i} className="flex-shrink-0">
-                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl">
+                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2">
                             <Skeleton className="h-8 w-8 rounded-full" />
                             <Skeleton className="h-4 w-16" />
                         </Card>
@@ -67,7 +68,7 @@ const CategoryGrid = () => {
                 const Icon = getIcon(category.iconName);
                 return (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
-                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
+                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 transition-transform hover:-translate-y-1">
                             <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
                             <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
                         </Card>
@@ -85,7 +86,7 @@ const SingleBanner = ({ bannerId }: { bannerId: string }) => {
     const { data: banner, isLoading } = useDocOnce<Banner>(bannerRef);
 
     if (isLoading) {
-        return <Skeleton className="h-24 w-full rounded-2xl" />;
+        return <Skeleton className="h-24 w-full" />;
     }
 
     if (!banner || !banner.isActive) {
@@ -97,7 +98,7 @@ const SingleBanner = ({ bannerId }: { bannerId: string }) => {
 
     return (
         <Wrapper>
-            <div className={`${colorClass} rounded-2xl p-6 shadow-sm transition-transform hover:-translate-y-1`}>
+            <div className={`${colorClass} p-6 shadow-sm transition-transform hover:-translate-y-1`}>
                 <h3 className="text-xl font-extrabold">{banner.title}</h3>
                 <p>{banner.description}</p>
             </div>
@@ -130,13 +131,11 @@ const BenefitsCarousel = ({ filter }: { filter?: string }) => {
     if(!serializablePerks || serializablePerks.length === 0) {
         if (filter === 'featured') {
              return (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center h-48">
-                    <Gift className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">Nada destacado por ahora</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        Vuelve más tarde para ver las últimas novedades.
-                    </p>
-                </div>
+                <EmptyState 
+                    icon={Gift}
+                    title="Nada destacado por ahora"
+                    description="Vuelve más tarde para ver las últimas novedades."
+                />
             );
         }
         return null;
@@ -157,8 +156,8 @@ const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
     const initial = perk.title.charAt(0).toUpperCase();
 
     return (
-        <Link href={`/benefits#${perk.id}`} passHref>
-            <Card className="h-full w-64 flex-shrink-0 rounded-2xl border-gray-100 bg-white shadow-sm overflow-hidden transition-transform hover:-translate-y-1">
+        <Link href={`/benefits#${perk.id}`} passHref className="transition-transform hover:-translate-y-1 block">
+            <Card className="h-full w-64 flex-shrink-0 overflow-hidden">
                 <CardContent className="flex h-full flex-col p-0">
                      <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                         {hasLogo ? (
@@ -189,7 +188,7 @@ const PerksSectionSkeleton = ({ title }: { title: string }) => (
         </div>
         <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {[...Array(3)].map((_, i) => (
-                <Card key={i} className="h-full w-64 flex-shrink-0 rounded-2xl">
+                <Card key={i} className="h-full w-64 flex-shrink-0">
                     <CardContent className="flex h-full flex-col p-0">
                         <Skeleton className="h-32 w-full rounded-t-2xl" />
                         <div className="p-4 space-y-2">
@@ -213,7 +212,7 @@ const PageSkeleton = () => (
                 <div className="px-4 space-y-6">
                     <PerksSectionSkeleton title="Cargando..." />
                     <PerksSectionSkeleton title="Cargando..." />
-                    <Skeleton className="h-24 w-full rounded-2xl" />
+                    <Skeleton className="h-24 w-full" />
                 </div>
             </div>
         </div>

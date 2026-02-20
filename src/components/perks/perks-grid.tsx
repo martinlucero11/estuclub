@@ -4,6 +4,7 @@
 import type { SerializablePerk } from '@/lib/data';
 import PerkCard from './perk-card';
 import { Archive } from 'lucide-react';
+import { EmptyState } from '../ui/empty-state';
 
 interface PerksGridProps {
   perks: SerializablePerk[];
@@ -12,13 +13,11 @@ interface PerksGridProps {
 export default function PerksGrid({ perks }: PerksGridProps) {
   if (!perks || perks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-         <Archive className="mx-auto h-12 w-12 text-muted-foreground" />
-        <h3 className="mt-4 text-xl font-semibold">Nada por aquí...</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Parece que no hay beneficios que coincidan con tu búsqueda. ¡Vuelve en un rato!
-        </p>
-      </div>
+      <EmptyState 
+        icon={Archive}
+        title="Nada por aquí..."
+        description="Parece que no hay beneficios que coincidan con tu búsqueda. ¡Vuelve en un rato!"
+      />
     );
   }
 
