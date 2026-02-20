@@ -159,3 +159,11 @@ export function makeBannerSerializable(banner: Banner): SerializableBanner {
     createdAt: banner.createdAt?.toDate().toISOString() || new Date().toISOString(),
   };
 }
+
+export interface Category {
+  id: string;
+  name: string;
+  iconName: string;
+  colorClass: string;
+  order?: number;
+}

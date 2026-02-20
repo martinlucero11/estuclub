@@ -20,12 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuthService, useUser } from '@/firebase';
@@ -35,7 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
-import type { NavItem, SidebarNavItem, SidebarNavItemLink } from '@/types/nav';
+import type { NavItem } from '@/types/nav';
 
 function Logo() {
     return (
@@ -109,10 +103,6 @@ function UserMenu() {
           <History className="mr-2 h-4 w-4" />
           <span>Mis Canjes</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/settings')}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Ajustes</span>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
@@ -124,30 +114,8 @@ function UserMenu() {
 }
 
 function MainMenu() {
-    const { user, roles, supplierData } = useUser();
-
-    const isItemVisible = (item: SidebarNavItemLink): boolean => {
-        const roleMatch = hasRequiredRole(roles, item.role);
-        if (!roleMatch) return false;
-
-        if (item.supplierCapability && roles.includes('supplier')) {
-            return supplierData ? !!supplierData[item.supplierCapability] : false;
-        }
-
-        return true;
-    }
-
-    const accessibleSidebarSections = navConfig.sidebarNav
-        .map(section => ({
-            ...section,
-            items: section.items?.filter(isItemVisible)
-        }))
-        .filter(section => {
-            // A section is visible if it's a direct link and has the role,
-            // or if it's a group with at least one visible item.
-            return hasRequiredRole(roles, section.role) && (!section.items || section.items.length > 0);
-        });
-
+    const { roles } = useUser();
+    const allRoles = ['user', ...roles];
 
     return (
         <Sheet>
@@ -163,66 +131,21 @@ function MainMenu() {
                     <SheetDescription>Navega por la aplicación.</SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1">
-                    {navConfig.mainNav.map(({ href, title }: NavItem) => (
-                        <SheetClose asChild key={href}>
-                            <Link href={href}>
-                                <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
-                                    {title}
-                                </Button>
-                            </Link>
-                        </SheetClose>
-                    ))}
-                    
-                    {user && accessibleSidebarSections.length > 0 && <DropdownMenuSeparator className="my-2" />}
+                    {navConfig.mainNav.map((item) => {
+                        const isVisible = hasRequiredRole(allRoles, item.role);
+                        if (!isVisible) return null;
 
-                    {user && accessibleSidebarSections.map((section) => {
-                       
-                        // If it's a direct link (no items), render a simple button
-                        if (!section.items) {
-                             const Icon = section.icon;
-                            return (
-                                <SheetClose asChild key={section.href}>
-                                    <Link href={section.href}>
-                                        <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
-                                             {Icon && <Icon className="mr-3 h-5 w-5" />}
-                                            {section.title}
-                                        </Button>
-                                    </Link>
-                                </SheetClose>
-                            )
-                        }
-
-                        // If it's a group with items, render an accordion
-                        const Icon = section.icon;
+                        const Icon = item.icon;
                         return (
-                            <Accordion type="single" collapsible className="w-full" key={section.title} defaultValue='item-0'>
-                                <AccordionItem value='item-0' className="border-b-0">
-                                    <AccordionTrigger className="w-full flex items-center justify-between text-base font-medium hover:no-underline px-3 py-2 hover:bg-accent hover:text-accent-foreground rounded-md">
-                                         <div className="flex items-center">
-                                            {Icon && <Icon className="mr-3 h-5 w-5" />}
-                                            <span>{section.title}</span>
-                                        </div>
-                                    </AccordionTrigger>
-                                    <AccordionContent className="pt-1 pb-0">
-                                        <div className="ml-4 flex flex-col gap-1 border-l pl-4">
-                                            {section.items.map((item) => {
-                                                const ItemIcon = item.icon;
-                                                return (
-                                                    <SheetClose asChild key={item.href}>
-                                                        <Link href={item.href}>
-                                                            <Button variant="ghost" className="w-full justify-start text-base font-normal">
-                                                                {ItemIcon && <ItemIcon className="mr-3 h-5 w-5 text-muted-foreground" />}
-                                                                {item.title}
-                                                            </Button>
-                                                        </Link>
-                                                    </SheetClose>
-                                                );
-                                            })}
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Accordion>
-                        );
+                            <SheetClose asChild key={item.href}>
+                                <Link href={item.href}>
+                                    <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
+                                        {Icon && <Icon className="mr-3 h-5 w-5" />}
+                                        {item.title}
+                                    </Button>
+                                </Link>
+                            </SheetClose>
+                        )
                     })}
                 </nav>
             </SheetContent>

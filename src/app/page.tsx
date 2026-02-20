@@ -1,28 +1,21 @@
 'use client';
 
-import { ArrowRight, Building, ChevronDown, Gift, MapPin, ShoppingCart, Fuel, Utensils, Shirt } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import type { Perk, Banner, SerializablePerk, SerializableBanner } from '@/lib/data';
+import type { Perk, Banner, SerializablePerk, SerializableBanner, Category } from '@/lib/data';
 import { makePerkSerializable, makeBannerSerializable } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
+import { getIcon } from '@/components/icons';
 
 
 // --- STATIC DATA ---
-const categories = [
-  { name: 'Mercado', icon: ShoppingCart, color: 'text-blue-500' },
-  { name: 'Indumentaria', icon: Shirt, color: 'text-pink-500' },
-  { name: 'Combustible', icon: Fuel, color: 'text-orange-500' },
-  { name: 'Restaurantes', icon: Utensils, color: 'text-red-500' },
-  { name: 'Instituciones', icon: Building, color: 'text-purple-500' },
-];
-
 const bannerColors: { [key: string]: string } = {
     pink: "bg-pink-100 text-pink-800",
     yellow: "bg-yellow-100 text-yellow-800",
@@ -45,24 +38,52 @@ const HomeHeader = () => (
 );
 
 // --- CATEGORY CAROUSEL ---
-const CategoryCarousel = () => (
-    <div className="px-4">
-        <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
-        <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {categories.map((category) => {
-                const Icon = category.icon;
-                return (
-                    <div key={category.name} className="flex-shrink-0">
-                        <Card className="flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
-                            <Icon className={`h-8 w-8 ${category.color}`} strokeWidth={1.5} />
-                            <span className="text-xs font-medium text-muted-foreground">{category.name}</span>
-                        </Card>
-                    </div>
-                );
-            })}
+const CategoryCarousel = () => {
+    const firestore = useFirestore();
+    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
+    const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
+
+    if (isLoading) {
+        return (
+             <div className="px-4">
+                <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+                <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    {[...Array(5)].map((_, i) => (
+                         <div key={i} className="flex-shrink-0">
+                            <Card className="flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-2xl">
+                                <Skeleton className="h-8 w-8 rounded-full" />
+                                <Skeleton className="h-4 w-16" />
+                            </Card>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )
+    }
+    
+    if (!categories || categories.length === 0) {
+        return null; // Don't render the section if there are no categories
+    }
+
+    return (
+        <div className="px-4">
+            <h2 className="text-lg font-bold tracking-tight text-foreground">Categorías</h2>
+            <div className="mt-2 flex w-full gap-3 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {categories.map((category) => {
+                    const Icon = getIcon(category.iconName);
+                    return (
+                        <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
+                            <Card className="flex h-24 w-24 flex-col items-center justify-center gap-2 rounded-2xl border-gray-100 bg-white shadow-sm transition-transform hover:-translate-y-1">
+                                <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
+                                <span className="text-xs font-medium text-muted-foreground">{category.name}</span>
+                            </Card>
+                        </Link>
+                    );
+                })}
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 // --- DYNAMIC COMPONENTS ---
 

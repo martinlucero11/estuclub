@@ -10,7 +10,9 @@ import {
     CalendarClock,
     Home,
     Store,
-    Trophy
+    Trophy,
+    Settings,
+    Shapes,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -30,6 +32,18 @@ export const navConfig: NavConfig = {
       href: "/leaderboard",
       icon: Trophy,
     },
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboard,
+      role: ["admin", "supplier"],
+    },
+    {
+      title: "Ajustes",
+      href: "/settings",
+      icon: Settings,
+      role: ["user", "admin", "supplier"], // Any logged in user
+    }
   ],
   sidebarNav: [
     {
@@ -74,6 +88,12 @@ export const navConfig: NavConfig = {
             title: "Gestión de Banners",
             href: "/dashboard/banners",
             icon: Image,
+            role: ["admin"],
+        },
+        {
+            title: "Gestión de Categorías",
+            href: "/dashboard/categories",
+            icon: Shapes,
             role: ["admin"],
         },
       ]
