@@ -17,7 +17,7 @@ service cloud.firestore {
     // --- Publicly Readable Data ---
     match /benefits/{benefitId} {
       // 1. PUBLICO: Cualquiera puede verlos en la Landing Page
-      allow get, list: if true;
+      allow read: if true;
 
       // 2. CREAR: Cualquier Supplier puede crear, PERO debe firmarlo con su ID
       allow create: if isSupplier() && request.resource.data.supplierId == request.auth.uid;
