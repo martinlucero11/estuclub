@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
