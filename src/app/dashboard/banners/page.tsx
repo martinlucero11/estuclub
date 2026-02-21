@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ShieldAlert } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BannerTable } from './components/banner-table';
+import BackButton from '@/components/layout/back-button';
 
 function AdminAccessDenied() {
     return (
@@ -53,9 +54,12 @@ export default function BannersPage() {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <h1 className="text-3xl font-bold mb-6">Gestión de Banners</h1>
-            <p className="text-muted-foreground mb-8">
+        <div className="space-y-4">
+            <BackButton />
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Gestión de Banners</h1>
+            </div>
+            <p className="text-muted-foreground">
                 Crea, edita y activa los banners promocionales que aparecen en la página de inicio.
             </p>
             <BannerTable />

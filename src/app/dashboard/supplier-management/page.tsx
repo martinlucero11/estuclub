@@ -5,6 +5,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { SupplierProfile } from "@/types/data";
 import { SupplierTable } from "./components/supplier-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import BackButton from '@/components/layout/back-button';
 
 /**
  * Main page for the Supplier Management dashboard (Admin only).
@@ -22,9 +23,12 @@ export default function SupplierManagementPage() {
   const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
 
   return (
-    <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Gestión de Proveedores</h1>
-      <p className="text-muted-foreground mb-8">
+    <div className="space-y-4">
+      <BackButton />
+      <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
+      </div>
+      <p className="text-muted-foreground">
         Activa o desactiva módulos de funcionalidades para cada proveedor.
       </p>
       

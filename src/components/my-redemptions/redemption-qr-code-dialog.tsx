@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
-import { QrCode, Ticket } from 'lucide-react';
+import { QrCode, Ticket, MessageCircle } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -32,7 +31,7 @@ const Barcode = () => (
     <div className="flex h-8 w-full items-center justify-center gap-px overflow-hidden">
         {[...Array(60)].map((_, i) => {
             const height = Math.random() * 70 + 30; // Random height between 30% and 100%
-            return <div key={i} className="w-px bg-slate-400" style={{ height: `${height}%` }} />
+            return <div key={i} className="w-px bg-muted-foreground/50" style={{ height: `${height}%` }} />
         })}
     </div>
 );
@@ -56,13 +55,18 @@ export default function RedemptionQRCodeDialog({
   useEffect(() => {
     if (!qrCodeValue) return;
 
+    // Detect theme for QR code colors
+    const isDark = document.documentElement.classList.contains('dark');
+    const qrDarkColor = isDark ? '#FFFFFF' : '#020817'; // text-foreground
+    const qrLightColor = isDark ? '#020817' : '#FFFFFF'; // background
+
     QRCode.toDataURL(qrCodeValue, {
         errorCorrectionLevel: 'H',
         width: 512, // Higher resolution for clarity
         margin: 2,
         color: {
-            dark: '#FFFFFF',
-            light: '#1e293b' // bg-slate-800
+            dark: qrDarkColor,
+            light: qrLightColor
         }
     })
     .then(url => {
@@ -73,6 +77,12 @@ export default function RedemptionQRCodeDialog({
     });
   }, [qrCodeValue]);
 
+  const handleShareToWhatsApp = () => {
+    const message = `He canjeado el beneficio *${benefitTitle}* de *${supplierName}*. Mi número de comprobante es: *${redemptionId}*`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -82,14 +92,14 @@ export default function RedemptionQRCodeDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xs bg-transparent border-none shadow-none">
-        <div className="bg-slate-800 text-slate-50 rounded-2xl overflow-hidden shadow-2xl aspect-[9/16] flex flex-col items-center justify-center relative p-6">
+        <div className="bg-card text-card-foreground rounded-2xl overflow-hidden shadow-2xl aspect-[9/16] flex flex-col items-center justify-center relative p-6">
             <TicketCutout />
             
             {/* --- Top Part --- */}
             <div className="z-10 w-full flex-1 flex flex-col items-center justify-center text-center space-y-2 pb-6">
-                <p className="text-sm uppercase tracking-widest text-slate-400">Beneficio Exclusivo</p>
+                <p className="text-sm uppercase tracking-widest text-muted-foreground">Beneficio Exclusivo</p>
                 <h2 className="text-2xl font-bold leading-tight">{benefitTitle}</h2>
-                <p className="text-amber-400">de {supplierName}</p>
+                <p className="text-primary">de {supplierName}</p>
             </div>
 
             <TicketSeparator />
@@ -104,11 +114,16 @@ export default function RedemptionQRCodeDialog({
                     )}
                 </div>
                  <p className="mt-4 text-lg font-semibold uppercase tracking-wider">Escanéame</p>
-                 <p className="text-xs text-slate-400 font-mono mt-2">ID: {redemptionId}</p>
+                 <p className="text-xs text-muted-foreground font-mono mt-2">ID: {redemptionId}</p>
                 <div className='flex-grow' />
                  <Barcode />
             </div>
-
+        </div>
+         <div className="mt-4">
+            <Button variant="secondary" className="w-full" onClick={handleShareToWhatsApp}>
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Compartir por WhatsApp
+            </Button>
         </div>
       </DialogContent>
     </Dialog>

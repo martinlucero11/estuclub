@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ShieldAlert } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryTable } from './components/category-table';
+import BackButton from '@/components/layout/back-button';
 
 function AdminAccessDenied() {
     return (
@@ -52,9 +53,12 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="container mx-auto py-8">
-            <h1 className="text-3xl font-bold mb-6">Gestión de Categorías</h1>
-            <p className="text-muted-foreground mb-8">
+        <div className="space-y-4">
+            <BackButton />
+            <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold">Gestión de Categorías</h1>
+            </div>
+            <p className="text-muted-foreground">
                 Crea, edita y elimina las categorías de beneficios que aparecen en la página de inicio.
             </p>
             <CategoryTable />

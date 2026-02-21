@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
+import BackButton from '@/components/layout/back-button';
 
 function LoadingSkeleton() {
     return (
@@ -122,10 +123,11 @@ export default function HomeBuilderPage() {
     }
 
     return (
-        <div className="container mx-auto py-8">
-             <div className="flex justify-between items-start mb-8">
+        <div className="space-y-4">
+            <BackButton />
+             <div className="flex justify-between items-start">
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">Diseño de Inicio</h1>
+                    <h1 className="text-3xl font-bold">Diseño de Inicio</h1>
                     <p className="text-muted-foreground">
                         Arrastra y organiza los bloques de contenido que aparecen en la página principal.
                     </p>

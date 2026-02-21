@@ -9,8 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/button';
-import type { BenefitRedemption } from '@/lib/data';
+import type { BenefitRedemption } from '@/types/data';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Input } from '../ui/input';
 
 // User profile structure
 interface UserProfile {
@@ -55,7 +56,7 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
     const userInitial = profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'U';
 
     return (
-        <Card className="w-full">
+        <Card className="w-full max-w-md mx-auto">
             <CardHeader className="text-center pb-4">
                 {alreadyUsed ? (
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50 mb-4">
@@ -106,6 +107,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     const [isProcessing, setIsProcessing] = useState(false);
     const [validationData, setValidationData] = useState<ValidationData | null>(null);
     const [wasAlreadyUsed, setWasAlreadyUsed] = useState(false);
+    const [manualId, setManualId] = useState('');
 
     const handleScanSuccess = async (decodedText: string, result: Html5QrcodeResult) => {
         if (isProcessing) return;
@@ -114,7 +116,6 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
         setWasAlreadyUsed(false);
 
         try {
-            // --- Step 1: Stop scanner and parse QR ---
             if (scannerRef.current?.isScanning) {
                 await scannerRef.current.stop();
             }
@@ -125,10 +126,9 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                  redemptionId = jsonData.redemptionId;
                  if (!redemptionId) throw new Error("El código QR no contiene un ID de canje válido.");
             } catch (error) {
-                throw new Error("El formato del código QR es incorrecto.");
+                throw new Error("El formato del código QR o ID es incorrecto.");
             }
 
-            // --- Step 2: Fetch all required data ---
             if (!user) throw new Error("Debes iniciar sesión para validar un canje.");
 
             const redemptionRef = doc(firestore, "benefitRedemptions", redemptionId);
@@ -147,14 +147,12 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             const userProfileData = userProfileSnap.data() as UserProfile;
             if (!userProfileData) throw new Error("No se pudieron leer los datos del perfil del estudiante.");
 
-            // --- Step 3: Show validation card to the user IMMEDIATELY ---
             const finalValidationData = { 
                 redemption: { ...redemptionData, id: redemptionId }, 
                 profile: userProfileData 
             };
             setValidationData(finalValidationData);
             
-            // --- Step 4: Handle DB write in the background ---
             if (redemptionData.status === "pending") {
                 try {
                     const batch = writeBatch(firestore);
@@ -180,27 +178,45 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             }
 
         } catch (e: any) {
-            console.error("[SCAN VALIDATION ERROR]:", e);
+            console.error("[VALIDATION ERROR]:", e);
             const errorMessage = e instanceof Error ? e.message : "Ocurrió un error desconocido durante la validación.";
             setScanError(errorMessage);
             toast({ variant: 'destructive', title: "Error de Validación", description: errorMessage });
+            // Reset processing state on failure to allow retry
+            setIsProcessing(false);
         }
     };
     
+    const handleManualValidation = async () => {
+        if (!manualId.trim()) {
+            toast({
+                variant: 'destructive',
+                title: 'ID Inválido',
+                description: 'Por favor, ingresa un ID de canje.',
+            });
+            return;
+        }
+        const fakeDecodedText = JSON.stringify({ redemptionId: manualId.trim() });
+        await handleScanSuccess(fakeDecodedText, {} as Html5QrcodeResult);
+    };
+
     const handleScanError = (errorMessage: string) => {
         const isNormalScanningError = errorMessage.includes("NotFoundException") || errorMessage.includes("No MultiFormat Readers were able to detect the code");
-        if (isNormalScanningError) return; // Silently ignore
+        if (isNormalScanningError || isProcessing) return; // Silently ignore normal scan misses
 
-        if (!scanError && !isProcessing) {
-            setScanError("Ocurrió un error inesperado con el escáner.");
+        if (!scanError) {
+            setScanError("Ocurrió un error con el escáner. Intenta recargar la página.");
             console.error(`[QR SCANNER UNHANDLED ERROR]: ${errorMessage}`);
         }
     };
 
     useEffect(() => {
-        if (validationData || scanError) return;
+        if (validationData || scanError || isProcessing) return;
 
         const qrCodeElementId = 'qr-reader';
+        const existingElement = document.getElementById(qrCodeElementId);
+        if (!existingElement) return;
+
         const html5Qrcode = new Html5Qrcode(qrCodeElementId, { verbose: false });
         scannerRef.current = html5Qrcode;
         let isCancelled = false;
@@ -219,7 +235,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 let message = "No se pudo iniciar la cámara.";
                 if (err instanceof Error) {
                      if (err.name === 'NotAllowedError') message = 'Permiso de cámara denegado. Habilítalo en tu navegador.';
-                     else if (err.name === 'NotFoundError') message = 'No se encontró una cámara. Conecta una para continuar.';
+                     else if (err.name === 'NotFoundError') message = 'No se encontró una cámara trasera. Conecta una para continuar.';
                      else if (err.name === 'NotReadableError') message = 'La cámara ya está en uso por otra aplicación.';
                 }
                 setScanError(message);
@@ -230,17 +246,18 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
 
         return () => {
             isCancelled = true;
-            if (html5Qrcode?.isScanning) {
-                html5Qrcode.stop().catch(e => console.error("[QR STOP ERROR]:", e));
+            if (scannerRef.current?.isScanning) {
+                scannerRef.current.stop().catch(e => console.error("[QR STOP ERROR]:", e));
             }
         };
-    }, [validationData, scanError]);
+    }, [validationData, scanError, isProcessing]);
 
     const handleReset = () => {
         setValidationData(null);
         setIsProcessing(false);
         setScanError(null);
         setWasAlreadyUsed(false);
+        setManualId('');
     };
 
     if (validationData) {
@@ -248,27 +265,60 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
     }
 
     return (
-        <Card>
-            <CardContent className="p-4 relative aspect-square flex items-center justify-center">
-                <div id="qr-reader" className="w-full h-full rounded-lg overflow-hidden bg-muted" />
-                {scanError ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 p-4">
-                        <Alert variant="destructive">
-                            <XCircle className="h-4 w-4" />
-                            <AlertTitle>Error de Escaneo</AlertTitle>
-                            <AlertDescription>{scanError}</AlertDescription>
-                        </Alert>
-                        <Button className="w-full mt-4" onClick={handleReset}>Volver a Intentar</Button>
+        <div className="space-y-6 w-full max-w-md mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Escanear Código QR</CardTitle>
+                    <CardDescription>Apunta la cámara al código del estudiante para validarlo.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 relative aspect-square flex items-center justify-center">
+                    <div id="qr-reader" className="w-full h-full rounded-lg overflow-hidden bg-muted" />
+                    {scanError ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 p-4 text-center">
+                            <Alert variant="destructive">
+                                <XCircle className="h-4 w-4" />
+                                <AlertTitle>Error</AlertTitle>
+                                <AlertDescription>{scanError}</AlertDescription>
+                            </Alert>
+                            <Button className="w-full mt-4" onClick={handleReset}>Volver a Intentar</Button>
+                        </div>
+                    ) : isProcessing ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+                            <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                            <p className="mt-4 text-lg font-semibold text-foreground">Validando...</p>
+                        </div>
+                    ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-white">
+                           <div className="p-4 bg-black/40 rounded-lg backdrop-blur-sm">
+                               <p className="text-5xl">📷</p>
+                           </div>
+                           <p className="mt-4 font-bold text-shadow" style={{textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>Buscando código QR...</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Validación Manual</CardTitle>
+                    <CardDescription>Si el escáner no funciona, ingresa el ID del comprobante aquí.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex w-full items-center space-x-2">
+                        <Input
+                            id="manual-id"
+                            value={manualId}
+                            onChange={(e) => setManualId(e.target.value)}
+                            placeholder="ID de la transacción..."
+                            disabled={isProcessing}
+                            onKeyDown={(e) => e.key === 'Enter' && !isProcessing && handleManualValidation()}
+                        />
+                        <Button onClick={handleManualValidation} disabled={isProcessing || !manualId}>
+                            {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Validar"}
+                        </Button>
                     </div>
-                ) : !isProcessing && (
-                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                         <div className="p-4 bg-background/50 rounded-lg backdrop-blur-sm">
-                            <Loader2 className="h-8 w-8 text-white animate-spin" />
-                         </div>
-                        <p className="mt-4 text-white font-bold text-shadow-lg">Buscando código QR...</p>
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

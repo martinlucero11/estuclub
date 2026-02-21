@@ -4,6 +4,7 @@ import { useUser } from '@/firebase';
 import RedemptionList from '@/components/dashboard/redemption-list';
 import SplashScreen from '@/components/layout/splash-screen';
 import type { UserRole } from '@/types/data';
+import BackButton from '@/components/layout/back-button';
 
 // This is the type expected by RedemptionList component
 interface UserForList {
@@ -27,9 +28,10 @@ export default function DashboardRedemptionsPage() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Historial de Canjes</h1>
-      <RedemptionList user={userForList} />
+    <div className="space-y-4">
+        <BackButton />
+        <h1 className="text-2xl font-bold">Historial de Canjes</h1>
+        <RedemptionList user={userForList} />
     </div>
   );
 }
