@@ -17,7 +17,7 @@ import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializablePerk } from '@/lib/data';
-import { CheckCircle, CalendarDays, Award } from 'lucide-react';
+import { CheckCircle, CalendarDays, Award, Loader2 } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
@@ -287,12 +287,17 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                         Cancelar
                     </Button>
                     <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
-                        {isRedeeming ? 'Procesando...' : (isLoading ? 'Cargando...' : (
+                        {isRedeeming ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Procesando...
+                            </>
+                        ) : isLoading ? 'Cargando...' : (
                             <span className="flex items-center">
                                 <Award className='mr-2 h-4 w-4' />
                                 Confirmar Canje
                             </span>
-                        ))}
+                        )}
                     </Button>
                 </DialogFooter>
             </>
