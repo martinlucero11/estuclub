@@ -7,16 +7,14 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SplashScreen from '@/components/layout/splash-screen';
-import { GraduationCap } from 'lucide-react';
 
 
 function EstuClubLogo() {
   return (
     <div className="flex items-center justify-center gap-2">
-      <GraduationCap className="h-10 w-10 text-primary" />
-      <h1 className="flex items-center text-center font-bold text-primary font-headline">
-        <span className="text-[3rem]">Estu</span>
-        <span className="font-logo-script text-[3rem] text-primary">Club</span>
+      <h1 className="flex items-baseline text-center font-bold text-primary">
+        <span className="font-sans text-[3rem] font-black tracking-tighter">Estu</span>
+        <span className="font-logo-script text-[3.5rem]">Club</span>
       </h1>
     </div>
   );

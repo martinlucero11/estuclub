@@ -1,17 +1,25 @@
 
 import type { Metadata } from 'next';
-import { PT_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans, Dancing_Script } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseProvider } from '@/firebase/provider';
 
-const ptSans = PT_Sans({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400', '700', '800'],
   variable: '--font-body',
   display: 'swap',
 });
+
+const dancingScript = Dancing_Script({
+    subsets: ['latin'],
+    weight: ['700'],
+    variable: '--font-logo-script',
+    display: 'swap',
+});
+
 
 export const metadata: Metadata = {
   title: 'EstuClub',
@@ -26,7 +34,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${ptSans.variable} font-body antialiased bg-slate-50 dark:bg-slate-950`}>
+      <body className={`${plusJakarta.variable} ${dancingScript.variable} font-body antialiased bg-slate-50 dark:bg-slate-950`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

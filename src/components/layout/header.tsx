@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -34,10 +35,11 @@ import { doc } from 'firebase/firestore';
 
 function Logo() {
     return (
-        <Link href="/" className="flex items-center justify-center text-primary">
+        <Link href="/" className="flex items-center justify-center">
             {/* @lock - DO NOT MODIFY THIS LOGO IN FUTURE REFACTORS */}
-            <h1 className="font-sans text-2xl sm:text-3xl font-black tracking-tighter text-primary">
-                EstuClub
+            <h1 className="flex items-baseline text-center font-bold text-primary">
+                <span className="font-sans text-2xl sm:text-3xl font-black tracking-tighter">Estu</span>
+                <span className="font-logo-script text-[2.2rem] sm:text-[2.6rem] font-bold leading-[0.5]">Club</span>
             </h1>
         </Link>
     )
