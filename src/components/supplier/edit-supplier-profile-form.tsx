@@ -59,9 +59,15 @@ export default function EditSupplierProfileForm() {
   const { user } = useUser();
   const storage = useStorage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // States and refs for LOGO upload
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+
+  // States and refs for COVER PHOTO upload
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const supplierRef = useMemoFirebase(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
@@ -80,8 +86,8 @@ export default function EditSupplierProfileForm() {
     },
   });
 
-  const logoUrlPreview = form.watch('logoUrl');
-  const coverPhotoUrlPreview = form.watch('coverPhotoUrl');
+  const logoUrlFromForm = form.watch('logoUrl');
+  const coverPhotoUrlFromForm = form.watch('coverPhotoUrl');
 
   useEffect(() => {
     if (supplierProfile) {
@@ -101,11 +107,12 @@ export default function EditSupplierProfileForm() {
     e: React.ChangeEvent<HTMLInputElement>,
     path: 'logo' | 'coverPhoto',
     setUploading: (isUploading: boolean) => void,
+    setPreview: (url: string | null) => void,
     fieldName: 'logoUrl' | 'coverPhotoUrl'
   ) => {
-    if (!user || !e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
     if (!file.type.startsWith('image/')) {
         toast({ variant: 'destructive', title: 'Archivo inválido', description: 'Por favor, selecciona una imagen.' });
         return;
@@ -115,21 +122,25 @@ export default function EditSupplierProfileForm() {
         return;
     }
 
+    const localUrl = URL.createObjectURL(file);
+    setPreview(localUrl);
     setUploading(true);
+
     try {
         const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}-${Date.now()}`);
         await uploadBytes(imageStorageRef, file);
         const downloadURL = await getDownloadURL(imageStorageRef);
         
         form.setValue(fieldName, downloadURL, { shouldValidate: true, shouldDirty: true });
+        setPreview(null);
+        URL.revokeObjectURL(localUrl);
+        toast({ title: 'Imagen subida', description: 'El cambio se guardará al actualizar tu perfil.'});
 
-        toast({
-            title: 'Imagen subida',
-            description: 'Haz clic en "Guardar Cambios" para aplicar la nueva imagen.'
-        });
     } catch (error) {
         console.error(`Error uploading ${path}:`, error);
         toast({ variant: 'destructive', title: 'Error de subida', description: `No se pudo subir la imagen.` });
+        setPreview(null);
+        URL.revokeObjectURL(localUrl);
     } finally {
         setUploading(false);
     }
@@ -185,13 +196,13 @@ export default function EditSupplierProfileForm() {
         <FormItem className="flex flex-col items-center">
             <FormLabel>Logo del Cluber</FormLabel>
             <div className="relative h-32 w-32">
-                {isUploadingLogo && (
+                {(isUploadingLogo) && (
                     <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center z-10">
                         <Loader2 className="h-10 w-10 text-white animate-spin" />
                     </div>
                 )}
                 <Avatar className="h-32 w-32">
-                    <AvatarImage src={logoUrlPreview || ''} alt="Logo" className="object-contain" />
+                    <AvatarImage src={logoPreview || logoUrlFromForm || ''} alt="Logo" className="object-contain" />
                     <AvatarFallback className="text-4xl">
                         {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
                     </AvatarFallback>
@@ -201,7 +212,7 @@ export default function EditSupplierProfileForm() {
                 type="file" 
                 className="hidden"
                 ref={logoInputRef}
-                onChange={(e) => handleImageUpload(e, 'logo', setIsUploadingLogo, 'logoUrl')}
+                onChange={(e) => handleImageUpload(e, 'logo', setIsUploadingLogo, setLogoPreview, 'logoUrl')}
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingLogo}
             />
@@ -313,18 +324,12 @@ export default function EditSupplierProfileForm() {
                     </Button>
                 </div>
                 <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
-                     {isUploadingCover && (
+                     {(isUploadingCover) && (
                         <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
                             <Loader2 className="h-10 w-10 text-white animate-spin" />
                         </div>
                     )}
-                    {coverPhotoUrlPreview ? (
-                        <Image src={coverPhotoUrlPreview} alt="Vista previa de portada" fill className="object-cover"/>
-                    ) : (
-                         <div className="bg-muted h-full w-full flex items-center justify-center">
-                            <p className="text-muted-foreground text-sm">Sin portada</p>
-                        </div>
-                    )}
+                    <Image src={coverPreview || coverPhotoUrlFromForm || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/epv2AAAAABJRU5ErkJggg=="} alt="Vista previa de portada" fill className="object-cover"/>
                 </div>
               <FormControl>
                 <Input type="url" placeholder="Pega una URL o sube una imagen" {...field} />
@@ -333,7 +338,7 @@ export default function EditSupplierProfileForm() {
                 type="file"
                 className="hidden"
                 ref={coverPhotoInputRef}
-                onChange={(e) => handleImageUpload(e, 'coverPhoto', setIsUploadingCover, 'coverPhotoUrl')}
+                onChange={(e) => handleImageUpload(e, 'coverPhoto', setIsUploadingCover, setCoverPreview, 'coverPhotoUrl')}
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingCover}
                />
