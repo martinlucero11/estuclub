@@ -16,6 +16,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'godiamo.com.ar',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   devIndicators: {
