@@ -2,7 +2,7 @@
 'use client';
 
 import React from 'react';
-import { GraduationCap, Menu, User, Settings, LogOut, History } from 'lucide-react';
+import { Menu, User, Settings, LogOut, History } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthService, useUser } from '@/firebase';
+import { useAuthService, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -31,20 +31,48 @@ import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
 import type { NavItem } from '@/types/nav';
+import { doc } from 'firebase/firestore';
 
 function Logo() {
     return (
-        <Link href="/" className="flex items-center justify-center gap-2 text-primary">
-            <GraduationCap className="h-8 w-8" />
-             <div className="flex items-center gap-1">
-                <h1 className="flex items-center text-center font-bold text-primary font-headline">
-                    <span className="text-[2rem]">Estu</span>
-                    <span className="font-logo-script text-[2rem] text-primary">Club</span>
-                </h1>
-            </div>
+        <Link href="/" className="flex items-center justify-center text-primary">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tighter text-primary">
+                EstuClub
+            </h1>
         </Link>
     )
 }
+
+function PersonalizedGreeting() {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    interface UserProfile {
+        firstName: string;
+    }
+
+    const userProfileRef = useMemoFirebase(
+        () => (user ? doc(firestore, 'users', user.uid) : null),
+        [user, firestore]
+    );
+    
+    const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+    const isLoading = isUserLoading || (user && isProfileLoading);
+
+    if (isLoading) {
+        return <Skeleton className="h-6 w-32 rounded-md" />;
+    }
+
+    if (!user || !userProfile) {
+        return null; // Don't show anything if not logged in
+    }
+    
+    return (
+        <p className="truncate max-w-[120px] sm:max-w-xs text-base font-semibold text-foreground">Hola, {userProfile.firstName}</p>
+    );
+};
+
 
 function UserMenu() {
   const { user, isUserLoading } = useUser(); 
@@ -156,10 +184,17 @@ function MainMenu() {
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="w-1/3"><MainMenu /></div>
-        <div className="w-1/3 flex justify-center"><Logo /></div>
+        <div className="w-1/3 flex justify-start items-center gap-2">
+            <MainMenu />
+            <div className='hidden sm:block'>
+                <PersonalizedGreeting />
+            </div>
+        </div>
+        <div className="w-1/3 flex justify-center">
+            <Logo />
+        </div>
         <div className="w-1/3 flex justify-end items-center gap-2">
             <NotificationBell />
             <UserMenu />

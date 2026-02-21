@@ -37,57 +37,6 @@ const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Servicios: Wrench,
 };
 
-
-// --- WELCOME BADGE ---
-const HomeWelcomeBadge = () => {
-    const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
-
-    interface UserProfile {
-        firstName: string;
-    }
-
-    const userProfileRef = useMemoFirebase(
-        () => (user ? doc(firestore, 'users', user.uid) : null),
-        [user, firestore]
-    );
-    
-    const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-    const isLoading = isUserLoading || (user && isProfileLoading);
-
-    if (isLoading) {
-        return <Skeleton className="h-6 w-20 rounded-full" />;
-    }
-
-    if (!user || !userProfile) {
-        return (
-            <div className="flex items-center justify-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-primary">
-                <span className="font-logo-script text-2xl">EstuClub</span>
-            </div>
-        );
-    }
-    
-    return (
-        <div className="flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2">
-            <span className="font-semibold text-secondary-foreground">Hola, {userProfile.firstName}</span>
-        </div>
-    );
-};
-
-
-// --- HEADER ---
-const HomeHeader = () => (
-  <div className="flex items-center justify-between p-4">
-    <Button variant="ghost" className="flex items-center gap-2">
-      <MapPin className="h-5 w-5 text-primary" />
-      <span className="font-semibold">Viendo cerca tuyo</span>
-      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-    </Button>
-    <HomeWelcomeBadge />
-  </div>
-);
-
 // --- CATEGORY GRID ---
 const CategoryGrid = () => {
     const firestore = useFirestore();
@@ -378,7 +327,6 @@ const PageSkeleton = () => (
     <MainLayout>
         <div className="mx-auto w-full">
             <div className="mx-auto max-w-2xl space-y-12 pb-8">
-                <HomeHeader />
                 <div className="px-4 space-y-6">
                     <PerksSectionSkeleton title="Cargando..." />
                     <PerksSectionSkeleton title="Cargando..." />
@@ -426,7 +374,6 @@ export default function HomePage() {
     <MainLayout>
         <div className="mx-auto w-full">
             <div className="mx-auto max-w-2xl space-y-12 pb-8">
-                <HomeHeader />
                 {sections && sections.map(section => {
                     const Component = componentMap[section.type as HomeSectionType];
                     
