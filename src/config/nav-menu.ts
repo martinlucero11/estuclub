@@ -9,12 +9,11 @@ import {
     Megaphone,
     CalendarClock,
     Home,
-    Store,
-    Trophy,
     Settings,
     Shapes,
     LayoutTemplate,
     CalendarDays,
+    QrCode,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -25,14 +24,19 @@ export const navConfig: NavConfig = {
       icon: Home,
     },
     {
+      title: "Beneficios",
+      href: "/benefits",
+      icon: Ticket,
+    },
+    {
+      title: "Anuncios",
+      href: "/announcements",
+      icon: Megaphone,
+    },
+    {
       title: "Turnos",
       href: "/turnos",
       icon: CalendarDays,
-    },
-    {
-      title: "Ranking",
-      href: "/leaderboard",
-      icon: Trophy,
     },
     {
       title: "Dashboard",
@@ -54,6 +58,12 @@ export const navConfig: NavConfig = {
       icon: LayoutDashboard,
       role: ["admin", "supplier"],
       items: [
+        {
+          title: "Escanear QR",
+          href: "/dashboard/scanner",
+          icon: QrCode,
+          role: ["admin", "supplier"],
+        },
         {
           title: "Beneficios",
           href: "/dashboard/benefits",
