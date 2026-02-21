@@ -24,9 +24,11 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useUserRank } from '@/hooks/use-user-rank';
-import UserQRCodeDialog from '@/components/profile/user-qr-code-dialog';
 import { PageHeader } from '@/components/ui/page-header';
+
+const UserQRCodeDialog = dynamic(() => import('@/components/profile/user-qr-code-dialog'), { ssr: false });
 
 const profileFormSchema = z.object({
     firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),

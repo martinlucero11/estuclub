@@ -143,15 +143,31 @@ function CluberProfileContent({ slug }: { slug: string }) {
         <div>
             <header className="relative mb-16">
                 <div className="h-48 w-full bg-muted">
-                    <Image src={coverPhoto} alt={`${cluber.name} cover photo`} fill className="object-cover" />
+                    <Image
+                        src={coverPhoto}
+                        alt={`${cluber.name} cover photo`}
+                        fill
+                        className="object-cover"
+                        priority
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                 </div>
                  <div className="absolute -bottom-16 left-6">
-                    <Avatar className="h-32 w-32 rounded-full border-4 border-background bg-background">
-                        <AvatarImage src={cluber.logoUrl} alt={cluber.name} />
-                        <AvatarFallback className="text-5xl">
-                           {cluber.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
+                    <div className="relative h-32 w-32 rounded-full border-4 border-background bg-background flex items-center justify-center overflow-hidden">
+                        {cluber.logoUrl ? (
+                            <Image
+                                src={cluber.logoUrl}
+                                alt={cluber.name}
+                                fill
+                                className="object-contain p-2"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                            />
+                        ) : (
+                             <span className="text-5xl font-bold text-muted-foreground">
+                                {cluber.name.charAt(0).toUpperCase()}
+                             </span>
+                        )}
+                    </div>
                 </div>
             </header>
             

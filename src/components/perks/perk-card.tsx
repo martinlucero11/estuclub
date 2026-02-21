@@ -2,12 +2,17 @@
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SerializablePerk } from '@/lib/data';
-import RedeemPerkDialog from './redeem-perk-dialog';
 import { MapPin, Award, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { Button } from '../ui/button';
 import { ArrowRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const RedeemPerkDialog = dynamic(() => import('./redeem-perk-dialog'), {
+  ssr: false,
+  loading: () => <Button className="w-full" disabled>Cargando...</Button>
+});
 
 interface PerkCardProps {
   perk: SerializablePerk;
@@ -41,6 +46,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
                 alt={perk.title}
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
             />
             {/* Gradiente para legibilidad */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -85,6 +91,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
               alt={perk.title}
               fill
               className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>

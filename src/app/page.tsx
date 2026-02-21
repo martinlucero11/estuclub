@@ -15,7 +15,6 @@ import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AnnouncementCard from '@/components/announcements/announcement-card';
 import { Users, Gift, Megaphone } from 'lucide-react';
 import WelcomeMessage from '@/components/home/welcome-message';
@@ -164,7 +163,7 @@ const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
                 <CardContent className="flex h-full flex-col p-0">
                      <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                         {hasLogo ? (
-                             <Image src={perk.imageUrl} alt={`${perk.title} logo`} fill className="object-cover" />
+                             <Image src={perk.imageUrl} alt={`${perk.title} logo`} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                         ) : (
                             <span className="text-4xl font-bold text-muted-foreground">{initial}</span>
                         )}
@@ -256,12 +255,21 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     return (
         <Link href={`/proveedores/${supplier.slug}`} passHref>
             <div className="w-24 flex-shrink-0 flex flex-col items-center text-center gap-2 snap-start group">
-                 <Avatar className="h-20 w-20 rounded-2xl bg-white shadow-sm border border-slate-100 p-2 group-hover:shadow-md transition-shadow">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-contain" />
-                    <AvatarFallback className="bg-transparent text-2xl font-bold text-muted-foreground rounded-lg">
-                        {supplierInitials}
-                    </AvatarFallback>
-                </Avatar>
+                 <div className="relative h-20 w-20 rounded-2xl bg-white shadow-sm border border-slate-100 p-2 group-hover:shadow-md transition-shadow flex items-center justify-center overflow-hidden">
+                    {supplier.logoUrl ? (
+                        <Image
+                            src={supplier.logoUrl}
+                            alt={supplier.name}
+                            fill
+                            className="object-contain"
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                    ) : (
+                        <span className="text-2xl font-bold text-muted-foreground">
+                            {supplierInitials}
+                        </span>
+                    )}
+                </div>
                 <h3 className="text-[13px] font-bold text-slate-800 w-full truncate leading-tight">{supplier.name}</h3>
                 <p className="text-[11px] font-medium text-slate-500 w-full capitalize truncate leading-tight">{supplier.type}</p>
             </div>

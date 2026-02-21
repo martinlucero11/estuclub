@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/accordion";
 import Image from 'next/image';
 import { EmptyState } from '../ui/empty-state';
-import RedemptionQRCodeDialog from './redemption-qr-code-dialog'; // Import the new dialog
+import dynamic from 'next/dynamic';
+
+const RedemptionQRCodeDialog = dynamic(() => import('./redemption-qr-code-dialog'), { ssr: false });
 
 function RedemptionsListSkeleton() {
     return (
@@ -46,7 +48,13 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                      <div className="relative h-32 w-full sm:w-32 flex-shrink-0">
-                         <Image src={redemption.benefitImageUrl} alt={redemption.benefitTitle} fill className="rounded-md object-cover" />
+                         <Image
+                            src={redemption.benefitImageUrl}
+                            alt={redemption.benefitTitle}
+                            fill
+                            className="rounded-md object-cover"
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                         />
                     </div>
                     <div className="space-y-2">
                          <p className="text-sm text-muted-foreground">{redemption.benefitDescription}</p>

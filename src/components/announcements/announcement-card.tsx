@@ -47,6 +47,7 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
                 alt={announcement.title}
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
             />
         </div>
         <div className="flex flex-1 flex-col">
@@ -84,6 +85,7 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
                 alt={announcement.title}
                 fill
                 className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-black/50" />
             <div className="relative z-10 flex h-full flex-col justify-between p-4">

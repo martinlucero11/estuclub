@@ -5,8 +5,10 @@ import type { Service, Availability } from '@/lib/data';
 import { Button } from '../ui/button';
 import { Calendar, Clock, Search, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/card';
-import BookingDialog from '../booking/booking-dialog';
+import dynamic from 'next/dynamic';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
+
+const BookingDialog = dynamic(() => import('../booking/booking-dialog'), { ssr: false });
 
 interface ServiceListProps {
   services: Service[];

@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { HomeSection } from '@/lib/data';
@@ -8,13 +10,14 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Save, ArrowUp, ArrowDown, Edit, Trash2, LayoutTemplate } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
-import { HomeSectionDialog } from '@/components/admin/home-builder/home-section-dialog';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import BackButton from '@/components/layout/back-button';
+
+const HomeSectionDialog = dynamic(() => import('@/components/admin/home-builder/home-section-dialog').then(mod => mod.HomeSectionDialog), { ssr: false });
 
 function LoadingSkeleton() {
     return (
