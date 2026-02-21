@@ -8,7 +8,7 @@ import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
-import type { Perk, Banner, SerializablePerk, Category, HomeSection, SerializableAnnouncement } from '@/lib/data';
+import type { Perk, Banner, SerializablePerk, Category, HomeSection, SerializableAnnouncement, Announcement } from '@/lib/data';
 import type { SupplierProfile } from '@/types/data';
 import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useMemo } from 'react';
