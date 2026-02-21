@@ -30,18 +30,22 @@ export default function RedemptionList({ user }: RedemptionListProps) {
 
   const { data: redemptions, isLoading, error } = useCollection<BenefitRedemption>(redemptionsQuery);
 
-  // Dynamically add the 'supplierName' and 'userName' columns for admins
+  // Dynamically add columns based on user role
   const columns = useMemo(() => {
+    const newColumns = [...baseColumns];
+
+    // Both Admins and Suppliers should see who redeemed the benefit.
+    newColumns.splice(1, 0, { accessorKey: 'userName', header: 'Estudiante' });
+
+    // Only Admins need to see the "Supplier" column, as suppliers are already
+    // viewing their own redemptions.
     if (isAdmin) {
-      const newColumns = [...baseColumns];
-      // Add supplier name
       newColumns.splice(1, 0, { accessorKey: 'supplierName', header: 'Proveedor' });
-      // Add user name
-      newColumns.splice(2, 0, { accessorKey: 'userName', header: 'Estudiante' });
-      return newColumns;
     }
-    return baseColumns;
+    
+    return newColumns;
   }, [isAdmin]);
+
 
   if (error) {
     return <p className="text-red-500">Error: {error.message}</p>;
