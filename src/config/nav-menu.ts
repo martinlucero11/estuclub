@@ -14,6 +14,7 @@ import {
     Settings,
     Shapes,
     LayoutTemplate,
+    CalendarDays,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -22,6 +23,11 @@ export const navConfig: NavConfig = {
       title: "Inicio",
       href: "/",
       icon: Home,
+    },
+    {
+      title: "Turnos",
+      href: "/turnos",
+      icon: CalendarDays,
     },
     {
       title: "Ranking",

@@ -3,12 +3,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, Trophy, User, Store } from 'lucide-react';
+import { Home, Ticket, Trophy, User, Store, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/proveedores', label: 'Clubers', icon: Store },
+  { href: '/turnos', label: 'Turnos', icon: CalendarDays },
   { href: '/leaderboard', label: 'Ranking', icon: Trophy },
   { href: '/profile', label: 'Perfil', icon: User },
 ];
@@ -24,7 +25,7 @@ export function BottomNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-col items-center justify-center w-1/4 text-muted-foreground transition-all duration-200 active:scale-95',
+              'flex flex-col items-center justify-center w-1/5 text-muted-foreground transition-all duration-200 active:scale-95',
               pathname === item.href ? 'text-primary' : 'hover:text-primary'
             )}
           >

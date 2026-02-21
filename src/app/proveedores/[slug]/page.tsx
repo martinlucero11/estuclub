@@ -8,13 +8,15 @@ import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, CalendarDays } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk, makePerkSerializable, SerializablePerk, Service, Availability } from '@/lib/data';
 import type { CluberCategory, SupplierProfile } from '@/types/data';
 import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -165,6 +167,17 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 </div>
                 <p className="text-muted-foreground max-w-xl">{cluber.description || 'Este Cluber aún no ha añadido una descripción.'}</p>
             </div>
+            
+            {cluber.appointmentsEnabled && (
+                <div className="px-6 pt-4">
+                    <Button asChild size="lg" className="w-full sm:w-auto">
+                        <Link href="#booking-section">
+                            <CalendarDays className="mr-2 h-5 w-5" />
+                            Solicitar Turno
+                        </Link>
+                    </Button>
+                </div>
+            )}
 
              <div className="px-6 py-8">
                  <h2 className="text-2xl font-bold mb-4">Beneficios Activos</h2>
@@ -174,7 +187,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
             {cluber.appointmentsEnabled && availability && services && (
                  <>
                     <Separator className="my-8" />
-                    <div className="px-6 py-8">
+                    <div id="booking-section" className="px-6 py-8 scroll-mt-20">
                         <h2 className="text-2xl font-bold mb-4">Reservar un Turno</h2>
                         <ServiceList 
                             services={services} 
