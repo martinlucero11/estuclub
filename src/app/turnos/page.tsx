@@ -60,7 +60,8 @@ function CluberList() {
     }
 
     if (error) {
-        return <p className="text-destructive">Error al cargar los Clubers con turnos disponibles.</p>;
+        console.error("Error real fetching clubers con turnos:", error);
+        return <p className="text-destructive text-center">Error al cargar los Clubers: {error.message}</p>;
     }
 
     return (
