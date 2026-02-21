@@ -8,7 +8,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, CalendarDays } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, CalendarDays, BadgeHelp } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Perk, makePerkSerializable, SerializablePerk, Service, Availability } from '@/lib/data';
 import type { CluberCategory, SupplierProfile } from '@/types/data';
@@ -31,24 +31,22 @@ const categoryIcons: Record<CluberCategory, React.ElementType> = {
 function ProfileSkeleton() {
     return (
         <div>
-            <div className="relative mb-16">
-                <Skeleton className="h-48 w-full" />
-                <div className="absolute -bottom-16 left-6">
-                    <Skeleton className="h-32 w-32 rounded-full border-4 border-background" />
+            <header className="relative">
+                <Skeleton className="w-full h-48 md:h-64 bg-slate-100 dark:bg-slate-800 rounded-b-3xl" />
+                <div className="absolute -bottom-12 left-6 z-10">
+                    <Skeleton className="w-28 h-28 rounded-full border-4 border-background" />
                 </div>
-            </div>
-            <div className="px-6 py-4 space-y-4">
+            </header>
+            <div className="pt-16 px-6">
                 <Skeleton className="h-8 w-64" />
-                <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-4 w-48 mt-2" />
+                <Skeleton className="h-12 w-full mt-4" />
             </div>
              <div className="px-6 py-8">
                  <Skeleton className="h-7 w-48 mb-4" />
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="space-y-4">
-                            <Skeleton className="h-48 w-full rounded-2xl" />
-                        </div>
+                        <Skeleton key={i} className="h-48 w-full rounded-2xl" />
                     ))}
                 </div>
              </div>
@@ -62,7 +60,6 @@ function CluberProfileContent({ slug }: { slug: string }) {
     const [isLoadingCluber, setIsLoadingCluber] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch cluber data
     useEffect(() => {
         const fetchCluber = async () => {
             if (!slug) return;
@@ -71,14 +68,14 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 const q = query(collection(firestore, 'roles_supplier'), where('slug', '==', slug), limit(1));
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
-                    setError('No se encontró el Cluber.');
+                    setError('No se encontró el proveedor.');
                 } else {
                     const cluberDoc = querySnapshot.docs[0];
                     setCluber({ id: cluberDoc.id, ...cluberDoc.data() } as SupplierProfile);
                 }
             } catch (err) {
                 console.error(err);
-                setError('Error al cargar el Cluber.');
+                setError('Error al cargar el proveedor.');
             } finally {
                 setIsLoadingCluber(false);
             }
@@ -88,7 +85,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
     
     const benefitsQuery = useMemoFirebase(() => {
         if (!cluber) return null;
-        return query(collection(firestore, 'benefits'), where('ownerId', '==', cluber.id), where('active', '==', true));
+        return query(collection(firestore, 'benefits'), where('supplierId', '==', cluber.id), where('status', '==', 'active'));
     }, [cluber, firestore]);
 
     const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
@@ -129,40 +126,41 @@ function CluberProfileContent({ slug }: { slug: string }) {
         return (
             <div className="flex items-center justify-center pt-16">
                  <Alert variant="destructive" className="max-w-lg">
-                    <AlertTitle>Cluber no encontrado</AlertTitle>
-                    <AlertDescription>No se pudo encontrar un Cluber con la URL especificada.</AlertDescription>
+                    <AlertTitle>Proveedor no encontrado</AlertTitle>
+                    <AlertDescription>No se pudo encontrar un proveedor con la URL especificada.</AlertDescription>
                 </Alert>
             </div>
         )
     }
 
     const TypeIcon = categoryIcons[cluber.type] || Users;
-    const coverPhoto = cluber.coverPhotoUrl || 'https://images.unsplash.com/photo-1522252234503-e356532cafd5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
+    const supplierInitial = cluber.name.charAt(0).toUpperCase();
 
     return (
         <div>
-            <header className="relative mb-16">
-                <div className="h-48 w-full bg-muted">
-                    <Image
-                        src={coverPhoto}
-                        alt={`${cluber.name} cover photo`}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                    />
+            <header className="relative">
+                <div className="relative w-full h-48 md:h-64 bg-slate-100 dark:bg-slate-800 rounded-b-3xl overflow-hidden">
+                    {cluber.coverPhotoUrl && (
+                         <Image
+                            src={cluber.coverPhotoUrl}
+                            alt={`${cluber.name} cover photo`}
+                            fill
+                            className="object-cover"
+                            priority
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                        />
+                    )}
                 </div>
-                 <div className="absolute -bottom-16 left-6">
-                    <Avatar className="h-32 w-32 rounded-full border-4 border-background bg-background p-2">
-                        <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-contain" />
-                        <AvatarFallback className="bg-transparent text-5xl font-bold text-muted-foreground">
-                            {cluber.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
+                <div className="absolute -bottom-12 left-6 w-28 h-28 rounded-full border-4 border-background bg-background shadow-xl overflow-hidden z-10 flex items-center justify-center">
+                    {cluber.logoUrl ? (
+                        <Image src={cluber.logoUrl} alt={cluber.name} fill className="object-cover" />
+                    ) : (
+                        <span className="text-5xl font-bold text-muted-foreground">{supplierInitial}</span>
+                    )}
                 </div>
             </header>
             
-            <div className="px-6 py-4 space-y-4">
+            <div className="pt-16 px-6 space-y-4">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-bold tracking-tight text-foreground">
                         {cluber.name}
@@ -172,10 +170,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
                         <p className="capitalize">{cluber.type}</p>
                     </div>
                 </div>
-                <p className="text-muted-foreground max-w-xl">{cluber.description || 'Este Cluber aún no ha añadido una descripción.'}</p>
+                <p className="text-muted-foreground max-w-xl">{cluber.description || 'Este proveedor aún no ha añadido una descripción.'}</p>
             </div>
             
-            {cluber.appointmentsEnabled && (
+            {cluber.canCreateAppointments && (
                 <div className="px-6 pt-4">
                     <Button asChild size="lg" className="w-full sm:w-auto">
                         <Link href="#booking-section">
@@ -191,7 +189,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
             </div>
 
-            {cluber.appointmentsEnabled && availability && services && (
+            {cluber.canCreateAppointments && availability && services && (
                  <>
                     <Separator className="my-8" />
                     <div id="booking-section" className="px-6 py-8 scroll-mt-20">
@@ -200,7 +198,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                             services={services} 
                             availability={availability} 
                             supplierId={cluber.id} 
-                            allowsBooking={!!cluber.appointmentsEnabled}
+                            allowsBooking={!!cluber.canCreateAppointments}
                         />
                     </div>
                  </>

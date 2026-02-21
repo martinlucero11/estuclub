@@ -5,22 +5,13 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, Building, Church, Scale, ShoppingBasket, User, CalendarCheck } from 'lucide-react';
+import { Briefcase, Building, Church, Scale, ShoppingBasket, User, CalendarCheck, Gift, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '../ui/label';
-
-interface SupplierProfile {
-    id: string;
-    name: string;
-    email: string;
-    type: 'Institucion' | 'Club' | 'Iglesia' | 'Comercio' | 'Estado';
-    slug: string;
-    logoUrl?: string;
-    allowsBooking?: boolean;
-}
+import type { SupplierProfile } from '@/types/data';
 
 const typeIcons = {
     Institucion: Building,
@@ -40,6 +31,11 @@ function SupplierSkeleton() {
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
           </div>
+          <div className="flex flex-col space-y-2">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-5 w-24" />
+          </div>
         </div>
       ))}
     </div>
@@ -57,23 +53,22 @@ export default function SupplierList() {
 
     const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
 
-    const handleBookingToggle = async (supplierId: string, currentStatus: boolean) => {
+    const handlePermissionToggle = async (supplierId: string, field: keyof SupplierProfile, currentStatus: boolean, successMessage: string) => {
         const supplierRef = doc(firestore, 'roles_supplier', supplierId);
         try {
-            await updateDoc(supplierRef, { allowsBooking: !currentStatus });
+            await updateDoc(supplierRef, { [field]: !currentStatus });
             toast({
-                title: 'Estado de reserva actualizado',
-                description: `El proveedor ahora ${!currentStatus ? 'acepta' : 'no acepta'} reservas.`,
+                title: 'Permiso actualizado',
+                description: successMessage,
             });
         } catch (error) {
             toast({
                 variant: 'destructive',
                 title: 'Error',
-                description: 'No se pudo actualizar el estado de la reserva.',
+                description: 'No se pudo actualizar el permiso.',
             });
         }
     };
-
 
     if (isLoading) {
         return <SupplierSkeleton />;
@@ -92,9 +87,9 @@ export default function SupplierList() {
     }
     
     return (
-        <div className="space-y-2">
+        <div className="space-y-3">
             {suppliers.map(supplier => {
-                const TypeIcon = typeIcons[supplier.type] || User;
+                const TypeIcon = typeIcons[supplier.type as keyof typeof typeIcons] || User;
                 const supplierInitial = supplier.name.charAt(0).toUpperCase();
 
                 return (
@@ -113,16 +108,40 @@ export default function SupplierList() {
                             </Button>
                             <p className="text-sm text-muted-foreground">{supplier.email}</p>
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <Label htmlFor={`booking-switch-${supplier.id}`} className="flex flex-col items-center text-xs text-muted-foreground">
-                                <CalendarCheck className="h-4 w-4 mb-1"/>
-                                Habilitar Turnos
-                            </Label>
-                            <Switch
-                                id={`booking-switch-${supplier.id}`}
-                                checked={supplier.allowsBooking}
-                                onCheckedChange={(checked) => handleBookingToggle(supplier.id, !checked)}
-                            />
+                        <div className="flex flex-col space-y-2 items-end">
+                            <div className="flex items-center space-x-2">
+                                <Label htmlFor={`appointments-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                    <CalendarCheck className="h-4 w-4"/>
+                                    Turnos
+                                </Label>
+                                <Switch
+                                    id={`appointments-switch-${supplier.id}`}
+                                    checked={!!supplier.canCreateAppointments}
+                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreateAppointments', !checked, `El proveedor ahora ${checked ? 'acepta' : 'no acepta'} turnos.`)}
+                                />
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Label htmlFor={`perks-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                    <Gift className="h-4 w-4"/>
+                                    Beneficios
+                                </Label>
+                                <Switch
+                                    id={`perks-switch-${supplier.id}`}
+                                    checked={!!supplier.canCreatePerks}
+                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreatePerks', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} crear beneficios.`)}
+                                />
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Label htmlFor={`announcements-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                    <Megaphone className="h-4 w-4"/>
+                                    Anuncios
+                                </Label>
+                                <Switch
+                                    id={`announcements-switch-${supplier.id}`}
+                                    checked={!!supplier.canCreateAnnouncements}
+                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreateAnnouncements', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} crear anuncios.`)}
+                                />
+                            </div>
                         </div>
                     </div>
                 );

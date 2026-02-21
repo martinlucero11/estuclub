@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { BenefitFormDialog } from '@/components/dashboard/benefit-form-dialog';
 import BackButton from '@/components/layout/back-button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 // This is the type expected by BenefitList component
 interface UserForList {
@@ -18,7 +20,7 @@ interface UserForList {
 }
 
 export default function DashboardBenefitsPage() {
-  const { user, roles, isUserLoading } = useUser();
+  const { user, roles, supplierData, isUserLoading } = useUser();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   if (isUserLoading || !user) {
@@ -31,22 +33,33 @@ export default function DashboardBenefitsPage() {
     roles: roles as UserRole[],
   };
   
-  const isAdmin = roles.includes('admin');
+  const canCreate = roles.includes('admin') || supplierData?.canCreatePerks;
 
   return (
     <div className="space-y-4">
       <BackButton />
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Gestionar Beneficios</h1>
-        {isAdmin && (
-            <Button onClick={() => setIsFormOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Añadir Nuevo Beneficio
-            </Button>
-        )}
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div tabIndex={0}> {/* Wrapper div to allow focus on disabled button */}
+                        <Button onClick={() => setIsFormOpen(true)} disabled={!canCreate}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Añadir Nuevo Beneficio
+                        </Button>
+                    </div>
+                </TooltipTrigger>
+                {!canCreate && (
+                    <TooltipContent>
+                        <p>No tienes permiso para crear beneficios. Solicita acceso al administrador.</p>
+                    </TooltipContent>
+                )}
+            </Tooltip>
+        </TooltipProvider>
       </div>
       <BenefitList user={userForList} />
-      {isAdmin && (
+      {canCreate && (
         <BenefitFormDialog isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
       )}
     </div>

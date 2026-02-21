@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import AnnouncementDialog from './announcement-dialog';
 import { cn } from '@/lib/utils';
 import { Link2 } from 'lucide-react';
-import type { SerializableAnnouncement } from '@/lib/data';
+import type { SerializableAnnouncement } from '@/types/data';
 
 interface AnnouncementCardProps {
   announcement: SerializableAnnouncement;
@@ -87,12 +87,12 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <div className="absolute inset-0 bg-black/50" />
-            <div className="relative z-10 flex h-full flex-col justify-between p-4">
-                <div className="flex-grow">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <div className="relative z-10 flex h-full flex-col justify-end p-4">
+                <div>
                     <CardTitle className="text-xl line-clamp-2">{announcement.title}</CardTitle>
                 </div>
-                 <div className="flex items-center gap-2 text-sm text-gray-300">
+                 <div className="flex items-center gap-2 text-sm pt-2">
                     <Avatar className="h-6 w-6 text-foreground">
                         <AvatarFallback>{authorInitial}</AvatarFallback>
                     </Avatar>
