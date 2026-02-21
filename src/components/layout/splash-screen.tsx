@@ -5,7 +5,7 @@ function EstuClubLogo() {
     <div className="flex animate-pulse items-center justify-center gap-3">
         <h1 className="flex items-baseline text-center text-5xl text-primary-foreground">
             <span className="font-logo-sans font-extrabold tracking-tighter">Estu</span>
-            <span className="font-logo-display text-6xl -ml-1">Club</span>
+            <span className="font-logo-display text-6xl">Club</span>
         </h1>
     </div>
   );

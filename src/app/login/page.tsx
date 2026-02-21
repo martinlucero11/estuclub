@@ -13,7 +13,7 @@ function EstuClubLogo() {
     <div className="flex items-center justify-center gap-2">
         <h1 className="flex items-baseline text-center text-primary">
           <span className="font-logo-sans text-5xl font-extrabold tracking-tighter">Estu</span>
-          <span className="font-logo-display text-6xl -ml-1">Club</span>
+          <span className="font-logo-display text-6xl">Club</span>
         </h1>
     </div>
   );

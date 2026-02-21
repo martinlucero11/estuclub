@@ -39,7 +39,7 @@ function Logo() {
             {/* @lock - DO NOT MODIFY THIS LOGO IN FUTURE REFACTORS */}
             <h1 className="flex items-baseline text-center text-primary">
                 <span className="font-logo-sans text-3xl font-extrabold tracking-tighter">Estu</span>
-                <span className="font-logo-display text-4xl -ml-1">Club</span>
+                <span className="font-logo-display text-4xl">Club</span>
             </h1>
         </Link>
     )
