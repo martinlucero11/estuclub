@@ -1,9 +1,9 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { add, format, startOfDay, getDay, set } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -11,7 +11,6 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import type { Service, Availability, Appointment } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
 
 interface BookingDialogProps {
@@ -138,59 +137,73 @@ export default function BookingDialog({ service, availability, supplierId, child
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
-        <DialogContent className="max-w-4xl grid-cols-1 md:grid-cols-2">
-             <DialogHeader className="md:col-span-2">
+        <DialogContent className="max-w-3xl">
+             <DialogHeader>
                 <DialogTitle>Reservar: {service.name}</DialogTitle>
                 <DialogDescription>
                     Selecciona una fecha y un horario para tu turno.
                 </DialogDescription>
             </DialogHeader>
-            <div className='space-y-4'>
-                 <label className="text-sm font-medium">1. Selecciona una fecha</label>
-                <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
-                    disabled={(date) => date < startOfDay(new Date())}
-                    className="rounded-md border"
-                    locale={es}
-                    weekStartsOn={1}
-                />
-            </div>
-            <div className='space-y-4'>
-                <label className="text-sm font-medium">2. Selecciona un horario</label>
-                {selectedDate ? (
-                    <div className="grid grid-cols-3 gap-2 max-h-96 overflow-y-auto pr-2">
-                    {availableSlots.length > 0 ? availableSlots.map(slot => (
-                        <Button 
-                            key={slot.toISOString()} 
-                            variant={selectedSlot?.getTime() === slot.getTime() ? 'default' : 'outline'}
-                            onClick={() => setSelectedSlot(slot)}
-                        >
-                        {format(slot, 'HH:mm')}
-                        </Button>
-                    )) : (
-                        <p className='col-span-3 text-sm text-muted-foreground text-center p-4'>No hay turnos disponibles para este día.</p>
+
+            <div className="flex flex-col md:flex-row gap-8 sm:gap-12 justify-center mt-6">
+                <div className="flex-1 max-w-[350px] mx-auto md:mx-0">
+                    <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={handleDateSelect}
+                        disabled={(date) => date < startOfDay(new Date())}
+                        className="rounded-md border"
+                        locale={es}
+                        weekStartsOn={1}
+                    />
+                </div>
+
+                <div className="flex-1 flex flex-col gap-4">
+                     <h3 className="font-semibold text-lg text-center md:text-left">
+                        {selectedDate 
+                            ? `Horarios para el ${format(selectedDate, "d 'de' MMMM", { locale: es })}`
+                            : 'Selecciona un día'}
+                    </h3>
+                    {selectedDate ? (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-2">
+                        {availableSlots.length > 0 ? availableSlots.map(slot => (
+                            <Button 
+                                key={slot.toISOString()} 
+                                variant={selectedSlot?.getTime() === slot.getTime() ? 'default' : 'outline'}
+                                onClick={() => setSelectedSlot(slot)}
+                                className="w-full"
+                            >
+                            {format(slot, 'HH:mm')}
+                            </Button>
+                        )) : (
+                            <p className='col-span-full text-sm text-muted-foreground text-center p-4'>No hay turnos disponibles para este día.</p>
+                        )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-full text-sm text-muted-foreground border-2 border-dashed rounded-md p-4">
+                            <p>Selecciona un día para ver los horarios.</p>
+                        </div>
                     )}
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-muted-foreground border-2 border-dashed rounded-md p-4">
-                        <p>Selecciona una fecha para ver los horarios.</p>
-                    </div>
-                )}
+                </div>
             </div>
-             <DialogFooter className="md:col-span-2">
-                {selectedSlot && (
-                    <div className='w-full flex justify-between items-center'>
-                         <p className="text-sm text-muted-foreground">
-                            Turno seleccionado: <strong className="text-foreground">{format(selectedSlot, "eeee, d 'de' MMMM 'a las' HH:mm", { locale: es })}</strong>
-                        </p>
-                        <Button onClick={handleBooking} disabled={isBooking || !user}>
-                            {isBooking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {user ? 'Confirmar Reserva' : 'Inicia sesión para reservar'}
-                        </Button>
-                    </div>
-                )}
+
+             <DialogFooter className="pt-6">
+                 <div className='w-full flex flex-col sm:flex-row justify-between items-center gap-4'>
+                    <p className="text-sm text-muted-foreground text-center sm:text-left">
+                        {selectedSlot 
+                            ? <>Turno seleccionado: <strong className="text-foreground">{format(selectedSlot, "eeee, d 'de' MMMM 'a las' HH:mm", { locale: es })}</strong></>
+                            : "Por favor, selecciona una fecha y hora."
+                        }
+                    </p>
+                    <Button 
+                        onClick={handleBooking} 
+                        disabled={isBooking || !user || !selectedDate || !selectedSlot}
+                        className="w-full sm:w-auto"
+                    >
+                        {isBooking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {user ? 'Confirmar Reserva' : 'Inicia sesión para reservar'}
+                    </Button>
+                </div>
             </DialogFooter>
         </DialogContent>
     </Dialog>
