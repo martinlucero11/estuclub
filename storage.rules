@@ -13,15 +13,18 @@ service firebase.storage {
         exists(/databases/(default)/documents/roles_admin/$(request.auth.uid));
     }
 
-    function isSupplier() {
-        return request.auth != null &&
-            exists(/databases/(default)/documents/roles_supplier/$(request.auth.uid));
-    }
-    
-    // Rules for profile pictures / logos
-    match /{allPaths=**} {
+    // More specific rule for supplier assets.
+    // Publicly readable, but only the owner or an admin can write.
+    match /suppliers/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin() || isSupplier();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // Fallback rule for any other path. 
+    // This is intentionally restrictive. Add more specific match blocks above this one as needed.
+    match /{path=**} {
+        allow read: if true; // Allow public read for now, can be restricted later.
+        allow write: if isAdmin(); // Only admins can write to other paths by default.
     }
   }
 }

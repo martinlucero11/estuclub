@@ -80,8 +80,8 @@ export default function EditSupplierProfileForm() {
     },
   });
 
-  const logoUrlValue = form.watch('logoUrl');
-  const coverPhotoUrlValue = form.watch('coverPhotoUrl');
+  const logoUrlPreview = form.watch('logoUrl');
+  const coverPhotoUrlPreview = form.watch('coverPhotoUrl');
 
   useEffect(() => {
     if (supplierProfile) {
@@ -98,12 +98,13 @@ export default function EditSupplierProfileForm() {
   }, [supplierProfile, form]);
 
   const handleImageUpload = async (
-    file: File,
+    e: React.ChangeEvent<HTMLInputElement>,
     path: 'logo' | 'coverPhoto',
     setUploading: (isUploading: boolean) => void,
     fieldName: 'logoUrl' | 'coverPhotoUrl'
   ) => {
-    if (!user) return;
+    if (!user || !e.target.files?.[0]) return;
+    const file = e.target.files[0];
     
     if (!file.type.startsWith('image/')) {
         toast({ variant: 'destructive', title: 'Archivo inválido', description: 'Por favor, selecciona una imagen.' });
@@ -116,11 +117,11 @@ export default function EditSupplierProfileForm() {
 
     setUploading(true);
     try {
-        const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}`);
+        const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}-${Date.now()}`);
         await uploadBytes(imageStorageRef, file);
         const downloadURL = await getDownloadURL(imageStorageRef);
         
-        form.setValue(fieldName, downloadURL, { shouldDirty: true });
+        form.setValue(fieldName, downloadURL, { shouldValidate: true, shouldDirty: true });
 
         toast({
             title: 'Imagen subida',
@@ -190,7 +191,7 @@ export default function EditSupplierProfileForm() {
                     </div>
                 )}
                 <Avatar className="h-32 w-32">
-                    <AvatarImage src={logoUrlValue || ''} alt="Logo" className="object-contain" />
+                    <AvatarImage src={logoUrlPreview || ''} alt="Logo" className="object-contain" />
                     <AvatarFallback className="text-4xl">
                         {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
                     </AvatarFallback>
@@ -200,7 +201,7 @@ export default function EditSupplierProfileForm() {
                 type="file" 
                 className="hidden"
                 ref={logoInputRef}
-                onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'logo', setIsUploadingLogo, 'logoUrl')}
+                onChange={(e) => handleImageUpload(e, 'logo', setIsUploadingLogo, 'logoUrl')}
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingLogo}
             />
@@ -311,11 +312,20 @@ export default function EditSupplierProfileForm() {
                         Subir Portada
                     </Button>
                 </div>
-                {coverPhotoUrlValue && (
-                    <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
-                        <Image src={coverPhotoUrlValue} alt="Vista previa de portada" fill className="object-cover"/>
-                    </div>
-                )}
+                <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
+                     {isUploadingCover && (
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+                            <Loader2 className="h-10 w-10 text-white animate-spin" />
+                        </div>
+                    )}
+                    {coverPhotoUrlPreview ? (
+                        <Image src={coverPhotoUrlPreview} alt="Vista previa de portada" fill className="object-cover"/>
+                    ) : (
+                         <div className="bg-muted h-full w-full flex items-center justify-center">
+                            <p className="text-muted-foreground text-sm">Sin portada</p>
+                        </div>
+                    )}
+                </div>
               <FormControl>
                 <Input type="url" placeholder="Pega una URL o sube una imagen" {...field} />
               </FormControl>
@@ -323,7 +333,7 @@ export default function EditSupplierProfileForm() {
                 type="file"
                 className="hidden"
                 ref={coverPhotoInputRef}
-                onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'coverPhoto', setIsUploadingCover, 'coverPhotoUrl')}
+                onChange={(e) => handleImageUpload(e, 'coverPhoto', setIsUploadingCover, 'coverPhotoUrl')}
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingCover}
                />
