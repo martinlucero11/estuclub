@@ -241,7 +241,7 @@ const SuppliersCarousel = ({ filter }: { filter?: 'featured' | 'new' | 'all' }) 
     }
 
     return (
-        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full gap-4 overflow-x-auto pb-6 pt-2 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {suppliers.map((supplier) => (
                 <SupplierCard key={supplier.id} supplier={supplier} />
             ))}
@@ -254,19 +254,17 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
     return (
-        <Link href={`/proveedores/${supplier.slug}`} passHref className="transition-transform hover:-translate-y-1 block">
-            <Card className="h-full w-56 flex-shrink-0 overflow-hidden">
-                <CardContent className="flex h-full flex-col p-4 items-center justify-center text-center">
-                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-                        <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                            {supplierInitials}
-                        </AvatarFallback>
-                    </Avatar>
-                    <h3 className="mt-4 font-bold text-md text-foreground line-clamp-1">{supplier.name}</h3>
-                    <p className="capitalize text-xs text-muted-foreground mt-1">{supplier.type}</p>
-                </CardContent>
-            </Card>
+        <Link href={`/proveedores/${supplier.slug}`} passHref>
+            <div className="w-24 flex-shrink-0 flex flex-col items-center text-center gap-2 snap-start group">
+                 <Avatar className="h-20 w-20 rounded-2xl bg-white shadow-sm border border-slate-100 p-2 group-hover:shadow-md transition-shadow">
+                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-contain" />
+                    <AvatarFallback className="bg-transparent text-2xl font-bold text-muted-foreground rounded-lg">
+                        {supplierInitials}
+                    </AvatarFallback>
+                </Avatar>
+                <h3 className="text-[13px] font-bold text-slate-800 w-full truncate leading-tight">{supplier.name}</h3>
+                <p className="text-[11px] font-medium text-slate-500 w-full capitalize truncate leading-tight">{supplier.type}</p>
+            </div>
         </Link>
     );
 };
@@ -277,15 +275,13 @@ const SuppliersSectionSkeleton = ({ title }: { title: string }) => (
             <Skeleton className="h-7 w-40" />
             <Skeleton className="h-5 w-20" />
         </div>
-        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-            {[...Array(3)].map((_, i) => (
-                <Card key={i} className="h-full w-56 flex-shrink-0">
-                    <CardContent className="flex h-full flex-col p-4 items-center justify-center">
-                        <Skeleton className="h-20 w-20 rounded-full" />
-                        <Skeleton className="mt-4 h-5 w-3/4" />
-                        <Skeleton className="mt-1 h-4 w-1/2" />
-                    </CardContent>
-                </Card>
+        <div className="flex w-full gap-4 overflow-x-auto pb-6 pt-2">
+             {[...Array(4)].map((_, i) => (
+                <div key={i} className="w-24 flex-shrink-0 flex flex-col items-center text-center gap-2">
+                    <Skeleton className="h-20 w-20 rounded-2xl" />
+                    <Skeleton className="mt-1 h-4 w-full" />
+                    <Skeleton className="h-3 w-3/4" />
+                </div>
             ))}
         </div>
     </div>
