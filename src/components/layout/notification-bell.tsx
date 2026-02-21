@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import { Bell, Gift, Megaphone } from 'lucide-react';
+import { Bell, BellRing, Gift, Megaphone } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
@@ -106,7 +106,7 @@ export default function NotificationBell() {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon">
-          <Bell className="h-6 w-6" />
+          <BellRing className="h-6 w-6" />
           <span className="sr-only">Abrir notificaciones</span>
         </Button>
       </PopoverTrigger>

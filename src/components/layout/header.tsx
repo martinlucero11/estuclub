@@ -1,8 +1,7 @@
-
 'use client';
 
 import React from 'react';
-import { Menu, User } from 'lucide-react';
+import { LayoutGrid, User } from 'lucide-react';
 import Link from 'next/link';
 import {
   Sheet,
@@ -120,7 +119,7 @@ function MainMenu() {
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
+                    <LayoutGrid className="h-6 w-6" />
                     <span className="sr-only">Abrir menú</span>
                 </Button>
             </SheetTrigger>
