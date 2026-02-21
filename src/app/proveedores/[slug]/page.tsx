@@ -1,119 +1,97 @@
-
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
-import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Church, Scale, Ticket, ConciergeBell } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
-import { Perk, makePerkSerializable } from '@/lib/data';
-import type { Service, Availability } from '@/lib/data';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ServiceList from '@/components/supplier/service-list';
+import { Perk, makePerkSerializable, SerializablePerk } from '@/lib/data';
+import type { CluberCategory, SupplierProfile } from '@/types/data';
+import Image from 'next/image';
 
-interface SupplierProfile {
-    id: string;
-    name: string;
-    type: 'Institucion' | 'Club' | 'Iglesia' | 'Comercio' | 'Estado';
-    slug: string;
-    logoUrl?: string;
-    description?: string;
-    allowsBooking?: boolean;
-}
-
-const typeIcons = {
-    Institucion: Building,
-    Club: Briefcase,
-    Iglesia: Church,
-    Comercio: Briefcase,
-    Estado: Scale,
+const categoryIcons: Record<CluberCategory, React.ElementType> = {
+    Comercio: ShoppingBag,
+    Profesional: Briefcase,
+    Empresa: Building,
+    Emprendimiento: Users,
+    Salud: Heart,
+    Estética: Briefcase,
+    Servicios: Wrench,
 };
-
 
 function ProfileSkeleton() {
     return (
-        <div className="space-y-8 p-4 md:p-8">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-                <Skeleton className="h-32 w-32 rounded-full" />
-                <div className="space-y-3">
-                    <Skeleton className="h-8 w-64" />
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-12 w-full" />
+        <div>
+            <div className="relative mb-16">
+                <Skeleton className="h-48 w-full" />
+                <div className="absolute -bottom-16 left-6">
+                    <Skeleton className="h-32 w-32 rounded-full border-4 border-background" />
                 </div>
             </div>
-            <Skeleton className="h-10 w-full" />
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {[...Array(3)].map((_, i) => (
-                    <div key={i} className="space-y-4">
-                        <Skeleton className="h-48 w-full" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-3/4" />
-                            <Skeleton className="h-4 w-1/2" />
-                        </div>
-                    </div>
-                ))}
+            <div className="px-6 py-4 space-y-4">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-12 w-full" />
             </div>
+             <div className="px-6 py-8">
+                 <Skeleton className="h-7 w-48 mb-4" />
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="space-y-4">
+                            <Skeleton className="h-48 w-full rounded-2xl" />
+                        </div>
+                    ))}
+                </div>
+             </div>
         </div>
     )
 }
 
-function SupplierProfileContent({ slug }: { slug: string }) {
+function CluberProfileContent({ slug }: { slug: string }) {
     const firestore = useFirestore();
-    const [supplier, setSupplier] = useState<SupplierProfile | null>(null);
+    const [cluber, setCluber] = useState<SupplierProfile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Fetch supplier data
+    // Fetch cluber data
     useEffect(() => {
-        const fetchSupplier = async () => {
+        const fetchCluber = async () => {
             if (!slug) return;
             setIsLoading(true);
             try {
                 const q = query(collection(firestore, 'roles_supplier'), where('slug', '==', slug), limit(1));
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
-                    setError('No se encontró el proveedor.');
+                    setError('No se encontró el Cluber.');
                 } else {
-                    const supplierDoc = querySnapshot.docs[0];
-                    setSupplier({ id: supplierDoc.id, ...supplierDoc.data() } as SupplierProfile);
+                    const cluberDoc = querySnapshot.docs[0];
+                    setCluber({ id: cluberDoc.id, ...cluberDoc.data() } as SupplierProfile);
                 }
             } catch (err) {
                 console.error(err);
-                setError('Error al cargar el proveedor.');
+                setError('Error al cargar el Cluber.');
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchSupplier();
+        fetchCluber();
     }, [firestore, slug]);
     
     const benefitsQuery = useMemoFirebase(() => {
-        if (!supplier) return null;
-        return query(collection(firestore, 'benefits'), where('ownerId', '==', supplier.id));
-    }, [supplier, firestore]);
+        if (!cluber) return null;
+        return query(collection(firestore, 'benefits'), where('ownerId', '==', cluber.id), where('active', '==', true));
+    }, [cluber, firestore]);
+
     const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
 
-    const serializableBenefits = useMemo(() => {
+    const serializableBenefits: SerializablePerk[] = useMemo(() => {
         if (!benefits) return [];
         return benefits.map(makePerkSerializable);
     }, [benefits]);
-    
-    const servicesQuery = useMemoFirebase(() => {
-        if (!supplier) return null;
-        return query(collection(firestore, `roles_supplier/${supplier.id}/services`));
-    }, [supplier, firestore]);
-    const { data: services, isLoading: servicesLoading } = useCollection<Service>(servicesQuery);
-
-    const availabilityRef = useMemoFirebase(() => {
-        if (!supplier || !firestore) return null;
-        return doc(firestore, 'roles_supplier', supplier.id, 'availability', 'schedule');
-    }, [supplier, firestore]);
-    const { data: availability, isLoading: availabilityLoading } = useDoc<Availability>(availabilityRef);
-
 
     if (isLoading) {
         return <ProfileSkeleton />;
@@ -130,75 +108,61 @@ function SupplierProfileContent({ slug }: { slug: string }) {
         );
     }
     
-    if (!supplier) {
+    if (!cluber) {
         return (
             <div className="flex items-center justify-center pt-16">
                  <Alert variant="destructive" className="max-w-lg">
-                    <AlertTitle>Proveedor no encontrado</AlertTitle>
-                    <AlertDescription>No se pudo encontrar un proveedor con la URL especificada.</AlertDescription>
+                    <AlertTitle>Cluber no encontrado</AlertTitle>
+                    <AlertDescription>No se pudo encontrar un Cluber con la URL especificada.</AlertDescription>
                 </Alert>
             </div>
         )
     }
 
-    const TypeIcon = typeIcons[supplier.type] || Briefcase;
-    const defaultTab = supplier.allowsBooking ? "services" : "benefits";
+    const TypeIcon = categoryIcons[cluber.type] || Users;
+    const coverPhoto = cluber.coverPhotoUrl || 'https://images.unsplash.com/photo-1522252234503-e356532cafd5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80';
 
     return (
-        <div className="space-y-8 p-4 md:p-8">
-            <header className="flex flex-col sm:flex-row items-center gap-6">
-                <Avatar className="h-32 w-32 rounded-full border-4 border-primary">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} />
-                    <AvatarFallback className="text-5xl">
-                       {supplier.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                </Avatar>
-                <div className="text-center sm:text-left">
-                    <div className="flex items-center gap-3 justify-center sm:justify-start">
-                         <TypeIcon className="h-6 w-6 text-muted-foreground" />
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-                            {supplier.name}
-                        </h1>
-                    </div>
-                    <p className="mt-2 text-muted-foreground max-w-xl">{supplier.description || 'Este proveedor aún no ha añadido una descripción.'}</p>
+        <div>
+            <header className="relative mb-16">
+                <div className="h-48 w-full bg-muted">
+                    <Image src={coverPhoto} alt={`${cluber.name} cover photo`} fill className="object-cover" />
+                </div>
+                 <div className="absolute -bottom-16 left-6">
+                    <Avatar className="h-32 w-32 rounded-full border-4 border-background bg-background">
+                        <AvatarImage src={cluber.logoUrl} alt={cluber.name} />
+                        <AvatarFallback className="text-5xl">
+                           {cluber.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
                 </div>
             </header>
+            
+            <div className="px-6 py-4 space-y-4">
+                <div className="space-y-1">
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                        {cluber.name}
+                    </h1>
+                     <div className="flex items-center gap-2 text-muted-foreground">
+                         <TypeIcon className="h-4 w-4" />
+                        <p className="capitalize">{cluber.type}</p>
+                    </div>
+                </div>
+                <p className="text-muted-foreground max-w-xl">{cluber.description || 'Este Cluber aún no ha añadido una descripción.'}</p>
+            </div>
 
-            <Tabs defaultValue={defaultTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="services">
-                        <ConciergeBell className="mr-2 h-4 w-4" />
-                        Servicios
-                    </TabsTrigger>
-                    <TabsTrigger value="benefits">
-                        <Ticket className="mr-2 h-4 w-4" />
-                        Beneficios
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="services" className="mt-6">
-                    {servicesLoading || availabilityLoading ? (
-                        <Skeleton className="h-96 w-full" />
-                    ) : (
-                        <ServiceList
-                            services={services || []}
-                            availability={availability || { schedule: {} }}
-                            supplierId={supplier.id}
-                            allowsBooking={supplier.allowsBooking || false}
-                        />
-                    )}
-                </TabsContent>
-                <TabsContent value="benefits" className="mt-6">
-                    {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
-                </TabsContent>
-            </Tabs>
+             <div className="px-6 py-8">
+                 <h2 className="text-2xl font-bold mb-4">Beneficios Activos</h2>
+                {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
+            </div>
         </div>
     );
 }
 
-export default function SupplierProfilePage({ params }: { params: { slug: string } }) {
+export default function CluberProfilePage({ params }: { params: { slug: string } }) {
     return (
         <MainLayout>
-            <SupplierProfileContent slug={params.slug} />
+            <CluberProfileContent slug={params.slug} />
         </MainLayout>
     );
 }

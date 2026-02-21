@@ -10,12 +10,24 @@ import { Timestamp } from "firebase/firestore";
 export type UserRole = 'admin' | 'supplier' | 'user';
 
 /**
+ * Defines the categories for Clubers (suppliers).
+ */
+export type CluberCategory = 'Comercio' | 'Profesional' | 'Empresa' | 'Emprendimiento' | 'Salud' | 'Estética' | 'Servicios';
+export const cluberCategories: CluberCategory[] = ['Comercio', 'Profesional', 'Empresa', 'Emprendimiento', 'Salud', 'Estética', 'Servicios'];
+
+
+/**
  * Represents the profile data stored in /roles_supplier/{uid}
  */
 export interface SupplierProfile {
   id: string; // Document ID (same as user UID)
-  name: string; // This was displayName, corrected to match Firestore field
+  name: string;
   email: string;
+  type: CluberCategory; // Changed from old enum
+  slug: string;
+  description?: string;
+  logoUrl?: string;
+  coverPhotoUrl?: string; // Added for new profile UI
   // --- Module Capabilities ---
   announcementsEnabled?: boolean;
   appointmentsEnabled?: boolean;

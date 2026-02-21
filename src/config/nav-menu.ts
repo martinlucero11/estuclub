@@ -75,7 +75,7 @@ export const navConfig: NavConfig = {
             supplierCapability: "appointmentsEnabled",
         },
         {
-            title: "Gestión de Proveedores",
+            title: "Gestión de Clubers",
             href: "/dashboard/supplier-management",
             icon: Users,
             role: ["admin"],

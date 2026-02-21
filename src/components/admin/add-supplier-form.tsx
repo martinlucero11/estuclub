@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,15 +19,17 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { UserPlus, Briefcase, Building, Church, ShoppingBasket, Scale } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
+import { cluberCategories } from '@/types/data';
 
 const formSchema = z.object({
   email: z.string().email('El correo electrónico no es válido.'),
-  name: z.string().min(2, 'El nombre del proveedor debe tener al menos 2 caracteres.'),
-  type: z.enum(['Institucion', 'Club', 'Iglesia', 'Comercio', 'Estado']),
+  name: z.string().min(2, 'El nombre del Cluber debe tener al menos 2 caracteres.'),
+  type: z.enum(cluberCategories, { required_error: 'Debes seleccionar una categoría.' }),
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
+  coverPhotoUrl: z.string().url('URL de portada no válida').optional().or(z.literal('')),
 });
 
 function slugify(text: string) {
@@ -60,6 +61,7 @@ export default function AddSupplierForm() {
       type: 'Comercio',
       description: '',
       logoUrl: '',
+      coverPhotoUrl: '',
     },
   });
 
@@ -90,17 +92,18 @@ export default function AddSupplierForm() {
       await setDoc(supplierRoleRef, {
         name: values.name,
         type: values.type,
-        email: values.email, // Add email for easier lookup in admin panels
-        userId: userId, // Add userId for reference
+        email: values.email,
+        userId: userId,
         slug: slug,
         description: values.description || '',
         logoUrl: values.logoUrl || '',
+        coverPhotoUrl: values.coverPhotoUrl || '',
         allowsBooking: false, // Default to false
       });
 
       toast({
-        title: 'Proveedor añadido',
-        description: `El usuario ${values.email} ahora tiene el rol de proveedor.`,
+        title: 'Cluber añadido',
+        description: `El usuario ${values.email} ahora es un Cluber.`,
       });
       form.reset();
     } catch (error: any) {
@@ -108,7 +111,7 @@ export default function AddSupplierForm() {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'No se pudo añadir el rol de proveedor.',
+        description: 'No se pudo añadir el rol de Cluber.',
       });
     } finally {
       setIsSubmitting(false);
@@ -127,7 +130,7 @@ export default function AddSupplierForm() {
               <FormControl>
                 <Input placeholder="usuario@email.com" {...field} />
               </FormControl>
-               <FormDescription>El correo del usuario al que se le asignará el rol.</FormDescription>
+               <FormDescription>El correo del usuario al que se le asignará el rol de Cluber.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -137,7 +140,7 @@ export default function AddSupplierForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre Público del Proveedor</FormLabel>
+              <FormLabel>Nombre Público del Cluber</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Café Martínez" {...field} />
               </FormControl>
@@ -150,7 +153,7 @@ export default function AddSupplierForm() {
           name="type"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tipo de Proveedor</FormLabel>
+              <FormLabel>Categoría del Cluber</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -158,11 +161,9 @@ export default function AddSupplierForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Institucion"><Building className="mr-2 h-4 w-4" />Institución</SelectItem>
-                  <SelectItem value="Club"><Briefcase className="mr-2 h-4 w-4" />Club</SelectItem>
-                  <SelectItem value="Iglesia"><Church className="mr-2 h-4 w-4" />Iglesia</SelectItem>
-                  <SelectItem value="Comercio"><ShoppingBasket className="mr-2 h-4 w-4" />Comercio</SelectItem>
-                  <SelectItem value="Estado"><Scale className="mr-2 h-4 w-4" />Estado</SelectItem>
+                  {cluberCategories.map(category => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -176,7 +177,7 @@ export default function AddSupplierForm() {
             <FormItem>
               <FormLabel>Descripción</FormLabel>
               <FormControl>
-                <Textarea placeholder="Describe brevemente al proveedor..." {...field} />
+                <Textarea placeholder="Describe brevemente al Cluber..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -195,8 +196,21 @@ export default function AddSupplierForm() {
             </FormItem>
           )}
         />
+         <FormField
+          control={form.control}
+          name="coverPhotoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL de Foto de Portada (Opcional)</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://ejemplo.com/cover.png" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? 'Añadiendo...' : <><UserPlus className="mr-2 h-4 w-4" />Añadir Proveedor</>}
+          {isSubmitting ? 'Añadiendo...' : <><UserPlus className="mr-2 h-4 w-4" />Añadir Cluber</>}
         </Button>
       </form>
     </Form>

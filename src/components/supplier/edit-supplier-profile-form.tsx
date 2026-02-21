@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,21 +17,17 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { Save, Building, Loader2 } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
+import { SupplierProfile } from '@/types/data';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'El nombre del proveedor debe tener al menos 2 caracteres.'),
+  name: z.string().min(2, 'El nombre del Cluber debe tener al menos 2 caracteres.'),
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
+  coverPhotoUrl: z.string().url('URL de foto de portada no válida').optional().or(z.literal('')),
 });
-
-interface SupplierProfile {
-    name: string;
-    description?: string;
-    logoUrl?: string;
-}
 
 function slugify(text: string) {
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
@@ -65,6 +60,7 @@ export default function EditSupplierProfileForm() {
       name: '',
       description: '',
       logoUrl: '',
+      coverPhotoUrl: '',
     },
   });
 
@@ -74,6 +70,7 @@ export default function EditSupplierProfileForm() {
             name: supplierProfile.name,
             description: supplierProfile.description || '',
             logoUrl: supplierProfile.logoUrl || '',
+            coverPhotoUrl: supplierProfile.coverPhotoUrl || '',
         });
     }
   }, [supplierProfile, form]);
@@ -81,7 +78,7 @@ export default function EditSupplierProfileForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !supplierRef) {
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo encontrar tu perfil de proveedor.' });
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo encontrar tu perfil de Cluber.' });
         return;
     }
     
@@ -93,6 +90,7 @@ export default function EditSupplierProfileForm() {
           name: values.name,
           description: values.description,
           logoUrl: values.logoUrl,
+          coverPhotoUrl: values.coverPhotoUrl,
           slug: newSlug, // Update slug in case name changes
       });
 
@@ -118,6 +116,7 @@ export default function EditSupplierProfileForm() {
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-32" />
         </div>
     )
@@ -131,7 +130,7 @@ export default function EditSupplierProfileForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre Público del Proveedor</FormLabel>
+              <FormLabel>Nombre Público del Cluber</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Café Martínez" {...field} />
               </FormControl>
@@ -160,6 +159,19 @@ export default function EditSupplierProfileForm() {
               <FormLabel>URL del Logo</FormLabel>
               <FormControl>
                 <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
+              </FormControl>
+               <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="coverPhotoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL de Foto de Portada</FormLabel>
+              <FormControl>
+                <Input type="url" placeholder="https://ejemplo.com/portada.png" {...field} />
               </FormControl>
                <FormMessage />
             </FormItem>

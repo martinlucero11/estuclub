@@ -1,38 +1,37 @@
-
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Store, Building, Briefcase, Church, Scale, User, Search, ShoppingBasket } from 'lucide-react';
+import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
-import { Input } from '@/components/ui/input';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
+import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
+import { Button } from '@/components/ui/button';
 
-interface SupplierProfile {
-    id: string;
-    name: string;
-    type: 'Institucion' | 'Club' | 'Iglesia' | 'Comercio' | 'Estado';
-    slug: string;
-    logoUrl?: string;
-    description?: string;
-}
-
-const typeIcons = {
-    Institucion: Building,
-    Club: Briefcase,
-    Iglesia: Church,
-    Comercio: ShoppingBasket,
-    Estado: Scale,
+// Mapping new categories to icons
+const categoryIcons: Record<CluberCategory, React.ElementType> = {
+    Comercio: ShoppingBag,
+    Profesional: Briefcase,
+    Empresa: Building,
+    Emprendimiento: Users,
+    Salud: Heart,
+    Estética: Briefcase, // using briefcase as a placeholder
+    Servicios: Wrench,
 };
 
-function SuppliersPageSkeleton() {
+
+function ClubersPageSkeleton() {
     return (
+        <div className="space-y-6">
+             <div className="flex space-x-2 overflow-x-auto pb-2">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-9 w-24 rounded-full" />)}
+            </div>
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
                 <Card key={i} className="p-6 flex flex-col items-center justify-center">
@@ -42,75 +41,86 @@ function SuppliersPageSkeleton() {
                 </Card>
             ))}
         </div>
+        </div>
     );
 }
 
-function SupplierListPage() {
+function CluberListPage() {
     const firestore = useFirestore();
-    const [searchTerm, setSearchTerm] = useState('');
+    const [activeFilter, setActiveFilter] = useState<CluberCategory | 'Todos'>('Todos');
 
-    const suppliersQuery = useMemoFirebase(
-        () => query(collection(firestore, 'roles_supplier'), orderBy('name')),
-        [firestore]
+    const clubersQuery = useMemoFirebase(
+        () => {
+            const baseQuery = collection(firestore, 'roles_supplier');
+            if (activeFilter === 'Todos') {
+                return query(baseQuery, orderBy('name'));
+            }
+            return query(baseQuery, where('type', '==', activeFilter), orderBy('name'));
+        },
+        [firestore, activeFilter]
     );
 
-    const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
+    const { data: clubers, isLoading, error } = useCollection<SupplierProfile>(clubersQuery);
     
-    const filteredSuppliers = useMemo(() => {
-        if (!suppliers) return [];
-        return suppliers.filter(supplier =>
-            supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [suppliers, searchTerm]);
-
-
      if (isLoading) {
-        return <SuppliersPageSkeleton />;
+        return <ClubersPageSkeleton />;
     }
 
     if (error) {
-        return <p className="text-destructive">Error al cargar los proveedores.</p>;
+        return <p className="text-destructive">Error al cargar los Clubers.</p>;
     }
 
     return (
         <div className="space-y-6">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                    type="text"
-                    placeholder="Buscar un supplier..."
-                    className="w-full pl-10"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4">
+                <Button
+                    variant={activeFilter === 'Todos' ? 'default' : 'outline'}
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setActiveFilter('Todos')}
+                >
+                    Todos
+                </Button>
+                {cluberCategories.map(category => (
+                    <Button
+                        key={category}
+                        variant={activeFilter === category ? 'default' : 'outline'}
+                        size="sm"
+                        className="rounded-full whitespace-nowrap"
+                        onClick={() => setActiveFilter(category)}
+                    >
+                        {category}
+                    </Button>
+                ))}
             </div>
 
-            {filteredSuppliers.length === 0 ? (
+            {clubers && clubers.length === 0 ? (
                 <EmptyState
                     icon={Search}
-                    title="No se encontraron suppliers"
-                    description={searchTerm ? 'Intenta con otro término de búsqueda.' : 'Aún no se han registrado suppliers.'}
+                    title="No se encontraron Clubers"
+                    description={activeFilter === 'Todos' ? 'Aún no se han registrado Clubers.' : `No hay Clubers en la categoría '${activeFilter}'.`}
                 />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredSuppliers.map(supplier => {
-                        const TypeIcon = typeIcons[supplier.type] || User;
-                        const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    {clubers?.map(cluber => {
+                        const TypeIcon = categoryIcons[cluber.type] || Users;
+                        const cluberInitials = cluber.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
-                            <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full">
+                            <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
                                     <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-                                        <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
+                                        <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
                                         <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                                            {supplierInitials}
+                                            {cluberInitials}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <h3 className="mt-4 font-bold text-lg text-foreground">{supplier.name}</h3>
+                                    <h3 className="mt-4 font-bold text-lg text-foreground">{cluber.name}</h3>
                                     <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                                         <TypeIcon className="h-4 w-4" />
-                                        <p className="capitalize">{supplier.type}</p>
+                                        <p className="capitalize">{cluber.type}</p>
                                     </div>
+                                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{cluber.description}</p>
                                 </Card>
                             </Link>
                         );
@@ -122,16 +132,16 @@ function SupplierListPage() {
 }
 
 
-export default function SuppliersPage() {
+export default function ClubersPage() {
     return (
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Suppliers" />
+                <PageHeader title="Clubers" />
                 <p className="text-muted-foreground -mt-8 mb-8">
-                    Explora los comercios, instituciones y clubes asociados.
+                    Explora los comercios, profesionales y empresas asociadas.
                 </p>
 
-                <SupplierListPage />
+                <CluberListPage />
             </div>
         </MainLayout>
     )
