@@ -25,6 +25,7 @@ import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import Image from 'next/image';
 
 
 const formSchema = z.object({
@@ -59,8 +60,10 @@ export default function EditSupplierProfileForm() {
   const { user } = useUser();
   const storage = useStorage();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const coverPhotoInputRef = useRef<HTMLInputElement>(null);
 
   const supplierRef = useMemoFirebase(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
@@ -92,43 +95,42 @@ export default function EditSupplierProfileForm() {
     }
   }, [supplierProfile, form]);
 
-  const handleLogoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0 || !user) {
-      return;
-    }
-    const file = event.target.files[0];
-
+  const handleImageUpload = async (
+    file: File,
+    path: 'logo' | 'coverPhoto',
+    setUploading: (isUploading: boolean) => void,
+    fieldName: 'logoUrl' | 'coverPhotoUrl'
+  ) => {
+    if (!user) return;
+    
     if (!file.type.startsWith('image/')) {
         toast({ variant: 'destructive', title: 'Archivo inválido', description: 'Por favor, selecciona una imagen.' });
         return;
     }
     if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'El logo no puede pesar más de 5MB.' });
+        toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'La imagen no puede pesar más de 5MB.' });
         return;
     }
 
-    setIsUploading(true);
+    setUploading(true);
     try {
-        const logoStorageRef = storageRef(storage, `suppliers/${user.uid}/logo`);
-        await uploadBytes(logoStorageRef, file);
-        const downloadURL = await getDownloadURL(logoStorageRef);
+        const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}`);
+        await uploadBytes(imageStorageRef, file);
+        const downloadURL = await getDownloadURL(imageStorageRef);
         
-        form.setValue('logoUrl', downloadURL, { shouldDirty: true });
-        // No need to update doc here, it will be updated on form submit
+        form.setValue(fieldName, downloadURL, { shouldDirty: true });
 
         toast({
-            title: 'Logo subido',
-            description: 'Haz clic en "Guardar Cambios" para aplicar tu nuevo logo.'
+            title: 'Imagen subida',
+            description: 'Haz clic en "Guardar Cambios" para aplicar la nueva imagen.'
         });
-
     } catch (error) {
-        console.error("Error uploading logo:", error);
-        toast({ variant: 'destructive', title: 'Error de subida', description: 'No se pudo subir el logo.' });
+        console.error(`Error uploading ${path}:`, error);
+        toast({ variant: 'destructive', title: 'Error de subida', description: `No se pudo subir la imagen.` });
     } finally {
-        setIsUploading(false);
+        setUploading(false);
     }
   };
-
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !supplierRef) {
@@ -182,41 +184,33 @@ export default function EditSupplierProfileForm() {
           render={({ field }) => (
             <FormItem className="flex flex-col items-center">
               <FormLabel>Logo del Cluber</FormLabel>
+              <div className="relative h-32 w-32">
+                  {isUploadingLogo && (
+                        <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center z-10">
+                          <Loader2 className="h-10 w-10 text-white animate-spin" />
+                      </div>
+                  )}
+                  <Avatar className="h-32 w-32">
+                        <AvatarImage src={field.value || ''} alt="Logo" className="object-cover" />
+                        <AvatarFallback className="text-4xl">
+                          {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
+                        </AvatarFallback>
+                  </Avatar>
+              </div>
               <FormControl>
-                <div className="relative">
-                    <button
-                        type="button"
-                        onClick={() => !isUploading && fileInputRef.current?.click()}
-                        className="relative group h-32 w-32 rounded-full"
-                        disabled={isUploading}
-                    >
-                        <Avatar className="h-32 w-32">
-                             <AvatarImage src={field.value || ''} alt="Logo" className="object-cover" />
-                             <AvatarFallback className="text-4xl">
-                                {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
-                             </AvatarFallback>
-                        </Avatar>
-                        {!isUploading && (
-                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                <Camera className="h-8 w-8 text-white" />
-                            </div>
-                        )}
-                        {isUploading && (
-                             <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
-                                <Loader2 className="h-10 w-10 text-white animate-spin" />
-                            </div>
-                        )}
-                    </button>
-                    <Input 
-                        type="file" 
-                        className="hidden"
-                        ref={fileInputRef}
-                        onChange={handleLogoSelect}
-                        accept="image/png, image/jpeg, image/webp"
-                        disabled={isUploading}
-                    />
-                </div>
+                 <Input 
+                      type="file" 
+                      className="hidden"
+                      ref={logoInputRef}
+                      onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'logo', setIsUploadingLogo, 'logoUrl')}
+                      accept="image/png, image/jpeg, image/webp"
+                      disabled={isUploadingLogo}
+                  />
               </FormControl>
+              <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={isUploadingLogo}>
+                <Camera className="mr-2 h-4 w-4" />
+                Subir Logo
+              </Button>
               <FormMessage />
             </FormItem>
           )}
@@ -302,7 +296,7 @@ export default function EditSupplierProfileForm() {
             <FormItem>
               <FormLabel>URL del Logo</FormLabel>
               <FormControl>
-                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} disabled />
+                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
               </FormControl>
                <FormMessage />
             </FormItem>
@@ -313,15 +307,34 @@ export default function EditSupplierProfileForm() {
           name="coverPhotoUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL de Foto de Portada</FormLabel>
+                <div className="flex items-center justify-between">
+                    <FormLabel>Foto de Portada</FormLabel>
+                    <Button type="button" variant="outline" size="sm" onClick={() => coverPhotoInputRef.current?.click()} disabled={isUploadingCover}>
+                        {isUploadingCover ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                        Subir Portada
+                    </Button>
+                </div>
+                {field.value && (
+                    <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
+                        <Image src={field.value} alt="Vista previa de portada" fill className="object-cover"/>
+                    </div>
+                )}
               <FormControl>
-                <Input type="url" placeholder="https://ejemplo.com/portada.png" {...field} />
+                <Input type="url" placeholder="Pega una URL o sube una imagen" {...field} />
               </FormControl>
+              <Input
+                type="file"
+                className="hidden"
+                ref={coverPhotoInputRef}
+                onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'coverPhoto', setIsUploadingCover, 'coverPhotoUrl')}
+                accept="image/png, image/jpeg, image/webp"
+                disabled={isUploadingCover}
+               />
                <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isSubmitting || isUploading} className="w-full sm:w-auto">
+        <Button type="submit" disabled={isSubmitting || isUploadingLogo || isUploadingCover} className="w-full sm:w-auto">
           {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
           ) : (
