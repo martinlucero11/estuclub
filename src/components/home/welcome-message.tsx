@@ -7,7 +7,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserProfile {
     firstName: string;
-    gender: 'Masculino' | 'Femenino' | 'Otro' | 'Prefiero no decirlo';
 }
 
 export default function WelcomeMessage() {
@@ -18,44 +17,41 @@ export default function WelcomeMessage() {
 
     const getGreeting = () => {
         if (!userProfile) return "Bienvenido a EstuClub";
-        switch (userProfile.gender) {
-            case 'Femenino':
-                return `Bienvenida, ${userProfile.firstName}`;
-            case 'Masculino':
-                return `Bienvenido, ${userProfile.firstName}`;
-            case 'Otro':
-            case 'Prefiero no decirlo':
-                return `Bienvenidx, ${userProfile.firstName}`;
-            default:
-                return `Bienvenid@, ${userProfile.firstName}`;
-        }
+        return `Hola, ${userProfile.firstName} 👋`;
     };
+    
+    const isLoading = isUserLoading || (user && isProfileLoading);
 
-    if (isUserLoading || (user && isProfileLoading)) {
-        return <Skeleton className="h-10 w-3/4" />;
+    if (isLoading) {
+        return (
+             <div className="mb-10 mt-4 px-4 space-y-2">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-5 w-1/2" />
+            </div>
+        );
     }
 
     if (!user || !userProfile) {
         return (
-            <>
-                <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+            <div className="mb-10 mt-4 px-4">
+                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                     Bienvenido a EstuClub
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground font-medium mt-1">
                     Inicia sesión para descubrir beneficios exclusivos.
                 </p>
-            </>
+            </div>
         );
     }
 
     return (
-        <>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+        <div className="mb-10 mt-4 px-4">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                 {getGreeting()}
             </h1>
-            <p className="text-muted-foreground">
-                Descubre beneficios exclusivos, eventos y más, solo para ti.
+            <p className="text-muted-foreground font-medium mt-1">
+                ¿Qué beneficio vas a disfrutar hoy?
             </p>
-        </>
+        </div>
     );
 }

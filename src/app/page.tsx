@@ -1,15 +1,15 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench, Megaphone } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce, useDoc } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, Category, HomeSection, SerializableAnnouncement } from '@/lib/data';
-import type { SupplierProfile, CluberCategory } from '@/types/data';
+import type { SupplierProfile } from '@/types/data';
 import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,6 +18,8 @@ import { getIcon } from '@/components/icons';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AnnouncementCard from '@/components/announcements/announcement-card';
+import { Users, Gift, Megaphone } from 'lucide-react';
+import WelcomeMessage from '@/components/home/welcome-message';
 
 
 // --- STATIC DATA ---
@@ -25,16 +27,6 @@ const bannerColors: { [key: string]: string } = {
     pink: "bg-pink-100 text-pink-800",
     yellow: "bg-yellow-100 text-yellow-800",
     blue: "bg-blue-100 text-blue-800",
-};
-
-const categoryIcons: Record<CluberCategory, React.ElementType> = {
-    Comercio: ShoppingBag,
-    Profesional: Briefcase,
-    Empresa: Building,
-    Emprendimiento: Users,
-    Salud: Heart,
-    Estética: Briefcase,
-    Servicios: Wrench,
 };
 
 // --- CATEGORY GRID ---
@@ -47,11 +39,9 @@ const CategoryGrid = () => {
         return (
             <div className="mt-2 grid grid-cols-4 gap-3">
                 {[...Array(4)].map((_, i) => (
-                        <div key={i} className="flex-shrink-0">
-                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2">
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                            <Skeleton className="h-4 w-16" />
-                        </Card>
+                    <div key={i} className="flex flex-col items-center gap-2">
+                        <Skeleton className="h-16 w-16 rounded-2xl" />
+                        <Skeleton className="h-4 w-12" />
                     </div>
                 ))}
             </div>
@@ -65,11 +55,13 @@ const CategoryGrid = () => {
             {categories.map((category) => {
                 const Icon = getIcon(category.iconName);
                 return (
-                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0">
-                        <Card className="flex h-24 w-full flex-col items-center justify-center gap-2 transition-transform hover:-translate-y-1">
-                            <Icon className={`h-8 w-8 ${category.colorClass}`} strokeWidth={1.5} />
+                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group">
+                         <div className="flex flex-col items-center gap-2">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/30 border-t border-white/20 transform transition-transform group-hover:scale-105 active:scale-95">
+                                <Icon className="text-white h-8 w-8" strokeWidth={2} />
+                            </div>
                             <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
-                        </Card>
+                        </div>
                     </Link>
                 );
             })}
@@ -246,7 +238,6 @@ const SuppliersCarousel = ({ filter }: { filter?: 'featured' | 'new' | 'all' }) 
 
 
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
-    const TypeIcon = categoryIcons[supplier.type] || Users;
     const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
     return (
@@ -260,10 +251,7 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
                         </AvatarFallback>
                     </Avatar>
                     <h3 className="mt-4 font-bold text-md text-foreground line-clamp-1">{supplier.name}</h3>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <TypeIcon className="h-4 w-4" />
-                        <p className="capitalize">{supplier.type}</p>
-                    </div>
+                    <p className="capitalize text-xs text-muted-foreground mt-1">{supplier.type}</p>
                 </CardContent>
             </Card>
         </Link>
@@ -325,13 +313,15 @@ const AnnouncementsCarousel = () => {
 
 const PageSkeleton = () => (
     <MainLayout>
-        <div className="mx-auto w-full">
-            <div className="mx-auto max-w-2xl space-y-12 pb-8">
-                <div className="px-4 space-y-6">
-                    <PerksSectionSkeleton title="Cargando..." />
-                    <PerksSectionSkeleton title="Cargando..." />
-                    <Skeleton className="h-24 w-full" />
-                </div>
+        <div className="mx-auto w-full max-w-2xl px-4 py-8">
+             <div className="space-y-2">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-5 w-1/2" />
+            </div>
+            <div className="space-y-12 mt-10">
+                <PerksSectionSkeleton title="Cargando..." />
+                <PerksSectionSkeleton title="Cargando..." />
+                <Skeleton className="h-24 w-full" />
             </div>
         </div>
     </MainLayout>
@@ -341,16 +331,14 @@ const PageSkeleton = () => (
 // --- MAIN PAGE COMPONENT ---
 export default function HomePage() {
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
 
-    const homeSectionsQuery = useMemoFirebase(() => {
-        if (isUserLoading || user === undefined) return null;
-        return query(
+    const homeSectionsQuery = useMemoFirebase(() => 
+        query(
             collection(firestore, 'home_sections'),
             where('isActive', '==', true),
             orderBy('order', 'asc')
         )
-    }, [firestore, user, isUserLoading]);
+    , [firestore]);
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
     
@@ -366,14 +354,15 @@ export default function HomePage() {
         new_suppliers_carousel: () => <SuppliersCarousel filter="new" />,
     };
 
-    if (sectionsLoading || isUserLoading) {
+    if (sectionsLoading) {
         return <PageSkeleton />;
     }
 
   return (
     <MainLayout>
         <div className="mx-auto w-full">
-            <div className="mx-auto max-w-2xl space-y-12 pb-8">
+             <WelcomeMessage />
+            <div className="space-y-12 pb-8">
                 {sections && sections.map(section => {
                     const Component = componentMap[section.type as HomeSectionType];
                     
