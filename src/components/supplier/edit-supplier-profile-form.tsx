@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -80,6 +79,9 @@ export default function EditSupplierProfileForm() {
       coverPhotoUrl: '',
     },
   });
+
+  const logoUrlValue = form.watch('logoUrl');
+  const coverPhotoUrlValue = form.watch('coverPhotoUrl');
 
   useEffect(() => {
     if (supplierProfile) {
@@ -178,43 +180,50 @@ export default function EditSupplierProfileForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        
+        <FormItem className="flex flex-col items-center">
+            <FormLabel>Logo del Cluber</FormLabel>
+            <div className="relative h-32 w-32">
+                {isUploadingLogo && (
+                    <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center z-10">
+                        <Loader2 className="h-10 w-10 text-white animate-spin" />
+                    </div>
+                )}
+                <Avatar className="h-32 w-32">
+                    <AvatarImage src={logoUrlValue || ''} alt="Logo" className="object-contain" />
+                    <AvatarFallback className="text-4xl">
+                        {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
+                    </AvatarFallback>
+                </Avatar>
+            </div>
+            <Input 
+                type="file" 
+                className="hidden"
+                ref={logoInputRef}
+                onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'logo', setIsUploadingLogo, 'logoUrl')}
+                accept="image/png, image/jpeg, image/webp"
+                disabled={isUploadingLogo}
+            />
+            <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={isUploadingLogo}>
+                <Camera className="mr-2 h-4 w-4" />
+                Subir Logo
+            </Button>
+        </FormItem>
+        
         <FormField
           control={form.control}
           name="logoUrl"
           render={({ field }) => (
-            <FormItem className="flex flex-col items-center">
-              <FormLabel>Logo del Cluber</FormLabel>
-              <div className="relative h-32 w-32">
-                  {isUploadingLogo && (
-                        <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center z-10">
-                          <Loader2 className="h-10 w-10 text-white animate-spin" />
-                      </div>
-                  )}
-                  <Avatar className="h-32 w-32">
-                        <AvatarImage src={field.value || ''} alt="Logo" className="object-cover" />
-                        <AvatarFallback className="text-4xl">
-                          {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
-                        </AvatarFallback>
-                  </Avatar>
-              </div>
+            <FormItem>
+              <FormLabel>URL del Logo</FormLabel>
               <FormControl>
-                 <Input 
-                      type="file" 
-                      className="hidden"
-                      ref={logoInputRef}
-                      onChange={(e) => e.target.files && e.target.files[0] && handleImageUpload(e.target.files[0], 'logo', setIsUploadingLogo, 'logoUrl')}
-                      accept="image/png, image/jpeg, image/webp"
-                      disabled={isUploadingLogo}
-                  />
+                <Input type="url" placeholder="Sube una imagen o pega una URL aquí" {...field} />
               </FormControl>
-              <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={isUploadingLogo}>
-                <Camera className="mr-2 h-4 w-4" />
-                Subir Logo
-              </Button>
-              <FormMessage />
+               <FormMessage />
             </FormItem>
           )}
         />
+        
         <FormField
           control={form.control}
           name="name"
@@ -289,19 +298,7 @@ export default function EditSupplierProfileForm() {
             </FormItem>
           )}
         />
-         <FormField
-          control={form.control}
-          name="logoUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL del Logo</FormLabel>
-              <FormControl>
-                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
-              </FormControl>
-               <FormMessage />
-            </FormItem>
-          )}
-        />
+        
          <FormField
           control={form.control}
           name="coverPhotoUrl"
@@ -314,9 +311,9 @@ export default function EditSupplierProfileForm() {
                         Subir Portada
                     </Button>
                 </div>
-                {field.value && (
+                {coverPhotoUrlValue && (
                     <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
-                        <Image src={field.value} alt="Vista previa de portada" fill className="object-cover"/>
+                        <Image src={coverPhotoUrlValue} alt="Vista previa de portada" fill className="object-cover"/>
                     </div>
                 )}
               <FormControl>
