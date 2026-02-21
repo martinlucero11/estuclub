@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Layers, Gift } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Layers, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
@@ -9,12 +9,14 @@ import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce, useDoc } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, Category, HomeSection } from '@/lib/data';
+import type { SupplierProfile, CluberCategory } from '@/types/data';
 import { makePerkSerializable } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { getIcon } from '@/components/icons';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 // --- STATIC DATA ---
@@ -23,6 +25,17 @@ const bannerColors: { [key: string]: string } = {
     yellow: "bg-yellow-100 text-yellow-800",
     blue: "bg-blue-100 text-blue-800",
 };
+
+const categoryIcons: Record<CluberCategory, React.ElementType> = {
+    Comercio: ShoppingBag,
+    Profesional: Briefcase,
+    Empresa: Building,
+    Emprendimiento: Users,
+    Salud: Heart,
+    Estética: Briefcase,
+    Servicios: Wrench,
+};
+
 
 // --- WELCOME BADGE ---
 const HomeWelcomeBadge = () => {
@@ -238,6 +251,81 @@ const PerksSectionSkeleton = ({ title }: { title: string }) => (
     </div>
 );
 
+// --- SUPPLIERS CAROUSEL ---
+const SuppliersCarousel = () => {
+    const firestore = useFirestore();
+
+    const suppliersQuery = useMemoFirebase(() => {
+        return query(collection(firestore, 'roles_supplier'), orderBy('name'), limit(10));
+    }, [firestore]);
+
+    const { data: suppliers, isLoading } = useCollection<SupplierProfile>(suppliersQuery);
+
+    if (isLoading) return <SuppliersSectionSkeleton title="Proveedores Destacados" />;
+    if (!suppliers || suppliers.length === 0) {
+        return (
+            <EmptyState
+                icon={Users}
+                title="No hay proveedores"
+                description="Vuelve más tarde para ver los proveedores destacados."
+            />
+        );
+    }
+
+    return (
+        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {suppliers.map((supplier) => (
+                <SupplierCard key={supplier.id} supplier={supplier} />
+            ))}
+        </div>
+    );
+};
+
+const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
+    const TypeIcon = categoryIcons[supplier.type] || Users;
+    const supplierInitials = supplier.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+    return (
+        <Link href={`/proveedores/${supplier.slug}`} passHref className="transition-transform hover:-translate-y-1 block">
+            <Card className="h-full w-56 flex-shrink-0 overflow-hidden">
+                <CardContent className="flex h-full flex-col p-4 items-center justify-center text-center">
+                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
+                        <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
+                        <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
+                            {supplierInitials}
+                        </AvatarFallback>
+                    </Avatar>
+                    <h3 className="mt-4 font-bold text-md text-foreground line-clamp-1">{supplier.name}</h3>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        <TypeIcon className="h-4 w-4" />
+                        <p className="capitalize">{supplier.type}</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
+    );
+};
+
+const SuppliersSectionSkeleton = ({ title }: { title: string }) => (
+    <div className="space-y-3">
+        <div className="flex items-center justify-between">
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-5 w-20" />
+        </div>
+        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {[...Array(3)].map((_, i) => (
+                <Card key={i} className="h-full w-56 flex-shrink-0">
+                    <CardContent className="flex h-full flex-col p-4 items-center justify-center">
+                        <Skeleton className="h-20 w-20 rounded-full" />
+                        <Skeleton className="mt-4 h-5 w-3/4" />
+                        <Skeleton className="mt-1 h-4 w-1/2" />
+                    </CardContent>
+                </Card>
+            ))}
+        </div>
+    </div>
+);
+
 
 const PageSkeleton = () => (
     <MainLayout>
@@ -271,12 +359,13 @@ export default function HomePage() {
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
     
-    type HomeSectionType = 'categories_grid' | 'benefits_carousel' | 'single_banner';
+    type HomeSectionType = 'categories_grid' | 'benefits_carousel' | 'single_banner' | 'suppliers_carousel';
 
     const componentMap: { [key in HomeSectionType]: (section: HomeSection) => React.ReactNode } = {
         categories_grid: (section) => <CategoryGrid />,
         benefits_carousel: (section) => <BenefitsCarousel filter={section.filter} />,
         single_banner: (section) => section.bannerId ? <SingleBanner bannerId={section.bannerId} /> : null,
+        suppliers_carousel: (section) => <SuppliersCarousel />,
     };
 
     if (sectionsLoading || isUserLoading) {
@@ -300,6 +389,14 @@ export default function HomePage() {
                                 {section.type === 'benefits_carousel' && (
                                     <Button variant="link" className="text-sm text-primary" asChild>
                                         <Link href="/benefits">
+                                            Ver todos
+                                            <ArrowRight className="ml-1 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )}
+                                 {section.type === 'suppliers_carousel' && (
+                                    <Button variant="link" className="text-sm text-primary" asChild>
+                                        <Link href="/proveedores">
                                             Ver todos
                                             <ArrowRight className="ml-1 h-4 w-4" />
                                         </Link>

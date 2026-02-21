@@ -167,7 +167,7 @@ export interface Category {
   order?: number;
 }
 
-export const homeSectionTypes = ['categories_grid', 'benefits_carousel', 'single_banner', 'featured_perks'] as const;
+export const homeSectionTypes = ['categories_grid', 'benefits_carousel', 'single_banner', 'suppliers_carousel'] as const;
 export type HomeSectionType = typeof homeSectionTypes[number];
 
 export interface HomeSection {
