@@ -165,14 +165,10 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       batch.set(rootRedemptionRef, redemptionData);
       batch.set(userRedemptionRef, redemptionData);
       
-      if (pointsToGrant > 0 && userProfileRef) {
-        batch.update(userProfileRef, { points: increment(pointsToGrant) });
+      if (pointsToGrant > 0) {
+        const userRefToUpdate = doc(firestore, 'users', user.uid);
+        batch.set(userRefToUpdate, { points: increment(pointsToGrant) }, { merge: true });
       }
-
-      // The redemptionCount update is removed to prevent permission errors for non-admin/non-supplier users.
-      // The count can be calculated on the backend if needed, but client-side updates are unreliable here.
-      // const benefitRef = doc(firestore, 'benefits', perk.id);
-      // batch.update(benefitRef, { redemptionCount: increment(1) });
 
       await batch.commit();
 
