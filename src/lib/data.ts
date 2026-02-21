@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 // Correctly typed as a tuple for Zod compatibility
@@ -31,6 +32,7 @@ export interface Perk {
   redemptionCount?: number;
   active?: boolean;
   isFeatured?: boolean;
+  supplierName?: string;
 }
 
 // Serializable type for client-side components
