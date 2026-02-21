@@ -50,11 +50,11 @@ const CategoryGrid = () => {
 
     if (isLoading) {
         return (
-            <div className="mt-2 grid grid-cols-4 gap-3">
+            <div className="mt-2 grid grid-cols-3 gap-4 md:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex flex-col items-center gap-2">
-                        <Skeleton className="h-20 w-20 rounded-3xl md:h-24 md:w-24" />
-                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-28 w-28 rounded-3xl" />
+                        <Skeleton className="mt-2 h-4 w-12" />
                     </div>
                 ))}
             </div>
@@ -64,16 +64,16 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="mt-2 grid grid-cols-4 gap-3">
+        <div className="mt-2 grid grid-cols-3 gap-4 md:grid-cols-4">
             {categories.map((category) => {
                 const emoji = categoryEmojiMap[category.name] || '✨';
                 return (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group">
                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/30 border-t border-white/20 transform transition-transform group-hover:scale-105 active:scale-95">
-                                <span className="text-4xl md:text-5xl drop-shadow-xl transform transition-transform group-hover:scale-110">{emoji}</span>
+                            <div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/30 border-t border-white/20 transform transition-transform group-hover:scale-105 active:scale-95">
+                                <span className="text-6xl drop-shadow-xl transform transition-transform group-hover:scale-110">{emoji}</span>
                             </div>
-                            <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
+                            <span className="text-xs text-center font-medium text-muted-foreground mt-2">{category.name}</span>
                         </div>
                     </Link>
                 );
