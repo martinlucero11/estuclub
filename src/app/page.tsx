@@ -14,7 +14,6 @@ import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
-import { getIcon } from '@/components/icons';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import AnnouncementCard from '@/components/announcements/announcement-card';
@@ -35,12 +34,26 @@ const CategoryGrid = () => {
     const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
+    const categoryEmojiMap: { [key: string]: string } = {
+        'Comercios': '🛒',
+        'Eventos': '🎉',
+        'Comida': '🍔',
+        'Educación': '🎓',
+        'Entretenimiento': '🎬',
+        'Ropa': '👕',
+        'Tecnología': '💻',
+        'Viajes': '✈️',
+        'Salud': '❤️',
+        'Deportes': '⚽',
+        'Belleza': '💅',
+    };
+
     if (isLoading) {
         return (
             <div className="mt-2 grid grid-cols-4 gap-3">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex flex-col items-center gap-2">
-                        <Skeleton className="h-16 w-16 rounded-2xl" />
+                        <Skeleton className="h-20 w-20 rounded-3xl md:h-24 md:w-24" />
                         <Skeleton className="h-4 w-12" />
                     </div>
                 ))}
@@ -53,12 +66,12 @@ const CategoryGrid = () => {
     return (
         <div className="mt-2 grid grid-cols-4 gap-3">
             {categories.map((category) => {
-                const Icon = getIcon(category.iconName);
+                const emoji = categoryEmojiMap[category.name] || '✨';
                 return (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group">
                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/30 border-t border-white/20 transform transition-transform group-hover:scale-105 active:scale-95">
-                                <Icon className="text-white h-8 w-8" strokeWidth={2} />
+                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-3xl bg-gradient-to-br from-primary/80 to-primary flex items-center justify-center shadow-lg shadow-primary/30 border-t border-white/20 transform transition-transform group-hover:scale-105 active:scale-95">
+                                <span className="text-4xl md:text-5xl drop-shadow-xl transform transition-transform group-hover:scale-110">{emoji}</span>
                             </div>
                             <span className="text-xs text-center font-medium text-muted-foreground">{category.name}</span>
                         </div>

@@ -36,6 +36,7 @@ import { doc } from 'firebase/firestore';
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center text-primary">
+            {/* @lock - DO NOT MODIFY THIS LOGO IN FUTURE REFACTORS */}
             <h1 className="font-sans text-2xl sm:text-3xl font-black tracking-tighter text-primary">
                 EstuClub
             </h1>
