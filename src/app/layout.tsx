@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${ptSans.variable} ${logoScript.variable} font-body antialiased`}>
+      <body className={`${ptSans.variable} ${logoScript.variable} font-body antialiased bg-slate-50 dark:bg-slate-950`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

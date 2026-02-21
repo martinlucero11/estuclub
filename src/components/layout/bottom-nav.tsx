@@ -3,53 +3,35 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Gift, Megaphone, QrCode, Store } from 'lucide-react';
+import { Home, Ticket, Trophy, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function BottomNav() {
+const navItems = [
+  { href: '/', label: 'Inicio', icon: Home },
+  { href: '/my-redemptions', label: 'Mis Canjes', icon: Ticket },
+  { href: '/ranking', label: 'Ranking', icon: Trophy },
+  { href: '/profile', label: 'Perfil', icon: User },
+];
+
+export function BottomNav() {
   const pathname = usePathname();
 
-  const navItems = [
-    { href: '/benefits', label: 'Beneficios', icon: Gift },
-    { href: '/proveedores', label: 'Suppliers', icon: Store },
-    { href: '/supplier/scan', label: 'QR', icon: QrCode, isSpecial: true },
-    { href: '/', label: 'Inicio', icon: Home },
-    { href: '/announcements', label: 'Anuncios', icon: Megaphone },
-  ];
-
   return (
-    <nav className="fixed bottom-0 z-40 w-full border-t bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto grid h-16 grid-cols-5 items-center justify-items-center px-4">
-        {navItems.map(({ href, label, icon: Icon, isSpecial }) => {
-          if (isSpecial) {
-            return (
-              <Link
-                key={href}
-                href={href}
-                className="relative -top-5 flex h-16 w-16 flex-col items-center justify-center gap-1 rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition-transform hover:scale-105"
-                aria-label={label}
-              >
-                <Icon className="h-7 w-7" />
-                <span className="text-xs font-bold">{label}</span>
-              </Link>
-            );
-          }
-
-          const isActive = href === '/' ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={cn(
-                'flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground transition-colors hover:text-primary',
-                isActive && 'text-primary'
-              )}
-            >
-              <Icon className="h-6 w-6" />
-              <span className="text-xs">{label}</span>
-            </Link>
-          );
-        })}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+      <div className="flex justify-around items-center h-16">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'flex flex-col items-center justify-center text-gray-500 transition-all duration-200 active:scale-95',
+              pathname === item.href ? 'text-primary' : 'hover:text-primary'
+            )}
+          >
+            <item.icon className="h-6 w-6" />
+            <span className="text-xs mt-1">{item.label}</span>
+          </Link>
+        ))}
       </div>
     </nav>
   );

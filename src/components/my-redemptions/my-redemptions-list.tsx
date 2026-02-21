@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
-import { History, Tag, Calendar, CheckCircle, MapPin, Building, QrCode } from 'lucide-react';
+import { History, Tag, Calendar, CheckCircle, MapPin, Building, Ticket } from 'lucide-react';
 import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
@@ -17,9 +17,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Image from 'next/image';
-import QRCode from 'qrcode';
 import { EmptyState } from '../ui/empty-state';
-
+import RedemptionQRCodeDialog from './redemption-qr-code-dialog'; // Import the new dialog
 
 function RedemptionsListSkeleton() {
     return (
@@ -39,29 +38,11 @@ function RedemptionsListSkeleton() {
     );
 }
 
-// Use denormalized data from the redemption object
 function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefitRedemption }) {
-    const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (redemption.status === 'pending' && redemption.qrCodeValue) {
-            QRCode.toDataURL(redemption.qrCodeValue, {
-                errorCorrectionLevel: 'H',
-                width: 160, // smaller size for inline display
-            })
-            .then(url => {
-                setQrCodeUrl(url);
-            })
-            .catch(err => {
-                console.error("QR Code Generation Error:", err);
-            });
-        }
-    }, [redemption]);
-    
     const redeemedDate = new Date(redemption.redeemedAt);
 
     return (
-        <div className="flex flex-col md:flex-row gap-6 px-4 pb-4">
+        <div className="flex flex-col gap-6 px-4 pb-4">
             <div className="flex-1 space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                      <div className="relative h-32 w-full sm:w-32 flex-shrink-0">
@@ -91,13 +72,6 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
                     </ul>
                 </div>
             </div>
-            
-            {redemption.status === 'pending' && qrCodeUrl && (
-                <div className="w-full md:w-48 flex flex-col items-center justify-center text-center p-4 bg-background rounded-lg">
-                    <img src={qrCodeUrl} alt={`Código QR para ${redemption.benefitTitle}`} className="rounded-lg" />
-                    <p className="mt-2 text-xs text-muted-foreground">Muestra este QR en el comercio para validarlo.</p>
-                </div>
-            )}
         </div>
     );
 }
@@ -109,7 +83,6 @@ export default function MyRedemptionsList() {
 
     const redemptionsQuery = useMemoFirebase(() => {
         if (!user) return null;
-        // Point to the user's subcollection for secure, isolated data fetching.
         return query(
             collection(firestore, 'users', user.uid, 'redeemed_benefits'),
             orderBy('redeemedAt', 'desc')
@@ -161,14 +134,19 @@ export default function MyRedemptionsList() {
                                         </div>
                                     </div>
                                     <div className="md:col-span-1 flex items-center justify-start md:justify-end gap-4">
-                                        <Badge variant={redemption.status === 'used' ? 'secondary' : 'default'}>
-                                            {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
-                                        </Badge>
-                                        {redemption.status === 'pending' ? (
-                                            <div className="flex items-center text-primary">
-                                                <QrCode className="h-5 w-5" />
-                                            </div>
+                                         {redemption.status === 'pending' && redemption.qrCodeValue ? (
+                                            <RedemptionQRCodeDialog 
+                                                redemptionId={redemption.id}
+                                                qrCodeValue={redemption.qrCodeValue}
+                                                benefitTitle={redemption.benefitTitle}
+                                                supplierName={redemption.supplierName}
+                                            />
                                         ) : (
+                                             <Badge variant={redemption.status === 'used' ? 'secondary' : 'default'}>
+                                                {redemption.status === 'pending' ? 'Pendiente' : 'Usado'}
+                                            </Badge>
+                                        )}
+                                        {redemption.status === 'used' && (
                                             <div className="flex items-center text-green-600">
                                                 <CheckCircle className="h-5 w-5" />
                                             </div>

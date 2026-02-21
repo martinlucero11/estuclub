@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -7,6 +8,7 @@ import { DashboardHeader } from '@/components/layout/dashboard-header';
 import { RoleProvider } from '@/context/role-context';
 import SplashScreen from '@/components/layout/splash-screen';
 import { UserRole } from '@/types/data';
+import { BottomNav } from '@/components/layout/bottom-nav'; // Import BottomNav
 
 export default function DashboardLayout({
   children,
@@ -19,19 +21,15 @@ export default function DashboardLayout({
   const isAuthorized = roles.includes('admin') || roles.includes('supplier');
 
   useEffect(() => {
-    // If loading is finished and the user is not authorized, redirect them.
     if (!isUserLoading && !isAuthorized) {
       router.push('/');
     }
   }, [isUserLoading, isAuthorized, router]);
 
-  // While loading, or if the user is not authorized yet (to prevent content flashing),
-  // show a loading screen.
   if (isUserLoading || !isAuthorized) {
     return <SplashScreen />;
   }
 
-  // Ensure roles are correctly typed for the provider
   const availableRoles: UserRole[] = roles.filter(
       (role): role is UserRole => ['admin', 'supplier', 'user'].includes(role)
   );
@@ -40,9 +38,11 @@ export default function DashboardLayout({
     <RoleProvider availableRoles={availableRoles}>
       <div className="flex min-h-screen flex-col">
         <DashboardHeader />
-        <main className="flex-1 p-4 md:p-8">
+        {/* Add bottom padding for mobile to avoid overlap with BottomNav */}
+        <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
             {children}
         </main>
+        <BottomNav /> {/* Add BottomNav here */}
       </div>
     </RoleProvider>
   );
