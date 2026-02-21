@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,18 +14,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Save, Palette, Smile } from 'lucide-react';
+import { Save, Palette } from 'lucide-react';
 import type { Category } from '@/lib/data';
-import { iconList, getIcon } from '@/components/icons';
 
 const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
-  iconName: z.string().min(1, 'Debes seleccionar un icono.'),
+  emoji: z.string().min(1, 'Debes seleccionar un emoji.').max(4, 'El emoji es demasiado largo.'),
   colorClass: z.string().min(1, 'La clase de color es requerida.'),
 });
 
@@ -43,7 +42,7 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: category?.name || '',
-            iconName: category?.iconName || '',
+            emoji: category?.emoji || '',
             colorClass: category?.colorClass || 'text-primary',
         },
     });
@@ -87,26 +86,13 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
                 />
                 <FormField
                     control={form.control}
-                    name="iconName"
+                    name="emoji"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Icono</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un icono" /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    {iconList.map(iconName => {
-                                        const Icon = getIcon(iconName);
-                                        return (
-                                            <SelectItem key={iconName} value={iconName}>
-                                                <div className='flex items-center gap-2'>
-                                                    <Icon className='h-5 w-5' />
-                                                    <span>{iconName}</span>
-                                                </div>
-                                            </SelectItem>
-                                        )
-                                    })}
-                                </SelectContent>
-                            </Select>
+                            <FormLabel>Emoji de la Categoría</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Ej: 🍔" maxLength={4} {...field} />
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}

@@ -27,12 +27,6 @@ const CategoryGrid = () => {
     const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
 
-    const categoryEmojiMap: { [key: string]: string } = {
-        'Comercios': '🛒', 'Eventos': '🎉', 'Comida': '🍔', 'Educación': '🎓',
-        'Entretenimiento': '🎬', 'Ropa': '👕', 'Tecnología': '💻', 'Viajes': '✈️',
-        'Salud': '❤️', 'Deportes': '⚽', 'Belleza': '💅',
-    };
-
     if (isLoading) {
         return (
             <div className="mt-2 flex gap-4">
@@ -51,12 +45,11 @@ const CategoryGrid = () => {
     return (
         <div className="mt-0 flex flex-nowrap gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {categories.map((category) => {
-                const emoji = categoryEmojiMap[category.name] || '✨';
                 return (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group snap-start">
                          <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="w-28 h-28 rounded-3xl bg-rose-200 dark:bg-rose-950/40 hover:bg-rose-300 dark:hover:bg-rose-950/50 transition-colors flex items-center justify-center shadow-lg shadow-rose-400/30 dark:shadow-none border-t border-white/10 transform group-hover:scale-105 active:scale-95">
-                                <span className="text-6xl drop-shadow-xl transform transition-transform group-hover:scale-110">{emoji}</span>
+                            <div className="w-28 h-28 rounded-3xl bg-rose-200/50 dark:bg-rose-950/40 hover:bg-rose-200/70 dark:hover:bg-rose-950/60 transition-colors flex items-center justify-center shadow-lg shadow-rose-400/30 dark:shadow-none border-t border-white/10 transform group-hover:scale-105 active:scale-95">
+                                <span className="text-6xl drop-shadow-xl transform transition-transform group-hover:scale-110">{category.emoji || '⭐'}</span>
                             </div>
                             <span className="text-sm text-center font-semibold text-foreground mt-2">{category.name}</span>
                         </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
@@ -5,7 +6,6 @@ import { Category } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal, Square } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { getIcon } from '@/components/icons';
 
 // Define the shape of the actions props
 interface CategoryActionsProps {
@@ -52,13 +52,11 @@ export const getCategoryColumns = (
     },
   },
   {
-    accessorKey: 'iconName',
-    header: 'Icono',
+    accessorKey: 'emoji',
+    header: 'Emoji',
     cell: ({ row }) => {
-        const iconName = row.getValue('iconName') as string;
-        const colorClass = row.original.colorClass as string;
-        const Icon = getIcon(iconName);
-        return <Icon className={`h-6 w-6 ${colorClass}`} />;
+        const emoji = row.getValue('emoji') as string;
+        return <span className="text-2xl">{emoji}</span>;
     },
   },
     {

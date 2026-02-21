@@ -164,7 +164,7 @@ export function makeBannerSerializable(banner: Banner): SerializableBanner {
 export interface Category {
   id: string;
   name: string;
-  iconName: string;
+  emoji: string;
   colorClass: string;
   order?: number;
 }
