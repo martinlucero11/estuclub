@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -40,7 +39,7 @@ export function useCollection<T = any>(
   type StateDataType = ResultItemType[] | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
@@ -66,14 +65,15 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (error: FirestoreError) => {
-        // Silently log the actual error for debugging, without crashing the app.
-        console.error('Firebase useCollection error:', error);
-        
-        // Instead of throwing, set data to an empty array to prevent UI crashing
-        // on public pages with potential permission/index issues.
-        setData([]); 
-        setError(error); // Set the original error for potential component-level handling.
+        const contextualError = new FirestorePermissionError({
+            operation: 'list',
+            path: (targetRefOrQuery as InternalQuery)._query.path.toString(),
+        });
+        setError(contextualError);
+        setData([]); // Set data to empty to prevent UI from breaking
         setIsLoading(false);
+        // Propagate the error for dev overlay
+        errorEmitter.emit('permission-error', contextualError);
       }
     );
 
@@ -82,5 +82,3 @@ export function useCollection<T = any>(
 
   return { data, isLoading, error };
 }
-
-    

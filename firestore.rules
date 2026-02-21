@@ -7,7 +7,6 @@ service cloud.firestore {
     // --- Helper Functions ---
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    // CORRECTED isAdmin to prevent errors from non-existent user documents
     function isAdmin() { 
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
