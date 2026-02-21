@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce, useDoc } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Perk, Banner, SerializablePerk, Category, HomeSection } from '@/lib/data';
 import { makePerkSerializable } from '@/lib/data';
@@ -24,6 +24,43 @@ const bannerColors: { [key: string]: string } = {
     blue: "bg-blue-100 text-blue-800",
 };
 
+// --- WELCOME BADGE ---
+const HomeWelcomeBadge = () => {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    interface UserProfile {
+        firstName: string;
+    }
+
+    const userProfileRef = useMemoFirebase(
+        () => (user ? doc(firestore, 'users', user.uid) : null),
+        [user, firestore]
+    );
+    
+    const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+    const isLoading = isUserLoading || (user && isProfileLoading);
+
+    if (isLoading) {
+        return <Skeleton className="h-6 w-20 rounded-full" />;
+    }
+
+    if (!user || !userProfile) {
+        return (
+            <div className="flex items-center justify-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-primary">
+                <span className="font-logo-script text-2xl">EstuClub</span>
+            </div>
+        );
+    }
+    
+    return (
+        <div className="flex items-center justify-center gap-2 rounded-full bg-secondary px-4 py-2">
+            <span className="font-semibold text-secondary-foreground">Hola, {userProfile.firstName}</span>
+        </div>
+    );
+};
+
 
 // --- HEADER ---
 const HomeHeader = () => (
@@ -33,9 +70,7 @@ const HomeHeader = () => (
       <span className="font-semibold">Viendo cerca tuyo</span>
       <ChevronDown className="h-4 w-4 text-muted-foreground" />
     </Button>
-    <div className="flex items-center justify-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-primary">
-       <span className="font-logo-script text-2xl">EstuClub</span>
-    </div>
+    <HomeWelcomeBadge />
   </div>
 );
 
