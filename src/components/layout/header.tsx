@@ -35,11 +35,11 @@ import type { NavItem } from '@/types/nav';
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center gap-2 text-primary">
-            <GraduationCap className="h-7 w-7" />
+            <GraduationCap className="h-8 w-8" />
              <div className="flex items-center gap-1">
                 <h1 className="flex items-center text-center font-bold text-primary font-headline">
-                    <span className="text-[1.8rem]">Estu</span>
-                    <span className="font-logo-script text-[1.8rem] text-primary">Club</span>
+                    <span className="text-[2rem]">Estu</span>
+                    <span className="font-logo-script text-[2rem] text-primary">Club</span>
                 </h1>
             </div>
         </Link>
@@ -156,8 +156,8 @@ function MainMenu() {
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-sm">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="w-1/3"><MainMenu /></div>
         <div className="w-1/3 flex justify-center"><Logo /></div>
         <div className="w-1/3 flex justify-end items-center gap-2">

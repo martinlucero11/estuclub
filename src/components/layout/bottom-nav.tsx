@@ -19,7 +19,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background shadow-[0_-4px_25px_rgba(0,0,0,0.05)]">
       <div className="flex justify-around items-center h-16">
         {navItems.map((item) => (
           <Link
@@ -33,7 +33,7 @@ export function BottomNav() {
           >
             {item.special ? (
                 // Special styling for the central QR scanner button
-                <div className="relative -top-4 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
+                <div className="relative -top-4 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background">
                     <item.icon className="h-8 w-8" />
                 </div>
             ) : (

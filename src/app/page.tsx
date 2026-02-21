@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Layers, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench, Megaphone } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
@@ -376,8 +376,8 @@ const AnnouncementsCarousel = () => {
 
 const PageSkeleton = () => (
     <MainLayout>
-        <div className="mx-auto w-full bg-slate-50 dark:bg-slate-950">
-            <div className="mx-auto max-w-2xl space-y-10 pb-8">
+        <div className="mx-auto w-full">
+            <div className="mx-auto max-w-2xl space-y-12 pb-8">
                 <HomeHeader />
                 <div className="px-4 space-y-6">
                     <PerksSectionSkeleton title="Cargando..." />
@@ -424,33 +424,29 @@ export default function HomePage() {
 
   return (
     <MainLayout>
-        <div className="mx-auto w-full bg-slate-50 dark:bg-slate-950">
-            <div className="mx-auto max-w-2xl space-y-10 pb-8">
+        <div className="mx-auto w-full">
+            <div className="mx-auto max-w-2xl space-y-12 pb-8">
                 <HomeHeader />
                 {sections && sections.map(section => {
                     const Component = componentMap[section.type as HomeSectionType];
-                    const Icon = Layers; // Generic icon, can be improved
                     
                     return (
                         <section key={section.id} className="space-y-4">
                             <div className="flex items-center justify-between px-4">
-                                <div className="flex items-center gap-3">
-                                    <Icon className="h-6 w-6 text-muted-foreground"/>
-                                    <h2 className="text-xl font-bold tracking-tight text-foreground">{section.title}</h2>
-                                </div>
+                                <h2 className="text-xl font-bold tracking-tight text-foreground">{section.title}</h2>
                                 {['benefits_carousel', 'suppliers_carousel', 'featured_suppliers_carousel', 'new_suppliers_carousel'].includes(section.type) && (
-                                    <Button variant="link" className="text-sm text-primary" asChild>
+                                    <Button variant="link" asChild className="text-sm font-semibold text-primary/70 hover:text-primary transition-colors flex items-center gap-1">
                                         <Link href={section.type.includes('supplier') ? "/proveedores" : "/benefits"}>
                                             Ver todos
-                                            <ArrowRight className="ml-1 h-4 w-4" />
+                                            <ArrowRight className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                 )}
                                  {section.type === 'announcements_carousel' && (
-                                    <Button variant="link" className="text-sm text-primary" asChild>
+                                    <Button variant="link" asChild className="text-sm font-semibold text-primary/70 hover:text-primary transition-colors flex items-center gap-1">
                                         <Link href="/announcements">
                                             Ver todos
-                                            <ArrowRight className="ml-1 h-4 w-4" />
+                                            <ArrowRight className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                 )}
