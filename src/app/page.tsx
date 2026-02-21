@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight } from 'lucide-react';
@@ -34,7 +35,7 @@ const CategoryGrid = () => {
 
     if (isLoading) {
         return (
-            <div className="mt-2 grid grid-cols-3 gap-4 md:grid-cols-4">
+            <div className="mt-2 flex gap-4">
                 {[...Array(4)].map((_, i) => (
                     <div key={i} className="flex flex-col items-center justify-center gap-2">
                         <Skeleton className="h-28 w-28 rounded-3xl" />
@@ -48,13 +49,13 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="mt-0 grid grid-cols-3 gap-4 md:grid-cols-4">
+        <div className="mt-0 flex flex-nowrap gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {categories.map((category) => {
                 const emoji = categoryEmojiMap[category.name] || '✨';
                 return (
-                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group">
+                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group snap-start">
                          <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="w-28 h-28 rounded-3xl bg-rose-100 dark:bg-rose-950/30 hover:bg-rose-200 dark:hover:bg-rose-950/50 transition-colors flex items-center justify-center shadow-lg shadow-rose-300/30 dark:shadow-none border-t border-white/10 transform group-hover:scale-105 active:scale-95">
+                            <div className="w-28 h-28 rounded-3xl bg-rose-200 dark:bg-rose-950/40 hover:bg-rose-300 dark:hover:bg-rose-950/50 transition-colors flex items-center justify-center shadow-lg shadow-rose-400/30 dark:shadow-none border-t border-white/10 transform group-hover:scale-105 active:scale-95">
                                 <span className="text-6xl drop-shadow-xl transform transition-transform group-hover:scale-110">{emoji}</span>
                             </div>
                             <span className="text-sm text-center font-semibold text-foreground mt-2">{category.name}</span>

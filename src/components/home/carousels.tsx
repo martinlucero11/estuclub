@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -19,8 +20,8 @@ const PerkCard = ({ perk }: { perk: SerializablePerk }) => {
     const initial = perk.title.charAt(0).toUpperCase();
 
     return (
-        <Link href={`/benefits#${perk.id}`} passHref className="transition-transform hover:-translate-y-1 block">
-            <Card className="h-full w-64 flex-shrink-0 overflow-hidden">
+        <Link href={`/benefits#${perk.id}`} passHref className="transition-transform hover:-translate-y-1 block w-72 flex-shrink-0 snap-start">
+            <Card className="h-full w-full overflow-hidden">
                 <CardContent className="flex h-full flex-col p-0">
                      <div className="relative h-32 w-full bg-muted flex items-center justify-center">
                         {hasLogo ? (
@@ -86,7 +87,7 @@ export const BenefitsCarousel = ({ filter }: { filter?: string }) => {
 
 
     return (
-        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full flex-nowrap gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {serializablePerks.map((perk) => (
                 <PerkCard key={perk.id} perk={perk} />
             ))}
@@ -161,7 +162,7 @@ export const SuppliersCarousel = ({ filter }: { filter?: 'featured' | 'new' | 'a
     }
 
     return (
-        <div className="flex w-full gap-4 overflow-x-auto pb-6 pt-2 snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full flex-nowrap gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {suppliers.map((supplier) => (
                 <SupplierCard key={supplier.id} supplier={supplier} />
             ))}
@@ -192,9 +193,9 @@ export const AnnouncementsCarousel = () => {
     }
     
     return (
-        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex w-full flex-nowrap gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
             {announcements.map((announcement) => (
-                <div key={announcement.id} className="w-80 flex-shrink-0">
+                <div key={announcement.id} className="w-80 flex-shrink-0 snap-start">
                     <AnnouncementCard announcement={announcement} variant="carousel" className="h-48"/>
                 </div>
             ))}
