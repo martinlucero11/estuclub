@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -97,8 +98,7 @@ export default function BookingDialog({ service, availability, supplierId, child
         const batch = writeBatch(firestore);
         const appointmentRef = doc(collection(firestore, `roles_supplier/${supplierId}/appointments`));
         
-        const appointmentData: Appointment = {
-            id: appointmentRef.id,
+        const appointmentData: Omit<Appointment, 'id' | 'status'> & { startTime: Date, endTime: Date } = {
             userId: user.uid,
             userName: `${userProfile.firstName} ${userProfile.lastName}`,
             userDni: userProfile.dni,
@@ -107,10 +107,9 @@ export default function BookingDialog({ service, availability, supplierId, child
             serviceName: service.name,
             startTime: selectedSlot,
             endTime: add(selectedSlot, { minutes: service.duration }),
-            status: 'confirmed',
         };
 
-        batch.set(appointmentRef, appointmentData);
+        batch.set(appointmentRef, { ...appointmentData, status: 'confirmed' }); // status pending might be better
         
         await batch.commit();
         

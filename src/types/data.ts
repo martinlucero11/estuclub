@@ -95,3 +95,16 @@ export interface AppointmentSlot {
     status: 'available' | 'booked';
     bookedBy?: string; // UID of the student who booked it
 }
+
+export interface Appointment {
+    id: string;
+    userId: string;
+    userName: string;
+    userDni: string;
+    userPhone: string;
+    serviceId: string;
+    serviceName: string;
+    startTime: Timestamp;
+    endTime: Timestamp;
+    status: 'confirmed' | 'cancelled';
+}

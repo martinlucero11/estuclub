@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -38,7 +39,7 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
       return (
         <div className="flex justify-center">
           <Switch
-            checked={supplier.announcementsEnabled}
+            checked={!!supplier.announcementsEnabled}
             onCheckedChange={(value) => onToggle(supplier.id, 'announcementsEnabled', value)}
             disabled={isLoading}
             aria-label="Toggle para Anuncios"
@@ -57,7 +58,7 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
       return (
         <div className="flex justify-center">
             <Switch
-                checked={supplier.appointmentsEnabled}
+                checked={!!supplier.appointmentsEnabled}
                 onCheckedChange={(value) => onToggle(supplier.id, 'appointmentsEnabled', value)}
                 disabled={isLoading}
                 aria-label="Toggle para Turnos"

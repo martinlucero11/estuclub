@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,9 +10,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
 import PerksGrid from '@/components/perks/perks-grid';
-import { Perk, makePerkSerializable, SerializablePerk } from '@/lib/data';
+import { Perk, makePerkSerializable, SerializablePerk, Service, Availability } from '@/lib/data';
 import type { CluberCategory, SupplierProfile } from '@/types/data';
 import Image from 'next/image';
+import ServiceList from '@/components/supplier/service-list';
+import { Separator } from '@/components/ui/separator';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -54,14 +57,14 @@ function ProfileSkeleton() {
 function CluberProfileContent({ slug }: { slug: string }) {
     const firestore = useFirestore();
     const [cluber, setCluber] = useState<SupplierProfile | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingCluber, setIsLoadingCluber] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     // Fetch cluber data
     useEffect(() => {
         const fetchCluber = async () => {
             if (!slug) return;
-            setIsLoading(true);
+            setIsLoadingCluber(true);
             try {
                 const q = query(collection(firestore, 'roles_supplier'), where('slug', '==', slug), limit(1));
                 const querySnapshot = await getDocs(q);
@@ -75,7 +78,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 console.error(err);
                 setError('Error al cargar el Cluber.');
             } finally {
-                setIsLoading(false);
+                setIsLoadingCluber(false);
             }
         };
         fetchCluber();
@@ -88,12 +91,24 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     const { data: benefits, isLoading: benefitsLoading } = useCollection<Perk>(benefitsQuery);
 
+    const servicesQuery = useMemoFirebase(() => {
+        if (!cluber) return null;
+        return query(collection(firestore, `roles_supplier/${cluber.id}/services`));
+    }, [cluber, firestore]);
+    const { data: services } = useCollection<Service>(servicesQuery);
+
+    const availabilityRef = useMemoFirebase(() => {
+        if (!cluber) return null;
+        return doc(firestore, `roles_supplier/${cluber.id}/availability/schedule`);
+    }, [cluber, firestore]);
+    const { data: availability } = useDoc<Availability>(availabilityRef);
+
     const serializableBenefits: SerializablePerk[] = useMemo(() => {
         if (!benefits) return [];
         return benefits.map(makePerkSerializable);
     }, [benefits]);
 
-    if (isLoading) {
+    if (isLoadingCluber) {
         return <ProfileSkeleton />;
     }
     
@@ -155,6 +170,21 @@ function CluberProfileContent({ slug }: { slug: string }) {
                  <h2 className="text-2xl font-bold mb-4">Beneficios Activos</h2>
                 {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
             </div>
+
+            {cluber.appointmentsEnabled && availability && services && (
+                 <>
+                    <Separator className="my-8" />
+                    <div className="px-6 py-8">
+                        <h2 className="text-2xl font-bold mb-4">Reservar un Turno</h2>
+                        <ServiceList 
+                            services={services} 
+                            availability={availability} 
+                            supplierId={cluber.id} 
+                            allowsBooking={!!cluber.appointmentsEnabled}
+                        />
+                    </div>
+                 </>
+            )}
         </div>
     );
 }

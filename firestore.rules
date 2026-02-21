@@ -61,6 +61,23 @@ service cloud.firestore {
     match /benefitRedemptions/{document=**} {
        allow read, write: if request.auth != null;
     }
+
+    // NEW APPOINTMENT RULES
+    match /roles_supplier/{supplierId}/services/{serviceId} {
+      allow read: if true;
+      allow write: if isOwner(supplierId) || isAdmin();
+    }
+
+    match /roles_supplier/{supplierId}/availability/{schedule} {
+      allow read: if true;
+      allow write: if isOwner(supplierId) || isAdmin();
+    }
+
+    match /roles_supplier/{supplierId}/appointments/{appointmentId} {
+        allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
+        allow create: if isSignedIn();
+        allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
+    }
     
     // Mantenemos tu lógica de admin al final
     match /roles_admin/{adminId} {
