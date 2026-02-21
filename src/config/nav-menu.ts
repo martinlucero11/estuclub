@@ -14,6 +14,7 @@ import {
     LayoutTemplate,
     CalendarDays,
     QrCode,
+    Building,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -58,6 +59,12 @@ export const navConfig: NavConfig = {
       icon: LayoutDashboard,
       role: ["admin", "supplier"],
       items: [
+        {
+          title: "Mi Perfil de Cluber",
+          href: "/dashboard/supplier-profile",
+          icon: Building,
+          role: ["supplier"],
+        },
         {
           title: "Escanear QR",
           href: "/dashboard/scanner",

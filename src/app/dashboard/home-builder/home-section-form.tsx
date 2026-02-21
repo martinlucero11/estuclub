@@ -111,6 +111,9 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                     <SelectItem value="benefits_carousel">Carrusel de Beneficios</SelectItem>
                                     <SelectItem value="single_banner">Banner Individual</SelectItem>
                                     <SelectItem value="suppliers_carousel">Carrusel de Proveedores</SelectItem>
+                                    <SelectItem value="announcements_carousel">Carrusel de Anuncios</SelectItem>
+                                    <SelectItem value="featured_suppliers_carousel">Carrusel de Proveedores Destacados</SelectItem>
+                                    <SelectItem value="new_suppliers_carousel">Carrusel de Nuevos Proveedores</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />

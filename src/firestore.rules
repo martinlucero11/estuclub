@@ -1,48 +1,99 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- Funciones de ayuda ---
+    // --- Helper Functions ---
     function isSignedIn() { return request.auth != null; }
-    function isAdmin() { 
-      return isSignedIn() && (
-        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-      ); 
-    }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isAdmin() { 
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+    function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
 
-    // --- Secciones de la Home y Categorías ---
-    match /home_sections/{sectionId} { allow read: if true; allow write: if isAdmin(); }
-    match /categories/{categoryId} { allow read: if true; allow write: if isAdmin(); }
+    // --- Public & Semi-Public Data ---
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    // --- Beneficios ---
+    match /home_sections/{sectionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /announcements/{announcementId} {
+      allow get, list: if true;
+      allow write: if isSupplier() || isAdmin();
+    }
+
+    match /notifications/{notificationId} {
+      allow list, get: if true;
+      allow write: if isSupplier() || isAdmin();
+    }
+
     match /benefits/{benefitId} {
       allow read: if true;
-      allow write: if isAdmin() || (isSignedIn() && request.resource.data.supplierId == request.auth.uid) || (isSignedIn() && resource.data.supplierId == request.auth.uid);
+      allow create: if (isSupplier() && request.resource.data.supplierId == request.auth.uid) || isAdmin();
+      allow update, delete: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
     }
 
-    // --- CANJES Y USUARIOS ---
-    match /users/{userId} { allow read: if true; allow write: if isOwner(userId) || isAdmin(); }
-    match /users/{userId}/redeemed_benefits/{document=**} { allow read, write: if isOwner(userId) || isAdmin(); }
-    match /benefitRedemptions/{document=**} { allow read, create: if isSignedIn(); allow update, delete: if isAdmin(); }
-    match /roles_admin/{adminId} { allow read, write: if isAdmin(); }
+    // --- User-Specific Data & Roles ---
+    match /users/{userId} {
+      // Users can read any profile, but only write to their own (or if admin)
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /users/{userId}/redeemed_benefits/{redemptionId} {
+      // A user can manage their own redemption history
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    match /benefitRedemptions/{redemptionId} {
+      // Any signed-in user can create a redemption record, but only admins can modify/delete it
+      allow read, create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
     
-    // --- NUEVO: PERFIL DEL CLUBER (Disponibilidad) ---
-    // Ahora el proveedor puede editar sus propios horarios
-    match /roles_supplier/{supplierId} { 
-      allow read: if true; 
-      allow write: if isAdmin() || isOwner(supplierId); 
+    match /usernames/{username} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
-    // --- NUEVO: TURNOS Y SERVICIOS ---
-    match /appointments/{appointmentId} {
-      allow read, write: if isSignedIn(); // Permite a usuarios y locales gestionar turnos
+    // --- Supplier (Cluber) Specific Rules ---
+    match /roles_supplier/{supplierId} {
+      allow read: if true; // Publicly viewable profile
+      allow write: if isAdmin() || isOwner(supplierId); // Only admin or the supplier can edit profile
+
+      // --- Nested Rules for Supplier's Features ---
+      match /services/{serviceId} {
+        allow read: if true;
+        allow write: if isOwner(supplierId) || isAdmin();
+      }
+
+      match /availability/{schedule} {
+        allow read: if true;
+        allow write: if isOwner(supplierId) || isAdmin();
+      }
+
+      match /appointments/{appointmentId} {
+          allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
+          allow create: if isSignedIn();
+          allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
+      }
     }
-    match /services/{serviceId} {
-      allow read: if true;
-      allow write: if isSignedIn(); // Permite a los locales crear servicios
+    
+    // --- Admin-Only Data ---
+    match /roles_admin/{adminId} {
+      allow read, write: if isAdmin();
     }
   }
 }

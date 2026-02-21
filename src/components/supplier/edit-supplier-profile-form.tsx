@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,11 +21,15 @@ import { useEffect, useState } from 'react';
 import { Save, Loader2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
-import { SupplierProfile } from '@/types/data';
+import { SupplierProfile, cluberCategories } from '@/types/data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const formSchema = z.object({
-  name: z.string().min(2, 'El nombre del Cluber debe tener al menos 2 caracteres.'),
+  name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   description: z.string().optional(),
+  type: z.enum(cluberCategories, { required_error: 'Debes seleccionar una categoría.' }),
+  address: z.string().optional(),
+  whatsapp: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   coverPhotoUrl: z.string().url('URL de foto de portada no válida').optional().or(z.literal('')),
 });
@@ -59,6 +64,9 @@ export default function EditSupplierProfileForm() {
     defaultValues: {
       name: '',
       description: '',
+      type: 'Comercio',
+      address: '',
+      whatsapp: '',
       logoUrl: '',
       coverPhotoUrl: '',
     },
@@ -69,6 +77,9 @@ export default function EditSupplierProfileForm() {
         form.reset({
             name: supplierProfile.name,
             description: supplierProfile.description || '',
+            type: supplierProfile.type,
+            address: supplierProfile.address || '',
+            whatsapp: supplierProfile.whatsapp || '',
             logoUrl: supplierProfile.logoUrl || '',
             coverPhotoUrl: supplierProfile.coverPhotoUrl || '',
         });
@@ -89,9 +100,12 @@ export default function EditSupplierProfileForm() {
       await updateDoc(supplierRef, {
           name: values.name,
           description: values.description,
+          type: values.type,
+          address: values.address,
+          whatsapp: values.whatsapp,
           logoUrl: values.logoUrl,
           coverPhotoUrl: values.coverPhotoUrl,
-          slug: newSlug, // Update slug in case name changes
+          slug: newSlug,
       });
 
       toast({
@@ -113,10 +127,7 @@ export default function EditSupplierProfileForm() {
   if (isLoading) {
     return (
         <div className="space-y-6">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+            {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             <Skeleton className="h-10 w-32" />
         </div>
     )
@@ -130,7 +141,7 @@ export default function EditSupplierProfileForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre Público del Cluber</FormLabel>
+              <FormLabel>Nombre Público</FormLabel>
               <FormControl>
                 <Input placeholder="Ej: Café Martínez" {...field} />
               </FormControl>
@@ -138,14 +149,62 @@ export default function EditSupplierProfileForm() {
             </FormItem>
           )}
         />
+        <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Categoría del Cluber</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tipo" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    {cluberCategories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
          <FormField
           control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descripción</FormLabel>
+              <FormLabel>Descripción / Bio</FormLabel>
               <FormControl>
                 <Textarea placeholder="Describe brevemente tu comercio, institución o club..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Dirección</FormLabel>
+              <FormControl>
+                <Input placeholder="Av. Siempreviva 742" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <FormField
+          control={form.control}
+          name="whatsapp"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número de WhatsApp (con cód. de país)</FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="+54911..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

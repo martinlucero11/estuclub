@@ -1,22 +1,23 @@
 
 'use client';
 
-import { ArrowRight, ChevronDown, MapPin, Layers, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench } from 'lucide-react';
+import { ArrowRight, ChevronDown, MapPin, Layers, Gift, Users, Building, Briefcase, Heart, ShoppingBag, Wrench, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useUser, useDocOnce, useDoc } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
-import type { Perk, Banner, SerializablePerk, Category, HomeSection } from '@/lib/data';
+import type { Perk, Banner, SerializablePerk, Category, HomeSection, SerializableAnnouncement } from '@/lib/data';
 import type { SupplierProfile, CluberCategory } from '@/types/data';
-import { makePerkSerializable } from '@/lib/data';
+import { makePerkSerializable, makeAnnouncementSerializable } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import { getIcon } from '@/components/icons';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import AnnouncementCard from '@/components/announcements/announcement-card';
 
 
 // --- STATIC DATA ---
@@ -251,24 +252,37 @@ const PerksSectionSkeleton = ({ title }: { title: string }) => (
     </div>
 );
 
-// --- SUPPLIERS CAROUSEL ---
-const SuppliersCarousel = () => {
+// --- SUPPLIERS CAROUSELS ---
+const SuppliersCarousel = ({ filter }: { filter?: 'featured' | 'new' | 'all' }) => {
     const firestore = useFirestore();
 
     const suppliersQuery = useMemoFirebase(() => {
-        return query(collection(firestore, 'roles_supplier'), orderBy('name'), limit(10));
-    }, [firestore]);
+        let q = query(collection(firestore, 'roles_supplier'), limit(10));
+        if (filter === 'featured') {
+            q = query(q, where('isFeatured', '==', true));
+        } else if (filter === 'new') {
+            q = query(q, orderBy('createdAt', 'desc'));
+        } else {
+            q = query(q, orderBy('name'));
+        }
+        return q;
+    }, [firestore, filter]);
 
     const { data: suppliers, isLoading } = useCollection<SupplierProfile>(suppliersQuery);
 
-    if (isLoading) return <SuppliersSectionSkeleton title="Proveedores Destacados" />;
+    if (isLoading) return <SuppliersSectionSkeleton title="Cargando proveedores..." />;
     if (!suppliers || suppliers.length === 0) {
+        let title = "No hay proveedores";
+        let description = "Vuelve más tarde para ver los proveedores.";
+        if (filter === 'featured') {
+            title = "No hay proveedores destacados";
+            description = "Aún no hemos destacado ningún proveedor.";
+        } else if (filter === 'new') {
+            title = "No hay nuevos proveedores";
+            description = "No se han añadido nuevos proveedores recientemente.";
+        }
         return (
-            <EmptyState
-                icon={Users}
-                title="No hay proveedores"
-                description="Vuelve más tarde para ver los proveedores destacados."
-            />
+            <EmptyState icon={Users} title={title} description={description} />
         );
     }
 
@@ -280,6 +294,7 @@ const SuppliersCarousel = () => {
         </div>
     );
 };
+
 
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const TypeIcon = categoryIcons[supplier.type] || Users;
@@ -326,11 +341,43 @@ const SuppliersSectionSkeleton = ({ title }: { title: string }) => (
     </div>
 );
 
+// --- ANNOUNCEMENTS CAROUSEL ---
+const AnnouncementsCarousel = () => {
+    const firestore = useFirestore();
+    const announcementsQuery = useMemoFirebase(() => query(collection(firestore, 'announcements'), orderBy('createdAt', 'desc'), limit(10)), [firestore]);
+    const { data: announcementsData, isLoading } = useCollection<Announcement>(announcementsQuery);
+
+    const announcements = useMemo(() => {
+        if (!announcementsData) return [];
+        return announcementsData.map(makeAnnouncementSerializable);
+    }, [announcementsData]);
+
+    if (isLoading) return <PerksSectionSkeleton title="Cargando anuncios..." />;
+    if (!announcements || announcements.length === 0) {
+        return (
+            <EmptyState
+                icon={Megaphone}
+                title="No hay anuncios"
+                description="No hay nada nuevo que anunciar por ahora."
+            />
+        );
+    }
+    
+    return (
+        <div className="flex w-full gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {announcements.map((announcement) => (
+                <div key={announcement.id} className="w-80 flex-shrink-0">
+                    <AnnouncementCard announcement={announcement} variant="carousel" className="h-48"/>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 const PageSkeleton = () => (
     <MainLayout>
-        <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
-            <div className="mx-auto max-w-2xl space-y-4 pb-8">
+        <div className="mx-auto w-full bg-slate-50 dark:bg-slate-950">
+            <div className="mx-auto max-w-2xl space-y-10 pb-8">
                 <HomeHeader />
                 <div className="px-4 space-y-6">
                     <PerksSectionSkeleton title="Cargando..." />
@@ -359,13 +406,16 @@ export default function HomePage() {
 
     const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
     
-    type HomeSectionType = 'categories_grid' | 'benefits_carousel' | 'single_banner' | 'suppliers_carousel';
+    type HomeSectionType = typeof import('@/lib/data').homeSectionTypes[number];
 
     const componentMap: { [key in HomeSectionType]: (section: HomeSection) => React.ReactNode } = {
         categories_grid: (section) => <CategoryGrid />,
         benefits_carousel: (section) => <BenefitsCarousel filter={section.filter} />,
         single_banner: (section) => section.bannerId ? <SingleBanner bannerId={section.bannerId} /> : null,
-        suppliers_carousel: (section) => <SuppliersCarousel />,
+        suppliers_carousel: (section) => <SuppliersCarousel filter="all" />,
+        announcements_carousel: () => <AnnouncementsCarousel />,
+        featured_suppliers_carousel: () => <SuppliersCarousel filter="featured" />,
+        new_suppliers_carousel: () => <SuppliersCarousel filter="new" />,
     };
 
     if (sectionsLoading || isUserLoading) {
@@ -374,36 +424,38 @@ export default function HomePage() {
 
   return (
     <MainLayout>
-        <div className="mx-auto w-full bg-gray-50/50 dark:bg-card">
-            <div className="mx-auto max-w-2xl space-y-4 pb-8">
+        <div className="mx-auto w-full bg-slate-50 dark:bg-slate-950">
+            <div className="mx-auto max-w-2xl space-y-10 pb-8">
                 <HomeHeader />
                 {sections && sections.map(section => {
                     const Component = componentMap[section.type as HomeSectionType];
+                    const Icon = Layers; // Generic icon, can be improved
+                    
                     return (
-                        <section key={section.id} className="space-y-3 py-4">
+                        <section key={section.id} className="space-y-4">
                             <div className="flex items-center justify-between px-4">
-                                <div className="flex items-center gap-2">
-                                    <Layers className="h-5 w-5 text-muted-foreground"/>
+                                <div className="flex items-center gap-3">
+                                    <Icon className="h-6 w-6 text-muted-foreground"/>
                                     <h2 className="text-xl font-bold tracking-tight text-foreground">{section.title}</h2>
                                 </div>
-                                {section.type === 'benefits_carousel' && (
+                                {['benefits_carousel', 'suppliers_carousel', 'featured_suppliers_carousel', 'new_suppliers_carousel'].includes(section.type) && (
                                     <Button variant="link" className="text-sm text-primary" asChild>
-                                        <Link href="/benefits">
+                                        <Link href={section.type.includes('supplier') ? "/proveedores" : "/benefits"}>
                                             Ver todos
                                             <ArrowRight className="ml-1 h-4 w-4" />
                                         </Link>
                                     </Button>
                                 )}
-                                 {section.type === 'suppliers_carousel' && (
+                                 {section.type === 'announcements_carousel' && (
                                     <Button variant="link" className="text-sm text-primary" asChild>
-                                        <Link href="/proveedores">
+                                        <Link href="/announcements">
                                             Ver todos
                                             <ArrowRight className="ml-1 h-4 w-4" />
                                         </Link>
                                     </Button>
                                 )}
                             </div>
-                            <div className="px-4">
+                            <div className="pl-4">
                                 {Component ? Component(section) : null}
                             </div>
                         </section>

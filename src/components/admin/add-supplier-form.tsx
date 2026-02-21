@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
@@ -98,7 +99,10 @@ export default function AddSupplierForm() {
         description: values.description || '',
         logoUrl: values.logoUrl || '',
         coverPhotoUrl: values.coverPhotoUrl || '',
-        allowsBooking: false, // Default to false
+        appointmentsEnabled: false, // Default to false
+        announcementsEnabled: false,
+        isFeatured: false,
+        createdAt: serverTimestamp(),
       });
 
       toast({

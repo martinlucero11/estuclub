@@ -1,3 +1,4 @@
+
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -23,11 +24,15 @@ export interface SupplierProfile {
   id: string; // Document ID (same as user UID)
   name: string;
   email: string;
-  type: CluberCategory; // Changed from old enum
+  type: CluberCategory;
   slug: string;
   description?: string;
   logoUrl?: string;
-  coverPhotoUrl?: string; // Added for new profile UI
+  coverPhotoUrl?: string;
+  address?: string;
+  whatsapp?: string;
+  isFeatured?: boolean;
+  createdAt?: Timestamp;
   // --- Module Capabilities ---
   announcementsEnabled?: boolean;
   appointmentsEnabled?: boolean;
