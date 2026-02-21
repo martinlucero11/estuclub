@@ -153,21 +153,12 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     />
                 </div>
                  <div className="absolute -bottom-16 left-6">
-                    <div className="relative h-32 w-32 rounded-full border-4 border-background bg-background flex items-center justify-center overflow-hidden">
-                        {cluber.logoUrl ? (
-                            <Image
-                                src={cluber.logoUrl}
-                                alt={cluber.name}
-                                fill
-                                className="object-contain p-2"
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                            />
-                        ) : (
-                             <span className="text-5xl font-bold text-muted-foreground">
-                                {cluber.name.charAt(0).toUpperCase()}
-                             </span>
-                        )}
-                    </div>
+                    <Avatar className="h-32 w-32 rounded-full border-4 border-background bg-background p-2">
+                        <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-contain" />
+                        <AvatarFallback className="bg-transparent text-5xl font-bold text-muted-foreground">
+                            {cluber.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
                 </div>
             </header>
             

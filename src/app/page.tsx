@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import AnnouncementCard from '@/components/announcements/announcement-card';
 import { Users, Gift, Megaphone } from 'lucide-react';
 import WelcomeMessage from '@/components/home/welcome-message';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 // --- STATIC DATA ---
@@ -63,7 +64,7 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="mt-2 grid grid-cols-3 gap-4 md:grid-cols-4">
+        <div className="mt-0 grid grid-cols-3 gap-4 md:grid-cols-4">
             {categories.map((category) => {
                 const emoji = categoryEmojiMap[category.name] || '✨';
                 return (
@@ -255,21 +256,12 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     return (
         <Link href={`/proveedores/${supplier.slug}`} passHref>
             <div className="w-24 flex-shrink-0 flex flex-col items-center text-center gap-2 snap-start group">
-                 <div className="relative h-20 w-20 rounded-2xl bg-white shadow-sm border border-slate-100 p-2 group-hover:shadow-md transition-shadow flex items-center justify-center overflow-hidden">
-                    {supplier.logoUrl ? (
-                        <Image
-                            src={supplier.logoUrl}
-                            alt={supplier.name}
-                            fill
-                            className="object-contain"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                    ) : (
-                        <span className="text-2xl font-bold text-muted-foreground">
-                            {supplierInitials}
-                        </span>
-                    )}
-                </div>
+                 <Avatar className="h-20 w-20 rounded-2xl bg-white shadow-sm border border-slate-100 group-hover:shadow-md transition-shadow p-2">
+                    <AvatarImage src={supplier.logoUrl || undefined} alt={supplier.name} className="object-contain" />
+                    <AvatarFallback className="rounded-xl bg-transparent text-2xl font-bold text-muted-foreground">
+                        {supplierInitials}
+                    </AvatarFallback>
+                </Avatar>
                 <h3 className="text-[13px] font-bold text-slate-800 w-full truncate leading-tight">{supplier.name}</h3>
                 <p className="text-[11px] font-medium text-slate-500 w-full capitalize truncate leading-tight">{supplier.type}</p>
             </div>

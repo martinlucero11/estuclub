@@ -1,3 +1,4 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -109,8 +110,8 @@ function CluberListPage() {
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-                                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
-                                        <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
+                                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors p-2">
+                                        <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-contain" />
                                         <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
                                             {cluberInitials}
                                         </AvatarFallback>
