@@ -15,14 +15,17 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useDoc, useMemoFirebase, useStorage } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { Save, Loader2 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Save, Loader2, Camera } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
 import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+
 
 const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -54,7 +57,10 @@ export default function EditSupplierProfileForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const storage = useStorage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const supplierRef = useMemoFirebase(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
@@ -86,6 +92,43 @@ export default function EditSupplierProfileForm() {
     }
   }, [supplierProfile, form]);
 
+  const handleLogoSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0 || !user) {
+      return;
+    }
+    const file = event.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+        toast({ variant: 'destructive', title: 'Archivo inválido', description: 'Por favor, selecciona una imagen.' });
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({ variant: 'destructive', title: 'Archivo muy grande', description: 'El logo no puede pesar más de 5MB.' });
+        return;
+    }
+
+    setIsUploading(true);
+    try {
+        const logoStorageRef = storageRef(storage, `suppliers/${user.uid}/logo`);
+        await uploadBytes(logoStorageRef, file);
+        const downloadURL = await getDownloadURL(logoStorageRef);
+        
+        form.setValue('logoUrl', downloadURL, { shouldDirty: true });
+        // No need to update doc here, it will be updated on form submit
+
+        toast({
+            title: 'Logo subido',
+            description: 'Haz clic en "Guardar Cambios" para aplicar tu nuevo logo.'
+        });
+
+    } catch (error) {
+        console.error("Error uploading logo:", error);
+        toast({ variant: 'destructive', title: 'Error de subida', description: 'No se pudo subir el logo.' });
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !supplierRef) {
@@ -98,13 +141,7 @@ export default function EditSupplierProfileForm() {
       const newSlug = slugify(values.name);
       
       await updateDoc(supplierRef, {
-          name: values.name,
-          description: values.description,
-          type: values.type,
-          address: values.address,
-          whatsapp: values.whatsapp,
-          logoUrl: values.logoUrl,
-          coverPhotoUrl: values.coverPhotoUrl,
+          ...values,
           slug: newSlug,
       });
 
@@ -127,7 +164,10 @@ export default function EditSupplierProfileForm() {
   if (isLoading) {
     return (
         <div className="space-y-6">
-            {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+            <div className="flex justify-center">
+                 <Skeleton className="h-32 w-32 rounded-full" />
+            </div>
+            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             <Skeleton className="h-10 w-32" />
         </div>
     )
@@ -135,7 +175,52 @@ export default function EditSupplierProfileForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="logoUrl"
+          render={({ field }) => (
+            <FormItem className="flex flex-col items-center">
+              <FormLabel>Logo del Cluber</FormLabel>
+              <FormControl>
+                <div className="relative">
+                    <button
+                        type="button"
+                        onClick={() => !isUploading && fileInputRef.current?.click()}
+                        className="relative group h-32 w-32 rounded-full"
+                        disabled={isUploading}
+                    >
+                        <Avatar className="h-32 w-32">
+                             <AvatarImage src={field.value || ''} alt="Logo" className="object-cover" />
+                             <AvatarFallback className="text-4xl">
+                                {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
+                             </AvatarFallback>
+                        </Avatar>
+                        {!isUploading && (
+                            <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                <Camera className="h-8 w-8 text-white" />
+                            </div>
+                        )}
+                        {isUploading && (
+                             <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
+                                <Loader2 className="h-10 w-10 text-white animate-spin" />
+                            </div>
+                        )}
+                    </button>
+                    <Input 
+                        type="file" 
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleLogoSelect}
+                        accept="image/png, image/jpeg, image/webp"
+                        disabled={isUploading}
+                    />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="name"
@@ -217,7 +302,7 @@ export default function EditSupplierProfileForm() {
             <FormItem>
               <FormLabel>URL del Logo</FormLabel>
               <FormControl>
-                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
+                <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} disabled />
               </FormControl>
                <FormMessage />
             </FormItem>
@@ -236,7 +321,7 @@ export default function EditSupplierProfileForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+        <Button type="submit" disabled={isSubmitting || isUploading} className="w-full sm:w-auto">
           {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
           ) : (
