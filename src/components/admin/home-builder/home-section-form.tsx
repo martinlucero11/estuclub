@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -110,6 +109,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                     <SelectItem value="categories_grid">Grilla de Categorías</SelectItem>
                                     <SelectItem value="benefits_carousel">Carrusel de Beneficios</SelectItem>
                                     <SelectItem value="single_banner">Banner Individual</SelectItem>
+                                    <SelectItem value="suppliers_carousel">Carrusel de Proveedores</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />
