@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +6,7 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Loader2, Save } from 'lucide-react';
@@ -52,6 +51,7 @@ export default function AvailabilityManager() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const availabilityRef = useMemoFirebase(() => user ? doc(firestore, `roles_supplier/${user.uid}/availability/schedule`) : null, [user, firestore]);
   const { data: availabilityData, isLoading: isDataLoading } = useDoc(availabilityRef);
@@ -82,29 +82,44 @@ export default function AvailabilityManager() {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar la disponibilidad.' });
       return;
     }
+    
+    setIsSubmitting(true);
+    form.clearErrors();
 
-    try {
-      // Transform array into object for Firestore
-      const scheduleObject = values.schedule.reduce((acc, day, index) => {
+    const scheduleObject = values.schedule.reduce((acc, day, index) => {
         const dayName = defaultSchedule[index].day;
         acc[dayName] = day;
         return acc;
-      }, {} as {[key: string]: any});
+    }, {} as {[key: string]: any});
+    
+    const dataToSave = { schedule: scheduleObject };
 
-      await setDoc(availabilityRef, { schedule: scheduleObject });
-
-      toast({
-        title: 'Disponibilidad actualizada',
-        description: 'Tus horarios de trabajo han sido guardados.',
+    setDoc(availabilityRef, dataToSave)
+      .then(() => {
+        toast({
+          title: 'Disponibilidad actualizada',
+          description: 'Tus horarios de trabajo han sido guardados.',
+        });
+      })
+      .catch(error => {
+        console.error('Error updating availability:', error);
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: availabilityRef.path,
+            operation: 'write',
+            requestResourceData: dataToSave,
+          })
+        );
+        toast({
+          variant: 'destructive',
+          title: 'Error al Guardar',
+          description: 'No se pudo guardar la disponibilidad. Revisa los permisos.',
+        });
+      })
+      .finally(() => {
+          setIsSubmitting(false);
       });
-    } catch (error: any) {
-      console.error('Error updating availability:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo guardar la disponibilidad.',
-      });
-    }
   }
 
   if (isDataLoading) {
@@ -176,8 +191,8 @@ export default function AvailabilityManager() {
         {form.formState.errors.schedule?.root?.message && (
             <p className='text-sm font-medium text-destructive'>{form.formState.errors.schedule.root.message}</p>
         )}
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+        <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Guardar Horarios
         </Button>
       </form>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,10 +15,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { PlusCircle, Clock } from 'lucide-react';
+import { PlusCircle, Clock, Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres.'),
@@ -48,25 +47,35 @@ export default function AddServiceForm() {
     }
 
     setIsSubmitting(true);
-    try {
-      const servicesRef = collection(firestore, 'roles_supplier', user.uid, 'services');
-      await addDoc(servicesRef, values);
-
-      toast({
-        title: '¡Nuevo Servicio Añadido!',
-        description: `El servicio "${values.name}" ha sido creado.`,
+    const servicesRef = collection(firestore, 'roles_supplier', user.uid, 'services');
+    
+    addDoc(servicesRef, values)
+      .then(() => {
+        toast({
+          title: '¡Nuevo Servicio Añadido!',
+          description: `El servicio "${values.name}" ha sido creado.`,
+        });
+        form.reset();
+      })
+      .catch(error => {
+        console.error("Error adding service: ", error);
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: servicesRef.path,
+            operation: 'create',
+            requestResourceData: values,
+          })
+        );
+        toast({
+            variant: "destructive",
+            title: "Error al Guardar",
+            description: "No se pudo crear el servicio. Revisa los permisos.",
+        });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
-      form.reset();
-    } catch (error: any) {
-      console.error("Error adding service: ", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "No se pudo añadir el servicio. Inténtalo de nuevo.",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
   }
 
   return (
@@ -120,7 +129,9 @@ export default function AddServiceForm() {
         />
         
         <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Añadiendo...' : (
+            {isSubmitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Añadiendo...</>
+            ) : (
                 <>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Añadir Servicio
