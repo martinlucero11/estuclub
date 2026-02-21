@@ -68,15 +68,17 @@ service cloud.firestore {
         allow write: if isSupplier() || isAdmin();
     }
 
-    // --- USER & REDEMPTION RULES (Simplified for redemption flow) ---
+    // --- USER & REDEMPTION RULES (Updated for Redemption Flow) ---
     match /users/{userId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if isSignedIn(); // Allow writes to update points
     }
     
+    // Explicitly allow writing to the user's subcollection for redemption history
     match /users/{userId}/redeemed_benefits/{redemptionId} {
       allow read, write: if isSignedIn();
     }
 
+    // Allow creating the global redemption document
     match /benefitRedemptions/{redemptionId} {
        allow read, write: if isSignedIn();
     }
