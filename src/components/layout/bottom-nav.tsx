@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,7 +35,6 @@ export function BottomNav() {
                 // Special styling for the central QR scanner button
                 <div className="relative -top-4 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg">
                     <item.icon className="h-8 w-8" />
-                    <span className="text-xs mt-1">{item.label}</span>
                 </div>
             ) : (
                 <>
