@@ -1,12 +1,13 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import type { BenefitRedemption } from '@/lib/data';
+import type { SerializableBenefitRedemption } from '@/lib/data'; // Import the serializable type
 import { ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 
-export const columns: ColumnDef<BenefitRedemption>[] = [
+// Use the serializable type for the column definitions
+export const columns: ColumnDef<SerializableBenefitRedemption>[] = [
   {
     accessorKey: 'benefitTitle',
     header: 'Beneficio',
@@ -25,7 +26,8 @@ export const columns: ColumnDef<BenefitRedemption>[] = [
       )
     },
     cell: ({ row }) => {
-      const date = row.getValue('redeemedAt') as Date;
+      // The value is now a string, so we create a Date object from it
+      const date = new Date(row.getValue('redeemedAt'));
       return format(date, 'dd/MM/yyyy HH:mm');
     }
   },
