@@ -45,7 +45,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
             {/* Gradiente para legibilidad */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 
-            {perk.featured && <FeaturedBadge />}
+            {perk.isFeatured && <FeaturedBadge />}
 
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
                 <Award className="h-3 w-3" />
@@ -90,7 +90,7 @@ export default function PerkCard({ perk, className, variant = 'default' }: PerkC
           </div>
           <div className="absolute inset-0 bg-black/50" />
           <div className="relative z-10 flex h-full flex-col justify-between p-4">
-            {perk.featured && <FeaturedBadge />}
+            {perk.isFeatured && <FeaturedBadge />}
             <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
                 <Award className="h-3 w-3" />
                 <span>{perk.points} PTS</span>
