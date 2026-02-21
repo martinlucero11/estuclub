@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Dancing_Script } from 'next/font/google';
+import { Plus_Jakarta_Sans, Open_Sans, Lobster } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from '@/components/theme-provider';
@@ -13,11 +13,18 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
-const dancingScript = Dancing_Script({
-    subsets: ['latin'],
-    weight: ['700'],
-    variable: '--font-logo-script',
-    display: 'swap',
+const openSans = Open_Sans({
+  subsets: ['latin'],
+  weight: '800',
+  variable: '--font-logo-sans',
+  display: 'swap',
+});
+
+const lobster = Lobster({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-logo-display',
+  display: 'swap',
 });
 
 
@@ -34,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${plusJakarta.variable} ${dancingScript.variable} font-body antialiased bg-slate-50 dark:bg-slate-950`}>
+      <body className={`${plusJakarta.variable} ${openSans.variable} ${lobster.variable} font-body antialiased bg-slate-50 dark:bg-slate-950`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

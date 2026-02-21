@@ -37,9 +37,9 @@ function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center">
             {/* @lock - DO NOT MODIFY THIS LOGO IN FUTURE REFACTORS */}
-            <h1 className="flex items-baseline text-center font-bold text-primary">
-                <span className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tighter">Estu</span>
-                <span className="font-logo-script text-[2.2rem] sm:text-[2.6rem] leading-[0.5]">Club</span>
+            <h1 className="flex items-baseline text-center text-primary">
+                <span className="font-logo-sans text-3xl font-extrabold tracking-tighter">Estu</span>
+                <span className="font-logo-display text-4xl -ml-1">Club</span>
             </h1>
         </Link>
     )
