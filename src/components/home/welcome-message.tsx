@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
@@ -24,7 +23,7 @@ export default function WelcomeMessage() {
 
     if (isLoading) {
         return (
-             <div className="mb-10 mt-4 px-4 space-y-2">
+             <div className="mb-4 mt-4 px-4 space-y-2">
                 <Skeleton className="h-10 w-3/4" />
                 <Skeleton className="h-5 w-1/2" />
             </div>
@@ -33,7 +32,7 @@ export default function WelcomeMessage() {
 
     if (!user || !userProfile) {
         return (
-            <div className="mb-10 mt-4 px-4">
+            <div className="mb-4 mt-4 px-4">
                 <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                     Bienvenido a EstuClub
                 </h1>
@@ -45,7 +44,7 @@ export default function WelcomeMessage() {
     }
 
     return (
-        <div className="mb-10 mt-4 px-4">
+        <div className="mb-4 mt-4 px-4">
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                 {getGreeting()}
             </h1>

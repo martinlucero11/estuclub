@@ -371,7 +371,7 @@ export default function HomePage() {
     <MainLayout>
         <div className="mx-auto w-full">
              <WelcomeMessage />
-            <div className="space-y-12 pb-8">
+            <div className="space-y-6 pb-8">
                 {sections && sections.map(section => {
                     const Component = componentMap[section.type as HomeSectionType];
                     
