@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
@@ -139,8 +138,8 @@ function CluberProfileContent({ slug }: { slug: string }) {
     return (
         <div>
             <header className="relative">
-                <div className="relative w-full h-48 md:h-64 bg-slate-100 dark:bg-slate-800 rounded-b-3xl overflow-hidden">
-                    {cluber.coverPhotoUrl && (
+                <div className="relative w-full h-48 md:h-64 rounded-b-3xl overflow-hidden">
+                     {cluber.coverPhotoUrl && cluber.coverPhotoUrl.trim() !== '' ? (
                          <Image
                             src={cluber.coverPhotoUrl}
                             alt={`${cluber.name} cover photo`}
@@ -149,6 +148,8 @@ function CluberProfileContent({ slug }: { slug: string }) {
                             priority
                             sizes="(max-width: 768px) 100vw, 50vw"
                         />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-r from-pink-100 to-rose-200 dark:from-slate-800 dark:to-slate-900" />
                     )}
                 </div>
                 <div className="absolute -bottom-12 left-6 w-28 h-28 rounded-full border-4 border-background bg-background shadow-xl overflow-hidden z-10 flex items-center justify-center">
@@ -177,30 +178,19 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 </div>
                 <p className="text-muted-foreground max-w-xl">{cluber.description || 'Este proveedor aún no ha añadido una descripción.'}</p>
             </div>
-            
-            {cluber.canCreateAppointments && (
-                <div className="px-6 pt-4">
-                    <Button asChild size="lg" className="w-full sm:w-auto">
-                        <Link href="#booking-section">
-                            <CalendarDays className="mr-2 h-5 w-5" />
-                            Solicitar Turno
-                        </Link>
-                    </Button>
-                </div>
-            )}
 
              <div className="px-6 py-8">
                  <h2 className="text-2xl font-bold mb-4">Beneficios Activos</h2>
                 {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
             </div>
 
-            {cluber.canCreateAppointments && availability && services && (
+            {cluber.canCreateAppointments && (
                  <>
                     <Separator className="my-8" />
-                    <div id="booking-section" className="px-6 py-8 scroll-mt-20">
-                        <h2 className="text-2xl font-bold mb-4">Reservar un Turno</h2>
+                    <div id="services-section" className="px-6 py-8 scroll-mt-20">
+                        <h2 className="text-xl font-bold mt-8 mb-4">Servicios Disponibles</h2>
                         <ServiceList 
-                            services={services} 
+                            services={services || []} 
                             availability={availability} 
                             supplierId={cluber.id} 
                             allowsBooking={!!cluber.canCreateAppointments}

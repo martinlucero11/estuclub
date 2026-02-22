@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Service, Availability } from '@/lib/data';
@@ -12,7 +11,7 @@ const BookingDialog = dynamic(() => import('../booking/booking-dialog'), { ssr: 
 
 interface ServiceListProps {
   services: Service[];
-  availability: Availability;
+  availability: Availability | null;
   supplierId: string;
   allowsBooking: boolean;
 }
@@ -41,6 +40,18 @@ export default function ServiceList({ services, availability, supplierId, allows
         </p>
       </div>
     );
+  }
+
+  if (!availability) {
+      return (
+          <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Horarios no configurados</AlertTitle>
+              <AlertDescription>
+                  Este proveedor tiene servicios pero aún no ha configurado sus horarios de disponibilidad.
+              </AlertDescription>
+          </Alert>
+      )
   }
 
   return (
