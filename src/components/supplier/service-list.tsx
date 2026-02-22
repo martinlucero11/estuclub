@@ -37,7 +37,7 @@ export default function ServiceList({ services, availability, supplierId, allows
         <Search className="mx-auto h-12 w-12 text-muted-foreground" />
         <h3 className="mt-4 text-xl font-semibold">No hay servicios disponibles</h3>
         <p className="mt-2 text-sm text-muted-foreground">
-          Este proveedor aún no ha añadido ningún servicio para reservar.
+          Parece que este local aún no ha configurado sus servicios para solicitar turnos.
         </p>
       </div>
     );
