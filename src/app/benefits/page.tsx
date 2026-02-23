@@ -64,7 +64,7 @@ function PerksList() {
         return q;
     }, [firestore, sortOption, categoryFilter]);
 
-    // @ts-expect-error - Ignorando el error de converter de Firebase para el build
+    // @ts-expect-error - Ignorando el error de converter de Firebase para el build de produccion
     const { data: perks, isLoading, error } = useCollection<any>(perksQuery as any);
     
     const serializablePerks: SerializablePerk[] = useMemo(() => {
