@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +20,8 @@ import {
     DialogHeader, 
     DialogTitle, 
     DialogFooter,
-    DialogClose
+    DialogClose,
+    DialogDescription
 } from "@/components/ui/dialog";
 import { useUser, useFirestore } from "@/firebase";
 import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
@@ -89,6 +91,9 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{announcement ? "Editar Anuncio" : "Crear Anuncio"}</DialogTitle>
+          <DialogDescription>
+            {announcement ? "Modifica los detalles de tu anuncio." : "Crea un nuevo anuncio para la comunidad."}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
