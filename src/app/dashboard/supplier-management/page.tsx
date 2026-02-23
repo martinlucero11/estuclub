@@ -1,11 +1,13 @@
+
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { SupplierProfile } from "@/types/data";
 import { SupplierTable } from "./components/supplier-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
+import { useMemo } from 'react';
 
 /**
  * Main page for the Supplier Management dashboard (Admin only).
@@ -15,7 +17,7 @@ import BackButton from '@/components/layout/back-button';
 export default function SupplierManagementPage() {
   const firestore = useFirestore();
 
-  const suppliersQuery = useMemoFirebase(
+  const suppliersQuery = useMemo(
     () => query(collection(firestore, "roles_supplier"), orderBy("name")),
     [firestore]
   );

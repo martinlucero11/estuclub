@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { useDocOnce } from '@/firebase/firestore/use-doc-once';
 import { doc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, User, Fingerprint } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +48,7 @@ function VerificationContent() {
     const userId = searchParams.get('userId');
     const firestore = useFirestore();
 
-    const userProfileRef = useMemoFirebase(
+    const userProfileRef = useMemo(
         () => (userId ? doc(firestore, 'users', userId) : null),
         [firestore, userId]
     );

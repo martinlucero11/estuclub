@@ -1,7 +1,9 @@
+
 'use client';
 
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 /**
  * Hook to determine if the current user is an administrator.
@@ -19,7 +21,7 @@ export function useAdmin() {
     const firestore = useFirestore();
 
     // Create a memoized reference to the user's admin role document.
-    const adminRoleRef = useMemoFirebase(
+    const adminRoleRef = useMemo(
         () => (user ? doc(firestore, 'roles_admin', user.uid) : null),
         [user, firestore]
     );

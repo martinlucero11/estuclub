@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import { HomeSection } from '@/lib/data';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export default function HomeBuilderPage() {
     const [localSections, setLocalSections] = useState<HomeSection[]>([]);
     const [hasOrderChanged, setHasOrderChanged] = useState(false);
 
-    const sectionsQuery = useMemoFirebase(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
+    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
     const { data: remoteSections, isLoading: isSectionsLoading } = useCollection<HomeSection>(sectionsQuery);
 
     useEffect(() => {

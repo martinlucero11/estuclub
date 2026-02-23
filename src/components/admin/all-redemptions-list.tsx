@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { History, Calendar, Fingerprint, Tag, Building } from 'lucide-react';
 import type { BenefitRedemption } from '@/lib/data';
+import { useMemo } from 'react';
 
 function AllRedemptionsListSkeleton() {
     return (
@@ -36,7 +37,7 @@ export default function AllRedemptionsList() {
     const firestore = useFirestore();
     const { user } = useUser();
 
-    const redemptionsQuery = useMemoFirebase(() => {
+    const redemptionsQuery = useMemo(() => {
         if (!user) return null;
         return query(
             collection(firestore, 'benefitRedemptions'),

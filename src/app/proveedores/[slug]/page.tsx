@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
+import { useCollection, useFirestore, useDoc } from '@/firebase';
 import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
@@ -76,20 +77,20 @@ function CluberProfileContent({ slug }: { slug: string }) {
     }, [firestore, slug]);
     
     // CRITICAL FIX: Changed collection from 'benefits' to 'perks' to match data schema.
-    const perksQuery = useMemoFirebase(() => {
+    const perksQuery = useMemo(() => {
         if (!supplier) return null;
         return query(collection(firestore, 'perks'), where('supplierId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
     const { data: perks, isLoading: perksLoading } = useCollection<Perk>(perksQuery);
 
-    const servicesQuery = useMemoFirebase(() => {
+    const servicesQuery = useMemo(() => {
         if (!supplier) return null;
         return query(collection(firestore, `roles_supplier/${supplier.id}/services`));
     }, [supplier, firestore]);
     const { data: services } = useCollection<Service>(servicesQuery);
 
-    const availabilityRef = useMemoFirebase(() => {
+    const availabilityRef = useMemo(() => {
         if (!supplier) return null;
         return doc(firestore, `roles_supplier/${supplier.id}/availability/schedule`);
     }, [supplier, firestore]);

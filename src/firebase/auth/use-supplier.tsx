@@ -1,7 +1,9 @@
+
 'use client';
 
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 /**
  * Hook to determine if the current user is a supplier.
@@ -17,7 +19,7 @@ export function useSupplier() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
-    const supplierRoleRef = useMemoFirebase(
+    const supplierRoleRef = useMemo(
         () => (user ? doc(firestore, 'roles_supplier', user.uid) : null),
         [user, firestore]
     );

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useState, useMemo } from 'react';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, Timestamp, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -98,7 +98,7 @@ function AnnouncementAdminListItem({ announcement }: { announcement: Announcemen
 export default function AnnouncementAdminList({ authorId }: { authorId?: string }) {
     const firestore = useFirestore();
 
-    const announcementsQuery = useMemoFirebase(
+    const announcementsQuery = useMemo(
         () => {
             const baseCollection = collection(firestore, 'announcements');
             if (authorId) {

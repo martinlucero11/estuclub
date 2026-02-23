@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
@@ -89,7 +89,7 @@ export default function MyRedemptionsList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const redemptionsQuery = useMemoFirebase(() => {
+    const redemptionsQuery = useMemo(() => {
         if (!user) return null;
         return query(
             collection(firestore, 'users', user.uid, 'redeemed_benefits'),

@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getBannerColumns } from './banner-columns';
 import type { Banner, SerializableBanner } from '@/lib/data';
@@ -23,7 +23,7 @@ export function BannerTable() {
     const [selectedBanner, setSelectedBanner] = useState<SerializableBanner | null>(null);
     const [bannerIdToDelete, setBannerIdToDelete] = useState<string | null>(null);
 
-    const bannersQuery = useMemoFirebase(() => query(collection(firestore, 'banners'), orderBy('createdAt', 'desc')), [firestore]);
+    const bannersQuery = useMemo(() => query(collection(firestore, 'banners'), orderBy('createdAt', 'desc')), [firestore]);
     const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
 
     const serializableBanners: SerializableBanner[] = useMemo(() => {

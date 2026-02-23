@@ -1,6 +1,6 @@
 
 'use client';
-import { useUser, useFirestore, useDoc, useMemoFirebase, useStorage } from '@/firebase';
+import { useUser, useFirestore, useDoc, useStorage } from '@/firebase';
 import MainLayout from '@/components/layout/main-layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useUserRank } from '@/hooks/use-user-rank';
 import { PageHeader } from '@/components/ui/page-header';
@@ -122,7 +122,7 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+    const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
     const { data: userProfile, isLoading: isProfileLoading, error } = useDoc<UserProfile>(userProfileRef);
 
     // Efficiently get user rank

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../ui/badge';
 import { History, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from 'lucide-react';
 import type { BenefitRedemption } from '@/lib/data';
+import { useMemo } from 'react';
 
 // Skeleton Loader for the table
 function ScanHistorySkeleton() {
@@ -48,7 +49,7 @@ export default function SupplierScanHistory() {
 
     // Query for benefit redemptions, filtered by the current supplier's ID
     // and ordered by the scan time. This requires a composite index.
-    const scansQuery = useMemoFirebase(() => {
+    const scansQuery = useMemo(() => {
         if (!user) return null;
 
         return query(

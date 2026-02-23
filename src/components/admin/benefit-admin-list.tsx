@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, where, updateDoc, increment } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -90,7 +90,7 @@ function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
 export default function BenefitAdminList({ supplierId }: { supplierId?: string }) {
   const firestore = useFirestore();
 
-  const perksQuery = useMemoFirebase(
+  const perksQuery = useMemo(
     () => {
         const baseCollection = collection(firestore, 'benefits');
         if (supplierId) {

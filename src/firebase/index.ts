@@ -13,9 +13,3 @@ export * from './error-emitter';
 
 // This helper is used across many components. It must be stable.
 import { useMemo, type DependencyList } from 'react';
-
-export function useMemoFirebase<T>(factory: () => T, deps: DependencyList): T {
-    // The __memo flag was part of a check that caused circular dependencies.
-    // Removing the flag and the check, relying on standard useMemo.
-    return useMemo(factory, deps);
-}

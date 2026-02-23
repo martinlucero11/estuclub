@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { getHomeSectionColumns } from './home-section-columns';
 import type { HomeSection, SerializableHomeSection } from '@/lib/data';
@@ -23,7 +23,7 @@ export function HomeSectionTable() {
     const [selectedSection, setSelectedSection] = useState<HomeSection | null>(null);
     const [sectionIdToDelete, setSectionIdToDelete] = useState<string | null>(null);
 
-    const sectionsQuery = useMemoFirebase(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
+    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
     const { data: sections, isLoading } = useCollection<HomeSection>(sectionsQuery);
 
     const handleToggleActive = async (sectionId: string, isActive: boolean) => {

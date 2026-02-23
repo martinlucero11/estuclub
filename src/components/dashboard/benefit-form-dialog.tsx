@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,9 +30,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { perkCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat, PlusCircle } from 'lucide-react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, addDoc, query } from 'firebase/firestore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
@@ -77,7 +78,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch suppliers for the admin dropdown
-  const suppliersQuery = useMemoFirebase(() => query(collection(firestore, 'roles_supplier')), [firestore]);
+  const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier')), [firestore]);
   const { data: suppliers } = useCollection<Supplier>(suppliersQuery);
   
   const form = useForm<z.infer<typeof formSchema>>({

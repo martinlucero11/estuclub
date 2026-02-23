@@ -2,14 +2,14 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
@@ -52,7 +52,7 @@ function CluberListPage() {
     const firestore = useFirestore();
     const [activeFilter, setActiveFilter] = useState<CluberCategory | 'Todos'>('Todos');
 
-    const clubersQuery = useMemoFirebase(
+    const clubersQuery = useMemo(
         () => {
             const baseQuery = collection(firestore, 'roles_supplier');
             if (activeFilter === 'Todos') {

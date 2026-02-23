@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,9 +15,9 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useDoc, useMemoFirebase, useStorage } from '@/firebase';
+import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Save, Loader2, Camera } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
@@ -70,7 +71,7 @@ export default function EditSupplierProfileForm() {
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const coverPhotoInputRef = useRef<HTMLInputElement>(null);
 
-  const supplierRef = useMemoFirebase(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
+  const supplierRef = useMemo(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
 
   const form = useForm<z.infer<typeof formSchema>>({

@@ -1,10 +1,11 @@
+
 'use client';
 
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase, useDocOnce } from '@/firebase';
+import { useCollection, useFirestore, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Banner, Category, HomeSection } from '@/lib/data';
 import { useMemo, useRef } from 'react';
@@ -23,7 +24,7 @@ const bannerColors: { [key: string]: string } = {
 // --- CATEGORY GRID (GLOW EFFECT APPLIED) ---
 const CategoryGrid = () => {
     const firestore = useFirestore();
-    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
+    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -72,7 +73,7 @@ const CategoryGrid = () => {
 // --- SINGLE BANNER (LCP Optimized) ---
 const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }) => {
     const firestore = useFirestore();
-    const bannerRef = useMemoFirebase(() => doc(firestore, 'banners', bannerId), [firestore, bannerId]);
+    const bannerRef = useMemo(() => doc(firestore, 'banners', bannerId), [firestore, bannerId]);
     const { data: banner, isLoading } = useDocOnce<Banner>(bannerRef);
 
     if (isLoading) {
@@ -200,7 +201,7 @@ const PageSkeleton = () => (
 export default function HomePage() {
   const firestore = useFirestore();
 
-    const homeSectionsQuery = useMemoFirebase(() => 
+    const homeSectionsQuery = useMemo(() => 
         query(
             collection(firestore, 'home_sections'),
             where('isActive', '==', true),

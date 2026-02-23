@@ -1,13 +1,14 @@
 
 'use client';
 
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { BookUser, Calendar, Clock, Fingerprint, Phone } from 'lucide-react';
 import type { Appointment } from '@/lib/data';
+import { useMemo } from 'react';
 
 function AppointmentListSkeleton() {
     return (
@@ -33,7 +34,7 @@ export default function AppointmentList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const appointmentsQuery = useMemoFirebase(() => {
+    const appointmentsQuery = useMemo(() => {
         if (!user) return null;
         // Query for upcoming appointments
         return query(

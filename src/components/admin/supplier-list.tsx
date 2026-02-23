@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +12,7 @@ import { Switch } from '../ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '../ui/label';
 import type { SupplierProfile } from '@/types/data';
+import { useMemo } from 'react';
 
 const typeIcons = {
     Institucion: Building,
@@ -46,7 +47,7 @@ export default function SupplierList() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const suppliersQuery = useMemoFirebase(
+    const suppliersQuery = useMemo(
         () => query(collection(firestore, 'roles_supplier'), orderBy('name')),
         [firestore]
     );

@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/firestore';
 import type { Service, Availability, Appointment } from '@/lib/data';
@@ -37,12 +37,12 @@ export default function BookingDialog({ service, availability, supplierId, child
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [isBooking, setIsBooking] = useState(false);
 
-  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
   
   const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-  const appointmentsQuery = useMemoFirebase(() => {
+  const appointmentsQuery = useMemo(() => {
     if (!supplierId || !selectedDate) return null;
     const start = startOfDay(selectedDate);
     const end = add(start, { days: 1 });

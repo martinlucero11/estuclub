@@ -2,7 +2,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays } from 'lucide-react';
@@ -12,6 +12,7 @@ import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, SupplierProfile } from '@/types/data';
+import { useMemo } from 'react';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -42,7 +43,7 @@ function TurnosPageSkeleton() {
 function CluberList() {
     const firestore = useFirestore();
     
-    const clubersQuery = useMemoFirebase(
+    const clubersQuery = useMemo(
         () => {
             return query(
                 collection(firestore, 'roles_supplier'), 

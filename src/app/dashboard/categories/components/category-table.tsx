@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { getCategoryColumns } from './category-columns';
 import type { Category } from '@/lib/data';
@@ -21,7 +21,7 @@ export function CategoryTable() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
 
-    const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
+    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
     
     const handleEdit = (category: Category) => {

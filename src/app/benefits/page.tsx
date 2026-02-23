@@ -4,7 +4,7 @@
 import MainLayout from '@/components/layout/main-layout';
 import PerksGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import type { Perk, SerializablePerk } from '@/lib/data';
 import { makePerkSerializable } from '@/lib/data';
 import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
@@ -39,7 +39,7 @@ function PerksList() {
     const searchParams = useSearchParams();
     const categoryFilter = searchParams.get('category');
 
-    const perksQuery = useMemoFirebase(() => {
+    const perksQuery = useMemo(() => {
         if (!firestore) return null;
 
         let field: string, direction: OrderByDirection;

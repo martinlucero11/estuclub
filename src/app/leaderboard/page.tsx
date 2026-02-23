@@ -2,7 +2,7 @@
 'use client';
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -10,6 +10,7 @@ import { Award, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useMemo } from 'react';
 
 interface UserProfile {
   id: string;
@@ -97,7 +98,7 @@ export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
 
-  const usersQuery = useMemoFirebase(
+  const usersQuery = useMemo(
     () => query(collection(firestore, 'users'), orderBy('points', 'desc')),
     [firestore]
   );

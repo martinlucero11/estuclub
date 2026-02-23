@@ -1,6 +1,7 @@
+
 'use client';
 import { useMemo } from "react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore"; 
 import Link from "next/link";
 import type { Benefit, Supplier, Announcement } from "@/lib/data";
@@ -93,10 +94,10 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
     return function Carousel() {
         const firestore = useFirestore();
         
-        const itemsQuery = useMemoFirebase(() => query(collection(firestore, collectionName), limit(10)), [firestore]);
+        const itemsQuery = useMemo(() => query(collection(firestore, collectionName), limit(10)), [firestore]);
         const { data: items, isLoading, error } = useCollection<T>(itemsQuery);
 
-        const suppliersQuery = useMemoFirebase(() => 
+        const suppliersQuery = useMemo(() => 
             collectionName === 'benefits' ? query(collection(firestore, 'suppliers')) : null
         , [firestore]);
         const { data: suppliers } = useCollection<Supplier>(suppliersQuery);

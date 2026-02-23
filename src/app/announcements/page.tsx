@@ -4,7 +4,7 @@
 import MainLayout from '@/components/layout/main-layout';
 import AnnouncementsList from '@/components/announcements/announcements-list';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { Suspense, useMemo } from 'react';
 import type { Announcement } from '@/lib/data';
@@ -30,7 +30,7 @@ function AnnouncementsListSkeleton() {
 
 function Announcements() {
     const firestore = useFirestore();
-    const announcementsQuery = useMemoFirebase(
+    const announcementsQuery = useMemo(
         () => query(collection(firestore, 'announcements'), orderBy('createdAt', 'desc')),
         [firestore]
     );

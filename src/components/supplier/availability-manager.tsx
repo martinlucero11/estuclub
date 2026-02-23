@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,9 +7,9 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useFirestore, useUser, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Loader2, Save } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Card, CardContent } from '../ui/card';
@@ -53,7 +54,7 @@ export default function AvailabilityManager() {
   const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availabilityRef = useMemoFirebase(() => user ? doc(firestore, `roles_supplier/${user.uid}/availability/schedule`) : null, [user, firestore]);
+  const availabilityRef = useMemo(() => user ? doc(firestore, `roles_supplier/${user.uid}/availability/schedule`) : null, [user, firestore]);
   const { data: availabilityData, isLoading: isDataLoading } = useDoc(availabilityRef);
   
   const form = useForm<z.infer<typeof availabilitySchema>>({

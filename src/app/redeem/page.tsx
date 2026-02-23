@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { useDocOnce } from '@/firebase/firestore/use-doc-once';
 import { doc, Timestamp } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, Fingerprint, Award, University } from 'lucide-react';
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { BenefitRedemption } from '@/lib/data';
 
@@ -54,14 +54,14 @@ function RedemptionValidationContent() {
 
     const firestore = useFirestore();
 
-    const redemptionRef = useMemoFirebase(
+    const redemptionRef = useMemo(
         () => (redemptionId ? doc(firestore, 'benefitRedemptions', redemptionId) : null),
         [firestore, redemptionId]
     );
 
     const { data: redemption, isLoading: isRedemptionLoading, error: redemptionError } = useDocOnce<BenefitRedemption>(redemptionRef);
 
-    const userProfileRef = useMemoFirebase(
+    const userProfileRef = useMemo(
         () => (redemption ? doc(firestore, 'users', redemption.userId) : null),
         [firestore, redemption]
     );

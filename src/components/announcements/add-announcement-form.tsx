@@ -18,8 +18,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { MessageSquarePlus, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, addDoc } from 'firebase/firestore';
+import { useMemo } from 'react';
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.').max(100, 'El título no puede exceder los 100 caracteres.'),
@@ -36,7 +37,7 @@ export default function AddAnnouncementForm() {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
-  const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
