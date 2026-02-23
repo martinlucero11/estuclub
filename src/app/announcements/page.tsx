@@ -35,7 +35,7 @@ function Announcements() {
         [firestore]
     );
 
-    const { data, isLoading } = useCollection<Announcement>(announcementsQuery);
+    const { data, isLoading } = useCollection<Announcement>(announcementsQuery as any);
 
     const announcements = useMemo(() => {
         if (!data) return [];
