@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -54,7 +53,7 @@ const CategoryGrid = () => {
             <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {categories.map((category) => (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
-                        <div className="bg-[#f4739b] rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">
+                        <div className="bg-accent rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">
                             <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
                         </div>
                         <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
@@ -231,7 +230,7 @@ export default function HomePage() {
     <MainLayout>
         <div className="mx-auto w-full">
              <WelcomeMessage />
-            <div className="space-y-6 pb-8 pt-2">
+            <div className="space-y-6 pb-8 pt-0">
                 {sections && sections.map((section, index) => {
                     const Component = componentMap[section.type as HomeSectionType];
                     const isFirstSection = index === 0;
