@@ -34,9 +34,9 @@ export interface SupplierProfile {
   isFeatured?: boolean;
   createdAt?: Timestamp;
   // --- Module Capabilities ---
-  canCreateAppointments?: boolean; // Formerly appointmentsEnabled
+  appointmentsEnabled?: boolean;
   canCreatePerks?: boolean; // New permission for benefits
-  canCreateAnnouncements?: boolean; // Formerly announcementsEnabled
+  announcementsEnabled?: boolean;
 }
 
 /**

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCollection, useFirestore, useMemoFirebase, useDoc } from '@/firebase';
@@ -184,7 +185,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializableBenefits} />}
             </div>
 
-            {cluber.canCreateAppointments && (
+            {cluber.appointmentsEnabled && (
                  <>
                     <Separator className="my-8" />
                     <div id="services-section" className="px-6 py-8 scroll-mt-20">
@@ -193,7 +194,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                             services={services || []} 
                             availability={availability} 
                             supplierId={cluber.id} 
-                            allowsBooking={!!cluber.canCreateAppointments}
+                            allowsBooking={!!cluber.appointmentsEnabled}
                         />
                     </div>
                  </>
