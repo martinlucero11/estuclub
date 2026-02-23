@@ -11,11 +11,10 @@ export default function SplashScreen() {
       <Image 
         src="/logo.svg" 
         alt="EstuClub" 
-        width={180} 
-        height={60} 
-        className="object-contain text-white" 
+        width={160} 
+        height={53} 
+        className="object-contain mx-auto" 
         priority 
-        style={{ width: 'auto', height: 'auto' }}
       />
     </div>
   );

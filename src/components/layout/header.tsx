@@ -123,6 +123,8 @@ function UserMenu() {
 
 function MainMenu() {
     const { roles } = useUser();
+    const isAdmin = roles.includes('admin');
+    const isSupplier = roles.includes('supplier');
     const allRoles = ['user', ...roles];
 
     return (
@@ -140,7 +142,15 @@ function MainMenu() {
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1 px-6">
                     {navConfig.mainNav.map((item) => {
-                        const isVisible = hasRequiredRole(allRoles, item.role);
+                        let isVisible;
+                        if (item.href === '/dashboard') {
+                            // Stricly use the user's requested condition for the dashboard link.
+                            isVisible = isAdmin || isSupplier;
+                        } else {
+                            // Use the standard role-checking logic for all other items.
+                            isVisible = hasRequiredRole(allRoles, item.role);
+                        }
+                        
                         if (!isVisible) return null;
 
                         const Icon = item.icon;
@@ -183,5 +193,3 @@ export default function Header() {
     </header>
   );
 }
-
-    

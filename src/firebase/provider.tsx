@@ -65,52 +65,45 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
-      // Set loading state to true whenever auth state is re-evaluated
       setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
       if (firebaseUser) {
+        let userRoles: string[] = ['user'];
+        let supplierData: SupplierData | null = null;
         try {
-          // Parallel fetch for admin and supplier roles
-          const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
-          const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+            const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
+            const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+            
+            const [adminSnap, supplierSnap] = await Promise.all([
+                getDoc(adminRoleRef),
+                getDoc(supplierRoleRef)
+            ]);
 
-          const [adminDoc, supplierDoc] = await Promise.all([
-            getDoc(adminRoleRef),
-            getDoc(supplierRoleRef)
-          ]);
+            if (adminSnap.exists()) {
+                userRoles.push('admin');
+            }
+            if (supplierSnap.exists()) {
+                userRoles.push('supplier');
+                supplierData = supplierSnap.data() as SupplierData;
+            }
 
-          const userRoles: string[] = ['user']; // All logged-in users have the 'user' role
-          let supplierData: SupplierData | null = null;
-          
-          if (adminDoc.exists()) {
-            userRoles.push('admin');
-          }
-          if (supplierDoc.exists()) {
-            userRoles.push('supplier');
-            supplierData = supplierDoc.data() as SupplierData;
-          }
-
-          // Set the complete user state once all data is fetched
-          setUserAuthState({ 
-            user: firebaseUser, 
-            roles: Array.from(new Set(userRoles)), 
-            supplierData, 
-            isUserLoading: false, 
-            userError: null 
-          });
+            setUserAuthState({
+                user: firebaseUser,
+                roles: Array.from(new Set(userRoles)),
+                supplierData,
+                isUserLoading: false,
+                userError: null
+            });
 
         } catch (error) {
-          // This catch block handles Firestore permission errors or network issues.
-          // It's crucial for users who are not admins/suppliers and cannot read those collections.
-          console.log("Could not fetch roles, assuming default 'user' role. This is expected for standard users.");
-          // Set state to a non-privileged user to allow the app to continue.
-          setUserAuthState({ 
-            user: firebaseUser, 
-            roles: ['user'], // Fallback to the most basic role
-            supplierData: null, 
-            isUserLoading: false, 
-            userError: error as Error // Store error for debugging if needed, but don't crash
-          });
+            // Silently fail and set basic user role, as per instructions.
+            setUserAuthState({
+                user: firebaseUser,
+                roles: ['user'],
+                supplierData: null,
+                isUserLoading: false,
+                userError: null // Do not surface permission errors here
+            });
         }
       } else {
         // User is signed out, clear all user-related state.
@@ -126,7 +119,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
     // Cleanup subscription on component unmount
     return () => unsubscribe();
-  }, [services.auth, services.firestore]); // Dependencies are stable
+  }, [services.auth, services.firestore]);
 
   const contextValue = useMemo((): FirebaseContextState => ({
     areServicesAvailable: true,
@@ -193,5 +186,3 @@ export const useUser = (): UserHookResult => {
   const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
   return { user, roles, supplierData, isUserLoading, userError };
 };
-
-    
