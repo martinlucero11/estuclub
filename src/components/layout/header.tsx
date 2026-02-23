@@ -38,7 +38,7 @@ function Logo() {
         <Link href="/" className="flex items-center justify-center">
             <div className="relative w-32 h-10">
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt="EstuClub"
                 fill
                 className="object-contain"
