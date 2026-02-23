@@ -5,7 +5,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useDocOnce, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Banner, Category, HomeSection } from '@/lib/data';
 import { useMemo, useRef } from 'react';
@@ -51,7 +51,7 @@ const CategoryGrid = () => {
 
     return (
         <div className="relative">
-            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 px-4 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {categories.map((category) => (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
                         <div className="bg-accent rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">

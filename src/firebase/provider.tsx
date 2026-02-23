@@ -69,40 +69,33 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       async (firebaseUser) => {
         if (firebaseUser) {
           try {
-            const userRoles: string[] = [];
+            const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
+            const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+
+            const [adminDoc, supplierDoc] = await Promise.all([
+              getDoc(adminRoleRef),
+              getDoc(supplierRoleRef)
+            ]);
+
+            const userRoles: string[] = ['user']; // Base role
             let supplierData: SupplierData | null = null;
             
-            // Performed a targeted read on the user's own document, which is allowed by security rules.
-            const userDocRef = doc(services.firestore, 'users', firebaseUser.uid);
-            const userDoc = await getDoc(userDocRef);
-
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                console.log("Perfil cargado:", userData);
-                
-                // Determine roles from the 'role' field in the user document.
-                if (userData.role === 'admin') {
-                    userRoles.push('admin');
-                }
-                if (userData.role === 'supplier') {
-                    userRoles.push('supplier');
-                    // If the user is a supplier, we can now safely fetch their public supplier profile.
-                    const supplierDocRef = doc(services.firestore, "roles_supplier", firebaseUser.uid);
-                    const supplierDoc = await getDoc(supplierDocRef);
-                    if (supplierDoc.exists()) {
-                        supplierData = supplierDoc.data();
-                    }
-                }
-            } else {
-                 console.warn("No se encontró documento para el UID:", firebaseUser.uid);
+            if (adminDoc.exists()) {
+              userRoles.push('admin');
+              console.log("Rol detectado: admin");
+            }
+            if (supplierDoc.exists()) {
+              userRoles.push('supplier');
+              console.log("Rol detectado: supplier");
+              supplierData = supplierDoc.data();
             }
 
-            setUserAuthState({ user: firebaseUser, roles: userRoles, supplierData, isUserLoading: false, userError: null });
+            setUserAuthState({ user: firebaseUser, roles: Array.from(new Set(userRoles)), supplierData, isUserLoading: false, userError: null });
 
           } catch (error) {
-            console.warn("Error silencioso de permisos (esperando auth):", (error as Error).message);
+            console.warn("Error fetching user roles, defaulting to basic 'user' role:", (error as Error).message);
             // Fallback to a non-privileged state if any error occurs during role fetching
-            setUserAuthState({ user: firebaseUser, roles: [], supplierData: null, isUserLoading: false, userError: error as Error });
+            setUserAuthState({ user: firebaseUser, roles: ['user'], supplierData: null, isUserLoading: false, userError: error as Error });
           }
         } else {
           // User is signed out
