@@ -8,7 +8,6 @@ import Image from 'next/image';
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetClose,
@@ -136,7 +135,6 @@ function MainMenu() {
             <SheetContent side="left" className="flex flex-col p-0">
                 <SheetHeader className="p-6">
                     <SheetTitle><Logo /></SheetTitle>
-                    <SheetDescription>Navega por la aplicación.</SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1 px-6">
                     {navConfig.mainNav.map((item) => {
