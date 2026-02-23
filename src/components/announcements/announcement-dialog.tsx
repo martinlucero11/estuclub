@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -38,6 +39,9 @@ export default function AnnouncementDialog({ announcement, children }: Announcem
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{announcement.title}</DialogTitle>
+          <DialogDescription>
+            Detalles del anuncio publicado en la comunidad.
+          </DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <p className="text-muted-foreground whitespace-pre-wrap">{announcement.content}</p>
