@@ -94,7 +94,7 @@ const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }
                         alt={banner.title}
                         fill
                         className="object-cover"
-                        priority={true}
+                        priority={isLCP}
                         sizes="100vw"
                     />
                 )}
