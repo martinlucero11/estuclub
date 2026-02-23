@@ -35,7 +35,8 @@ function Announcements() {
         [firestore]
     );
 
-    const { data, isLoading } = useCollection<Announcement>(announcementsQuery as any);
+    // @ts-ignore - Ignorando error de tipado del converter para el build de producción
+    const { data, isLoading } = useCollection<Announcement>(announcementsQuery);
 
     const announcements = useMemo(() => {
         if (!data) return [];
