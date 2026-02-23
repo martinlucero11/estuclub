@@ -18,12 +18,18 @@ export function RoleProvider({
   children: ReactNode; 
   availableRoles: UserRole[]; 
 }) {
-  const [activeRole, setActiveRole] = useState<UserRole>(availableRoles[0] || 'user');
+  const getBestRole = (roles: UserRole[]): UserRole => {
+    if (roles.includes('admin')) return 'admin';
+    if (roles.includes('supplier')) return 'supplier';
+    return roles[0] || 'user';
+  };
+
+  const [activeRole, setActiveRole] = useState<UserRole>(() => getBestRole(availableRoles));
 
   useEffect(() => {
     // Ensure active role is always one of the available ones
     if (!availableRoles.includes(activeRole)) {
-      setActiveRole(availableRoles[0] || 'user');
+      setActiveRole(getBestRole(availableRoles));
     }
   }, [availableRoles, activeRole]);
 
