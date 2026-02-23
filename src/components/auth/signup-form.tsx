@@ -82,11 +82,11 @@ export default function SignupForm() {
           displayName: `${values.firstName} ${values.lastName}`,
         });
 
-        const userProfileRef = doc(firestore, 'users', user.uid);
-        const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
-
-        const userProfile = {
+        // FIX: Use setDoc with the user.uid as the document ID to comply with security rules.
+        // This prevents the "Missing or insufficient permissions" error.
+        await setDoc(doc(firestore, 'users', user.uid), {
           id: user.uid,
+          uid: user.uid,
           email: values.email,
           username: values.username.toLowerCase(),
           dni: values.dni,
@@ -101,11 +101,7 @@ export default function SignupForm() {
           photoURL: '',
           role: 'user',
           createdAt: serverTimestamp(),
-        };
-
-        // Explicitly write to user profile first, then to username document.
-        await setDoc(userProfileRef, userProfile);
-        await setDoc(newUsernameRef, { userId: user.uid });
+        });
 
         toast({
           title: '¡Cuenta Creada!',
