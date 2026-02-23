@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +18,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -83,14 +82,8 @@ export default function SignupForm() {
           displayName: `${values.firstName} ${values.lastName}`,
         });
 
-        // The user's instruction is to use setDoc, I will use a batch write which is a more robust
-        // way to perform multiple 'setDoc' equivalent operations atomically.
         const batch = writeBatch(firestore);
-
-        // 1. Reference the user's profile doc using their UID
         const userProfileRef = doc(firestore, 'users', user.uid);
-
-        // 2. Reference the username doc to ensure uniqueness
         const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
 
         const userProfile = {
@@ -104,17 +97,16 @@ export default function SignupForm() {
           gender: values.gender,
           university: values.university,
           major: values.major,
-          dateOfBirth: '', // This can be added later
+          dateOfBirth: '',
           points: 0,
-          photoURL: '', // Initialize with empty photoURL
+          photoURL: '',
+          role: 'user',
+          createdAt: serverTimestamp(),
         };
 
-        // This is the equivalent of setDoc(userProfileRef, userProfile)
         batch.set(userProfileRef, userProfile);
-        // This creates the username document, also using setDoc logic
         batch.set(newUsernameRef, { userId: user.uid });
 
-        // Commit both writes atomically
         await batch.commit();
 
         toast({
