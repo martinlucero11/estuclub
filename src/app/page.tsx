@@ -5,7 +5,7 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useDocOnce } from '@/firebase';
+import { useCollection, useFirestore, useDocOnce, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Banner, Category, HomeSection } from '@/lib/data';
 import { useMemo, useRef } from 'react';
@@ -94,7 +94,7 @@ const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }
                         alt={banner.title}
                         fill
                         className="object-cover"
-                        priority={isLCP}
+                        priority={true}
                         sizes="100vw"
                     />
                 )}
