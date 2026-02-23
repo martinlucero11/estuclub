@@ -16,10 +16,8 @@ export function useCollection<T extends DocumentData>(
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    // FIX: Do not run the query if it's null (e.g., Firestore is not ready or a condition is not met)
     if (!query) {
       setIsLoading(false);
-      // Setting data to an empty array ensures components don't crash on undefined.
       setData([]); 
       return;
     }
