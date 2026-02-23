@@ -50,7 +50,7 @@ const CategoryGrid = () => {
 
     return (
         <div className="relative">
-            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 px-4 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {categories.map((category) => (
                     <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
                         <div className="bg-accent rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">
@@ -256,7 +256,7 @@ export default function HomePage() {
                                     </Button>
                                 )}
                             </div>
-                            <div className="pl-4 pr-0">
+                            <div className="px-4">
                                 {Component(section, isFirstSection)}
                             </div>
                         </section>

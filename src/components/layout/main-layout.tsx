@@ -8,7 +8,7 @@ import BottomNav from '@/components/layout/bottom-nav';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+        <div className="min-h-screen flex flex-col bg-background">
             <Header />
             <main className="flex-1 pb-20">{children}</main>
             <BottomNav />
