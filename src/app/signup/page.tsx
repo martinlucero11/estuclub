@@ -1,7 +1,7 @@
-
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import SignupForm from '@/components/auth/signup-form';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -11,11 +11,15 @@ import SplashScreen from '@/components/layout/splash-screen';
 
 function EstuClubLogo() {
   return (
-    <div className="flex items-center justify-center gap-2">
-      <h1 className="flex items-baseline text-center text-primary">
-        <span className="font-logo-sans text-5xl font-extrabold tracking-tighter">Estu</span>
-        <span className="font-logo-display text-6xl">Club</span>
-      </h1>
+    <div className="relative w-40 h-14 mx-auto mb-6">
+      <Image 
+        src="/logo.svg" 
+        alt="EstuClub" 
+        fill 
+        className="object-contain" 
+        priority
+        style={{ filter: 'brightness(0) saturate(100%) invert(29%) sepia(81%) saturate(1988%) hue-rotate(318deg) brightness(92%) contrast(101%)' }} 
+      />
     </div>
   );
 }
