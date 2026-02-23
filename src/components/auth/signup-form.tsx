@@ -18,7 +18,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -66,52 +66,65 @@ export default function SignupForm() {
     setIsSubmitting(true);
     
     try {
+      // Step 1: Check if username is already taken. This is a critical pre-check.
       const usernameDocRef = doc(firestore, 'usernames', values.username.toLowerCase());
       const usernameDoc = await getDoc(usernameDocRef);
       if (usernameDoc.exists()) {
           form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
-          setIsSubmitting(false);
+          setIsSubmitting(false); // Reset submitting state
           return;
       }
 
+      // Step 2: Create the user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      if (user) {
-        await updateProfile(user, {
-          displayName: `${values.firstName} ${values.lastName}`,
-        });
+      // Step 3: Use a batch write to atomically create user profile and username documents
+      const batch = writeBatch(firestore);
 
-        // FIX: Use setDoc with the user.uid as the document ID to comply with security rules.
-        // This prevents the "Missing or insufficient permissions" error.
-        await setDoc(doc(firestore, 'users', user.uid), {
-          id: user.uid,
-          uid: user.uid,
-          email: values.email,
-          username: values.username.toLowerCase(),
-          dni: values.dni,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          phone: values.phone,
-          gender: values.gender,
-          university: values.university,
-          major: values.major,
-          dateOfBirth: '',
-          points: 0,
-          photoURL: '',
-          role: 'user',
-          createdAt: serverTimestamp(),
-        });
+      // User profile document
+      const userDocRef = doc(firestore, 'users', user.uid);
+      batch.set(userDocRef, {
+        id: user.uid,
+        uid: user.uid,
+        email: values.email,
+        username: values.username.toLowerCase(),
+        dni: values.dni,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        phone: values.phone,
+        gender: values.gender,
+        university: values.university,
+        major: values.major,
+        dateOfBirth: '',
+        points: 0,
+        photoURL: '',
+        role: 'user',
+        createdAt: serverTimestamp(),
+      });
+      
+      // Username lookup document
+      const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
+      batch.set(newUsernameRef, { userId: user.uid });
 
-        toast({
-          title: '¡Cuenta Creada!',
-          description: 'Tu cuenta ha sido creada con éxito. Serás redirigido.',
-        });
-        
-        router.push('/');
-      }
+      // Commit the atomic batch
+      await batch.commit();
+      
+      // Step 4: Update the user's display name in Auth (optional but good practice)
+      await updateProfile(user, {
+        displayName: `${values.firstName} ${values.lastName}`,
+      });
+
+      // Step 5: Notify user and redirect
+      toast({
+        title: '¡Cuenta Creada!',
+        description: 'Tu cuenta ha sido creada con éxito. Serás redirigido.',
+      });
+      
+      router.push('/');
+
     } catch (error: any) {
-      console.error("Signup failed:", error);
+      console.error("Error en el registro:", error);
       toast({
         variant: "destructive",
         title: "Error en el registro",
@@ -120,7 +133,7 @@ export default function SignupForm() {
             : 'No se pudo crear la cuenta. Inténtalo de nuevo.'
       });
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
