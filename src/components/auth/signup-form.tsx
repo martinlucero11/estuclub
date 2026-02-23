@@ -18,7 +18,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -82,7 +82,6 @@ export default function SignupForm() {
           displayName: `${values.firstName} ${values.lastName}`,
         });
 
-        const batch = writeBatch(firestore);
         const userProfileRef = doc(firestore, 'users', user.uid);
         const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
 
@@ -104,10 +103,9 @@ export default function SignupForm() {
           createdAt: serverTimestamp(),
         };
 
-        batch.set(userProfileRef, userProfile);
-        batch.set(newUsernameRef, { userId: user.uid });
-
-        await batch.commit();
+        // Explicitly write to user profile first, then to username document.
+        await setDoc(userProfileRef, userProfile);
+        await setDoc(newUsernameRef, { userId: user.uid });
 
         toast({
           title: '¡Cuenta Creada!',
