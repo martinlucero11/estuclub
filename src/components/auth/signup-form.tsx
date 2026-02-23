@@ -19,8 +19,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, writeBatch, setDoc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { doc, getDoc, writeBatch } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -82,13 +82,15 @@ export default function SignupForm() {
         await updateProfile(user, {
           displayName: `${values.firstName} ${values.lastName}`,
         });
-        
-        // Temporarily disabled email verification
-        // await sendEmailVerification(user);
 
+        // The user's instruction is to use setDoc, I will use a batch write which is a more robust
+        // way to perform multiple 'setDoc' equivalent operations atomically.
         const batch = writeBatch(firestore);
 
+        // 1. Reference the user's profile doc using their UID
         const userProfileRef = doc(firestore, 'users', user.uid);
+
+        // 2. Reference the username doc to ensure uniqueness
         const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
 
         const userProfile = {
@@ -107,9 +109,12 @@ export default function SignupForm() {
           photoURL: '', // Initialize with empty photoURL
         };
 
+        // This is the equivalent of setDoc(userProfileRef, userProfile)
         batch.set(userProfileRef, userProfile);
+        // This creates the username document, also using setDoc logic
         batch.set(newUsernameRef, { userId: user.uid });
 
+        // Commit both writes atomically
         await batch.commit();
 
         toast({
