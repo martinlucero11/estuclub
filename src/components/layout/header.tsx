@@ -12,6 +12,7 @@ import {
   SheetTitle,
   SheetClose,
   SheetTrigger,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -23,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthService, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
+import { useAuthService, useUser, useDoc, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -135,6 +136,7 @@ function MainMenu() {
             <SheetContent side="left" className="flex flex-col p-0">
                 <SheetHeader className="p-6">
                     <SheetTitle><Logo /></SheetTitle>
+                    <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-1 px-6">
                     {navConfig.mainNav.map((item) => {
@@ -181,3 +183,5 @@ export default function Header() {
     </header>
   );
 }
+
+    

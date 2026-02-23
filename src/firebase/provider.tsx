@@ -64,51 +64,69 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      services.auth,
-      async (firebaseUser) => {
-        if (firebaseUser) {
-          try {
-            const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
-            const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+    const unsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
+      // Set loading state to true whenever auth state is re-evaluated
+      setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
-            const [adminDoc, supplierDoc] = await Promise.all([
-              getDoc(adminRoleRef),
-              getDoc(supplierRoleRef)
-            ]);
+      if (firebaseUser) {
+        try {
+          // Parallel fetch for admin and supplier roles
+          const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
+          const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
 
-            const userRoles: string[] = ['user']; // Base role
-            let supplierData: SupplierData | null = null;
-            
-            if (adminDoc.exists()) {
-              userRoles.push('admin');
-              console.log("Rol detectado: admin");
-            }
-            if (supplierDoc.exists()) {
-              userRoles.push('supplier');
-              console.log("Rol detectado: supplier");
-              supplierData = supplierDoc.data();
-            }
+          const [adminDoc, supplierDoc] = await Promise.all([
+            getDoc(adminRoleRef),
+            getDoc(supplierRoleRef)
+          ]);
 
-            setUserAuthState({ user: firebaseUser, roles: Array.from(new Set(userRoles)), supplierData, isUserLoading: false, userError: null });
-
-          } catch (error) {
-            console.log("Waiting for profile or insufficient permissions, defaulting to basic 'user' role.");
-            // Fallback to a non-privileged state if any error occurs during role fetching
-            setUserAuthState({ user: firebaseUser, roles: ['user'], supplierData: null, isUserLoading: false, userError: error as Error });
+          const userRoles: string[] = ['user']; // All logged-in users have the 'user' role
+          let supplierData: SupplierData | null = null;
+          
+          if (adminDoc.exists()) {
+            userRoles.push('admin');
           }
-        } else {
-          // User is signed out
-          setUserAuthState({ user: null, roles: [], supplierData: null, isUserLoading: false, userError: null });
+          if (supplierDoc.exists()) {
+            userRoles.push('supplier');
+            supplierData = supplierDoc.data() as SupplierData;
+          }
+
+          // Set the complete user state once all data is fetched
+          setUserAuthState({ 
+            user: firebaseUser, 
+            roles: Array.from(new Set(userRoles)), 
+            supplierData, 
+            isUserLoading: false, 
+            userError: null 
+          });
+
+        } catch (error) {
+          // This catch block handles Firestore permission errors or network issues.
+          // It's crucial for users who are not admins/suppliers and cannot read those collections.
+          console.log("Could not fetch roles, assuming default 'user' role. This is expected for standard users.");
+          // Set state to a non-privileged user to allow the app to continue.
+          setUserAuthState({ 
+            user: firebaseUser, 
+            roles: ['user'], // Fallback to the most basic role
+            supplierData: null, 
+            isUserLoading: false, 
+            userError: error as Error // Store error for debugging if needed, but don't crash
+          });
         }
-      },
-      (error) => {
-        console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserAuthState({ user: null, roles: [], supplierData: null, isUserLoading: false, userError: error });
+      } else {
+        // User is signed out, clear all user-related state.
+        setUserAuthState({ 
+          user: null, 
+          roles: [], 
+          supplierData: null, 
+          isUserLoading: false, 
+          userError: null 
+        });
       }
-    );
+    });
+
+    // Cleanup subscription on component unmount
     return () => unsubscribe();
-  }, [services.auth, services.firestore]);
+  }, [services.auth, services.firestore]); // Dependencies are stable
 
   const contextValue = useMemo((): FirebaseContextState => ({
     areServicesAvailable: true,
@@ -175,3 +193,5 @@ export const useUser = (): UserHookResult => {
   const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
   return { user, roles, supplierData, isUserLoading, userError };
 };
+
+    
