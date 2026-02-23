@@ -8,10 +8,11 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Bell, Gift, Megaphone } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
+import { useMemo } from 'react';
 
 interface Notification {
     id: string;
@@ -46,7 +47,7 @@ function formatTime(timestamp: Timestamp) {
 
 function NotificationList() {
     const firestore = useFirestore();
-    const notificationsQuery = useMemoFirebase(
+    const notificationsQuery = useMemo(
         () => query(collection(firestore, 'notifications'), orderBy('createdAt', 'desc'), limit(10)),
         [firestore]
     );
