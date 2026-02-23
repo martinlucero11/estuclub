@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -24,7 +23,7 @@ export function BannerTable() {
     const [bannerIdToDelete, setBannerIdToDelete] = useState<string | null>(null);
 
     const bannersQuery = useMemo(() => query(collection(firestore, 'banners'), orderBy('createdAt', 'desc')), [firestore]);
-    const { data: banners, isLoading } = useCollection<Banner>(bannersQuery);
+    const { data: banners, isLoading } = useCollection<any>(bannersQuery as any);
 
     const serializableBanners: SerializableBanner[] = useMemo(() => {
         if (!banners) return [];
