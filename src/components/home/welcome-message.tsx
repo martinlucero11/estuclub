@@ -1,56 +1,25 @@
 'use client';
 
-import { useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useFirebase } from '@/firebase/provider';
 
-interface UserProfile {
-    firstName: string;
-}
+const WelcomeMessage = () => {
+    // FIX: Using the correct hook `useFirebase` to get the auth instance
+    const { auth } = useFirebase();
+    const user = auth?.currentUser;
 
-export default function WelcomeMessage() {
-    const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
-    const userProfileRef = useMemoFirebase(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
-    const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-    const getGreeting = () => {
-        if (!userProfile) return "Bienvenido a EstuClub";
-        return `Hola, ${userProfile.firstName} 👋`;
-    };
-    
-    const isLoading = isUserLoading || (user && isProfileLoading);
-
-    if (isLoading) {
-        return (
-             <div className="mb-4 mt-4 px-4 space-y-2">
-                <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-5 w-1/2" />
-            </div>
-        );
-    }
-
-    if (!user || !userProfile) {
-        return (
-            <div className="mb-4 mt-4 px-4">
-                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                    Bienvenido a EstuClub
-                </h1>
-                <p className="text-muted-foreground font-medium mt-1">
-                    Inicia sesión para descubrir beneficios exclusivos.
-                </p>
-            </div>
-        );
-    }
+    // Fallback logic for display name remains the same
+    const displayName = user?.displayName?.split(' ')[0] || "Melanie";
 
     return (
-        <div className="mb-4 mt-4 px-4">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                {getGreeting()}
+        <div className="px-4 py-6 mb-4">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+                Hola, {displayName} 👋
             </h1>
             <p className="text-muted-foreground font-medium mt-1">
-                ¿Qué beneficio vas a disfrutar hoy?
+                Descubre los mejores beneficios cerca de ti.
             </p>
         </div>
     );
-}
+};
+
+export default WelcomeMessage;

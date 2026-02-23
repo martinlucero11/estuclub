@@ -1,84 +1,53 @@
 'use client';
+import { useEffect, useState } from 'react';
+import { onSnapshot, Query } from 'firebase/firestore';
+import { DocumentData } from '@firebase/firestore';
 
-import { useState, useEffect } from 'react';
-import {
-  Query,
-  onSnapshot,
-  DocumentData,
-  FirestoreError,
-  QuerySnapshot,
-  CollectionReference,
-} from 'firebase/firestore';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
-
-export type WithId<T> = T & { id: string };
-
-export interface UseCollectionResult<T> {
-  data: WithId<T>[] | null;
-  isLoading: boolean;
-  error: FirestoreError | Error | null;
+export interface UseCollectionOptions {
+  // You can add options here if needed in the future
 }
 
-export interface InternalQuery extends Query<DocumentData> {
-  _query: {
-    path: {
-      canonicalString(): string;
-      toString(): string;
-    }
-  }
-}
-
-/**
- * React hook to subscribe to a Firestore collection or query in real-time.
- */
-export function useCollection<T = any>(
-    targetRefOrQuery: (CollectionReference<DocumentData> | Query<DocumentData>)  | null | undefined,
-): UseCollectionResult<T> {
-  type ResultItemType = WithId<T>;
-  type StateDataType = ResultItemType[] | null;
-
-  const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<FirestoreError | Error | null>(null);
+export function useCollection<T extends DocumentData>(
+  query: Query<T> | null,
+  options?: UseCollectionOptions
+) {
+  const [data, setData] = useState<T[] | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
-    if (!targetRefOrQuery) {
-      setData(null);
+    // FIX: Do not run the query if it's null (e.g., Firestore is not ready or a condition is not met)
+    if (!query) {
       setIsLoading(false);
-      setError(null);
+      // Setting data to an empty array ensures components don't crash on undefined.
+      setData([]); 
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     const unsubscribe = onSnapshot(
-      targetRefOrQuery,
-      (snapshot: QuerySnapshot<DocumentData>) => {
-        const results: ResultItemType[] = [];
-        for (const doc of snapshot.docs) {
-          results.push({ ...(doc.data() as T), id: doc.id });
-        }
-        setData(results);
-        setError(null);
+      query,
+      (snapshot) => {
+        const docs = snapshot.docs.map((doc) => {
+          const docData = doc.data();
+          return {
+            ...docData,
+            id: doc.id,
+          } as T;
+        });
+        setData(docs);
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
-        const contextualError = new FirestorePermissionError({
-            operation: 'list',
-            path: (targetRefOrQuery as InternalQuery)._query.path.toString(),
-        });
-        setError(contextualError);
-        setData([]); // Set data to empty to prevent UI from breaking
+      (err) => {
+        console.error("Error in useCollection snapshot:", err);
+        setError(err);
         setIsLoading(false);
-        // Propagate the error for dev overlay
-        errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [targetRefOrQuery]);
+  }, [query]); // The hook is correctly dependent on the query object itself
 
   return { data, isLoading, error };
 }

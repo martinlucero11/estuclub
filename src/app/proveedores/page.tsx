@@ -9,7 +9,7 @@ import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from '
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
@@ -36,9 +36,11 @@ function ClubersPageSkeleton() {
          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
                 <Card key={i} className="p-6 flex flex-col items-center justify-center">
-                    <Skeleton className="h-20 w-20 rounded-full" />
-                    <Skeleton className="mt-4 h-5 w-3/4" />
-                    <Skeleton className="mt-1 h-4 w-1/2" />
+                    <Skeleton className="h-24 w-24 rounded-full" />
+                    <Skeleton className="mt-4 h-6 w-3/4" />
+                    <Skeleton className="mt-2 h-4 w-1/2" />
+                    <Skeleton className="mt-2 h-4 w-3/4" />
+                    <Skeleton className="mt-4 h-10 w-full rounded-full" />
                 </Card>
             ))}
         </div>
@@ -105,23 +107,27 @@ function CluberListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type] || Users;
-                        const cluberInitials = cluber.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
-                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
-                                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors p-2">
-                                        <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-contain" />
-                                        <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                                            {cluberInitials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <h3 className="mt-4 font-bold text-lg text-foreground">{cluber.name}</h3>
-                                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-                                        <TypeIcon className="h-4 w-4" />
-                                        <p className="capitalize">{cluber.type}</p>
+                                <Card className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 dark:border-slate-800 p-6 flex flex-col items-center text-center transition-all hover:shadow-lg h-full">
+                                    <div className="w-24 h-24 rounded-full border-4 border-[#d83762]/10 mb-4 overflow-hidden">
+                                        <Avatar className="h-full w-full">
+                                            <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-cover" />
+                                            <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
+                                                {cluber.name.charAt(0).toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{cluber.description}</p>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{cluber.name}</h3>
+                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#d83762]/10 text-[#d83762] mb-3 capitalize">
+                                        <TypeIcon className="h-4 w-4 mr-2" />
+                                        {cluber.type}
+                                    </div>
+                                    <p className="text-sm text-slate-500 line-clamp-2 mb-4 flex-grow">{cluber.description}</p>
+                                    <div className="w-full mt-auto py-2 rounded-full bg-[#d83762] text-white font-medium text-sm transition-all hover:bg-[#c22f55]">
+                                        Ver Perfil
+                                    </div>
                                 </Card>
                             </Link>
                         );
@@ -142,7 +148,9 @@ export default function ClubersPage() {
                     Explora los comercios, profesionales y empresas asociadas.
                 </p>
 
-                <CluberListPage />
+                <div className="p-6">
+                    <CluberListPage />
+                </div>
             </div>
         </MainLayout>
     )

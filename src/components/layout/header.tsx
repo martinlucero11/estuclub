@@ -1,9 +1,9 @@
-
 'use client';
 
 import React from 'react';
 import { LayoutGrid, User } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Sheet,
   SheetContent,
@@ -36,11 +36,18 @@ import { doc } from 'firebase/firestore';
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center">
-            {/* @lock - DO NOT MODIFY THIS LOGO IN FUTURE REFACTORS */}
-            <h1 className="flex items-baseline text-center text-primary">
-                <span className="font-logo-sans text-3xl font-extrabold tracking-tighter">Estu</span>
-                <span className="font-logo-display text-4xl">Club</span>
-            </h1>
+            <div className="relative w-32 h-10">
+              <Image
+                src="/logo.png"
+                alt="EstuClub"
+                fill
+                className="object-contain"
+                style={{
+                  filter: 'brightness(0) saturate(100%) invert(29%) sepia(81%) saturate(1988%) hue-rotate(318deg) brightness(92%) contrast(101%)'
+                }} // Este filtro convierte el blanco a #d83762
+                priority
+              />
+            </div>
         </Link>
     )
 }

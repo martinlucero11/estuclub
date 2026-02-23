@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight } from 'lucide-react';
@@ -7,7 +6,7 @@ import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
-import type { Banner, Category, HomeSection, Announcement } from '@/lib/data';
+import type { Banner, Category, HomeSection } from '@/lib/data';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
@@ -21,7 +20,7 @@ const bannerColors: { [key: string]: string } = {
     blue: "bg-blue-100 text-blue-800",
 };
 
-// --- CATEGORY GRID ---
+// --- CATEGORY GRID (GLOW EFFECT APPLIED) ---
 const CategoryGrid = () => {
     const firestore = useFirestore();
     const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
@@ -29,11 +28,11 @@ const CategoryGrid = () => {
 
     if (isLoading) {
         return (
-            <div className="mt-2 flex gap-4">
-                {[...Array(4)].map((_, i) => (
-                    <div key={i} className="flex flex-col items-center justify-center gap-2">
-                        <Skeleton className="h-28 w-28 rounded-3xl" />
-                        <Skeleton className="mt-2 h-4 w-12" />
+            <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4">
+                {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2 w-24">
+                        <Skeleton className="h-24 w-24 rounded-2xl" />
+                        <Skeleton className="mt-1 h-4 w-16" />
                     </div>
                 ))}
             </div>
@@ -43,19 +42,18 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="mt-0 flex flex-nowrap gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory">
-            {categories.map((category) => {
-                return (
-                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 group snap-start">
-                         <div className="flex flex-col items-center justify-center gap-2">
-                            <div className="w-28 h-28 rounded-3xl bg-rose-200 dark:bg-rose-900 hover:bg-rose-300 dark:hover:bg-rose-800 transition-colors flex items-center justify-center shadow-lg shadow-rose-400/30 dark:shadow-none border-t border-white/10 transform group-hover:scale-105 active:scale-95">
-                                <span className="text-6xl drop-shadow-sm transform transition-transform group-hover:scale-110">{category.emoji || '⭐'}</span>
-                            </div>
-                            <span className="text-sm text-center font-semibold text-foreground mt-2">{category.name}</span>
-                        </div>
-                    </Link>
-                );
-            })}
+        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {categories.map((category) => (
+                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 snap-start flex flex-col items-center gap-2 w-24 text-center group">
+                    {/* FIX: Applying exact styles for glow effect as per rule 1. */}
+                    <div className="bg-[#d83762] rounded-2xl flex items-center justify-center w-20 h-20 shadow-md group-hover:opacity-90 transition-opacity">
+                        <span className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">{category.icon || category.emoji}</span>
+                    </div>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
+                        {category.name}
+                    </span>
+                </Link>
+            ))}
         </div>
     );
 };
@@ -177,7 +175,7 @@ const PageSkeleton = () => (
                 <Skeleton className="h-10 w-3/4" />
                 <Skeleton className="h-5 w-1/2" />
             </div>
-            <div className="space-y-6 mt-3">
+            <div className="space-y-12 mt-10">
                 <PerksSectionSkeleton title="Cargando..." />
                 <SuppliersSectionSkeleton title="Cargando..." />
                 <Skeleton className="h-24 w-full" />
@@ -221,7 +219,7 @@ export default function HomePage() {
     <MainLayout>
         <div className="mx-auto w-full">
              <WelcomeMessage />
-            <div className="space-y-6 pb-8">
+            <div className="space-y-8 pb-8">
                 {sections && sections.map((section, index) => {
                     const Component = componentMap[section.type as HomeSectionType];
                     const isFirstSection = index === 0;

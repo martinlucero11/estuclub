@@ -1,24 +1,17 @@
-import type { ReactNode } from 'react';
-import Header from './header';
-import Footer from './footer';
-import BottomNav from './bottom-nav';
+'use client';
 
-interface MainLayoutProps {
-  children: ReactNode;
-}
+import React from 'react';
+import Header from '@/components/layout/header';
+import BottomNav from '@/components/layout/bottom-nav';
 
-export default function MainLayout({ children }: MainLayoutProps) {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 pb-20"> {/* Adjusted padding for bottom nav */}
-        <div className="container mx-auto px-4 py-2">
-            {children}
+// FIX: Restored the correct, fully-interactive Header and the BottomNav component to fix all navigation issues.
+
+export default function MainLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+            <Header />
+            <main className="flex-1 pb-20">{children}</main>
+            <BottomNav />
         </div>
-      </main>
-      {/* Footer can be kept or removed based on design preference */}
-      {/* <Footer /> */}
-      <BottomNav />
-    </div>
-  );
+    );
 }
