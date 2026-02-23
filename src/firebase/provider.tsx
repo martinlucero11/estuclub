@@ -93,7 +93,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             setUserAuthState({ user: firebaseUser, roles: Array.from(new Set(userRoles)), supplierData, isUserLoading: false, userError: null });
 
           } catch (error) {
-            console.warn("Error fetching user roles, defaulting to basic 'user' role:", (error as Error).message);
+            console.log("Waiting for profile or insufficient permissions, defaulting to basic 'user' role.");
             // Fallback to a non-privileged state if any error occurs during role fetching
             setUserAuthState({ user: firebaseUser, roles: ['user'], supplierData: null, isUserLoading: false, userError: error as Error });
           }

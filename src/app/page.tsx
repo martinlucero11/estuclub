@@ -5,10 +5,10 @@ import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore, useDocOnce } from '@/firebase';
+import { useCollection, useFirestore, useDocOnce, useMemo } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Banner, Category, HomeSection } from '@/lib/data';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import WelcomeMessage from '@/components/home/welcome-message';
@@ -94,7 +94,7 @@ const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }
                         alt={banner.title}
                         fill
                         className="object-cover"
-                        priority={isLCP}
+                        priority
                         sizes="100vw"
                     />
                 )}
