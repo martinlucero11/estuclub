@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -132,12 +133,12 @@ function MainMenu() {
                     <span className="sr-only">Abrir menú</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left">
-                <SheetHeader>
+            <SheetContent side="left" className="flex flex-col p-0">
+                <SheetHeader className="p-6">
                     <SheetTitle><Logo /></SheetTitle>
                     <SheetDescription>Navega por la aplicación.</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-1">
+                <nav className="mt-8 flex flex-col gap-1 px-6">
                     {navConfig.mainNav.map((item) => {
                         const isVisible = hasRequiredRole(allRoles, item.role);
                         if (!isVisible) return null;
@@ -155,6 +156,10 @@ function MainMenu() {
                         )
                     })}
                 </nav>
+                <div className="mt-auto p-6 border-t border-slate-100 dark:border-slate-800 text-center text-sm text-slate-500">
+                    <p className="font-medium">©Mismo Studio - 2026</p>
+                    <p className="mt-1 text-[#d83762] font-semibold">Con amor para Mela &lt;3</p>
+                </div>
             </SheetContent>
         </Sheet>
     );

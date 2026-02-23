@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFirebase } from '@/firebase/provider';
@@ -11,7 +12,7 @@ const WelcomeMessage = () => {
     const displayName = user?.displayName?.split(' ')[0] || "Melanie";
 
     return (
-        <div className="px-4 py-6 mb-4">
+        <div className="px-4 py-6 mb-2">
             <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
                 Hola, {displayName} 👋
             </h1>

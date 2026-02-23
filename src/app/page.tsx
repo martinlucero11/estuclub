@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight } from 'lucide-react';
@@ -42,12 +43,11 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full">
             {categories.map((category) => (
-                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 snap-start flex flex-col items-center gap-2 w-24 text-center group">
-                    {/* FIX: Applying exact styles for glow effect as per rule 1. */}
-                    <div className="bg-[#d83762] rounded-2xl flex items-center justify-center w-20 h-20 shadow-md group-hover:opacity-90 transition-opacity">
-                        <span className="text-5xl drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]">{category.icon || category.emoji}</span>
+                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
+                    <div className="bg-[#f4739b] rounded-2xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shrink-0">
+                        <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
                     </div>
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
                         {category.name}
@@ -219,7 +219,7 @@ export default function HomePage() {
     <MainLayout>
         <div className="mx-auto w-full">
              <WelcomeMessage />
-            <div className="space-y-8 pb-8">
+            <div className="space-y-6 pb-8 pt-2">
                 {sections && sections.map((section, index) => {
                     const Component = componentMap[section.type as HomeSectionType];
                     const isFirstSection = index === 0;
