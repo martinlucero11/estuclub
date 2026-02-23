@@ -93,7 +93,8 @@ service cloud.firestore {
     
     // --- Admin-Only Data ---
     match /roles_admin/{adminId} {
-      allow read, write: if isAdmin();
+      allow read: if isOwner(adminId) || isAdmin(); // Allow users to read their own admin status
+      allow write: if isAdmin(); // Only other admins can make someone an admin
     }
   }
 }
