@@ -1,14 +1,14 @@
 
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase, useDocOnce } from '@/firebase';
 import { collection, query, where, limit, doc, orderBy } from 'firebase/firestore';
 import type { Banner, Category, HomeSection } from '@/lib/data';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import WelcomeMessage from '@/components/home/welcome-message';
@@ -26,6 +26,13 @@ const CategoryGrid = () => {
     const firestore = useFirestore();
     const categoriesQuery = useMemoFirebase(() => query(collection(firestore, 'categories')), [firestore]);
     const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    const scrollRight = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+        }
+    };
 
     if (isLoading) {
         return (
@@ -43,17 +50,22 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="flex overflow-x-auto md:grid md:grid-cols-4 lg:grid-cols-6 gap-4 pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] w-full">
-            {categories.map((category) => (
-                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
-                    <div className="bg-[#f4739b] rounded-2xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shrink-0">
-                        <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
-                    </div>
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
-                        {category.name}
-                    </span>
-                </Link>
-            ))}
+        <div className="relative">
+            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                {categories.map((category) => (
+                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
+                        <div className="bg-[#f4739b] rounded-2xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shrink-0">
+                            <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
+                        </div>
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
+                            {category.name}
+                        </span>
+                    </Link>
+                ))}
+            </div>
+             <button onClick={scrollRight} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-lg text-[#d83762] hover:bg-gray-50 cursor-pointer">
+                <ChevronRight className="h-6 w-6" />
+            </button>
         </div>
     );
 };
