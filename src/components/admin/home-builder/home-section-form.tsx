@@ -36,7 +36,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const isEditMode = !!section;
 
     const bannersQuery = useMemo(() => query(collection(firestore, 'banners')), [firestore]);
-    const { data: banners } = useCollection<Banner>(bannersQuery);
+    const { data: banners } = useCollection<any>(bannersQuery as any);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -143,7 +143,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un banner" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        {banners?.map(b => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}
+                                        {banners?.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
