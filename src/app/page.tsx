@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -73,7 +72,7 @@ const CategoryGrid = () => {
 const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }) => {
     const firestore = useFirestore();
     const bannerRef = useMemo(() => doc(firestore, 'banners', bannerId), [firestore, bannerId]);
-    const { data: banner, isLoading } = useDocOnce<Banner>(bannerRef);
+    const { data: banner, isLoading } = useDocOnce<any>(bannerRef as any);
 
     if (isLoading) {
         return <Skeleton className="h-48 md:h-64 w-full rounded-lg" />;
@@ -271,3 +270,4 @@ export default function HomePage() {
     
 
     
+
