@@ -24,7 +24,7 @@ const bannerColors: { [key: string]: string } = {
 const CategoryGrid = () => {
     const firestore = useFirestore();
     const categoriesQuery = useMemo(() => query(collection(firestore, 'categories')), [firestore]);
-    const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
+    const { data: categories, isLoading } = useCollection<any>(categoriesQuery as any);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const scrollRight = () => {
