@@ -53,7 +53,7 @@ export default function HomeBuilderPage() {
     const [hasOrderChanged, setHasOrderChanged] = useState(false);
 
     const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
-    const { data: remoteSections, isLoading: isSectionsLoading } = useCollection<HomeSection>(sectionsQuery);
+    const { data: remoteSections, isLoading: isSectionsLoading } = useCollection<any>(sectionsQuery as any);
 
     useEffect(() => {
         if (remoteSections) {
