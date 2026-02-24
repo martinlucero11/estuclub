@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFirestore, useCollection, useUser } from '@/firebase';
@@ -46,7 +45,7 @@ export default function AllRedemptionsList() {
         );
     }, [firestore, user]);
 
-    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+    const { data: redemptions, isLoading } = useCollection<any>(redemptionsQuery as any);
     
     if (isLoading) {
         return <AllRedemptionsListSkeleton />;
