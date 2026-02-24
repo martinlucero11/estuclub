@@ -109,7 +109,7 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
         [firestore, authorId]
     );
 
-    const { data: announcements, isLoading, error } = useCollection<Announcement>(announcementsQuery);
+    const { data: announcements, isLoading, error } = useCollection<any>(announcementsQuery as any);
 
     if (isLoading) {
         return (
