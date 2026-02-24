@@ -9,9 +9,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
 import { homeSectionTypes, HomeSection, Banner } from '@/lib/data';
 import { Switch } from '@/components/ui/switch';
@@ -35,8 +35,8 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEditMode = !!section;
 
-    const bannersQuery = useMemoFirebase(() => query(collection(firestore, 'banners')), [firestore]);
-    const { data: banners } = useCollection<Banner>(bannersQuery);
+    const bannersQuery = useMemo(() => query(collection(firestore, 'banners')), [firestore]);
+    const { data: banners } = useCollection<Banner>(bannersQuery as any);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
