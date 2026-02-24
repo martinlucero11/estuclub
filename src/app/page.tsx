@@ -207,7 +207,7 @@ export default function HomePage() {
         )
     , [firestore]);
 
-    const { data: sections, isLoading: sectionsLoading } = useCollection<HomeSection>(homeSectionsQuery);
+    const { data: sections, isLoading: sectionsLoading } = useCollection<any>(homeSectionsQuery as any);
     
     type HomeSectionType = typeof import('@/lib/data').homeSectionTypes[number];
 
@@ -270,4 +270,5 @@ export default function HomePage() {
     
 
     
+
 
