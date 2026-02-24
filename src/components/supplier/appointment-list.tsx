@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { BookUser, Calendar, Clock, Fingerprint, Phone } from 'lucide-react';
 import type { Appointment } from '@/lib/data';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 function AppointmentListSkeleton() {
     return (
@@ -38,13 +39,13 @@ export default function AppointmentList() {
         if (!user) return null;
         // Query for upcoming appointments
         return query(
-            collection(firestore, `roles_supplier/${user.uid}/appointments`),
+            collection(firestore, `roles_supplier/${user.uid}/appointments`).withConverter(createConverter<Appointment>()),
             where('startTime', '>=', new Date()),
             orderBy('startTime', 'asc')
         );
     }, [user, firestore]);
 
-    const { data: appointments, isLoading } = useCollection<Appointment>(appointmentsQuery);
+    const { data: appointments, isLoading } = useCollection(appointmentsQuery);
     
     if (isLoading) {
         return <AppointmentListSkeleton />;

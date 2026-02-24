@@ -19,6 +19,7 @@ import {
 import Image from 'next/image';
 import { EmptyState } from '../ui/empty-state';
 import dynamic from 'next/dynamic';
+import { createConverter } from '@/lib/firestore-converter';
 
 const RedemptionQRCodeDialog = dynamic(() => import('./redemption-qr-code-dialog'), { ssr: false });
 
@@ -92,12 +93,12 @@ export default function MyRedemptionsList() {
     const redemptionsQuery = useMemo(() => {
         if (!user) return null;
         return query(
-            collection(firestore, 'users', user.uid, 'redeemed_benefits'),
+            collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
 
-    const { data: redemptions, isLoading } = useCollection<BenefitRedemption>(redemptionsQuery);
+    const { data: redemptions, isLoading } = useCollection(redemptionsQuery);
     
     const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
         if (!redemptions) return [];

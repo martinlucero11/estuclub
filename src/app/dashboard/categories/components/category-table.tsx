@@ -11,6 +11,7 @@ import { PlusCircle } from 'lucide-react';
 import { CategoryDialog } from './category-dialog';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 export function CategoryTable() {
     const firestore = useFirestore();
@@ -21,8 +22,8 @@ export function CategoryTable() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
 
-    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
-    const { data: categories, isLoading } = useCollection<any>(categoriesQuery as any);
+    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('name', 'asc')), [firestore]);
+    const { data: categories, isLoading } = useCollection(categoriesQuery);
     
     const handleEdit = (category: Category) => {
         setSelectedCategory(category);

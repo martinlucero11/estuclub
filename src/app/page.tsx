@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
+import { HomeSection, HomeSectionType, Category } from '@/lib/data';
+import { createConverter } from '@/lib/firestore-converter';
 
 // --- STATIC DATA ---
 const bannerColors: { [key: string]: string } = {
@@ -22,8 +24,8 @@ const bannerColors: { [key: string]: string } = {
 // --- CATEGORY GRID (GLOW EFFECT APPLIED) ---
 const CategoryGrid = () => {
     const firestore = useFirestore();
-    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories')), [firestore]);
-    const { data: categories, isLoading } = useCollection<any>(categoriesQuery as any);
+    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>())), [firestore]);
+    const { data: categories, isLoading } = useCollection(categoriesQuery);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     const scrollRight = () => {
@@ -201,17 +203,15 @@ export default function HomePage() {
 
     const homeSectionsQuery = useMemo(() => 
         query(
-            collection(firestore, 'home_sections'),
+            collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()),
             where('isActive', '==', true),
             orderBy('order', 'asc')
         )
     , [firestore]);
 
-    const { data: sections, isLoading: sectionsLoading } = useCollection<any>(homeSectionsQuery as any);
+    const { data: sections, isLoading: sectionsLoading } = useCollection(homeSectionsQuery);
     
-    type HomeSectionType = typeof import('@/lib/data').homeSectionTypes[number];
-
-    const componentMap: { [key in HomeSectionType]: (section: any, isFirst: boolean) => React.ReactNode } = {
+    const componentMap: { [key in HomeSectionType]: (section: HomeSection, isFirst: boolean) => React.ReactNode } = {
         categories_grid: () => <CategoryGrid />,
         single_banner: (section, isFirst) => section.bannerId ? <SingleBanner bannerId={section.bannerId} isLCP={isFirst} /> : null,
         benefits_carousel: (section) => <BenefitsCarousel />,
@@ -270,6 +270,7 @@ export default function HomePage() {
     
 
     
+
 
 
 

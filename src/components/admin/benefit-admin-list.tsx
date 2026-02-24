@@ -13,6 +13,7 @@ import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { createConverter } from '@/lib/firestore-converter';
 
 function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -92,7 +93,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   const perksQuery = useMemo(
     () => {
-        const baseCollection = collection(firestore, 'benefits');
+        const baseCollection = collection(firestore, 'benefits').withConverter(createConverter<Perk>());
         if (supplierId) {
             return query(baseCollection, where('ownerId', '==', supplierId), orderBy('createdAt', 'desc'))
         }
@@ -101,7 +102,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
     [firestore, supplierId]
   );
   
-  const { data: perks, isLoading, error } = useCollection<Perk>(perksQuery);
+  const { data: perks, isLoading, error } = useCollection(perksQuery);
 
   const serializablePerks: SerializablePerk[] = useMemo(() => {
     if (!perks) return [];

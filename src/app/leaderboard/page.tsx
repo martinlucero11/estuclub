@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface UserProfile {
   id: string;
@@ -42,7 +43,7 @@ function getRankColor(rank: number) {
   return 'text-muted-foreground';
 }
 
-function RankingList({ users, currentUserUid }: { users: UserProfile[] | null, currentUserUid?: string }) {
+function RankingList({ users, currentUserUid }: { users: UserProfile[] | undefined, currentUserUid?: string }) {
   if (!users) {
     return <RankingSkeleton />;
   }
@@ -99,10 +100,10 @@ export default function LeaderboardPage() {
   const { user: currentUser } = useUser();
 
   const usersQuery = useMemo(
-    () => query(collection(firestore, 'users'), orderBy('points', 'desc')),
+    () => query(collection(firestore, 'users').withConverter(createConverter<UserProfile>()), orderBy('points', 'desc')),
     [firestore]
   );
-  const { data: users, isLoading } = useCollection<any>(usersQuery as any);
+  const { data: users, isLoading } = useCollection(usersQuery);
 
   return (
     <MainLayout>
@@ -120,7 +121,7 @@ export default function LeaderboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? <RankingSkeleton /> : <RankingList users={users as any} currentUserUid={currentUser?.uid} />}
+            {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
           </CardContent>
         </Card>
       </div>

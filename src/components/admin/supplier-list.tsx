@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Label } from '../ui/label';
 import type { SupplierProfile } from '@/types/data';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 const typeIcons = {
     Institucion: Building,
@@ -48,11 +49,11 @@ export default function SupplierList() {
     const { toast } = useToast();
 
     const suppliersQuery = useMemo(
-        () => query(collection(firestore, 'roles_supplier'), orderBy('name')),
+        () => query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), orderBy('name')),
         [firestore]
     );
 
-    const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
+    const { data: suppliers, isLoading, error } = useCollection(suppliersQuery);
 
     const handlePermissionToggle = async (supplierId: string, field: keyof SupplierProfile, currentStatus: boolean, successMessage: string) => {
         const supplierRef = doc(firestore, 'roles_supplier', supplierId);

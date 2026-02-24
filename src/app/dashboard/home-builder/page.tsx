@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import BackButton from '@/components/layout/back-button';
+import { createConverter } from '@/lib/firestore-converter';
 
 const HomeSectionDialog = dynamic(() => import('@/components/admin/home-builder/home-section-dialog').then(mod => mod.HomeSectionDialog), { ssr: false });
 
@@ -52,8 +53,8 @@ export default function HomeBuilderPage() {
     const [localSections, setLocalSections] = useState<HomeSection[]>([]);
     const [hasOrderChanged, setHasOrderChanged] = useState(false);
 
-    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
-    const { data: remoteSections, isLoading: isSectionsLoading } = useCollection<any>(sectionsQuery as any);
+    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), orderBy('order', 'asc')), [firestore]);
+    const { data: remoteSections, isLoading: isSectionsLoading } = useCollection(sectionsQuery);
 
     useEffect(() => {
         if (remoteSections) {

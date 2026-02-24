@@ -8,6 +8,7 @@ import { SupplierTable } from "./components/supplier-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 /**
  * Main page for the Supplier Management dashboard (Admin only).
@@ -18,11 +19,11 @@ export default function SupplierManagementPage() {
   const firestore = useFirestore();
 
   const suppliersQuery = useMemo(
-    () => query(collection(firestore, "roles_supplier"), orderBy("name")),
+    () => query(collection(firestore, "roles_supplier").withConverter(createConverter<SupplierProfile>()), orderBy("name")),
     [firestore]
   );
 
-  const { data: suppliers, isLoading, error } = useCollection<any>(suppliersQuery as any);
+  const { data: suppliers, isLoading, error } = useCollection(suppliersQuery);
 
   return (
     <div className="space-y-4">

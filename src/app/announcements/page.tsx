@@ -10,6 +10,7 @@ import { Suspense, useMemo } from 'react';
 import type { Announcement } from '@/lib/data';
 import { makeAnnouncementSerializable } from '@/lib/data';
 import { PageHeader } from '@/components/ui/page-header';
+import { createConverter } from '@/lib/firestore-converter';
 
 
 function AnnouncementsListSkeleton() {
@@ -31,12 +32,11 @@ function AnnouncementsListSkeleton() {
 function Announcements() {
     const firestore = useFirestore();
     const announcementsQuery = useMemo(
-        () => query(collection(firestore, 'announcements'), orderBy('createdAt', 'desc')),
+        () => query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc')),
         [firestore]
     );
 
-    // @ts-ignore - Ignorando error de tipado del converter para el build de producción
-    const { data, isLoading } = useCollection<Announcement>(announcementsQuery);
+    const { data, isLoading } = useCollection(announcementsQuery);
 
     const announcements = useMemo(() => {
         if (!data) return [];

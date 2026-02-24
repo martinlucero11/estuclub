@@ -4,9 +4,10 @@ import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore"; 
 import Link from "next/link";
-import type { Benefit, Supplier, Announcement } from "@/lib/data";
+import type { Perk as Benefit, Supplier, Announcement } from "@/lib/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { createConverter } from "@/lib/firestore-converter";
 
 // --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Supplier }) => {
@@ -40,7 +41,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                                {supplier?.logoUrl ? (
                                    <Image src={supplier.logoUrl} alt={`${supplier.name} logo`} width={20} height={20} className="rounded-full"/>
                                ) : <div className="w-5 h-5 bg-muted rounded-full"/>}
-                               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{benefit.supplier}</span>
+                               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{benefit.supplierName}</span>
                            </div>
                             <Button size="sm" variant="secondary" className="rounded-full group-hover:bg-[#d83762] group-hover:text-white transition-colors">
                                 Ver
@@ -66,7 +67,7 @@ const SupplierCard = ({ supplier }: { supplier: Supplier }) => (
             />
         </div>
         <p className="text-sm font-semibold text-center mt-2 line-clamp-1">{supplier.name}</p>
-        <p className="text-xs text-muted-foreground line-clamp-1">{supplier.category}</p>
+        <p className="text-xs text-muted-foreground line-clamp-1">{supplier.type}</p>
     </Link>
 );
 
@@ -94,13 +95,13 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
     return function Carousel() {
         const firestore = useFirestore();
         
-        const itemsQuery = useMemo(() => query(collection(firestore, collectionName), limit(10)), [firestore]);
-        const { data: items, isLoading, error } = useCollection<T>(itemsQuery);
+        const itemsQuery = useMemo(() => query(collection(firestore, collectionName).withConverter(createConverter<T>()), limit(10)), [firestore, collectionName]);
+        const { data: items, isLoading, error } = useCollection(itemsQuery);
 
         const suppliersQuery = useMemo(() => 
-            collectionName === 'benefits' ? query(collection(firestore, 'suppliers')) : null
-        , [firestore]);
-        const { data: suppliers } = useCollection<Supplier>(suppliersQuery);
+            collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>())) : null
+        , [firestore, collectionName]);
+        const { data: suppliers } = useCollection(suppliersQuery);
         
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 
@@ -122,9 +123,8 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
              <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {collectionName === 'benefits' ? 
                     items.map(item => {
-                        // FIX: Implementing dual-logic search (by ID and by name) for maximum robustness.
                         const typedItem = item as unknown as Benefit;
-                        const local = suppliers?.find(s => s.id === typedItem.supplierId || s.name === typedItem.supplier);
+                        const local = suppliers?.find(s => s.id === typedItem.ownerId || s.name === typedItem.supplierName);
                         return <BenefitCard 
                             key={item.id} 
                             benefit={typedItem} 
@@ -139,5 +139,5 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
 }
 
 export const BenefitsCarousel = createCarousel(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel(SupplierCard, 'suppliers', 'supplier');
+export const SuppliersCarousel = createCarousel(SupplierCard, 'roles_supplier', 'supplier');
 export const AnnouncementsCarousel = createCarousel(AnnouncementCard, 'announcements', 'announcement');

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { History, Calendar, Fingerprint, Tag, Building } from 'lucide-react';
 import type { BenefitRedemption } from '@/lib/data';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 function AllRedemptionsListSkeleton() {
     return (
@@ -39,13 +40,13 @@ export default function AllRedemptionsList() {
     const redemptionsQuery = useMemo(() => {
         if (!user) return null;
         return query(
-            collection(firestore, 'benefitRedemptions'),
+            collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
     }, [firestore, user]);
 
-    const { data: redemptions, isLoading } = useCollection<any>(redemptionsQuery as any);
+    const { data: redemptions, isLoading } = useCollection(redemptionsQuery);
     
     if (isLoading) {
         return <AllRedemptionsListSkeleton />;

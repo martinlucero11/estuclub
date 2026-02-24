@@ -13,6 +13,7 @@ import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface Notification {
     id: string;
@@ -48,11 +49,11 @@ function formatTime(timestamp: Timestamp) {
 function NotificationList() {
     const firestore = useFirestore();
     const notificationsQuery = useMemo(
-        () => query(collection(firestore, 'notifications'), orderBy('createdAt', 'desc'), limit(10)),
+        () => query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10)),
         [firestore]
     );
 
-    const { data: notifications, isLoading } = useCollection<Notification>(notificationsQuery);
+    const { data: notifications, isLoading } = useCollection(notificationsQuery);
     
     if (isLoading) {
         return (

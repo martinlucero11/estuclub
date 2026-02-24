@@ -13,6 +13,7 @@ import { PlusCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { HomeSectionDialog } from './home-section-dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 export function HomeSectionTable() {
     const firestore = useFirestore();
@@ -23,8 +24,8 @@ export function HomeSectionTable() {
     const [selectedSection, setSelectedSection] = useState<HomeSection | null>(null);
     const [sectionIdToDelete, setSectionIdToDelete] = useState<string | null>(null);
 
-    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections'), orderBy('order', 'asc')), [firestore]);
-    const { data: sections, isLoading } = useCollection<HomeSection>(sectionsQuery);
+    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), orderBy('order', 'asc')), [firestore]);
+    const { data: sections, isLoading } = useCollection(sectionsQuery);
 
     const handleToggleActive = async (sectionId: string, isActive: boolean) => {
         const sectionRef = doc(firestore, 'home_sections', sectionId);

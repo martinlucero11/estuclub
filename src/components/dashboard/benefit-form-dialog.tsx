@@ -38,6 +38,7 @@ import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { Switch } from '../ui/switch';
+import { createConverter } from '@/lib/firestore-converter';
 
 const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
@@ -78,8 +79,8 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch suppliers for the admin dropdown
-  const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier')), [firestore]);
-  const { data: suppliers } = useCollection<Supplier>(suppliersQuery);
+  const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>())), [firestore]);
+  const { data: suppliers } = useCollection(suppliersQuery);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

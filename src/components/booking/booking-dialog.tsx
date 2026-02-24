@@ -12,6 +12,7 @@ import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/f
 import type { Service, Availability, Appointment } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface BookingDialogProps {
   service: Service;
@@ -47,13 +48,13 @@ export default function BookingDialog({ service, availability, supplierId, child
     const start = startOfDay(selectedDate);
     const end = add(start, { days: 1 });
     return query(
-        collection(firestore, `roles_supplier/${supplierId}/appointments`),
+        collection(firestore, `roles_supplier/${supplierId}/appointments`).withConverter(createConverter<Appointment>()),
         where('startTime', '>=', start),
         where('startTime', '<', end)
     );
 }, [supplierId, selectedDate, firestore]);
 
-  const { data: existingAppointments } = useCollection<Appointment>(appointmentsQuery);
+  const { data: existingAppointments } = useCollection(appointmentsQuery);
 
   const availableSlots = useMemo(() => {
     if (!selectedDate || !availability?.schedule) return [];

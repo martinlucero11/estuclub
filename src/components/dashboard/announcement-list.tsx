@@ -8,6 +8,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { columns as createColumns } from './announcement-columns';
 import { UserRole } from '@/types/data';
 import { AnnouncementFormDialog } from './announcement-form-dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface AnnouncementListProps {
     user: {
@@ -23,12 +24,12 @@ export default function AnnouncementList({ user }: AnnouncementListProps) {
 
     const announcementsQuery = useMemo(() => 
         query(
-            collection(firestore, 'announcements'),
+            collection(firestore, 'announcements').withConverter(createConverter<Announcement>()),
             where('supplierId', '==', user.uid)
         )
     , [firestore, user.uid]);
 
-    const { data: announcements, isLoading, error } = useCollection<Announcement>(announcementsQuery);
+    const { data: announcements, isLoading, error } = useCollection(announcementsQuery);
 
     const handleEdit = (announcement: Announcement) => {
         setSelectedAnnouncement(announcement);

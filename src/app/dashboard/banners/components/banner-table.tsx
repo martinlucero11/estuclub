@@ -12,6 +12,7 @@ import { PlusCircle } from 'lucide-react';
 import { BannerDialog } from './banner-dialog';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 export function BannerTable() {
     const { toast } = useToast();
@@ -22,8 +23,8 @@ export function BannerTable() {
     const [selectedBanner, setSelectedBanner] = useState<SerializableBanner | null>(null);
     const [bannerIdToDelete, setBannerIdToDelete] = useState<string | null>(null);
 
-    const bannersQuery = useMemo(() => query(collection(firestore, 'banners'), orderBy('createdAt', 'desc')), [firestore]);
-    const { data: banners, isLoading } = useCollection<any>(bannersQuery as any);
+    const bannersQuery = useMemo(() => query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc')), [firestore]);
+    const { data: banners, isLoading } = useCollection(bannersQuery);
 
     const serializableBanners: SerializableBanner[] = useMemo(() => {
         if (!banners) return [];

@@ -15,6 +15,7 @@ import type { CluberCategory, SupplierProfile } from '@/types/data';
 import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
+import { createConverter } from '@/lib/firestore-converter';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -58,13 +59,13 @@ function CluberProfileContent({ slug }: { slug: string }) {
             if (!slug) return;
             setIsLoadingSupplier(true);
             try {
-                const q = query(collection(firestore, 'roles_supplier'), where('slug', '==', slug), limit(1));
+                const q = query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), where('slug', '==', slug), limit(1));
                 const querySnapshot = await getDocs(q);
                 if (querySnapshot.empty) {
                     setError('No se encontró el proveedor.');
                 } else {
                     const supplierDoc = querySnapshot.docs[0];
-                    setSupplier({ id: supplierDoc.id, ...supplierDoc.data() } as SupplierProfile);
+                    setSupplier(supplierDoc.data());
                 }
             } catch (err) {
                 console.error(err);
@@ -76,25 +77,24 @@ function CluberProfileContent({ slug }: { slug: string }) {
         fetchSupplier();
     }, [firestore, slug]);
     
-    // CRITICAL FIX: Changed collection from 'benefits' to 'perks' to match data schema.
     const perksQuery = useMemo(() => {
         if (!supplier) return null;
-        return query(collection(firestore, 'perks'), where('supplierId', '==', supplier.id), where('active', '==', true));
+        return query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), where('supplierId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
-    const { data: perks, isLoading: perksLoading } = useCollection<any>(perksQuery as any);
+    const { data: perks, isLoading: perksLoading } = useCollection(perksQuery);
 
     const servicesQuery = useMemo(() => {
         if (!supplier) return null;
-        return query(collection(firestore, `roles_supplier/${supplier.id}/services`));
+        return query(collection(firestore, `roles_supplier/${supplier.id}/services`).withConverter(createConverter<Service>()));
     }, [supplier, firestore]);
-    const { data: services } = useCollection<any>(servicesQuery as any);
+    const { data: services } = useCollection(servicesQuery);
 
     const availabilityRef = useMemo(() => {
         if (!supplier) return null;
         return doc(firestore, `roles_supplier/${supplier.id}/availability/schedule`);
     }, [supplier, firestore]);
-    const { data: availability } = useDoc<any>(availabilityRef as any);
+    const { data: availability } = useDoc<Availability>(availabilityRef);
 
     const serializablePerks: SerializablePerk[] = useMemo(() => {
         if (!perks) return [];

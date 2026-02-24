@@ -12,6 +12,7 @@ import { getBenefitColumns } from './benefit-columns';
 import { useToast } from '@/hooks/use-toast';
 import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface BenefitListProps {
   user: User;
@@ -29,7 +30,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
-    let q = query(collection(firestore, 'benefits'), orderBy('createdAt', 'desc'));
+    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), orderBy('createdAt', 'desc'));
     // If user is not admin, they must be a supplier, so filter by their ID
     if (!isAdmin) {
       q = query(q, where('ownerId', '==', user.uid));
@@ -37,7 +38,7 @@ export default function BenefitList({ user }: BenefitListProps) {
     return q;
   }, [firestore, isAdmin, user.uid]);
 
-  const { data: benefits, isLoading, error } = useCollection<Perk>(benefitsQuery);
+  const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
   
   const serializablePerks: SerializablePerk[] = useMemo(() => {
     if (!benefits) return [];

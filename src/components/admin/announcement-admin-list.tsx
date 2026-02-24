@@ -10,15 +10,8 @@ import EditAnnouncementDialog from '@/components/announcements/edit-announcement
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-
-interface Announcement {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
-    createdAt: Timestamp;
-    imageUrl?: string;
-}
+import { Announcement } from '@/lib/data';
+import { createConverter } from '@/lib/firestore-converter';
 
 const fallbackImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==";
 
@@ -48,7 +41,7 @@ function AnnouncementAdminListItem({ announcement }: { announcement: Announcemen
     };
 
     const formattedDate = announcement.createdAt 
-        ? announcement.createdAt.toDate().toLocaleDateString('es-ES')
+        ? (announcement.createdAt as unknown as Timestamp).toDate().toLocaleDateString('es-ES')
         : 'N/A';
 
     return (
@@ -100,7 +93,7 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
 
     const announcementsQuery = useMemo(
         () => {
-            const baseCollection = collection(firestore, 'announcements');
+            const baseCollection = collection(firestore, 'announcements').withConverter(createConverter<Announcement>());
             if (authorId) {
                 return query(baseCollection, where('authorId', '==', authorId), orderBy('createdAt', 'desc'));
             }
@@ -109,7 +102,7 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
         [firestore, authorId]
     );
 
-    const { data: announcements, isLoading, error } = useCollection<any>(announcementsQuery as any);
+    const { data: announcements, isLoading, error } = useCollection(announcementsQuery);
 
     if (isLoading) {
         return (

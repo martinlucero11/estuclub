@@ -12,6 +12,7 @@ import { ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
+import { createConverter } from '@/lib/firestore-converter';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc';
 
@@ -55,7 +56,7 @@ function PerksList() {
                 break;
         }
         
-        let q = query(collection(firestore, 'benefits'), orderBy(field, direction));
+        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), orderBy(field, direction));
 
         if (categoryFilter) {
             q = query(q, where('category', '==', categoryFilter));
@@ -64,7 +65,7 @@ function PerksList() {
         return q;
     }, [firestore, sortOption, categoryFilter]);
 
-    const { data: perks, isLoading, error } = useCollection<any>(perksQuery as any);
+    const { data: perks, isLoading, error } = useCollection(perksQuery);
     
     const serializablePerks: SerializablePerk[] = useMemo(() => {
         if (!perks) return [];

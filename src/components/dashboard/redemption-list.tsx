@@ -9,6 +9,7 @@ import type { BenefitRedemption } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { columns as baseColumns } from './redemption-columns';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
+import { createConverter } from '@/lib/firestore-converter';
 
 interface RedemptionListProps {
   user: User;
@@ -20,7 +21,7 @@ export default function RedemptionList({ user }: RedemptionListProps) {
 
   const redemptionsQuery = useMemo(() => {
     if (!firestore) return null;
-    const baseQuery = query(collection(firestore, 'benefitRedemptions'), orderBy('redeemedAt', 'desc'));
+    const baseQuery = query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), orderBy('redeemedAt', 'desc'));
     if (isAdmin) {
       return baseQuery;
     } else {
@@ -29,7 +30,7 @@ export default function RedemptionList({ user }: RedemptionListProps) {
     }
   }, [firestore, isAdmin, user.uid]);
 
-  const { data: redemptions, isLoading, error } = useCollection<BenefitRedemption>(redemptionsQuery);
+  const { data: redemptions, isLoading, error } = useCollection(redemptionsQuery);
 
   // Dynamically add columns based on user role
   const columns = useMemo(() => {

@@ -14,6 +14,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
 import { Button } from '@/components/ui/button';
+import { createConverter } from '@/lib/firestore-converter';
 
 // Mapping new categories to icons
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
@@ -54,7 +55,7 @@ function CluberListPage() {
 
     const clubersQuery = useMemo(
         () => {
-            const baseQuery = collection(firestore, 'roles_supplier');
+            const baseQuery = collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>());
             if (activeFilter === 'Todos') {
                 return query(baseQuery, orderBy('name'));
             }
@@ -63,7 +64,7 @@ function CluberListPage() {
         [firestore, activeFilter]
     );
 
-    const { data: clubers, isLoading, error } = useCollection<any>(clubersQuery as any);
+    const { data: clubers, isLoading, error } = useCollection(clubersQuery);
     
      if (isLoading) {
         return <ClubersPageSkeleton />;
@@ -106,7 +107,7 @@ function CluberListPage() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
-                        const TypeIcon = categoryIcons[cluber.type as keyof typeof categoryIcons] || Users;
+                        const TypeIcon = categoryIcons[cluber.type] || Users;
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
