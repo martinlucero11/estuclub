@@ -77,7 +77,7 @@ function CluberList() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type as keyof typeof categoryIcons] || Users;
-                        const cluberInitials = cluber.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                        const cluberInitials = cluber.name.split(' ').map((n: any) => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
