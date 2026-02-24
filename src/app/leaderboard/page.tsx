@@ -120,7 +120,7 @@ export default function LeaderboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
+            {isLoading ? <RankingSkeleton /> : <RankingList users={users as any} currentUserUid={currentUser?.uid} />}
           </CardContent>
         </Card>
       </div>
