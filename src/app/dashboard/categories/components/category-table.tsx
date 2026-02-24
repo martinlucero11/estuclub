@@ -22,7 +22,7 @@ export function CategoryTable() {
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
 
     const categoriesQuery = useMemo(() => query(collection(firestore, 'categories'), orderBy('name', 'asc')), [firestore]);
-    const { data: categories, isLoading } = useCollection<Category>(categoriesQuery);
+    const { data: categories, isLoading } = useCollection<any>(categoriesQuery as any);
     
     const handleEdit = (category: Category) => {
         setSelectedCategory(category);
