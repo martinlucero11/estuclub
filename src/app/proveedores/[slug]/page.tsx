@@ -82,7 +82,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
         return query(collection(firestore, 'perks'), where('supplierId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
-    const { data: perks, isLoading: perksLoading } = useCollection<Perk>(perksQuery);
+    const { data: perks, isLoading: perksLoading } = useCollection<any>(perksQuery as any);
 
     const servicesQuery = useMemo(() => {
         if (!supplier) return null;
