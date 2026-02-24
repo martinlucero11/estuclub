@@ -214,7 +214,7 @@ export default function HomePage() {
     const componentMap: { [key in HomeSectionType]: (section: any, isFirst: boolean) => React.ReactNode } = {
         categories_grid: () => <CategoryGrid />,
         single_banner: (section, isFirst) => section.bannerId ? <SingleBanner bannerId={section.bannerId} isLCP={isFirst} /> : null,
-        benefits_carousel: (section) => <BenefitsCarousel filter={section.filter} />,
+        benefits_carousel: (section) => <BenefitsCarousel />,
         suppliers_carousel: () => <SuppliersCarousel filter="all" />,
         announcements_carousel: () => <AnnouncementsCarousel />,
         featured_suppliers_carousel: () => <SuppliersCarousel filter="featured" />,
@@ -270,6 +270,7 @@ export default function HomePage() {
     
 
     
+
 
 
 
