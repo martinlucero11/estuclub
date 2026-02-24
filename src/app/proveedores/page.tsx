@@ -63,7 +63,7 @@ function CluberListPage() {
         [firestore, activeFilter]
     );
 
-    const { data: clubers, isLoading, error } = useCollection<SupplierProfile>(clubersQuery);
+    const { data: clubers, isLoading, error } = useCollection<any>(clubersQuery as any);
     
      if (isLoading) {
         return <ClubersPageSkeleton />;
@@ -120,7 +120,7 @@ function CluberListPage() {
                                         </Avatar>
                                     </div>
                                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{cluber.name}</h3>
-                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#d83762]/10 text-[#d83762] mb-3 capitalize">
+                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#d83762]/10 text-[#d83762] capitalize">
                                         <TypeIcon className="h-4 w-4 mr-2" />
                                         {cluber.type}
                                     </div>
