@@ -54,7 +54,7 @@ function CluberList() {
         [firestore]
     );
 
-    const { data: clubers, isLoading, error } = useCollection<SupplierProfile>(clubersQuery);
+    const { data: clubers, isLoading, error } = useCollection<any>(clubersQuery as any);
     
     if (isLoading) {
         return <TurnosPageSkeleton />;
@@ -76,7 +76,7 @@ function CluberList() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
-                        const TypeIcon = categoryIcons[cluber.type] || Users;
+                        const TypeIcon = categoryIcons[cluber.type as keyof typeof categoryIcons] || Users;
                         const cluberInitials = cluber.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
