@@ -215,10 +215,10 @@ export default function HomePage() {
         categories_grid: () => <CategoryGrid />,
         single_banner: (section, isFirst) => section.bannerId ? <SingleBanner bannerId={section.bannerId} isLCP={isFirst} /> : null,
         benefits_carousel: (section) => <BenefitsCarousel />,
-        suppliers_carousel: () => <SuppliersCarousel filter="all" />,
+        suppliers_carousel: () => <SuppliersCarousel />,
         announcements_carousel: () => <AnnouncementsCarousel />,
-        featured_suppliers_carousel: () => <SuppliersCarousel filter="featured" />,
-        new_suppliers_carousel: () => <SuppliersCarousel filter="new" />,
+        featured_suppliers_carousel: () => <SuppliersCarousel />,
+        new_suppliers_carousel: () => <SuppliersCarousel />,
     };
 
     if (sectionsLoading) {
@@ -270,6 +270,7 @@ export default function HomePage() {
     
 
     
+
 
 
 
