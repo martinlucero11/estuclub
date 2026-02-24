@@ -88,13 +88,13 @@ function CluberProfileContent({ slug }: { slug: string }) {
         if (!supplier) return null;
         return query(collection(firestore, `roles_supplier/${supplier.id}/services`));
     }, [supplier, firestore]);
-    const { data: services } = useCollection<Service>(servicesQuery);
+    const { data: services } = useCollection<any>(servicesQuery as any);
 
     const availabilityRef = useMemo(() => {
         if (!supplier) return null;
         return doc(firestore, `roles_supplier/${supplier.id}/availability/schedule`);
     }, [supplier, firestore]);
-    const { data: availability } = useDoc<Availability>(availabilityRef);
+    const { data: availability } = useDoc<any>(availabilityRef as any);
 
     const serializablePerks: SerializablePerk[] = useMemo(() => {
         if (!perks) return [];
