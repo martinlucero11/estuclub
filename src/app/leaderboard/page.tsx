@@ -102,7 +102,7 @@ export default function LeaderboardPage() {
     () => query(collection(firestore, 'users'), orderBy('points', 'desc')),
     [firestore]
   );
-  const { data: users, isLoading } = useCollection<UserProfile>(usersQuery);
+  const { data: users, isLoading } = useCollection<any>(usersQuery as any);
 
   return (
     <MainLayout>
