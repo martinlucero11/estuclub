@@ -22,7 +22,7 @@ export default function SupplierManagementPage() {
     [firestore]
   );
 
-  const { data: suppliers, isLoading, error } = useCollection<SupplierProfile>(suppliersQuery);
+  const { data: suppliers, isLoading, error } = useCollection<any>(suppliersQuery as any);
 
   return (
     <div className="space-y-4">
