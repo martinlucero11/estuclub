@@ -33,6 +33,7 @@ export interface Perk {
   active?: boolean;
   isFeatured?: boolean;
   supplierName?: string;
+  [key: string]: any;
 }
 
 // Serializable type for client-side components
@@ -59,6 +60,7 @@ export interface Announcement {
   createdAt: Timestamp;
   imageUrl?: string;
   linkUrl?: string;
+  [key: string]: any;
 }
 
 export type SerializableAnnouncement = Omit<Announcement, 'createdAt'> & {
@@ -79,18 +81,21 @@ export interface Service {
   name: string;
   description: string;
   duration: number; // in minutes
+  [key: string]: any;
 }
 
 export interface DaySchedule {
   active: boolean;
   startTime: string; // "HH:mm"
   endTime: string;   // "HH:mm"
+  [key: string]: any;
 }
 
 export interface Availability {
     schedule: {
         [day: string]: DaySchedule;
-    }
+    };
+    [key: string]: any;
 }
 
 export interface Appointment {
@@ -104,6 +109,7 @@ export interface Appointment {
     startTime: Date | Timestamp;
     endTime: Date | Timestamp;
     status: 'confirmed' | 'cancelled';
+    [key: string]: any;
 }
 
 export interface BenefitRedemption {
@@ -123,6 +129,7 @@ export interface BenefitRedemption {
   status: 'pending' | 'used';
   usedAt?: Timestamp;
   pointsGranted: number;
+  [key: string]: any;
 }
 
 export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> & {
@@ -148,6 +155,7 @@ export interface Banner {
   isActive: boolean;
   colorScheme: 'pink' | 'yellow' | 'blue';
   createdAt: Timestamp;
+  [key: string]: any;
 }
 
 export type SerializableBanner = Omit<Banner, 'createdAt'> & {
@@ -167,6 +175,7 @@ export interface Category {
   emoji: string;
   colorClass: string;
   order?: number;
+  [key: string]: any;
 }
 
 export const homeSectionTypes = [
@@ -189,6 +198,7 @@ export interface HomeSection {
   filter?: string; // For category on benefits_carousel
   bannerId?: string; // For single_banner
   createdAt?: Timestamp;
+  [key: string]: any;
 }
 
 export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {

@@ -37,6 +37,7 @@ export interface SupplierProfile {
   appointmentsEnabled?: boolean;
   canCreatePerks?: boolean; // New permission for benefits
   announcementsEnabled?: boolean;
+  [key: string]: any;
 }
 
 /**
@@ -57,6 +58,7 @@ export interface Benefit {
   totalRedemptions?: number;
   createdAt: Timestamp;
   redemptionCount?: number;
+  [key: string]: any;
 }
 
 /**
@@ -73,6 +75,7 @@ export interface BenefitRedemption {
   supplierName?: string;
 
   redeemedAt: Timestamp;
+  [key: string]: any;
 }
 
 /**
@@ -87,6 +90,7 @@ export interface Announcement {
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: Timestamp;
   approvedAt?: Timestamp;
+  [key: string]: any;
 }
 
 /**
@@ -99,6 +103,7 @@ export interface AppointmentSlot {
     endTime: Timestamp;
     status: 'available' | 'booked';
     bookedBy?: string; // UID of the student who booked it
+    [key: string]: any;
 }
 
 export interface Appointment {
@@ -112,4 +117,5 @@ export interface Appointment {
     startTime: Timestamp;
     endTime: Timestamp;
     status: 'confirmed' | 'cancelled';
+    [key: string]: any;
 }
