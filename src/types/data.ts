@@ -79,16 +79,6 @@ export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'validUntil'> & {
   validUntil?: string; // Optional string
 };
 
-// Function to convert Firestore Timestamps to ISO strings
-export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
-  return {
-    ...benefit,
-    createdAt: benefit.createdAt?.toDate().toISOString() || new Date().toISOString(),
-    validUntil: benefit.validUntil?.toDate().toISOString(),
-  };
-}
-
-
 /**
  * Represents an announcement in the /announcements collection.
  */

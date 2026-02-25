@@ -1,10 +1,8 @@
-export * from '@/types/data';
-
-// ---- Serializers ----
-
 import type {
   Announcement,
-  BenefitRedemption
+  Benefit,
+  BenefitRedemption,
+  SerializableBenefit,
 } from '@/types/data';
 
 import { Timestamp } from 'firebase/firestore';
@@ -46,6 +44,16 @@ export function makeBenefitRedemptionSerializable(
     redeemedAt: redemption.redeemedAt?.toDate().toISOString(),
   };
 }
+
+// Function to convert Firestore Timestamps to ISO strings
+export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
+  return {
+    ...benefit,
+    createdAt: benefit.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    validUntil: benefit.validUntil?.toDate().toISOString(),
+  };
+}
+
 
 // Home section types (agrega los que uses realmente)
 export const homeSectionTypes = [

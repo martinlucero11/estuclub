@@ -1,36 +1,37 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, doc, deleteDoc, where, updateDoc, increment } from 'firebase/firestore';
+import { collection, query, orderBy, doc, deleteDoc, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Edit, Trash2, TrendingUp } from 'lucide-react';
-import type { Perk, SerializablePerk } from '@/lib/data';
-import { makePerkSerializable } from '@/lib/data';
-import EditPerkDialog from '@/components/perks/edit-perk-dialog';
+import type { Benefit, SerializableBenefit } from '@/types/data';
+import { makeBenefitSerializable } from '@/lib/data';
+import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { createConverter } from '@/lib/firestore-converter';
 
-function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
+function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const { toast } = useToast();
   const firestore = useFirestore();
 
   const handleDelete = async () => {
-    const perkRef = doc(firestore, 'benefits', perk.id);
+    const benefitRef = doc(firestore, 'benefits', benefit.id);
     try {
-        await deleteDoc(perkRef);
+        await deleteDoc(benefitRef);
         toast({
             title: 'Beneficio eliminado',
-            description: `El beneficio "${perk.title}" ha sido eliminado.`,
+            description: `El beneficio "${benefit.title}" ha sido eliminado.`,
         });
     } catch (error) {
-        console.error("Error deleting perk: ", error);
+        console.error("Error deleting benefit: ", error);
         toast({
             variant: 'destructive',
             title: 'Error',
@@ -45,18 +46,18 @@ function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
       <div className="flex items-center justify-between space-x-4 rounded-md border p-4">
         <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Image
-            src={perk.imageUrl}
-            alt={perk.title}
+            src={benefit.imageUrl}
+            alt={benefit.title}
             width={64}
             height={64}
             className="h-16 w-16 rounded-md object-cover"
           />
           <div className="flex-1 min-w-0">
-            <p className="font-medium truncate">{perk.title}</p>
-            <p className="text-sm text-muted-foreground">{perk.category}</p>
+            <p className="font-medium truncate">{benefit.title}</p>
+            <p className="text-sm text-muted-foreground">{benefit.category}</p>
             <div className='flex items-center gap-2 text-sm text-primary font-semibold pt-1'>
               <TrendingUp className='h-4 w-4' />
-              <span>{perk.redemptionCount || 0} canjes</span>
+              <span>{benefit.redemptionCount || 0} canjes</span>
             </div>
           </div>
         </div>
@@ -71,8 +72,8 @@ function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
           </Button>
         </div>
       </div>
-      <EditPerkDialog
-        perk={perk}
+      <EditBenefitDialog
+        benefit={benefit}
         isOpen={isEditOpen}
         onOpenChange={setIsEditOpen}
       />
@@ -81,7 +82,7 @@ function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
         onOpenChange={setIsDeleteOpen}
         onConfirm={handleDelete}
         title="¿Eliminar este beneficio?"
-        description={`Esta acción es permanente y no se puede deshacer. ¿Estás seguro de que quieres eliminar "${perk.title}"?`}
+        description={`Esta acción es permanente y no se puede deshacer. ¿Estás seguro de que quieres eliminar "${benefit.title}"?`}
       />
     </>
   );
@@ -91,9 +92,9 @@ function BenefitAdminListItem({ perk }: { perk: SerializablePerk }) {
 export default function BenefitAdminList({ supplierId }: { supplierId?: string }) {
   const firestore = useFirestore();
 
-  const perksQuery = useMemo(
+  const benefitsQuery = useMemo(
     () => {
-        const baseCollection = collection(firestore, 'benefits').withConverter(createConverter<Perk>());
+        const baseCollection = collection(firestore, 'benefits').withConverter(createConverter<Benefit>());
         if (supplierId) {
             return query(baseCollection, where('ownerId', '==', supplierId), orderBy('createdAt', 'desc'))
         }
@@ -102,12 +103,12 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
     [firestore, supplierId]
   );
   
-  const { data: perks, isLoading, error } = useCollection(perksQuery);
+  const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
 
-  const serializablePerks: SerializablePerk[] = useMemo(() => {
-    if (!perks) return [];
-    return perks.map(makePerkSerializable);
-  }, [perks]);
+  const serializableBenefits: SerializableBenefit[] = useMemo(() => {
+    if (!benefits) return [];
+    return benefits.map(makeBenefitSerializable);
+  }, [benefits]);
 
 
   if (isLoading) {
@@ -158,7 +159,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
     return <p className="text-destructive">Error al cargar los beneficios: {error.message}</p>;
   }
 
-  if (!serializablePerks || serializablePerks.length === 0) {
+  if (!serializableBenefits || serializableBenefits.length === 0) {
     return (
       <p className="text-center text-muted-foreground">No has creado ningún beneficio todavía.</p>
     );
@@ -166,8 +167,8 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   return (
     <div className="space-y-4">
-      {serializablePerks.map((perk) => (
-        <BenefitAdminListItem key={perk.id} perk={perk} />
+      {serializableBenefits.map((benefit) => (
+        <BenefitAdminListItem key={benefit.id} benefit={benefit} />
       ))}
     </div>
   );
