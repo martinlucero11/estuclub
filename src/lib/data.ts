@@ -1,5 +1,5 @@
-
 import type { Timestamp } from 'firebase/firestore';
+import type { SerializableAnnouncement } from '@/types/data';
 
 // Correctly typed as a tuple for Zod compatibility
 export const perkCategories = [
@@ -62,10 +62,6 @@ export interface Announcement {
   linkUrl?: string;
   [key: string]: any;
 }
-
-export type SerializableAnnouncement = Omit<Announcement, 'createdAt'> & {
-  createdAt: string;
-};
 
 export function makeAnnouncementSerializable(announcement: Announcement): SerializableAnnouncement {
   return {

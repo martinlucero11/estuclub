@@ -1,4 +1,3 @@
-
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -93,9 +92,14 @@ export interface Announcement {
   [key: string]: any;
 }
 
-export type SerializableAnnouncement = Announcement & {
+export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'approvedAt'> & {
   id: string;
+  createdAt?: string; // For compatibility with the other Announcement type
+  submittedAt: string;
+  approvedAt?: string;
+  [key: string]: any;
 };
+
 
 /**
  * Represents an availability slot defined by a supplier.
