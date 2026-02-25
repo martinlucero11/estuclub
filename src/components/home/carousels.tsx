@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
@@ -55,7 +56,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => (
-    <Link href={`/supplier/${supplier.id}`} className="block flex-shrink-0 snap-start text-center group w-24">
+    <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
         <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
             <Image 
                 src={supplier.logoUrl || '/placeholder.png'}
@@ -122,7 +123,7 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
              <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {collectionName === 'benefits' ? 
                     items.map(item => {
-                        const typedItem = item as Benefit;
+                        const typedItem = item as unknown as Benefit;
                         const local = suppliers?.find(s => s.id === typedItem.ownerId || s.name === typedItem.supplierName);
                         return <BenefitCard 
                             key={item.id} 
@@ -140,3 +141,4 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
+
