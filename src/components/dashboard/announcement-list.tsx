@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, doc, deleteDoc } from 'firebase/firestore';
 import { Announcement } from '@/types/data';
@@ -31,16 +31,16 @@ export default function AnnouncementList({ user }: AnnouncementListProps) {
 
     const { data: announcements, isLoading, error } = useCollection(announcementsQuery);
 
-    const handleEdit = (announcement: Announcement) => {
+    const handleEdit = useCallback((announcement: Announcement) => {
         setSelectedAnnouncement(announcement);
         setIsFormOpen(true);
-    };
+    }, []);
 
-    const handleDelete = async (announcementId: string) => {
+    const handleDelete = useCallback(async (announcementId: string) => {
         if (confirm('¿Estás seguro de que quieres eliminar este anuncio?')) {
             await deleteDoc(doc(firestore, 'announcements', announcementId));
         }
-    };
+    }, [firestore]);
 
     // The columns themselves can cause re-renders if not memoized
     // especially since they receive functions as props.
@@ -51,7 +51,12 @@ export default function AnnouncementList({ user }: AnnouncementListProps) {
 
     return (
         <div>
-            <DataTable columns={columns} data={announcements || []} />
+            <DataTable
+              columns={columns}
+              data={announcements || []}
+              filterColumn="title"
+              filterPlaceholder="Filtrar anuncios..."
+            />
             <AnnouncementFormDialog
                 isOpen={isFormOpen}
                 onOpenChange={(isOpen) => {
