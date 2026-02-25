@@ -38,13 +38,15 @@ const CategoryGrid = () => {
 
     if (isLoading) {
         return (
-            <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4">
-                {[...Array(5)].map((_, i) => (
-                    <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2 w-24">
-                        <Skeleton className="h-24 w-24 rounded-2xl" />
-                        <Skeleton className="mt-1 h-4 w-16" />
-                    </div>
-                ))}
+            <div className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex flex-nowrap gap-4 pb-4 px-4 min-w-max">
+                    {[...Array(5)].map((_, i) => (
+                        <div key={i} className="flex-shrink-0 flex flex-col items-center gap-2 w-24">
+                            <Skeleton className="h-24 w-24 rounded-2xl" />
+                            <Skeleton className="mt-1 h-4 w-16" />
+                        </div>
+                    ))}
+                </div>
             </div>
         )
     }
@@ -52,18 +54,20 @@ const CategoryGrid = () => {
     if (!categories || categories.length === 0) return null;
 
     return (
-        <div className="relative">
-            <div ref={scrollContainerRef} className="flex overflow-x-auto flex-nowrap gap-4 md:gap-6 pb-4 scroll-smooth w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {categories.map((category) => (
-                    <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
-                        <div className="bg-accent rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">
-                            <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
-                        </div>
-                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
-                            {category.name}
-                        </span>
-                    </Link>
-                ))}
+        <div className="relative w-full">
+            <div ref={scrollContainerRef} className="overflow-x-auto w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                <div className="flex flex-nowrap gap-4 md:gap-6 pb-4 px-4 min-w-max">
+                    {categories.map((category) => (
+                        <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="flex-shrink-0 flex flex-col items-center gap-2 w-24 text-center group">
+                            <div className="bg-accent rounded-3xl w-24 h-24 md:w-28 md:h-28 flex items-center justify-center shadow-sm">
+                                <span className="text-5xl md:text-6xl drop-shadow-[0_4px_10px_rgba(0,0,0,0.4)]">{category.icon || category.emoji}</span>
+                            </div>
+                            <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-2 text-center">
+                                {category.name}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
             </div>
              <button onClick={scrollRight} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden md:flex items-center justify-center w-10 h-10 bg-white rounded-full shadow-lg text-[#d83762] hover:bg-gray-50 cursor-pointer">
                 <ChevronRight className="h-6 w-6" />
@@ -258,7 +262,7 @@ export default function HomePage() {
                                     </Button>
                                 )}
                             </div>
-                            <div className="px-4">
+                            <div className={section.type === 'categories_grid' ? '' : 'px-4'}>
                                 {Component(section, isFirstSection)}
                             </div>
                         </section>

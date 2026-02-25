@@ -122,7 +122,7 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
              <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {collectionName === 'benefits' ? 
                     items.map(item => {
-                        const typedItem = item as unknown as Benefit;
+                        const typedItem = item as Benefit;
                         const local = suppliers?.find(s => s.id === typedItem.ownerId || s.name === typedItem.supplierName);
                         return <BenefitCard 
                             key={item.id} 
@@ -137,6 +137,6 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
     }
 }
 
-export const BenefitsCarousel = createCarousel(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel(SupplierCard, 'roles_supplier', 'supplier');
-export const AnnouncementsCarousel = createCarousel(AnnouncementCard, 'announcements', 'announcement');
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
+export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
