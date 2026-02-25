@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { HomeSectionForm } from './home-section-form';
-import type { HomeSection } from '@/lib/data';
+import type { HomeSection } from '@/types/data';
 
 interface HomeSectionDialogProps {
     isOpen: boolean;

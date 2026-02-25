@@ -5,7 +5,7 @@ import { useMemo, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
-import { HomeSection } from '@/lib/data';
+import type { HomeSection } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Save, ArrowUp, ArrowDown, Edit, Trash2, LayoutTemplate } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
