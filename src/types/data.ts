@@ -93,6 +93,10 @@ export interface Announcement {
   [key: string]: any;
 }
 
+export type SerializableAnnouncement = Announcement & {
+  id: string;
+};
+
 /**
  * Represents an availability slot defined by a supplier.
  */
