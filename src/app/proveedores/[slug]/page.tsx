@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCollection, useFirestore, useDoc } from '@/firebase';
@@ -10,8 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
 import BenefitsGrid from '@/components/perks/perks-grid';
-import { Benefit, makeBenefitSerializable, SerializableBenefit, Service, Availability } from '@/types/data';
-import type { CluberCategory, SupplierProfile } from '@/types/data';
+import { makeBenefitSerializable } from '@/lib/data';
+import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
 import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';

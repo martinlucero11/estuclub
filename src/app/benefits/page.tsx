@@ -5,7 +5,7 @@ import BenefitsGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import type { Benefit, SerializableBenefit } from '@/types/data';
-import { makeBenefitSerializable } from '@/types/data';
+import { makeBenefitSerializable } from '@/lib/data';
 import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { ArrowDownUp } from 'lucide-react';

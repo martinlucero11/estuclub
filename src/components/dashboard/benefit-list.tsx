@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -6,7 +5,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import type { User } from '@/firebase/auth/current-user';
 import type { Benefit, SerializableBenefit } from '@/types/data';
-import { makeBenefitSerializable } from '@/types/data';
+import { makeBenefitSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { getBenefitColumns } from './benefit-columns';
 import { useToast } from '@/hooks/use-toast';
