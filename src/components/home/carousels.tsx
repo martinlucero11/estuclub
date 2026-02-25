@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore"; 
 import Link from "next/link";
-import type { Perk as Benefit, Supplier, Announcement } from "@/types/data";
+import type { Benefit, Supplier, Announcement } from "@/types/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
