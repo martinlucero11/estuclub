@@ -50,7 +50,11 @@ export function makeBenefitRedemptionSerializable(
 // Home section types (agrega los que uses realmente)
 export const homeSectionTypes = [
   'categories_grid',
+  'benefits_carousel',
   'single_banner',
+  'suppliers_carousel',
+  'announcements_carousel',
+  'featured_suppliers_carousel',
+  'new_suppliers_carousel',
   'featured_perks',
-  'suppliers_grid',
 ] as const;
