@@ -3,12 +3,17 @@
 import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
-import type { User } from '@/firebase/auth/current-user';
-import type { BenefitRedemption } from '@/types/data';
+import type { BenefitRedemption, UserRole } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { columns as baseColumns } from './redemption-columns';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { createConverter } from '@/lib/firestore-converter';
+
+interface User {
+  uid: string;
+  email: string | null;
+  roles: UserRole[];
+}
 
 interface RedemptionListProps {
   user: User;

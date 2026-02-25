@@ -3,8 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, doc, deleteDoc } from 'firebase/firestore';
-import type { User } from '@/firebase/auth/current-user';
-import type { Benefit, SerializableBenefit } from '@/types/data';
+import type { Benefit, SerializableBenefit, UserRole } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { getBenefitColumns } from './benefit-columns';
@@ -12,6 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
+
+interface User {
+  uid: string;
+  email: string | null;
+  roles: UserRole[];
+}
 
 interface BenefitListProps {
   user: User;

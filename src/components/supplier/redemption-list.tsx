@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -10,6 +9,7 @@ import { Badge } from '../ui/badge';
 import { History, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from 'lucide-react';
 import type { BenefitRedemption } from '@/types/data';
 import { useMemo } from 'react';
+import { createConverter } from '@/lib/firestore-converter';
 
 // Skeleton Loader for the table
 function ScanHistorySkeleton() {
@@ -53,13 +53,13 @@ export default function SupplierScanHistory() {
         if (!user) return null;
 
         return query(
-            collection(firestore, 'benefitRedemptions'),
+            collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
 
-    const { data: scans, isLoading, error } = useCollection<BenefitRedemption>(scansQuery);
+    const { data: scans, isLoading, error } = useCollection(scansQuery);
 
     // Proactive error handling for missing Firestore index
     if (error && 'code' in error && error.code === 'failed-precondition') {
