@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -14,7 +13,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { Link2 } from 'lucide-react';
 import Link from 'next/link';
-import type { SerializableAnnouncement } from '@/lib/data';
+import type { SerializableAnnouncement } from '@/types/data';
 
 interface AnnouncementDialogProps {
   announcement: SerializableAnnouncement;

@@ -3,7 +3,7 @@
 'use client';
 
 import AnnouncementCard from './announcement-card';
-import type { SerializableAnnouncement } from '@/lib/data';
+import type { SerializableAnnouncement } from '@/types/data';
 import { EmptyState } from '../ui/empty-state';
 import { Megaphone } from 'lucide-react';
 
