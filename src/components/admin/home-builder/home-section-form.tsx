@@ -13,8 +13,9 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
-import { homeSectionTypes, HomeSection, Banner } from '@/lib/data';
+import { homeSectionTypes, HomeSection, Banner, HomeSectionType } from '@/lib/data';
 import { Switch } from '@/components/ui/switch';
+import { createConverter } from '@/lib/firestore-converter';
 
 const formSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres.'),
@@ -29,14 +30,26 @@ interface HomeSectionFormProps {
     onSuccess: () => void;
 }
 
+const sectionTypeLabels: Record<HomeSectionType, string> = {
+    categories_grid: "Grilla de Categorías",
+    benefits_carousel: "Carrusel de Beneficios",
+    single_banner: "Banner Individual",
+    suppliers_carousel: "Carrusel de Proveedores",
+    announcements_carousel: "Carrusel de Anuncios",
+    featured_suppliers_carousel: "Carrusel de Proveedores Destacados",
+    new_suppliers_carousel: "Carrusel de Nuevos Proveedores",
+    featured_perks: "Beneficios Destacados",
+};
+
+
 export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEditMode = !!section;
 
-    const bannersQuery = useMemo(() => query(collection(firestore, 'banners')), [firestore]);
-    const { data: banners } = useCollection<any>(bannersQuery as any);
+    const bannersQuery = useMemo(() => query(collection(firestore, 'banners').withConverter(createConverter<Banner>())), [firestore]);
+    const { data: banners } = useCollection(bannersQuery);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -107,10 +120,11 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un tipo de contenido" /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="categories_grid">Grilla de Categorías</SelectItem>
-                                    <SelectItem value="benefits_carousel">Carrusel de Beneficios</SelectItem>
-                                    <SelectItem value="single_banner">Banner Individual</SelectItem>
-                                    <SelectItem value="suppliers_carousel">Carrusel de Proveedores</SelectItem>
+                                    {homeSectionTypes.map(type => (
+                                        <SelectItem key={type} value={type}>
+                                            {sectionTypeLabels[type] || type}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -143,7 +157,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un banner" /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        {banners?.map((b: any) => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}
+                                        {banners?.map(b => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />

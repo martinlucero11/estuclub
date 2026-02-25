@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -13,6 +14,7 @@ import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
 import { HomeSection, HomeSectionType, Category } from '@/lib/data';
 import { createConverter } from '@/lib/firestore-converter';
+import FeaturedPerks from '@/components/home/FeaturedPerks';
 
 // --- STATIC DATA ---
 const bannerColors: { [key: string]: string } = {
@@ -211,14 +213,15 @@ export default function HomePage() {
 
     const { data: sections, isLoading: sectionsLoading } = useCollection(homeSectionsQuery);
     
-    const componentMap: { [key in HomeSectionType]: (section: HomeSection, isFirst: boolean) => React.ReactNode } = {
-        categories_grid: () => <CategoryGrid />,
+    const componentMap: Record<HomeSectionType, (section: HomeSection, isFirst: boolean) => React.ReactNode> = {
+        categories_grid: (section, isFirst) => <CategoryGrid />,
         single_banner: (section, isFirst) => section.bannerId ? <SingleBanner bannerId={section.bannerId} isLCP={isFirst} /> : null,
-        benefits_carousel: (section) => <BenefitsCarousel />,
-        suppliers_carousel: () => <SuppliersCarousel />,
-        announcements_carousel: () => <AnnouncementsCarousel />,
-        featured_suppliers_carousel: () => <SuppliersCarousel />,
-        new_suppliers_carousel: () => <SuppliersCarousel />,
+        benefits_carousel: (section, isFirst) => <BenefitsCarousel />,
+        suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
+        announcements_carousel: (section, isFirst) => <AnnouncementsCarousel />,
+        featured_suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
+        new_suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
+        featured_perks: (section, isFirst) => <FeaturedPerks />,
     };
 
     if (sectionsLoading) {
@@ -231,7 +234,7 @@ export default function HomePage() {
              <WelcomeMessage />
             <div className="space-y-6 pb-8 pt-0">
                 {sections && sections.map((section, index) => {
-                    const Component = componentMap[section.type as HomeSectionType];
+                    const Component = componentMap[section.type];
                     const isFirstSection = index === 0;
                     
                     if (!Component) return null;
@@ -270,6 +273,7 @@ export default function HomePage() {
     
 
     
+
 
 
 
