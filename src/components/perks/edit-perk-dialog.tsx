@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { perkCategories, type SerializablePerk } from '@/lib/data';
+import { benefitCategories, type SerializableBenefit } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat } from 'lucide-react';
 import { useFirestore } from '@/firebase';
@@ -45,7 +45,7 @@ const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
-  category: z.enum(perkCategories, {
+  category: z.enum(benefitCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
   }),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.'),
@@ -58,13 +58,13 @@ const formSchema = z.object({
   isFeatured: z.boolean().default(false),
 });
 
-interface EditPerkDialogProps {
-  perk: SerializablePerk;
+interface EditBenefitDialogProps {
+  benefit: SerializableBenefit;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkDialogProps) {
+export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: EditBenefitDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { isAdmin } = useAdmin();
@@ -73,23 +73,23 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: perk.title,
-      description: perk.description,
-      category: perk.category,
-      imageUrl: perk.imageUrl,
-      location: perk.location,
-      points: perk.points || 0,
-      redemptionLimit: perk.redemptionLimit || 0,
-      validUntil: perk.validUntil ? new Date(perk.validUntil) : undefined,
-      availableDays: perk.availableDays || [],
-      active: perk.active ?? true,
-      isFeatured: perk.isFeatured ?? false,
+      title: benefit.title,
+      description: benefit.description,
+      category: benefit.category,
+      imageUrl: benefit.imageUrl,
+      location: benefit.location,
+      points: benefit.points || 0,
+      redemptionLimit: benefit.redemptionLimit || 0,
+      validUntil: benefit.validUntil ? new Date(benefit.validUntil) : undefined,
+      availableDays: benefit.availableDays || [],
+      active: benefit.active ?? true,
+      isFeatured: benefit.isFeatured ?? false,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    const perkRef = doc(firestore, 'benefits', perk.id);
+    const benefitRef = doc(firestore, 'benefits', benefit.id);
     try {
         const dataToUpdate: any = { ...values };
         
@@ -107,7 +107,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
             delete dataToUpdate.availableDays;
         }
 
-      await updateDoc(perkRef, dataToUpdate);
+      await updateDoc(benefitRef, dataToUpdate);
       toast({
         title: 'Beneficio Actualizado',
         description: `El beneficio "${values.title}" ha sido actualizado.`,
@@ -162,7 +162,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {perkCategories.map((category) => (
+                        {benefitCategories.map((category) => (
                             <SelectItem key={category} value={category}>
                             {category}
                             </SelectItem>

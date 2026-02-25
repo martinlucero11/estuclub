@@ -2,15 +2,15 @@
 'use client';
 
 import type { ColumnDef } from '@tanstack/react-table';
-import type { Perk, SerializablePerk } from '@/lib/data';
+import type { SerializableBenefit } from '@/types/data';
 import { ArrowUpDown, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export const getBenefitColumns = (
-  onEdit: (perk: SerializablePerk) => void,
-  onDelete: (perkId: string) => void
-): ColumnDef<SerializablePerk>[] => [
+  onEdit: (benefit: SerializableBenefit) => void,
+  onDelete: (benefitId: string) => void
+): ColumnDef<SerializableBenefit>[] => [
   {
     accessorKey: 'title',
     header: ({ column }) => {
@@ -36,7 +36,7 @@ export const getBenefitColumns = (
   {
     id: 'actions',
     cell: ({ row }) => {
-      const perk = row.original;
+      const benefit = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -46,12 +46,12 @@ export const getBenefitColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(perk)}>
+            <DropdownMenuItem onClick={() => onEdit(benefit)}>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onDelete(perk.id)}
+              onClick={() => onDelete(benefit.id)}
               className="text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />

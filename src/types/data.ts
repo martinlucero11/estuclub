@@ -39,43 +39,55 @@ export interface SupplierProfile {
   [key: string]: any;
 }
 
-/**
- * Represents a benefit item in the /benefits collection.
- */
+
+export const benefitCategories = [
+  'Comercios',
+  'Eventos',
+  'Comida',
+  'Educación',
+  'Entretenimiento',
+] as const;
+export type BenefitCategory = typeof benefitCategories[number];
+
 export interface Benefit {
-  id: string; // Document ID
-  supplierId: string; // UID of the supplier who owns it
+  id: string;
   title: string;
   description: string;
-  price: number; // Cost in points
-  category: string;
-  stock: number;
-  status: 'active' | 'inactive';
-  supplierName?: string; // Denormalized for admin views
-  // Tracking fields (optional)
-  clicks?: number;
-  totalRedemptions?: number;
-  createdAt: Timestamp;
+  category: BenefitCategory;
+  image: string;
+  imageUrl: string;
+  location?: string;
+  ownerId: string;
+  createdAt?: Timestamp;
+  points: number;
+  cost?: number;
+  redemptionLimit?: number;
+  validUntil?: Timestamp;
+  availableDays?: string[];
   redemptionCount?: number;
-  [key: string]: any;
-}
-
-/**
- * Represents a redeemed benefit in the /benefitRedemptions collection.
- */
-export interface BenefitRedemption {
-  id: string; // Document ID
-  benefitId: string;
-  supplierId: string;
-  userId: string;
-  // Denormalized data for admin views
-  userName?: string;
-  benefitTitle?: string;
+  active?: boolean;
+  isFeatured?: boolean;
   supplierName?: string;
-
-  redeemedAt: Timestamp;
+  status?: 'active' | 'inactive';
+  stock?: number;
   [key: string]: any;
 }
+
+// Serializable type for client-side components
+export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'validUntil'> & {
+  createdAt: string; // Always a string
+  validUntil?: string; // Optional string
+};
+
+// Function to convert Firestore Timestamps to ISO strings
+export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
+  return {
+    ...benefit,
+    createdAt: benefit.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    validUntil: benefit.validUntil?.toDate().toISOString(),
+  };
+}
+
 
 /**
  * Represents an announcement in the /announcements collection.
@@ -85,32 +97,54 @@ export interface Announcement {
   supplierId: string;
   title: string;
   content: string;
+  authorId?: string;
+  authorUsername?: string;
   imageUrl?: string;
+  linkUrl?: string;
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: Timestamp;
   approvedAt?: Timestamp;
+  createdAt: Timestamp;
   [key: string]: any;
 }
 
-export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'approvedAt'> & {
+export interface SerializableAnnouncement extends Omit<Announcement, 'createdAt' | 'submittedAt' | 'approvedAt'> {
   id: string;
-  createdAt?: string; // For compatibility with the other Announcement type
-  submittedAt: string;
+  createdAt: string;
+  submittedAt?: string;
   approvedAt?: string;
+}
+
+export function makeAnnouncementSerializable(announcement: Announcement): SerializableAnnouncement {
+  return {
+    ...announcement,
+    createdAt: announcement.createdAt.toDate().toISOString(),
+    submittedAt: announcement.submittedAt?.toDate().toISOString(),
+    approvedAt: announcement.approvedAt?.toDate().toISOString(),
+  };
+}
+
+export type CarouselItem = (SerializableBenefit & { type: 'benefit' }) | (SerializableAnnouncement & { type: 'announcement' });
+
+export interface Service {
+  id: string;
+  name: string;
+  description: string;
+  duration: number; // in minutes
   [key: string]: any;
-};
+}
 
+export interface DaySchedule {
+  active: boolean;
+  startTime: string; // "HH:mm"
+  endTime: string;   // "HH:mm"
+  [key: string]: any;
+}
 
-/**
- * Represents an availability slot defined by a supplier.
- */
-export interface AppointmentSlot {
-    id: string;
-    supplierId: string;
-    startTime: Timestamp;
-    endTime: Timestamp;
-    status: 'available' | 'booked';
-    bookedBy?: string; // UID of the student who booked it
+export interface Availability {
+    schedule: {
+        [day: string]: DaySchedule;
+    };
     [key: string]: any;
 }
 
@@ -122,8 +156,119 @@ export interface Appointment {
     userPhone: string;
     serviceId: string;
     serviceName: string;
+    startTime: Date | Timestamp;
+    endTime: Date | Timestamp;
+    status: 'confirmed' | 'cancelled';
+    [key: string]: any;
+}
+
+export interface BenefitRedemption {
+  id: string;
+  benefitId: string;
+  benefitTitle: string;
+  benefitDescription: string;
+  benefitImageUrl: string;
+  benefitLocation?: string;
+  supplierId: string;
+  supplierName: string;
+  userId: string;
+  userName: string;
+  userDni: string;
+  redeemedAt: Timestamp;
+  qrCodeValue: string;
+  status: 'pending' | 'used';
+  usedAt?: Timestamp;
+  pointsGranted: number;
+  [key: string]: any;
+}
+
+export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> & {
+  redeemedAt: string;
+  usedAt?: string;
+};
+
+export function makeBenefitRedemptionSerializable(redemption: BenefitRedemption): SerializableBenefitRedemption {
+  return {
+    ...redemption,
+    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
+    usedAt: redemption.usedAt?.toDate().toISOString(),
+  };
+}
+
+
+export interface Banner {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  link?: string;
+  isActive: boolean;
+  colorScheme: 'pink' | 'yellow' | 'blue';
+  createdAt: Timestamp;
+  [key: string]: any;
+}
+
+export type SerializableBanner = Omit<Banner, 'createdAt'> & {
+  createdAt: string;
+};
+
+export function makeBannerSerializable(banner: Banner): SerializableBanner {
+  return {
+    ...banner,
+    createdAt: banner.createdAt?.toDate().toISOString() || new Date().toISOString(),
+  };
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  emoji: string;
+  colorClass: string;
+  order?: number;
+  [key: string]: any;
+}
+
+export const homeSectionTypes = [
+    'categories_grid', 
+    'benefits_carousel', 
+    'single_banner', 
+    'suppliers_carousel',
+    'announcements_carousel',
+    'featured_suppliers_carousel',
+    'new_suppliers_carousel',
+    'featured_perks'
+] as const;
+export type HomeSectionType = typeof homeSectionTypes[number];
+
+export interface HomeSection {
+  id: string;
+  title: string;
+  type: HomeSectionType;
+  order: number;
+  isActive: boolean;
+  filter?: string; // For category on benefits_carousel
+  bannerId?: string; // For single_banner
+  createdAt?: Timestamp;
+  [key: string]: any;
+}
+
+export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
+    createdAt: string;
+};
+
+export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
+    return {
+        ...section,
+        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    };
+}
+
+export interface AppointmentSlot {
+    id: string;
+    supplierId: string;
     startTime: Timestamp;
     endTime: Timestamp;
-    status: 'confirmed' | 'cancelled';
+    status: 'available' | 'booked';
+    bookedBy?: string; // UID of the student who booked it
     [key: string]: any;
 }

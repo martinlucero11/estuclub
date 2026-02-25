@@ -9,8 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
-import PerksGrid from '@/components/perks/perks-grid';
-import { Perk, makePerkSerializable, SerializablePerk, Service, Availability } from '@/lib/data';
+import BenefitsGrid from '@/components/perks/perks-grid';
+import { Benefit, makeBenefitSerializable, SerializableBenefit, Service, Availability } from '@/types/data';
 import type { CluberCategory, SupplierProfile } from '@/types/data';
 import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
@@ -77,12 +77,12 @@ function CluberProfileContent({ slug }: { slug: string }) {
         fetchSupplier();
     }, [firestore, slug]);
     
-    const perksQuery = useMemo(() => {
+    const benefitsQuery = useMemo(() => {
         if (!supplier) return null;
-        return query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), where('supplierId', '==', supplier.id), where('active', '==', true));
+        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('supplierId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
-    const { data: perks, isLoading: perksLoading } = useCollection(perksQuery);
+    const { data: benefits, isLoading: benefitsLoading } = useCollection(benefitsQuery);
 
     const servicesQuery = useMemo(() => {
         if (!supplier) return null;
@@ -96,10 +96,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
     }, [supplier, firestore]);
     const { data: availability } = useDoc<Availability>(availabilityRef);
 
-    const serializablePerks: SerializablePerk[] = useMemo(() => {
-        if (!perks) return [];
-        return perks.map(makePerkSerializable);
-    }, [perks]);
+    const serializableBenefits: SerializableBenefit[] = useMemo(() => {
+        if (!benefits) return [];
+        return benefits.map(makeBenefitSerializable);
+    }, [benefits]);
 
     if (isLoadingSupplier) {
         return <ProfileSkeleton />;
@@ -161,10 +161,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 </div>
 
                 {/* Active Benefits Section */}
-                {(perks && perks.length > 0) && (
+                {(benefits && benefits.length > 0) && (
                     <section id="benefits-section" className="px-6 py-8 scroll-mt-20">
                         <h2 className="text-2xl font-bold mb-4 text-center">Beneficios Activos</h2>
-                        {perksLoading ? <Skeleton className="h-48 w-full" /> : <PerksGrid perks={serializablePerks} />}
+                        {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <BenefitsGrid benefits={serializableBenefits} />}
                     </section>
                 )}
 

@@ -1,11 +1,11 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import PerksGrid from '@/components/perks/perks-grid';
+import BenefitsGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
-import type { Perk, SerializablePerk } from '@/lib/data';
-import { makePerkSerializable } from '@/lib/data';
+import type { Benefit, SerializableBenefit } from '@/types/data';
+import { makeBenefitSerializable } from '@/types/data';
 import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { ArrowDownUp } from 'lucide-react';
@@ -16,7 +16,7 @@ import { createConverter } from '@/lib/firestore-converter';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc';
 
-function PerksGridSkeleton() {
+function BenefitsGridSkeleton() {
     return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
@@ -32,14 +32,14 @@ function PerksGridSkeleton() {
     );
 }
 
-function PerksList() {
+function BenefitsList() {
     const firestore = useFirestore();
     const { isUserLoading } = useUser();
     const [sortOption, setSortOption] = useState<SortOption>('createdAt_desc');
     const searchParams = useSearchParams();
     const categoryFilter = searchParams.get('category');
 
-    const perksQuery = useMemo(() => {
+    const benefitsQuery = useMemo(() => {
         if (!firestore) return null;
 
         let field: string, direction: OrderByDirection;
@@ -56,7 +56,7 @@ function PerksList() {
                 break;
         }
         
-        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), orderBy(field, direction));
+        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy(field, direction));
 
         if (categoryFilter) {
             q = query(q, where('category', '==', categoryFilter));
@@ -65,12 +65,12 @@ function PerksList() {
         return q;
     }, [firestore, sortOption, categoryFilter]);
 
-    const { data: perks, isLoading, error } = useCollection(perksQuery);
+    const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
     
-    const serializablePerks: SerializablePerk[] = useMemo(() => {
-        if (!perks) return [];
-        return perks.map(makePerkSerializable);
-    }, [perks]);
+    const serializableBenefits: SerializableBenefit[] = useMemo(() => {
+        if (!benefits) return [];
+        return benefits.map(makeBenefitSerializable);
+    }, [benefits]);
 
     const combinedIsLoading = isUserLoading || isLoading;
 
@@ -90,7 +90,7 @@ function PerksList() {
                 </Select>
             </div>
             
-            {combinedIsLoading && <PerksGridSkeleton />}
+            {combinedIsLoading && <BenefitsGridSkeleton />}
 
             {error && (
                 <p className="text-destructive text-center">
@@ -98,7 +98,7 @@ function PerksList() {
                 </p>
             )}
 
-            {!combinedIsLoading && !error && <PerksGrid perks={serializablePerks} />}
+            {!combinedIsLoading && !error && <BenefitsGrid benefits={serializableBenefits} />}
         </div>
     );
 }
@@ -112,8 +112,8 @@ export default function BenefitsPage() {
                     Explora todos los descuentos, ofertas y eventos disponibles para ti.
                 </p>
 
-                <Suspense fallback={<PerksGridSkeleton />}>
-                    <PerksList />
+                <Suspense fallback={<BenefitsGridSkeleton />}>
+                    <BenefitsList />
                 </Suspense>
             </div>
         </MainLayout>

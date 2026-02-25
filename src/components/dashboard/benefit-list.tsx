@@ -5,12 +5,12 @@ import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import type { User } from '@/firebase/auth/current-user';
-import type { Perk, SerializablePerk } from '@/lib/data';
-import { makePerkSerializable } from '@/lib/data';
+import type { Benefit, SerializableBenefit } from '@/types/data';
+import { makeBenefitSerializable } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { getBenefitColumns } from './benefit-columns';
 import { useToast } from '@/hooks/use-toast';
-import EditPerkDialog from '@/components/perks/edit-perk-dialog';
+import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
@@ -25,12 +25,12 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedPerk, setSelectedPerk] = useState<SerializablePerk | null>(null);
-  const [perkIdToDelete, setPerkIdToDelete] = useState<string | null>(null);
+  const [selectedBenefit, setSelectedBenefit] = useState<SerializableBenefit | null>(null);
+  const [benefitIdToDelete, setBenefitIdToDelete] = useState<string | null>(null);
 
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
-    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Perk>()), orderBy('createdAt', 'desc'));
+    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc'));
     // If user is not admin, they must be a supplier, so filter by their ID
     if (!isAdmin) {
       q = query(q, where('ownerId', '==', user.uid));
@@ -40,33 +40,33 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
   
-  const serializablePerks: SerializablePerk[] = useMemo(() => {
+  const serializableBenefits: SerializableBenefit[] = useMemo(() => {
     if (!benefits) return [];
-    return benefits.map(makePerkSerializable);
+    return benefits.map(makeBenefitSerializable);
   }, [benefits]);
 
-  const handleEdit = (perk: SerializablePerk) => {
-    setSelectedPerk(perk);
+  const handleEdit = (benefit: SerializableBenefit) => {
+    setSelectedBenefit(benefit);
     setIsEditDialogOpen(true);
   };
 
-  const handleDeleteRequest = (perkId: string) => {
-    setPerkIdToDelete(perkId);
+  const handleDeleteRequest = (benefitId: string) => {
+    setBenefitIdToDelete(benefitId);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!perkIdToDelete) return;
-    const perkRef = doc(firestore, 'benefits', perkIdToDelete);
+    if (!benefitIdToDelete) return;
+    const benefitRef = doc(firestore, 'benefits', benefitIdToDelete);
     try {
-      await deleteDoc(perkRef);
+      await deleteDoc(benefitRef);
       toast({ title: 'Beneficio eliminado', description: 'El beneficio ha sido eliminado con éxito.' });
     } catch (error) {
-      console.error('Error deleting perk:', error);
+      console.error('Error deleting benefit:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo eliminar el beneficio.' });
     } finally {
       setIsDeleteDialogOpen(false);
-      setPerkIdToDelete(null);
+      setBenefitIdToDelete(null);
     }
   };
 
@@ -99,19 +99,19 @@ export default function BenefitList({ user }: BenefitListProps) {
     <>
       <DataTable
         columns={columns}
-        data={serializablePerks}
+        data={serializableBenefits}
         isLoading={isLoading}
         filterColumn='title'
         filterPlaceholder='Filtrar por título...'
       />
-      {selectedPerk && (
-        <EditPerkDialog
+      {selectedBenefit && (
+        <EditBenefitDialog
           isOpen={isEditDialogOpen}
           onOpenChange={(open) => {
               setIsEditDialogOpen(open);
-              if (!open) setSelectedPerk(null);
+              if (!open) setSelectedBenefit(null);
           }}
-          perk={selectedPerk}
+          benefit={selectedBenefit}
         />
       )}
       <DeleteConfirmationDialog

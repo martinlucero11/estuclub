@@ -16,13 +16,13 @@ import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { SerializablePerk } from '@/lib/data';
+import type { SerializableBenefit } from '@/types/data';
 import { CheckCircle, CalendarDays, Award, Loader2 } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
-interface RedeemPerkDialogProps {
-  perk: SerializablePerk;
+interface RedeemBenefitDialogProps {
+  benefit: SerializableBenefit;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
@@ -54,7 +54,7 @@ const dayAbbreviations: { [key: string]: string } = {
   "Domingo": "D"
 };
 
-export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false }: RedeemPerkDialogProps) {
+export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigger = false }: RedeemBenefitDialogProps) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -87,7 +87,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
 
   const handleRedeem = async () => {
-    if (!user || !userProfile || !firestore || !perk.ownerId) {
+    if (!user || !userProfile || !firestore || !benefit.ownerId) {
       toast({ 
           variant: 'destructive', 
           title: 'Error de datos',
@@ -101,37 +101,37 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     setRedemptionId(null);
     setQrCodeUrl(null);
 
-    const pointsToGrant = perk.points || 0;
+    const pointsToGrant = benefit.points || 0;
 
     try {
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
       const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
 
-      if (perk.availableDays && perk.availableDays.length > 0 && !perk.availableDays.includes(capitalizedDay)) {
-        throw new Error(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
+      if (benefit.availableDays && benefit.availableDays.length > 0 && !benefit.availableDays.includes(capitalizedDay)) {
+        throw new Error(`Este beneficio solo está disponible los días: ${benefit.availableDays.join(', ')}.`);
       }
       
-      if (perk.validUntil && new Date(perk.validUntil) < new Date()) {
+      if (benefit.validUntil && new Date(benefit.validUntil) < new Date()) {
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
       
       const userRedemptionsRef = collection(firestore, 'users', user.uid, 'redeemed_benefits');
       
-      if (perk.redemptionLimit && perk.redemptionLimit > 0) {
+      if (benefit.redemptionLimit && benefit.redemptionLimit > 0) {
         const q = query(
           userRedemptionsRef, 
-          where("benefitId", "==", perk.id),
+          where("benefitId", "==", benefit.id),
         );
         const querySnapshot = await getDocs(q);
-        if (querySnapshot.size >= perk.redemptionLimit) {
-          throw new Error(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
+        if (querySnapshot.size >= benefit.redemptionLimit) {
+          throw new Error(`Has alcanzado el límite de canje (${benefit.redemptionLimit}) para este beneficio.`);
         }
       }
       
       const batch = writeBatch(firestore);
 
-      const supplierRef = doc(firestore, 'roles_supplier', perk.ownerId);
+      const supplierRef = doc(firestore, 'roles_supplier', benefit.ownerId);
       const supplierSnap = await getDoc(supplierRef);
       if (!supplierSnap.exists()) {
           throw new Error("No se pudo encontrar el proveedor del beneficio.");
@@ -146,15 +146,15 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       
       const redemptionData = {
         id: newRedemptionId,
-        benefitId: perk.id,
-        benefitTitle: perk.title,
-        benefitDescription: perk.description,
-        benefitImageUrl: perk.imageUrl,
-        benefitLocation: perk.location || '',
+        benefitId: benefit.id,
+        benefitTitle: benefit.title,
+        benefitDescription: benefit.description,
+        benefitImageUrl: benefit.imageUrl,
+        benefitLocation: benefit.location || '',
         userId: user.uid,
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
-        supplierId: perk.ownerId,
+        supplierId: benefit.ownerId,
         supplierName: supplierName,
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
@@ -179,7 +179,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       });
 
     } catch (e: any) {
-        console.error('Error redeeming perk:', e);
+        console.error('Error redeeming benefit:', e);
         setError(e.message || 'No se pudo canjear el beneficio. Por favor, inténtalo de nuevo.');
         toast({ 
             variant: 'destructive', 
@@ -231,7 +231,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       </div>
   );
 
-  const points = perk.points || 0;
+  const points = benefit.points || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -242,20 +242,20 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
         {!redemptionId ? (
             <>
                 <DialogHeader>
-                    <DialogTitle>Canjear: {perk.title}</DialogTitle>
+                    <DialogTitle>Canjear: {benefit.title}</DialogTitle>
                     <DialogDescription>
                     Al canjear este beneficio, ganarás <span className="font-bold text-primary">{points}</span> puntos.
                     </DialogDescription>
                 </DialogHeader>
 
-                {perk.availableDays && perk.availableDays.length > 0 && (
+                {benefit.availableDays && benefit.availableDays.length > 0 && (
                     <div className="flex items-center gap-3 rounded-lg border p-3">
                         <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
                         <div className='flex-1'>
                             <p className="text-sm font-medium">Días disponibles</p>
                             <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
                                 {daysOrder.map(day => (
-                                    <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
+                                    <span key={day} className={benefit.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
                                         {dayAbbreviations[day]}
                                     </span>
                                 ))}

@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { perkCategories } from '@/lib/data';
+import { benefitCategories } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, PlusCircle, Award, CalendarIcon, Repeat, Clock } from 'lucide-react';
 import { useFirestore, useUser } from '@/firebase';
@@ -38,7 +38,7 @@ const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
-  category: z.enum(perkCategories, {
+  category: z.enum(benefitCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
   }),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.'),
@@ -163,7 +163,7 @@ export default function AddPerkForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {perkCategories.map((category) => (
+                  {benefitCategories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>

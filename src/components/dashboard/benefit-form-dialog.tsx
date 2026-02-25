@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { perkCategories } from '@/lib/data';
+import { benefitCategories } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat, PlusCircle } from 'lucide-react';
 import { useFirestore, useUser, useCollection } from '@/firebase';
@@ -47,7 +47,7 @@ const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
-  category: z.enum(perkCategories, {
+  category: z.enum(benefitCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
   }),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.'),
@@ -214,7 +214,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                            {perkCategories.map((category) => (
+                            {benefitCategories.map((category) => (
                                 <SelectItem key={category} value={category}>
                                 {category}
                                 </SelectItem>

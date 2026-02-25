@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Image from 'next/image';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
-import { HomeSection, HomeSectionType, Category } from '@/lib/data';
+import { HomeSection, HomeSectionType, Category, Banner } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import FeaturedPerks from '@/components/home/FeaturedPerks';
 
@@ -75,7 +75,7 @@ const CategoryGrid = () => {
 // --- SINGLE BANNER (LCP Optimized) ---
 const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }) => {
     const firestore = useFirestore();
-    const bannerRef = useMemo(() => doc(firestore, 'banners', bannerId), [firestore, bannerId]);
+    const bannerRef = useMemo(() => doc(firestore, 'banners', bannerId).withConverter(createConverter<Banner>()), [firestore, bannerId]);
     const { data: banner, isLoading } = useDocOnce<any>(bannerRef as any);
 
     if (isLoading) {
@@ -110,7 +110,7 @@ const SingleBanner = ({ bannerId, isLCP }: { bannerId: string, isLCP?: boolean }
 }
 
 // --- SKELETONS (CLS Optimized) ---
-const PerksSectionSkeleton = ({ title }: { title: string }) => (
+const BenefitsSectionSkeleton = ({ title }: { title: string }) => (
     // CLS FIX: Height adjusted to match final component height (~260px)
     <div className="space-y-3 min-h-[260px]"> 
         <div className="flex items-center justify-between px-4">
@@ -172,7 +172,7 @@ const AnnouncementsSectionSkeleton = ({ title }: { title: string }) => (
 
 // --- LAZY LOADED CAROUSELS ---
 const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel), {
-    loading: () => <PerksSectionSkeleton title="Cargando beneficios..." />,
+    loading: () => <BenefitsSectionSkeleton title="Cargando beneficios..." />,
 });
 const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel), {
     loading: () => <SuppliersSectionSkeleton title="Cargando proveedores..." />,
@@ -190,7 +190,7 @@ const PageSkeleton = () => (
                 <Skeleton className="h-5 w-1/2" />
             </div>
             <div className="space-y-12 mt-10">
-                <PerksSectionSkeleton title="Cargando..." />
+                <BenefitsSectionSkeleton title="Cargando..." />
                 <SuppliersSectionSkeleton title="Cargando..." />
                 <Skeleton className="h-24 w-full" />
             </div>
@@ -269,14 +269,3 @@ export default function HomePage() {
     </MainLayout>
   );
 }
-
-    
-
-    
-
-
-
-
-
-
-

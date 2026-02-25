@@ -8,12 +8,12 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import PerkCard from './perk-card';
+import BenefitCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
-import type { CarouselItem as CarouselItemType } from '@/lib/data';
+import type { CarouselItem as CarouselItemType } from '@/types/data';
 import Autoplay from "embla-carousel-autoplay"
 
-export default function PerksCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
+export default function BenefitsCarousel({ carouselItems }: { carouselItems: CarouselItemType[]}) {
 
   if (!carouselItems || carouselItems.length === 0) {
     return (
@@ -40,8 +40,8 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
       <CarouselContent className="-ml-2">
         {carouselItems.map((item) => (
           <CarouselItem key={`${item.type}-${item.id}`} className="md:basis-1/2 lg:basis-1/3 pl-2 h-48">
-            {item.type === 'perk' ? (
-              <PerkCard perk={item} variant="carousel" className="h-full" />
+            {item.type === 'benefit' ? (
+              <BenefitCard benefit={item} variant="carousel" className="h-full" />
             ) : (
               <AnnouncementCard announcement={item} variant="carousel" className="h-full" />
             )}
