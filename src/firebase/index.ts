@@ -10,6 +10,3 @@ export * from './firestore/use-doc';
 export * from './firestore/use-doc-once';
 export * from './errors';
 export * from './error-emitter';
-
-// This helper is used across many components. It must be stable.
-import { useMemo, type DependencyList } from 'react';

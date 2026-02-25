@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -6,7 +5,7 @@ import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { History, Tag, Calendar, CheckCircle, MapPin, Building, Ticket } from 'lucide-react';
-import type { BenefitRedemption, SerializableBenefitRedemption } from '@/lib/data';
+import type { BenefitRedemption, SerializableBenefitRedemption } from '@/types/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';

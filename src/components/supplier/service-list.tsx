@@ -1,6 +1,6 @@
 'use client';
 
-import type { Service, Availability } from '@/lib/data';
+import type { Service, Availability } from '@/types/data';
 import { Button } from '../ui/button';
 import { Calendar, Clock, Search, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/card';

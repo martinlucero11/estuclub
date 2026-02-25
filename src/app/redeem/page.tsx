@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFirestore } from '@/firebase';
@@ -11,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, ShieldX, Fingerprint, Award, University } from 'lucide-react';
 import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
-import type { BenefitRedemption } from '@/lib/data';
+import type { BenefitRedemption } from '@/types/data';
 
 export const dynamic = 'force-dynamic';
 

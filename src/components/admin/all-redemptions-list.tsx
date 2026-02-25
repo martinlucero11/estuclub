@@ -6,7 +6,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { History, Calendar, Fingerprint, Tag, Building } from 'lucide-react';
-import type { BenefitRedemption } from '@/lib/data';
+import type { BenefitRedemption } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 

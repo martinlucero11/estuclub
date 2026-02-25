@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/firestore';
-import type { Service, Availability, Appointment } from '@/lib/data';
+import type { Service, Availability, Appointment } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
 import { createConverter } from '@/lib/firestore-converter';

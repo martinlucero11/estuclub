@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
 import { History, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from 'lucide-react';
-import type { BenefitRedemption } from '@/lib/data';
+import type { BenefitRedemption } from '@/types/data';
 import { useMemo } from 'react';
 
 // Skeleton Loader for the table

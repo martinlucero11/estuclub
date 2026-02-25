@@ -7,7 +7,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { BookUser, Calendar, Clock, Fingerprint, Phone } from 'lucide-react';
-import type { Appointment } from '@/lib/data';
+import type { Appointment } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 
