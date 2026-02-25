@@ -185,7 +185,8 @@ export const homeSectionTypes = [
     'suppliers_carousel',
     'announcements_carousel',
     'featured_suppliers_carousel',
-    'new_suppliers_carousel'
+    'new_suppliers_carousel',
+    'featured_perks'
 ] as const;
 export type HomeSectionType = typeof homeSectionTypes[number];
 
