@@ -53,4 +53,4 @@ export const homeSectionTypes = [
   'single_banner',
   'featured_perks',
   'suppliers_grid',
-];
+] as const;
