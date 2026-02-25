@@ -1,8 +1,10 @@
+
 import type {
   Announcement,
   Benefit,
   BenefitRedemption,
   SerializableBenefit,
+  Banner,
 } from '@/types/data';
 
 import { Timestamp } from 'firebase/firestore';
@@ -25,8 +27,8 @@ export function makeAnnouncementSerializable(
   };
 }
 
-// Placeholder banner serializer (ajustar si tienes modelo real)
-export function makeBannerSerializable(banner: any) {
+// Placeholder banner serializer
+export function makeBannerSerializable(banner: Banner) {
   return {
     ...banner,
     createdAt: banner.createdAt instanceof Timestamp
@@ -55,7 +57,7 @@ export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
 }
 
 
-// Home section types (agrega los que uses realmente)
+// Home section types
 export const homeSectionTypes = [
   'categories_grid',
   'benefits_carousel',

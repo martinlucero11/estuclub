@@ -22,7 +22,7 @@ import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
-import type { SerializableBanner } from '@/lib/data';
+import type { SerializableBanner } from '@/types/data';
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),

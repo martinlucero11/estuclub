@@ -13,7 +13,8 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
-import { homeSectionTypes, HomeSection, Banner } from '@/lib/data';
+import { homeSectionTypes } from '@/lib/data';
+import type { HomeSection, Banner } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({

@@ -1,3 +1,4 @@
+
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -202,11 +203,11 @@ export type SerializableBanner = Omit<Banner, 'createdAt'> & {
   createdAt: string;
 };
 
-export function makeBannerSerializable(banner: Banner): SerializableBanner {
-  return {
-    ...banner,
-    createdAt: banner.createdAt?.toDate().toISOString() || new Date().toISOString(),
-  };
+export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
+    return {
+        ...section,
+        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    };
 }
 
 export interface Category {
@@ -245,13 +246,6 @@ export interface HomeSection {
 export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
     createdAt: string;
 };
-
-export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
-    return {
-        ...section,
-        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
-    };
-}
 
 export interface AppointmentSlot {
     id: string;

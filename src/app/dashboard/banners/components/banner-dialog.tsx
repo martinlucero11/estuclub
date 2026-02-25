@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { BannerForm } from './banner-form';
-import type { SerializableBanner } from '@/lib/data';
+import type { SerializableBanner } from '@/types/data';
 
 interface BannerDialogProps {
     isOpen: boolean;

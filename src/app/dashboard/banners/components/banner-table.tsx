@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getBannerColumns } from './banner-columns';
-import type { Banner, SerializableBanner } from '@/lib/data';
+import type { Banner, SerializableBanner } from '@/types/data';
 import { makeBannerSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
