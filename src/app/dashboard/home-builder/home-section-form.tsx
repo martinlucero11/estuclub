@@ -36,7 +36,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const isEditMode = !!section;
 
     const bannersQuery = useMemo(() => query(collection(firestore, 'banners')), [firestore]);
-    const { data: banners } = useCollection<Banner>(bannersQuery as any);
+    const { data: banners } = useCollection<any>(bannersQuery as any);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
