@@ -3,13 +3,13 @@ import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, limit } from "firebase/firestore"; 
 import Link from "next/link";
-import type { Benefit, Supplier, Announcement } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement } from "@/types/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 
 // --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
-const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Supplier }) => {
+const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
     return (
         <div className="flex-shrink-0 w-[260px] md:w-[280px] snap-start">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow duration-300 overflow-hidden group">
@@ -54,7 +54,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
 }
 
 // --- SUPPLIER CARD ---
-const SupplierCard = ({ supplier }: { supplier: Supplier }) => (
+const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => (
     <Link href={`/supplier/${supplier.id}`} className="block flex-shrink-0 snap-start text-center group w-24">
         <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
             <Image 
@@ -98,7 +98,7 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
         const { data: items, isLoading, error } = useCollection(itemsQuery);
 
         const suppliersQuery = useMemo(() => 
-            collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>())) : null
+            collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null
         , [firestore, collectionName]);
         const { data: suppliers } = useCollection(suppliersQuery);
         
