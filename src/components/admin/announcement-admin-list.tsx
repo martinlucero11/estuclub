@@ -10,7 +10,7 @@ import EditAnnouncementDialog from '@/components/announcements/edit-announcement
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { Announcement } from '@/lib/data';
+import { Announcement } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 const fallbackImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==";

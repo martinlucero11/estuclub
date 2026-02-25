@@ -26,8 +26,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { useFirestore } from '@/firebase';
-import { doc, serverTimestamp, updateDoc, Timestamp } from 'firebase/firestore';
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
+import type { Announcement } from '@/types/data';
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.').max(100, 'El título no puede exceder los 100 caracteres.'),
@@ -35,16 +36,6 @@ const formSchema = z.object({
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.').optional().or(z.literal('')),
   linkUrl: z.string().url('Por favor, introduce una URL válida.').optional().or(z.literal('')),
 });
-
-interface Announcement {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
-    createdAt: Timestamp;
-    imageUrl?: string;
-    linkUrl?: string;
-}
 
 interface EditAnnouncementDialogProps {
   announcement: Announcement;

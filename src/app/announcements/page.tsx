@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, orderBy, query } from 'firebase/firestore';
 import { Suspense, useMemo } from 'react';
-import type { Announcement } from '@/lib/data';
+import type { Announcement } from '@/types/data';
 import { makeAnnouncementSerializable } from '@/lib/data';
 import { PageHeader } from '@/components/ui/page-header';
 import { createConverter } from '@/lib/firestore-converter';
