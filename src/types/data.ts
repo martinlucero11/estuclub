@@ -13,8 +13,8 @@ export type UserRole = 'admin' | 'supplier' | 'user';
 /**
  * Defines the categories for Clubers (suppliers).
  */
-export type CluberCategory = 'Comercio' | 'Profesional' | 'Empresa' | 'Emprendimiento' | 'Salud' | 'Estética' | 'Servicios';
-export const cluberCategories: CluberCategory[] = ['Comercio', 'Profesional', 'Empresa', 'Emprendimiento', 'Salud', 'Estética', 'Servicios'];
+export const cluberCategories = ['Comercio', 'Profesional', 'Empresa', 'Emprendimiento', 'Salud', 'Estética', 'Servicios'] as const;
+export type CluberCategory = typeof cluberCategories[number];
 
 
 /**

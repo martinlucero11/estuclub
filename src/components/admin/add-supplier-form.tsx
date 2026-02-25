@@ -27,7 +27,7 @@ import { cluberCategories } from '@/types/data';
 const formSchema = z.object({
   email: z.string().email('El correo electrónico no es válido.'),
   name: z.string().min(2, 'El nombre del Cluber debe tener al menos 2 caracteres.'),
-  type: z.string({ required_error: 'Debes seleccionar una categoría.' }).min(1, 'Debes seleccionar una categoría.'),
+  type: z.enum(cluberCategories, { required_error: 'Debes seleccionar una categoría.' }),
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   coverPhotoUrl: z.string().url('URL de portada no válida').optional().or(z.literal('')),
