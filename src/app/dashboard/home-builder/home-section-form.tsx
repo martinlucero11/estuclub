@@ -42,7 +42,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: section?.title || '',
-            type: section?.type || undefined,
+            type: section?.type as typeof homeSectionTypes[number] | undefined,
             isActive: section?.isActive ?? true,
             filter: section?.filter || '',
             bannerId: section?.bannerId || '',
