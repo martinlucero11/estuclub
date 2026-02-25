@@ -5,6 +5,10 @@ import type {
   BenefitRedemption,
   SerializableBenefit,
   Banner,
+  HomeSection,
+  SerializableHomeSection,
+  SerializableAnnouncement,
+  SerializableBenefitRedemption,
 } from '@/types/data';
 
 import { Timestamp } from 'firebase/firestore';
@@ -12,12 +16,12 @@ import { Timestamp } from 'firebase/firestore';
 // Announcement serializer
 export function makeAnnouncementSerializable(
   announcement: Announcement
-) {
+): SerializableAnnouncement {
   return {
     ...announcement,
     createdAt: announcement.createdAt
       ? announcement.createdAt.toDate().toISOString()
-      : undefined,
+      : new Date().toISOString(), // Fallback for safety
     submittedAt: announcement.submittedAt
       ? announcement.submittedAt.toDate().toISOString()
       : '',
@@ -40,10 +44,11 @@ export function makeBannerSerializable(banner: Banner) {
 // Benefit redemption serializer
 export function makeBenefitRedemptionSerializable(
   redemption: BenefitRedemption
-) {
+): SerializableBenefitRedemption {
   return {
     ...redemption,
-    redeemedAt: redemption.redeemedAt?.toDate().toISOString(),
+    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
+    usedAt: redemption.usedAt?.toDate().toISOString(),
   };
 }
 
@@ -56,15 +61,9 @@ export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
   };
 }
 
-
-// Home section types
-export const homeSectionTypes = [
-  'categories_grid',
-  'benefits_carousel',
-  'single_banner',
-  'suppliers_carousel',
-  'announcements_carousel',
-  'featured_suppliers_carousel',
-  'new_suppliers_carousel',
-  'featured_perks',
-] as const;
+export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
+    return {
+        ...section,
+        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
+    };
+}

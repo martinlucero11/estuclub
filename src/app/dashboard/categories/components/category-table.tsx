@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { getCategoryColumns } from './category-columns';
-import type { Category } from '@/lib/data';
+import type { Category } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';

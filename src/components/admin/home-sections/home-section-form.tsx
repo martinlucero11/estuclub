@@ -20,8 +20,7 @@ import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Save, SortAsc, CaseSensitive } from 'lucide-react';
-import type { HomeSection } from '@/lib/data';
-import { homeSectionTypes } from '@/lib/data';
+import { HomeSection, homeSectionTypes } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 
 

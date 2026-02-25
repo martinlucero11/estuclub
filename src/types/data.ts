@@ -106,15 +106,6 @@ export interface SerializableAnnouncement extends Omit<Announcement, 'createdAt'
   approvedAt?: string;
 }
 
-export function makeAnnouncementSerializable(announcement: Announcement): SerializableAnnouncement {
-  return {
-    ...announcement,
-    createdAt: announcement.createdAt.toDate().toISOString(),
-    submittedAt: announcement.submittedAt?.toDate().toISOString(),
-    approvedAt: announcement.approvedAt?.toDate().toISOString(),
-  };
-}
-
 export type CarouselItem = (SerializableBenefit & { type: 'benefit' }) | (SerializableAnnouncement & { type: 'announcement' });
 
 export interface Service {
@@ -178,15 +169,6 @@ export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt'
   usedAt?: string;
 };
 
-export function makeBenefitRedemptionSerializable(redemption: BenefitRedemption): SerializableBenefitRedemption {
-  return {
-    ...redemption,
-    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
-    usedAt: redemption.usedAt?.toDate().toISOString(),
-  };
-}
-
-
 export interface Banner {
   id: string;
   title: string;
@@ -202,13 +184,6 @@ export interface Banner {
 export type SerializableBanner = Omit<Banner, 'createdAt'> & {
   createdAt: string;
 };
-
-export function makeHomeSectionSerializable(section: HomeSection): SerializableHomeSection {
-    return {
-        ...section,
-        createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
-    };
-}
 
 export interface Category {
   id: string;

@@ -13,9 +13,9 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
-import { homeSectionTypes } from '@/lib/data';
-import type { HomeSection, Banner } from '@/types/data';
+import { homeSectionTypes, HomeSection, Banner, HomeSectionType } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
+import { createConverter } from '@/lib/firestore-converter';
 
 const formSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres.'),

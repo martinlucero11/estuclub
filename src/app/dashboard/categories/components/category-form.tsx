@@ -19,7 +19,7 @@ import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Save, Palette } from 'lucide-react';
-import type { Category } from '@/lib/data';
+import type { Category } from '@/types/data';
 
 const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),

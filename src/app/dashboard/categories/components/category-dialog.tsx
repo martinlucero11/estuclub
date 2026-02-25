@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { CategoryForm } from './category-form';
-import type { Category } from '@/lib/data';
+import type { Category } from '@/types/data';
 
 interface CategoryDialogProps {
     isOpen: boolean;
