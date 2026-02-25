@@ -15,7 +15,12 @@ export function makeAnnouncementSerializable(
 ) {
   return {
     ...announcement,
-    submittedAt: announcement.submittedAt?.toDate().toISOString(),
+    createdAt: announcement.createdAt
+      ? announcement.createdAt.toDate().toISOString()
+      : undefined,
+    submittedAt: announcement.submittedAt
+      ? announcement.submittedAt.toDate().toISOString()
+      : '',
     approvedAt: announcement.approvedAt
       ? announcement.approvedAt.toDate().toISOString()
       : undefined,
