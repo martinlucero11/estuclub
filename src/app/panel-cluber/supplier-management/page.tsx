@@ -9,21 +9,42 @@ import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
+import { useAdmin } from '@/firebase/auth/use-admin';
+import AdminAccessDenied from '@/components/admin/admin-access-denied';
 
-/**
- * Main page for the Supplier Management dashboard (Admin only).
- * This has been converted to a client component to avoid server-side auth issues
- * with the Firebase Admin SDK in the App Hosting environment.
- */
+
 export default function SupplierManagementPage() {
   const firestore = useFirestore();
+  const { isAdmin, isLoading: isAdminLoading } = useAdmin();
 
   const suppliersQuery = useMemo(
     () => query(collection(firestore, "roles_supplier").withConverter(createConverter<SupplierProfile>()), orderBy("name")),
     [firestore]
   );
 
-  const { data: suppliers, isLoading, error } = useCollection(suppliersQuery);
+  const { data: suppliers, isLoading: isSuppliersLoading, error } = useCollection(suppliersQuery);
+
+  if (isAdminLoading) {
+      return <div className="space-y-4">
+        <BackButton />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-6 w-64" />
+        <div className="space-y-2 pt-4">
+            {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+            ))}
+        </div>
+      </div>
+  }
+
+  if (!isAdmin) {
+      return (
+        <>
+            <BackButton />
+            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los proveedores." />
+        </>
+      );
+  }
 
   return (
     <div className="space-y-4">
@@ -35,7 +56,7 @@ export default function SupplierManagementPage() {
         Activa o desactiva módulos de funcionalidades para cada proveedor.
       </p>
       
-      {isLoading ? (
+      {isSuppliersLoading ? (
         <div className="space-y-2">
             {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-16 w-full" />

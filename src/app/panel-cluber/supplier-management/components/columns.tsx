@@ -5,15 +5,15 @@ import { ColumnDef } from "@tanstack/react-table";
 import { SupplierProfile } from "@/types/data";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
 
-// Define a type for the toggle handler to ensure type safety
 type ToggleHandler = (
   supplierId: string, 
   capability: keyof SupplierProfile, 
   isEnabled: boolean
 ) => void;
 
-// Define a type for the loading states
 type LoadingStates = Record<string, Record<string, boolean>>;
 
 interface ColumnsProps {
@@ -24,7 +24,15 @@ interface ColumnsProps {
 export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
   {
     accessorKey: "name",
-    header: "Proveedor",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Proveedor
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => (
         <div className="font-medium">{row.original.name}</div>
     ),
@@ -43,6 +51,25 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
             onCheckedChange={(value) => onToggle(supplier.id, 'announcementsEnabled', value)}
             disabled={isLoading}
             aria-label="Toggle para Anuncios"
+          />
+        </div>
+      );
+    },
+  },
+   {
+    id: "benefits",
+    header: () => <div className="text-center">Beneficios</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.canCreatePerks;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.canCreatePerks}
+            onCheckedChange={(value) => onToggle(supplier.id, 'canCreatePerks', value)}
+            disabled={isLoading}
+            aria-label="Toggle para Beneficios"
           />
         </div>
       );
@@ -71,7 +98,7 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
     id: "status",
     header: "Estado",
     cell: ({ row }) => {
-        const isActive = row.original.announcementsEnabled || row.original.appointmentsEnabled;
+        const isActive = row.original.announcementsEnabled || row.original.appointmentsEnabled || row.original.canCreatePerks;
         return <Badge variant={isActive ? 'default' : 'outline'}>{isActive ? "Activo" : "Inactivo"}</Badge>;
     },
   },

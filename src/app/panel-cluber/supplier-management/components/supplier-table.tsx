@@ -36,7 +36,7 @@ export function SupplierTable({ initialData }: SupplierTableProps) {
       const supplierRef = doc(firestore, 'roles_supplier', supplierId);
       await updateDoc(supplierRef, { [capability]: isEnabled });
       
-      toast.success(`Proveedor actualizado: ${capability} ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
+      toast.success(`Proveedor actualizado: la funcionalidad se ha ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
 
     } catch (error) {
       console.error("Error updating supplier capability:", error);

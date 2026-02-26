@@ -98,7 +98,7 @@ export const navConfig: NavConfig = {
             supplierCapability: "appointmentsEnabled",
         },
         {
-            title: "Gestión de Clubers",
+            title: "Gestión de Proveedores",
             href: "/panel-cluber/supplier-management",
             icon: Users,
             role: ["admin"],
