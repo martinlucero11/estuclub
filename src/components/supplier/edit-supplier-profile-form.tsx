@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,7 +34,6 @@ const formSchema = z.object({
   address: z.string().optional(),
   whatsapp: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
-  coverPhotoUrl: z.string().url('URL de foto de portada no válida').optional().or(z.literal('')),
 });
 
 function slugify(text: string) {
@@ -66,11 +64,6 @@ export default function EditSupplierProfileForm() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  // States and refs for COVER PHOTO upload
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
-  const coverPhotoInputRef = useRef<HTMLInputElement>(null);
-
   const supplierRef = useMemo(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
 
@@ -83,12 +76,10 @@ export default function EditSupplierProfileForm() {
       address: '',
       whatsapp: '',
       logoUrl: '',
-      coverPhotoUrl: '',
     },
   });
 
   const logoUrlFromForm = form.watch('logoUrl');
-  const coverPhotoUrlFromForm = form.watch('coverPhotoUrl');
 
   useEffect(() => {
     if (supplierProfile) {
@@ -99,17 +90,16 @@ export default function EditSupplierProfileForm() {
             address: supplierProfile.address || '',
             whatsapp: supplierProfile.whatsapp || '',
             logoUrl: supplierProfile.logoUrl || '',
-            coverPhotoUrl: supplierProfile.coverPhotoUrl || '',
         });
     }
   }, [supplierProfile, form]);
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    path: 'logo' | 'coverPhoto',
+    path: 'logo',
     setUploading: (isUploading: boolean) => void,
     setPreview: (url: string | null) => void,
-    fieldName: 'logoUrl' | 'coverPhotoUrl'
+    fieldName: 'logoUrl'
   ) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -312,42 +302,7 @@ export default function EditSupplierProfileForm() {
           )}
         />
         
-         <FormField
-          control={form.control}
-          name="coverPhotoUrl"
-          render={({ field }) => (
-            <FormItem>
-                <div className="flex items-center justify-between">
-                    <FormLabel>Foto de Portada</FormLabel>
-                    <Button type="button" variant="outline" size="sm" onClick={() => coverPhotoInputRef.current?.click()} disabled={isUploadingCover}>
-                        {isUploadingCover ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                        Subir Portada
-                    </Button>
-                </div>
-                <div className="relative aspect-video w-full mt-2 rounded-md overflow-hidden border">
-                     {(isUploadingCover) && (
-                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
-                            <Loader2 className="h-10 w-10 text-white animate-spin" />
-                        </div>
-                    )}
-                    <Image src={coverPreview || coverPhotoUrlFromForm || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/epv2AAAAABJRU5ErkJggg=="} alt="Vista previa de portada" fill className="object-cover"/>
-                </div>
-              <FormControl>
-                <Input type="url" placeholder="Pega una URL o sube una imagen" {...field} />
-              </FormControl>
-              <Input
-                type="file"
-                className="hidden"
-                ref={coverPhotoInputRef}
-                onChange={(e) => handleImageUpload(e, 'coverPhoto', setIsUploadingCover, setCoverPreview, 'coverPhotoUrl')}
-                accept="image/png, image/jpeg, image/webp"
-                disabled={isUploadingCover}
-               />
-               <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit" disabled={isSubmitting || isUploadingLogo || isUploadingCover} className="w-full sm:w-auto">
+        <Button type="submit" disabled={isSubmitting || isUploadingLogo} className="w-full sm:w-auto">
           {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
           ) : (

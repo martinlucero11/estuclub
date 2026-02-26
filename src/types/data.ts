@@ -1,4 +1,3 @@
-
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -28,7 +27,6 @@ export interface SupplierProfile {
   slug: string;
   description?: string;
   logoUrl?: string;
-  coverPhotoUrl?: string;
   address?: string;
   whatsapp?: string;
   isFeatured?: boolean;

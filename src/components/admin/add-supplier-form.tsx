@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,7 +29,6 @@ const formSchema = z.object({
   type: z.enum(cluberCategories, { required_error: 'Debes seleccionar una categoría.' }),
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
-  coverPhotoUrl: z.string().url('URL de portada no válida').optional().or(z.literal('')),
 });
 
 function slugify(text: string) {
@@ -62,7 +60,6 @@ export default function AddSupplierForm() {
       type: 'Comercio',
       description: '',
       logoUrl: '',
-      coverPhotoUrl: '',
     },
   });
 
@@ -98,7 +95,6 @@ export default function AddSupplierForm() {
         slug: slug,
         description: values.description || '',
         logoUrl: values.logoUrl || '',
-        coverPhotoUrl: values.coverPhotoUrl || '',
         appointmentsEnabled: false, // Default to false
         announcementsEnabled: false,
         isFeatured: false,
@@ -195,19 +191,6 @@ export default function AddSupplierForm() {
               <FormLabel>URL del Logo</FormLabel>
               <FormControl>
                 <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-         <FormField
-          control={form.control}
-          name="coverPhotoUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL de Foto de Portada (Opcional)</FormLabel>
-              <FormControl>
-                <Input type="url" placeholder="https://ejemplo.com/cover.png" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
