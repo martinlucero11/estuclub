@@ -2,7 +2,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { useDoc, useFirestore, useDocOnce } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, Timestamp } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Appointment, SupplierProfile } from '@/types/data';
 import AppointmentReceiptCard from '@/components/appointments/appointment-receipt-card';
@@ -32,7 +32,26 @@ function AppointmentDetails({ appointment }: { appointment: Appointment }) {
 
     const handleShareToWhatsApp = () => {
         if (!supplier?.whatsapp) return;
-        const message = `Hola, tengo una consulta sobre mi turno para el servicio *${appointment.serviceName}* reservado para el ${new Date(appointment.startTime.seconds * 1000).toLocaleString('es-ES')}. Mi ID de turno es: ${appointment.id}`;
+
+        let startDate: Date;
+        // The data from Firestore is a Timestamp object
+        if (appointment.startTime instanceof Timestamp) {
+            startDate = appointment.startTime.toDate();
+        } 
+        // If it's already a JS Date object
+        else if (appointment.startTime instanceof Date) {
+            startDate = appointment.startTime;
+        } 
+        // Fallback for serialized object form (less likely with direct Firestore hook)
+        else if (typeof appointment.startTime === 'object' && 'seconds' in appointment.startTime && typeof (appointment.startTime as any).seconds === 'number') {
+             startDate = new Date((appointment.startTime as any).seconds * 1000);
+        }
+        else {
+            // Final fallback if the format is unexpected
+            startDate = new Date(); 
+        }
+
+        const message = `Hola, tengo una consulta sobre mi turno para el servicio *${appointment.serviceName}* reservado para el ${startDate.toLocaleString('es-ES')}. Mi ID de turno es: ${appointment.id}`;
         const whatsappUrl = `https://wa.me/${supplier.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
