@@ -143,11 +143,9 @@ function MainMenu() {
                 <nav className="mt-8 flex flex-col gap-1 px-6">
                     {navConfig.mainNav.map((item) => {
                         let isVisible;
-                        if (item.href === '/dashboard') {
-                            // Stricly use the user's requested condition for the dashboard link.
+                        if (item.href === '/panel-cluber') {
                             isVisible = isAdmin || isSupplier;
                         } else {
-                            // Use the standard role-checking logic for all other items.
                             isVisible = hasRequiredRole(allRoles, item.role);
                         }
                         

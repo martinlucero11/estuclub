@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -8,7 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { collection, doc, writeBatch, query, where, Timestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, query, where, Timestamp, serverTimestamp } from 'firebase/firestore';
 import type { Service, Availability, Appointment } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '../ui/dialog';
@@ -48,7 +49,8 @@ export default function BookingDialog({ service, availability, supplierId, child
     const start = startOfDay(selectedDate);
     const end = add(start, { days: 1 });
     return query(
-        collection(firestore, `roles_supplier/${supplierId}/appointments`).withConverter(createConverter<Appointment>()),
+        collection(firestore, `appointments`).withConverter(createConverter<Appointment>()),
+        where('supplierId', '==', supplierId),
         where('startTime', '>=', start),
         where('startTime', '<', end)
     );
@@ -95,23 +97,23 @@ export default function BookingDialog({ service, availability, supplierId, child
     }
     setIsBooking(true);
     try {
-        const batch = writeBatch(firestore);
-        const appointmentRef = doc(collection(firestore, `roles_supplier/${supplierId}/appointments`));
+        const appointmentsRef = collection(firestore, 'appointments');
         
-        const appointmentData: Omit<Appointment, 'id' | 'status'> & { startTime: Date, endTime: Date } = {
+        const appointmentData: Omit<Appointment, 'id'> = {
             userId: user.uid,
             userName: `${userProfile.firstName} ${userProfile.lastName}`,
             userDni: userProfile.dni,
             userPhone: userProfile.phone,
             serviceId: service.id,
             serviceName: service.name,
+            supplierId: supplierId,
             startTime: selectedSlot,
             endTime: add(selectedSlot, { minutes: service.duration }),
+            status: 'confirmed',
+            createdAt: serverTimestamp(),
         };
 
-        batch.set(appointmentRef, { ...appointmentData, status: 'confirmed' }); // status pending might be better
-        
-        await batch.commit();
+        await addDoc(appointmentsRef, appointmentData);
         
         toast({ title: '¡Turno Confirmado!', description: 'Tu reserva se ha realizado con éxito.' });
         setIsOpen(false);

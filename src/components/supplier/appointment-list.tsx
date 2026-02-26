@@ -35,21 +35,50 @@ export default function AppointmentList() {
     const { user } = useUser();
     const firestore = useFirestore();
 
-    const appointmentsQuery = useMemo(() => {
+    // Query for LEGACY appointments in subcollection
+    const legacyAppointmentsQuery = useMemo(() => {
         if (!user) return null;
-        // Query for upcoming appointments
         return query(
             collection(firestore, `roles_supplier/${user.uid}/appointments`).withConverter(createConverter<Appointment>()),
             where('startTime', '>=', new Date()),
             orderBy('startTime', 'asc')
         );
     }, [user, firestore]);
+    const { data: legacyAppointments, isLoading: isLoadingLegacy } = useCollection(legacyAppointmentsQuery);
 
-    const { data: appointments, isLoading } = useCollection(appointmentsQuery);
-    
+    // Query for NEW appointments in root collection
+    const newAppointmentsQuery = useMemo(() => {
+        if (!user) return null;
+        return query(
+            collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
+            where('supplierId', '==', user.uid),
+            where('startTime', '>=', new Date()),
+            orderBy('startTime', 'asc')
+        );
+    }, [user, firestore]);
+    const { data: newAppointments, isLoading: isLoadingNew, error } = useCollection(newAppointmentsQuery);
+
+    // Combine and sort appointments from both sources
+    const appointments = useMemo(() => {
+        const combined = [...(legacyAppointments || []), ...(newAppointments || [])];
+        // Sort by startTime to have a consistent order
+        combined.sort((a, b) => (a.startTime as Timestamp).toMillis() - (b.startTime as Timestamp).toMillis());
+        // Simple deduplication based on ID, though IDs should be unique across collections
+        const uniqueAppointments = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        return uniqueAppointments;
+    }, [legacyAppointments, newAppointments]);
+
+    const isLoading = isLoadingLegacy || isLoadingNew;
+
     if (isLoading) {
         return <AppointmentListSkeleton />;
     }
+
+     if (error) {
+        // You might want to handle this better, e.g., showing an error message for the new query
+        return <p className="text-destructive text-center">Error al cargar los turnos. Es posible que se requiera un índice de base de datos. </p>;
+    }
+
 
     if (!appointments || appointments.length === 0) {
         return (

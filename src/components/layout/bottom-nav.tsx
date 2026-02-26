@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/benefits', label: 'Beneficios', icon: Ticket },
-  { href: '/dashboard/scanner', label: 'Escanear', icon: QrCode, special: true },
+  { href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true },
   { href: '/turnos', label: 'Turnos', icon: CalendarDays },
   { href: '/announcements', label: 'Anuncios', icon: Megaphone },
 ];

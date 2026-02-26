@@ -138,9 +138,11 @@ export interface Appointment {
     userPhone: string;
     serviceId: string;
     serviceName: string;
+    supplierId: string;
     startTime: Date | Timestamp;
     endTime: Date | Timestamp;
     status: 'confirmed' | 'cancelled';
+    createdAt: Timestamp;
     [key: string]: any;
 }
 

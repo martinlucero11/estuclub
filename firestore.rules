@@ -68,6 +68,17 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
+    // --- New Appointments Collection ---
+    match /appointments/{appointmentId} {
+      allow create: if isSignedIn();
+      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) 
+                   || (isSupplier() && resource.data.supplierId == request.auth.uid) 
+                   || isAdmin();
+      allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) 
+                             || (isSupplier() && resource.data.supplierId == request.auth.uid) 
+                             || isAdmin();
+    }
+
     // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
       allow read: if true; // Publicly viewable profile
@@ -84,6 +95,7 @@ service cloud.firestore {
         allow write: if isOwner(supplierId) || isAdmin();
       }
 
+      // LEGACY: Kept for backwards compatibility
       match /appointments/{appointmentId} {
           allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
           allow create: if isSignedIn();
