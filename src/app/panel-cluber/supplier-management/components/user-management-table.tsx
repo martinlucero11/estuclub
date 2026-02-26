@@ -16,7 +16,7 @@ export function UserManagementTable() {
     const [selectedUser, setSelectedUser] = useState<UserForList | null>(null);
     const [selectedSupplierProfile, setSelectedSupplierProfile] = useState<SupplierProfile | null>(null);
 
-    const usersQuery = useMemo(() => query(collection(firestore, 'users').withConverter(createConverter<UserForList>()), orderBy('createdAt', 'desc')), [firestore]);
+    const usersQuery = useMemo(() => query(collection(firestore, 'users').withConverter(createConverter<UserForList>()), orderBy('email', 'asc')), [firestore]);
     const { data: users, isLoading: usersLoading } = useCollection(usersQuery);
 
     const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())), [firestore]);
