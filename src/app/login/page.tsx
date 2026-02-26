@@ -11,16 +11,20 @@ import SplashScreen from '@/components/layout/splash-screen';
 
 function EstuClubLogo() {
   return (
-    <div className="relative w-40 h-14 mx-auto mb-6">
-      <Image 
-        src="/logo.svg" 
-        alt="EstuClub" 
-        fill 
-        className="object-contain" 
-        priority
-        style={{ filter: 'brightness(0) saturate(100%) invert(29%) sepia(81%) saturate(1988%) hue-rotate(318deg) brightness(92%) contrast(101%)' }} 
-      />
-    </div>
+    <div
+      className="w-40 h-14 mx-auto mb-6"
+      style={{
+          backgroundColor: 'hsl(var(--primary))',
+          maskImage: "url('/logo.svg')",
+          maskSize: 'contain',
+          maskRepeat: 'no-repeat',
+          maskPosition: 'center',
+          WebkitMaskImage: "url('/logo.svg')",
+          WebkitMaskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+      }}
+    />
   );
 }
 
