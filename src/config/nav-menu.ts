@@ -30,12 +30,6 @@ export const navConfig: NavConfig = {
       icon: Ticket,
     },
     {
-      title: "Mis Turnos",
-      href: "/mis-turnos",
-      icon: CalendarClock,
-      role: ["user"],
-    },
-    {
       title: "Anuncios",
       href: "/announcements",
       icon: Megaphone,

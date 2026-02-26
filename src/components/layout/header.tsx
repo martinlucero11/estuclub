@@ -31,7 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
-import { LogOut, History } from 'lucide-react';
+import { LogOut, History, CalendarClock } from 'lucide-react';
 import { doc } from 'firebase/firestore';
 
 function Logo() {
@@ -110,6 +110,10 @@ function UserMenu() {
         <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
           <History className="mr-2 h-4 w-4" />
           <span>Mis Canjes</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push('/mis-turnos')}>
+          <CalendarClock className="mr-2 h-4 w-4" />
+          <span>Mis Turnos</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>

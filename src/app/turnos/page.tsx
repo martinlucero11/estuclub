@@ -1,11 +1,10 @@
-
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays } from 'lucide-react';
+import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -14,6 +13,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, SupplierProfile } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
+import { Button } from '@/components/ui/button';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -109,7 +109,14 @@ export default function TurnosPage() {
     return (
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Solicitar Turno" />
+                <PageHeader title="Solicitar Turno">
+                     <Button asChild>
+                        <Link href="/mis-turnos">
+                            <CalendarClock className="mr-2 h-4 w-4" />
+                            Mis Turnos
+                        </Link>
+                    </Button>
+                </PageHeader>
                 <p className="text-muted-foreground -mt-8 mb-8">
                     Selecciona un Cluber para ver sus servicios y reservar un turno.
                 </p>
