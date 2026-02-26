@@ -19,7 +19,7 @@ function AppointmentsSkeleton() {
 }
 
 
-export default function MyRedemptionsPage() {
+export default function MyTurnosPage() {
     return (
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">

@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
-import { History, Tag, Calendar, CheckCircle, Ticket, Building, ArrowRight } from 'lucide-react';
+import { History, Tag, Calendar, Building, ArrowRight } from 'lucide-react';
 import type { Appointment } from '@/types/data';
 import { useMemo } from 'react';
 import { Badge } from '../ui/badge';
@@ -14,6 +14,8 @@ import { createConverter } from '@/lib/firestore-converter';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import { useDocOnce } from '@/firebase/firestore/use-doc-once';
+import { doc } from 'firebase/firestore';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 function AppointmentsListSkeleton() {
     return (
@@ -91,7 +93,29 @@ export default function UserAppointmentsList() {
         );
     }, [user, firestore]);
 
-    const { data: appointments, isLoading } = useCollection(appointmentsQuery);
+    const { data: appointments, isLoading, error } = useCollection(appointmentsQuery);
+
+    if (error && 'code' in error && error.code === 'failed-precondition') {
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'estuclub';
+        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=appointments&field[0].fieldPath=userId&field[0].order=ASCENDING&field[1].fieldPath=startTime&field[1].order=DESCENDING`;
+        return (
+            <Card className="border-destructive">
+                 <CardHeader>
+                    <CardTitle className="text-destructive">Error de Configuración de Base de Datos</CardTitle>
+                    <CardDescription className="text-destructive">
+                        Esta consulta requiere un índice compuesto en Firestore que no ha sido creado.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="mb-4 text-sm font-medium">Para solucionar este problema, un administrador del proyecto de Firebase debe crear el índice requerido.</p>
+                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
+                        Crear Índice en Firebase Console
+                    </a>
+                    <p className="mt-4 text-xs text-muted-foreground">Una vez creado, recarga esta página.</p>
+                </CardContent>
+            </Card>
+        );
+    }
     
     if (isLoading) {
         return <AppointmentsListSkeleton />;
