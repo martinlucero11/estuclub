@@ -39,7 +39,7 @@ function AppointmentDetails({ appointment }: { appointment: Appointment }) {
 
     return (
         <div className="max-w-sm mx-auto flex flex-col gap-4">
-            <AppointmentReceiptCard appointment={appointment} />
+            <AppointmentReceiptCard appointment={appointment} supplier={supplier} />
             {!isLoadingSupplier && supplier?.whatsapp && (
                 <Button onClick={handleShareToWhatsApp}>
                     <MessageCircle className="mr-2 h-4 w-4" />

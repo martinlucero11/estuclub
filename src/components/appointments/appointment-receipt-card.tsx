@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,15 +5,17 @@ import QRCode from 'qrcode';
 import Image from 'next/image';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
-import type { Appointment } from '@/types/data';
+import type { Appointment, SupplierProfile } from '@/types/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Timestamp } from 'firebase/firestore';
+import { Building, Tag } from 'lucide-react';
 
 interface AppointmentReceiptCardProps {
   appointment: Appointment;
+  supplier?: SupplierProfile | null;
 }
 
-export default function AppointmentReceiptCard({ appointment }: AppointmentReceiptCardProps) {
+export default function AppointmentReceiptCard({ appointment, supplier }: AppointmentReceiptCardProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,8 +40,17 @@ export default function AppointmentReceiptCard({ appointment }: AppointmentRecei
 
   return (
     <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-            <CardTitle>{appointment.serviceName}</CardTitle>
+        <CardHeader className="text-center space-y-2">
+            {supplier && (
+                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Building className="h-4 w-4" />
+                    <p className="font-semibold">{supplier.name}</p>
+                </div>
+            )}
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+                 <Tag className="h-5 w-5 text-primary" /> 
+                {appointment.serviceName}
+            </CardTitle>
             <CardDescription>
                 Turno confirmado para el {startTime.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </CardDescription>
