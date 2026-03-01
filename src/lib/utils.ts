@@ -41,3 +41,18 @@ export function capitalize(str: string): string {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+/**
+ * Generates initials from a name string.
+ * @param name The full name.
+ * @returns A string with the initials (e.g., "Café Martínez" -> "CM").
+ */
+export function getInitials(name: string): string {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+}

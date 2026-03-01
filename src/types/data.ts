@@ -30,6 +30,8 @@ export interface SupplierProfile {
   address?: string;
   whatsapp?: string;
   isFeatured?: boolean;
+  isActive?: boolean;
+  homeCarousels?: string[];
   createdAt?: Timestamp;
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;

@@ -15,6 +15,7 @@ import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
+import { getInitials } from '@/lib/utils';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -78,7 +79,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
     
     const benefitsQuery = useMemo(() => {
         if (!supplier) return null;
-        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('supplierId', '==', supplier.id), where('active', '==', true));
+        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
     const { data: benefits, isLoading: benefitsLoading } = useCollection(benefitsQuery);
@@ -127,7 +128,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
     }
 
     const TypeIcon = categoryIcons[supplier.type] || Users;
-    const supplierInitial = supplier.name.charAt(0).toUpperCase();
+    const supplierInitials = getInitials(supplier.name);
 
     return (
         <div className="flex flex-col">
@@ -141,7 +142,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                             className="object-cover"
                         />
                         <AvatarFallback className="rounded-none bg-transparent text-4xl font-bold text-muted-foreground">
-                            {supplierInitial}
+                            {supplierInitials}
                         </AvatarFallback>
                     </Avatar>
                 </div>

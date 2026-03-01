@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -135,7 +134,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                 </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
                 <FormField
                 control={form.control}
                 name="title"

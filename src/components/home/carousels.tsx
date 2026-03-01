@@ -1,16 +1,18 @@
-
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, limit } from "firebase/firestore"; 
+import { collection, query, limit, where, orderBy } from "firebase/firestore"; 
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement } from "@/types/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
+import { getInitials } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 // --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
+    const supplierInitials = getInitials(benefit.supplierName || 'S');
     return (
         <div className="flex-shrink-0 w-[260px] md:w-[280px] snap-start">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow duration-300 overflow-hidden group">
@@ -38,9 +40,10 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                         </p>
                         <div className="flex items-center justify-between pt-2">
                            <div className="flex items-center gap-1.5">
-                               {supplier?.logoUrl ? (
-                                   <Image src={supplier.logoUrl} alt={`${supplier.name} logo`} width={20} height={20} className="rounded-full"/>
-                               ) : <div className="w-5 h-5 bg-muted rounded-full"/>}
+                                <Avatar className="h-5 w-5">
+                                    <AvatarImage src={supplier?.logoUrl} alt={supplier?.name || ''} />
+                                    <AvatarFallback className="text-xs">{supplierInitials}</AvatarFallback>
+                                </Avatar>
                                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{benefit.supplierName}</span>
                            </div>
                             <Button size="sm" variant="secondary" className="rounded-full group-hover:bg-[#d83762] group-hover:text-white transition-colors">
@@ -55,21 +58,22 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
 }
 
 // --- SUPPLIER CARD ---
-const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => (
-    <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
-        <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
-            <Image 
-                src={supplier.logoUrl || 'https://picsum.photos/seed/logo/48/48'}
-                alt={`${supplier.name} logo`}
-                width={48}
-                height={48}
-                className="rounded-full object-contain group-hover:scale-110 transition-transform"
-            />
-        </div>
-        <p className="text-sm font-semibold text-center mt-2 line-clamp-1">{supplier.name}</p>
-        <p className="text-xs text-muted-foreground line-clamp-1">{supplier.type}</p>
-    </Link>
-);
+const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
+    const initials = getInitials(supplier.name);
+    return (
+        <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
+                 <Avatar className="h-12 w-12">
+                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-contain group-hover:scale-110 transition-transform" />
+                    <AvatarFallback className="text-xl font-bold bg-transparent">{initials}</AvatarFallback>
+                </Avatar>
+            </div>
+            <p className="text-sm font-semibold text-center mt-2 line-clamp-1">{supplier.name}</p>
+            <p className="text-xs text-muted-foreground line-clamp-1">{supplier.type}</p>
+        </Link>
+    );
+};
+
 
 // --- ANNOUNCEMENT CARD ---
 const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
@@ -91,11 +95,27 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
 );
 
 // --- CAROUSELS (DATA LOGIC REPAIRED) ---
-const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, collectionName: string, dataKey: string) => {
-    return function Carousel() {
+const createCarousel = <T extends {id: string}>(
+    CardComponent: React.FC<any>, 
+    collectionName: string, 
+    dataKey: string,
+    defaultQueryConstraints: any[] = []
+) => {
+    return function Carousel({ filter, sort }: { filter?: any[], sort?: any }) {
         const firestore = useFirestore();
         
-        const itemsQuery = useMemo(() => query(collection(firestore, collectionName).withConverter(createConverter<T>()), limit(10)), [firestore, collectionName]);
+        const itemsQuery = useMemo(() => {
+            let q = query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...defaultQueryConstraints);
+            if (filter) {
+                q = query(q, ...filter);
+            }
+            if (sort) {
+                 q = query(q, orderBy(sort.field, sort.direction));
+            }
+            q = query(q, limit(10));
+            return q;
+        }, [firestore, filter, sort]);
+
         const { data: items, isLoading, error } = useCollection(itemsQuery);
 
         const suppliersQuery = useMemo(() => 
@@ -138,6 +158,6 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [where('active', '==', true)]);
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [where('isActive', '==', true)]);
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');

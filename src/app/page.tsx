@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight, ChevronRight } from 'lucide-react';
@@ -220,12 +219,12 @@ export default function HomePage() {
     const componentMap: Record<HomeSectionType, (section: HomeSection, isFirst: boolean) => React.ReactNode> = {
         categories_grid: (section, isFirst) => <CategoryGrid />,
         single_banner: (section, isFirst) => section.bannerId ? <SingleBanner bannerId={section.bannerId} isLCP={isFirst} /> : null,
-        benefits_carousel: (section, isFirst) => <BenefitsCarousel />,
-        suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
+        benefits_carousel: (section, isFirst) => <BenefitsCarousel filter={section.filter ? [where('category', '==', section.filter)] : []} />,
+        suppliers_carousel: (section, isFirst) => <SuppliersCarousel filter={[where("homeCarousels", "array-contains", "home_main")]} />,
+        featured_suppliers_carousel: (section, isFirst) => <SuppliersCarousel filter={[where("homeCarousels", "array-contains", "home_featured")]} />,
+        new_suppliers_carousel: (section, isFirst) => <SuppliersCarousel sort={{field: 'createdAt', direction: 'desc'}} />,
         announcements_carousel: (section, isFirst) => <AnnouncementsCarousel />,
-        featured_suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
-        new_suppliers_carousel: (section, isFirst) => <SuppliersCarousel />,
-        featured_perks: (section, isFirst) => <FeaturedPerks />,
+        featured_perks: (section, isFirst) => <BenefitsCarousel filter={[where('isFeatured', '==', true)]} />,
     };
 
     if (sectionsLoading) {

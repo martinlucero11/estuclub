@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +27,8 @@ import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/fi
 import { useToast } from "@/hooks/use-toast";
 import { Announcement } from "@/types/data";
 import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(5, "El título debe tener al menos 5 caracteres."),
@@ -45,6 +46,8 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
     const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: announcement ? {
@@ -60,7 +63,7 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         if (!user) return;
-
+        setIsSubmitting(true);
         try {
             if (announcement) {
                 // Update existing announcement
@@ -83,6 +86,8 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
         } catch (error) {
             console.error("Error saving announcement: ", error);
             toast({ title: "Error al guardar el anuncio", variant: "destructive" });
+        } finally {
+            setIsSubmitting(false);
         }
     }
 
@@ -140,7 +145,10 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
                 <DialogClose asChild>
                     <Button type="button" variant="secondary">Cancelar</Button>
                 </DialogClose>
-                <Button type="submit">{announcement ? "Guardar Cambios" : "Crear Anuncio"}</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {announcement ? "Guardar Cambios" : "Crear Anuncio"}
+                </Button>
             </DialogFooter>
           </form>
         </Form>

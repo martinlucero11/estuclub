@@ -1,4 +1,3 @@
-
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -15,6 +14,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import { createConverter } from '@/lib/firestore-converter';
+import { getInitials } from '@/lib/utils';
 
 // Mapping new categories to icons
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
@@ -55,11 +55,11 @@ function CluberListPage() {
 
     const clubersQuery = useMemo(
         () => {
-            const baseQuery = collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>());
-            if (activeFilter === 'Todos') {
-                return query(baseQuery, orderBy('name'));
+            const constraints = [where('isActive', '==', true), orderBy('name')];
+            if (activeFilter !== 'Todos') {
+                constraints.push(where('type', '==', activeFilter));
             }
-            return query(baseQuery, where('type', '==', activeFilter), orderBy('name'));
+            return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), ...constraints);
         },
         [firestore, activeFilter]
     );
@@ -108,6 +108,7 @@ function CluberListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type] || Users;
+                        const initials = getInitials(cluber.name);
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
@@ -116,7 +117,7 @@ function CluberListPage() {
                                         <Avatar className="h-full w-full">
                                             <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-cover" />
                                             <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                                                {cluber.name.charAt(0).toUpperCase()}
+                                                {initials}
                                             </AvatarFallback>
                                         </Avatar>
                                     </div>

@@ -40,8 +40,9 @@ service cloud.firestore {
 
     match /benefits/{benefitId} {
       allow read: if true;
-      allow create: if (isSupplier() && request.resource.data.supplierId == request.auth.uid) || isAdmin();
-      allow update, delete: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
+      allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
+      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && request.resource.data.isFeatured == resource.data.isFeatured) || isAdmin();
+      allow delete: if (isSupplier() && resource.data.ownerId == request.auth.uid) || isAdmin();
     }
 
     // --- User-Specific Data & Roles ---
