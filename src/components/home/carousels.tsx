@@ -14,10 +14,10 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
     return (
         <div className="flex-shrink-0 w-[260px] md:w-[280px] snap-start">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow duration-300 overflow-hidden group">
-                <Link href={`/benefit/${benefit.id}`} className="block">
+                <Link href={`/benefits/${benefit.id}`} className="block">
                     <div className="relative h-32 w-full">
                         <Image 
-                            src={benefit.imageUrl || "/placeholder.png"}
+                            src={benefit.imageUrl || "https://picsum.photos/seed/benefit/280/128"}
                             alt={benefit.title}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -59,7 +59,7 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => (
     <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
         <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
             <Image 
-                src={supplier.logoUrl || '/placeholder.png'}
+                src={supplier.logoUrl || 'https://picsum.photos/seed/logo/48/48'}
                 alt={`${supplier.name} logo`}
                 width={48}
                 height={48}
@@ -76,7 +76,7 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
     <Link href={announcement.linkUrl || '#'} target="_blank" rel="noopener noreferrer" className="block flex-shrink-0 snap-start group w-80">
         <div className="relative h-48 w-full rounded-2xl overflow-hidden shadow-sm">
             <Image 
-                src={announcement.imageUrl || '/placeholder.png'}
+                src={announcement.imageUrl || 'https://picsum.photos/seed/announcement/320/192'}
                 alt={announcement.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform"
@@ -141,4 +141,3 @@ const createCarousel = <T extends {id: string}>(CardComponent: React.FC<any>, co
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
-
