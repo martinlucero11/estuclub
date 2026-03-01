@@ -1,29 +1,38 @@
 
 'use client';
 
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { SupplierProfile } from "@/types/data";
-import { SupplierTable } from "./components/supplier-table";
+import { useAdmin } from '@/firebase/auth/use-admin';
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
-import { useMemo } from 'react';
-import { createConverter } from '@/lib/firestore-converter';
+import AdminAccessDenied from '@/components/admin/admin-access-denied';
+import { SupplierTable } from './components/supplier-table';
 
-/**
- * Main page for the Supplier Management dashboard (Admin only).
- * This has been converted to a client component to avoid server-side auth issues
- * with the Firebase Admin SDK in the App Hosting environment.
- */
 export default function SupplierManagementPage() {
-  const firestore = useFirestore();
+  const { isAdmin, isLoading: isAdminLoading } = useAdmin();
 
-  const suppliersQuery = useMemo(
-    () => query(collection(firestore, "roles_supplier").withConverter(createConverter<SupplierProfile>()), orderBy("name")),
-    [firestore]
-  );
+  if (isAdminLoading) {
+      return (
+        <div className="space-y-4">
+            <BackButton />
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-6 w-64" />
+            <div className="space-y-2 pt-4">
+                {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                ))}
+            </div>
+        </div>
+      );
+  }
 
-  const { data: suppliers, isLoading, error } = useCollection(suppliersQuery);
+  if (!isAdmin) {
+      return (
+        <>
+            <BackButton />
+            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los proveedores." />
+        </>
+      );
+  }
 
   return (
     <div className="space-y-4">
@@ -32,20 +41,9 @@ export default function SupplierManagementPage() {
           <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
       </div>
       <p className="text-muted-foreground">
-        Activa o desactiva módulos de funcionalidades para cada proveedor.
+        Activa o desactiva módulos y la visibilidad de cada proveedor.
       </p>
-      
-      {isLoading ? (
-        <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-16 w-full" />
-            ))}
-        </div>
-      ) : error ? (
-        <p className="text-destructive">Error al cargar proveedores: {error.message}</p>
-      ) : (
-        <SupplierTable initialData={suppliers || []} />
-      )}
+      <SupplierTable />
     </div>
   );
 }

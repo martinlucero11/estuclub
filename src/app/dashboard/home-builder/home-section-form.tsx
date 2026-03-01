@@ -43,7 +43,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: section?.title || '',
-            type: section?.type as typeof homeSectionTypes[number] | undefined,
+            type: section?.type,
             isActive: section?.isActive ?? true,
             filter: section?.filter || '',
             bannerId: section?.bannerId || '',
@@ -113,8 +113,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                     <SelectItem value="single_banner">Banner Individual</SelectItem>
                                     <SelectItem value="suppliers_carousel">Carrusel de Proveedores</SelectItem>
                                     <SelectItem value="announcements_carousel">Carrusel de Anuncios</SelectItem>
-                                    <SelectItem value="featured_suppliers_carousel">Carrusel de Proveedores Destacados</SelectItem>
-                                    <SelectItem value="new_suppliers_carousel">Carrusel de Nuevos Proveedores</SelectItem>
                                 </SelectContent>
                             </Select>
                             <FormMessage />

@@ -1,3 +1,4 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -55,7 +56,7 @@ function CluberListPage() {
 
     const clubersQuery = useMemo(
         () => {
-            const constraints = [where('isActive', '==', true), orderBy('name')];
+            const constraints = [where('isVisible', '==', true), orderBy('name')];
             if (activeFilter !== 'Todos') {
                 constraints.push(where('type', '==', activeFilter));
             }

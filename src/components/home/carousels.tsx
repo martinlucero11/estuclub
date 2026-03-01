@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
@@ -8,7 +9,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 // --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
@@ -159,5 +160,5 @@ const createCarousel = <T extends {id: string}>(
 }
 
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [where('active', '==', true)]);
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [where('isActive', '==', true)]);
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [where('isVisible', '==', true)]);
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');

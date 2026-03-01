@@ -1,3 +1,4 @@
+
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -30,12 +31,13 @@ export interface SupplierProfile {
   address?: string;
   whatsapp?: string;
   isFeatured?: boolean;
-  isActive?: boolean;
+  isVisible?: boolean;
+  featuredRank?: number;
   homeCarousels?: string[];
   createdAt?: Timestamp;
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;
-  canCreatePerks?: boolean; // New permission for benefits
+  canCreatePerks?: boolean;
   announcementsEnabled?: boolean;
   [key: string]: any;
 }
@@ -68,6 +70,8 @@ export interface Benefit {
   redemptionCount?: number;
   active?: boolean;
   isFeatured?: boolean;
+  isVisible?: boolean;
+  featuredRank?: number;
   supplierName?: string;
   status?: 'active' | 'inactive';
   stock?: number;
@@ -93,6 +97,7 @@ export interface Announcement {
   imageUrl?: string;
   linkUrl?: string;
   status: 'pending' | 'approved' | 'rejected';
+  isVisible?: boolean;
   submittedAt: Timestamp;
   approvedAt?: Timestamp;
   createdAt: Timestamp;
@@ -202,9 +207,6 @@ export const homeSectionTypes = [
     'single_banner', 
     'suppliers_carousel',
     'announcements_carousel',
-    'featured_suppliers_carousel',
-    'new_suppliers_carousel',
-    'featured_perks'
 ] as const;
 export type HomeSectionType = typeof homeSectionTypes[number];
 

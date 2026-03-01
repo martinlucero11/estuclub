@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -55,6 +56,7 @@ const formSchema = z.object({
   availableDays: z.array(z.string()).optional(),
   active: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  isVisible: z.boolean().default(true),
 });
 
 interface EditBenefitDialogProps {
@@ -83,6 +85,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
       availableDays: benefit.availableDays || [],
       active: benefit.active ?? true,
       isFeatured: benefit.isFeatured ?? false,
+      isVisible: benefit.isVisible ?? true,
     },
   });
 
@@ -374,6 +377,26 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                             </FormItem>
                         )}
                         />
+                         <FormField
+                        control={form.control}
+                        name="isVisible"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Visible</FormLabel>
+                                <FormDescription>
+                                Desmarcar para ocultar el beneficio de la app.
+                                </FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
+                            </FormControl>
+                            </FormItem>
+                        )}
+                        />
                         <FormField
                         control={form.control}
                         name="active"
@@ -382,7 +405,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Activo</FormLabel>
                                 <FormDescription>
-                                Desmarcar para ocultar el beneficio temporalmente.
+                                Desmarcar para que no se pueda canjear temporalmente.
                                 </FormDescription>
                             </div>
                             <FormControl>

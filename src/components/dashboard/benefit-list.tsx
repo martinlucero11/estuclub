@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -76,22 +77,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   // Memoize columns with the handlers
   const columns = useMemo(() => {
-    const baseColumns = getBenefitColumns(handleEdit, handleDeleteRequest);
-    const supplierColumn = {
-      accessorKey: 'supplierName',
-      header: 'Proveedor',
-    };
-    if (isAdmin) {
-      const titleIndex = baseColumns.findIndex((c: any) => c.accessorKey === 'title');
-      const newColumns = [...baseColumns];
-      if (titleIndex !== -1) {
-          newColumns.splice(titleIndex + 1, 0, supplierColumn);
-      } else {
-          newColumns.unshift(supplierColumn)
-      }
-      return newColumns;
-    }
-    return baseColumns;
+    return getBenefitColumns(handleEdit, handleDeleteRequest, isAdmin);
   }, [isAdmin]);
 
 
