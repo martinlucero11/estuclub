@@ -250,3 +250,4 @@ export interface AppointmentSlot {
     bookedBy?: string; // UID of the student who booked it
     [key: string]: any;
 }
+

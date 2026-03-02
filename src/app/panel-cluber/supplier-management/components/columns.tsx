@@ -110,3 +110,4 @@ export const getSupplierColumns = ({ onToggle, onDelete, loadingStates }: Column
     },
   },
 ];
+

@@ -5,7 +5,7 @@ import { useAdmin } from '@/firebase/auth/use-admin';
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
-import { UserManagementTable } from './components/user-management-table';
+import { SupplierTable } from './components/supplier-table';
 
 export default function SupplierManagementPage() {
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
@@ -29,7 +29,7 @@ export default function SupplierManagementPage() {
       return (
         <>
             <BackButton />
-            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los Clubers." />
+            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los proveedores." />
         </>
       );
   }
@@ -38,12 +38,13 @@ export default function SupplierManagementPage() {
     <div className="space-y-4">
       <BackButton />
       <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Gestión de Clubers y Usuarios</h1>
+          <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
       </div>
       <p className="text-muted-foreground">
-        Convierte usuarios en Clubers, edita sus perfiles y gestiona sus permisos.
+        Activa o desactiva módulos y la visibilidad de cada proveedor.
       </p>
-      <UserManagementTable />
+      <SupplierTable />
     </div>
   );
 }
+

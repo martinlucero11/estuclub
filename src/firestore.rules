@@ -45,7 +45,7 @@ service cloud.firestore {
       allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
       // Admin can do anything.
       // Supplier can update if they own it and are NOT changing the isFeatured flag.
-      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && request.resource.data.isFeatured == resource.data.isFeatured) || isAdmin();
+      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'isVisible'])) || isAdmin();
       allow delete: if (isSupplier() && resource.data.ownerId == request.auth.uid) || isAdmin();
     }
 
@@ -120,3 +120,4 @@ service cloud.firestore {
     }
   }
 }
+

@@ -438,3 +438,4 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
     </Dialog>
   );
 }
+
