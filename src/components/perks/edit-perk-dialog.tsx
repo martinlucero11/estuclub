@@ -355,7 +355,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                         </FormItem>
                     )}
                     />
-                {isAdmin && (
+                {(isAdmin) && (
                     <div className='space-y-4'>
                         <FormField
                         control={form.control}

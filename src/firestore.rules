@@ -40,8 +40,13 @@ service cloud.firestore {
 
     match /benefits/{benefitId} {
       allow read: if true;
-      allow create: if (isSupplier() && request.resource.data.supplierId == request.auth.uid) || isAdmin();
-      allow update, delete: if (isSupplier() && resource.data.supplierId == request.auth.uid) || isAdmin();
+      // Admin can do anything.
+      // Supplier can create if they own it and are NOT setting it as featured.
+      allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
+      // Admin can do anything.
+      // Supplier can update if they own it and are NOT changing the isFeatured flag.
+      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && request.resource.data.isFeatured == resource.data.isFeatured) || isAdmin();
+      allow delete: if (isSupplier() && resource.data.ownerId == request.auth.uid) || isAdmin();
     }
 
     // --- User-Specific Data & Roles ---
@@ -57,9 +62,10 @@ service cloud.firestore {
     }
 
     match /benefitRedemptions/{redemptionId} {
-      // Any signed-in user can create a redemption record, but only admins can modify/delete it
-      allow read, create: if isSignedIn();
-      allow update, delete: if isAdmin();
+      // Any signed-in user can create a redemption record, but only admins or the designated supplier can modify/delete it
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
     }
     
     match /usernames/{username} {
@@ -68,11 +74,26 @@ service cloud.firestore {
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 
+    // --- New Appointments Collection ---
+    match /appointments/{appointmentId} {
+      allow create: if isSignedIn();
+      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) 
+                   || (isSupplier() && resource.data.supplierId == request.auth.uid) 
+                   || isAdmin();
+      allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) 
+                             || (isSupplier() && resource.data.supplierId == request.auth.uid) 
+                             || isAdmin();
+    }
+
     // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
       allow read: if true; // Publicly viewable profile
-      allow write: if isAdmin() || isOwner(supplierId); // Only admin or the supplier can edit profile
-
+      // Admin can write anything.
+      // Owner can write, but cannot change sensitive, admin-only fields.
+      allow write: if isAdmin() || 
+                    (isOwner(supplierId) && 
+                     !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVisible', 'isFeatured', 'featuredRank']));
+    
       // --- Nested Rules for Supplier's Features ---
       match /services/{serviceId} {
         allow read: if true;
@@ -84,6 +105,7 @@ service cloud.firestore {
         allow write: if isOwner(supplierId) || isAdmin();
       }
 
+      // LEGACY: Kept for backwards compatibility
       match /appointments/{appointmentId} {
           allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
           allow create: if isSignedIn();
