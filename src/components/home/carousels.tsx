@@ -59,7 +59,7 @@ const buildConstraints = ({
   if (sort && sort.field) {
     constraints.push(orderBy(sort.field, sort.direction));
   } else if (!sort && collection.name !== 'announcements') {
-    constraints.push(orderBy('createdAt', 'desc'));
+    constraints.push(orderBy('name', 'asc'));
   }
   
   constraints.push(limit(limitCount));
