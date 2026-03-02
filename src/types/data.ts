@@ -30,8 +30,8 @@ export interface SupplierProfile {
   logoUrl?: string;
   address?: string;
   whatsapp?: string;
-  isFeatured?: boolean;
-  isVisible?: boolean;
+  isVisible: boolean;
+  isFeatured: boolean;
   featuredRank?: number;
   homeCarousels?: string[];
   createdAt?: Timestamp;
@@ -69,8 +69,8 @@ export interface Benefit {
   availableDays?: string[];
   redemptionCount?: number;
   active?: boolean;
-  isFeatured?: boolean;
-  isVisible?: boolean;
+  isFeatured: boolean;
+  isVisible: boolean;
   featuredRank?: number;
   supplierName?: string;
   status?: 'active' | 'inactive';
@@ -207,6 +207,9 @@ export const homeSectionTypes = [
     'single_banner', 
     'suppliers_carousel',
     'announcements_carousel',
+    'featured_suppliers_carousel',
+    'new_suppliers_carousel',
+    'featured_perks',
 ] as const;
 export type HomeSectionType = typeof homeSectionTypes[number];
 
