@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ColumnDef } from "@tanstack/react-table";
@@ -6,8 +5,8 @@ import { SupplierProfile } from "@/types/data";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal, Trash2 } from "lucide-react";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { ArrowUpDown, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 
 type ToggleHandler = (
   supplierId: string, 
@@ -16,16 +15,18 @@ type ToggleHandler = (
 ) => void;
 
 type DeleteHandler = (supplierId: string) => void;
+type EditHandler = (supplier: SupplierProfile) => void;
 
 type LoadingStates = Record<string, Record<string, boolean>>;
 
 interface ColumnsProps {
   onToggle: ToggleHandler;
   onDelete: DeleteHandler;
+  onEdit: EditHandler;
   loadingStates: LoadingStates;
 }
 
-export const getSupplierColumns = ({ onToggle, onDelete, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
+export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -100,6 +101,11 @@ export const getSupplierColumns = ({ onToggle, onDelete, loadingStates }: Column
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onEdit(supplier)}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    Editar
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete(supplier.id)} className="text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Eliminar
@@ -110,4 +116,3 @@ export const getSupplierColumns = ({ onToggle, onDelete, loadingStates }: Column
     },
   },
 ];
-

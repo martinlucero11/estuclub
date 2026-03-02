@@ -65,7 +65,7 @@ const buildConstraints = ({
         constraints.push(orderBy('createdAt', 'desc'));
     } else if (collectionName === 'announcements') {
         constraints.push(orderBy('createdAt', 'desc'));
-    } else {
+    } else if (collectionName !== 'roles_supplier') { // DO NOT add a default sort for suppliers
         constraints.push(orderBy('name', 'asc'));
     }
   }
