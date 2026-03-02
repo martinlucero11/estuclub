@@ -6,7 +6,8 @@ import { SupplierProfile } from "@/types/data";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 type ToggleHandler = (
   supplierId: string, 
@@ -14,14 +15,17 @@ type ToggleHandler = (
   isEnabled: boolean
 ) => void;
 
+type DeleteHandler = (supplierId: string) => void;
+
 type LoadingStates = Record<string, Record<string, boolean>>;
 
 interface ColumnsProps {
   onToggle: ToggleHandler;
+  onDelete: DeleteHandler;
   loadingStates: LoadingStates;
 }
 
-export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
+export const getSupplierColumns = ({ onToggle, onDelete, loadingStates }: ColumnsProps): ColumnDef<SupplierProfile>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => (
@@ -38,58 +42,39 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
     ),
   },
   {
-    id: "announcements",
-    header: () => <div className="text-center">Anuncios</div>,
+    id: "isVisible",
+    header: () => <div className="text-center">Visible</div>,
     cell: ({ row }) => {
       const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.announcementsEnabled;
+      const isLoading = loadingStates[supplier.id]?.isVisible;
 
       return (
         <div className="flex justify-center">
           <Switch
-            checked={!!supplier.announcementsEnabled}
-            onCheckedChange={(value) => onToggle(supplier.id, 'announcementsEnabled', value)}
+            checked={!!supplier.isVisible}
+            onCheckedChange={(value) => onToggle(supplier.id, 'isVisible', value)}
             disabled={isLoading}
-            aria-label="Toggle para Anuncios"
-          />
-        </div>
-      );
-    },
-  },
-   {
-    id: "benefits",
-    header: () => <div className="text-center">Beneficios</div>,
-    cell: ({ row }) => {
-      const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.canCreatePerks;
-
-      return (
-        <div className="flex justify-center">
-          <Switch
-            checked={!!supplier.canCreatePerks}
-            onCheckedChange={(value) => onToggle(supplier.id, 'canCreatePerks', value)}
-            disabled={isLoading}
-            aria-label="Toggle para Beneficios"
+            aria-label="Toggle visibilidad"
           />
         </div>
       );
     },
   },
   {
-    id: "appointments",
-    header: () => <div className="text-center">Turnos</div>,
+    id: "isFeatured",
+    header: () => <div className="text-center">Destacado</div>,
     cell: ({ row }) => {
       const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.appointmentsEnabled;
+      const isLoading = loadingStates[supplier.id]?.isFeatured;
 
       return (
         <div className="flex justify-center">
-            <Switch
-                checked={!!supplier.appointmentsEnabled}
-                onCheckedChange={(value) => onToggle(supplier.id, 'appointmentsEnabled', value)}
-                disabled={isLoading}
-                aria-label="Toggle para Turnos"
-            />
+          <Switch
+            checked={!!supplier.isFeatured}
+            onCheckedChange={(value) => onToggle(supplier.id, 'isFeatured', value)}
+            disabled={isLoading}
+            aria-label="Toggle destacado"
+          />
         </div>
       );
     },
@@ -98,8 +83,30 @@ export const columns = ({ onToggle, loadingStates }: ColumnsProps): ColumnDef<Su
     id: "status",
     header: "Estado",
     cell: ({ row }) => {
-        const isActive = row.original.announcementsEnabled || row.original.appointmentsEnabled || row.original.canCreatePerks;
-        return <Badge variant={isActive ? 'default' : 'outline'}>{isActive ? "Activo" : "Inactivo"}</Badge>;
+        const isActive = row.original.isVisible;
+        return <Badge variant={isActive ? 'default' : 'outline'}>{isActive ? "Activo" : "Oculto"}</Badge>;
+    },
+  },
+   {
+    id: "actions",
+    cell: ({ row }) => {
+      const supplier = row.original;
+      return (
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">Abrir menú</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onDelete(supplier.id)} className="text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Eliminar
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+      );
     },
   },
 ];

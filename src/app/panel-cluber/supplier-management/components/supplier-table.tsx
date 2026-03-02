@@ -2,61 +2,83 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
-import { columns } from './columns'; 
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { getSupplierColumns } from './columns'; 
 import { DataTable } from '@/components/ui/data-table';
 import { SupplierProfile } from '@/types/data';
 import { toast } from 'sonner';
+import { createConverter } from '@/lib/firestore-converter';
+import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 
-interface SupplierTableProps {
-  initialData: SupplierProfile[];
-}
-
-export function SupplierTable({ initialData }: SupplierTableProps) {
+export function SupplierTable() {
   const firestore = useFirestore();
-  const [suppliers, setSuppliers] = useState<SupplierProfile[]>(initialData);
   const [loadingStates, setLoadingStates] = useState<Record<string, Record<string, boolean>>>({});
+  const [supplierIdToDelete, setSupplierIdToDelete] = useState<string | null>(null);
 
-  const handleToggleCapability = async (
+  const suppliersQuery = useMemo(
+    () => query(collection(firestore, "roles_supplier").withConverter(createConverter<SupplierProfile>()), orderBy("name")),
+    [firestore]
+  );
+  const { data: suppliers, isLoading, error } = useCollection(suppliersQuery);
+
+  const handleToggle = async (
     supplierId: string,
     capability: keyof SupplierProfile,
     isEnabled: boolean
   ) => {
-    // Optimistic UI update
-    setSuppliers(current =>
-      current.map(s =>
-        s.id === supplierId ? { ...s, [capability]: isEnabled } : s
-      )
-    );
-    
     setLoadingStates(prev => ({ ...prev, [supplierId]: { ...(prev[supplierId] || {}), [capability]: true } }));
 
     try {
       const supplierRef = doc(firestore, 'roles_supplier', supplierId);
       await updateDoc(supplierRef, { [capability]: isEnabled });
       
-      toast.success(`Proveedor actualizado: la funcionalidad se ha ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
+      toast.success(`Proveedor actualizado: ${capability} ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
 
     } catch (error) {
       console.error("Error updating supplier capability:", error);
-      toast.error('Error al actualizar el proveedor. Revirtiendo cambios.');
-      // Revert optimistic update on error
-      setSuppliers(initialData);
+      toast.error('Error al actualizar el proveedor.');
     }
     finally {
       setLoadingStates(prev => ({ ...prev, [supplierId]: { ...(prev[supplierId] || {}), [capability]: false } }));
     }
   };
 
-  const memoizedColumns = useMemo(() => columns({ onToggle: handleToggleCapability, loadingStates }), [loadingStates]);
+  const handleDeleteRequest = (supplierId: string) => {
+    setSupplierIdToDelete(supplierId);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!supplierIdToDelete) return;
+    try {
+      await deleteDoc(doc(firestore, 'roles_supplier', supplierIdToDelete));
+      toast.success('Proveedor eliminado correctamente.');
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      toast.error('No se pudo eliminar el proveedor.');
+    } finally {
+      setSupplierIdToDelete(null);
+    }
+  };
+
+  const columns = useMemo(() => getSupplierColumns({ onToggle: handleToggle, onDelete: handleDeleteRequest, loadingStates }), [loadingStates]);
 
   return (
-    <DataTable
-      columns={memoizedColumns}
-      data={suppliers}
-      filterColumn="name"
-      filterPlaceholder="Filtrar por nombre de proveedor..."
-    />
+    <>
+      <DataTable
+        columns={columns}
+        data={suppliers || []}
+        isLoading={isLoading}
+        filterColumn="name"
+        filterPlaceholder="Filtrar por nombre de proveedor..."
+      />
+       <DeleteConfirmationDialog
+          isOpen={!!supplierIdToDelete}
+          onOpenChange={(open) => !open && setSupplierIdToDelete(null)}
+          onConfirm={handleDeleteConfirm}
+          title="¿Eliminar este proveedor?"
+          description="Esta acción es permanente y no se puede deshacer. Se eliminará el rol de proveedor, pero no la cuenta de usuario."
+      />
+    </>
   );
 }

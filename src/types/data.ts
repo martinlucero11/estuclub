@@ -219,7 +219,7 @@ export interface HomeSection {
   type: HomeSectionType;
   order: number;
   isActive: boolean;
-  filter?: string; // For category on benefits_carousel
+  filter?: string; // For category on benefits_carousel or 'featured'
   bannerId?: string; // For single_banner
   createdAt?: Timestamp;
   [key: string]: any;

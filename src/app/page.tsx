@@ -71,6 +71,9 @@ export default function HomePage() {
         benefits_carousel: { component: BenefitsCarousel, link: "/benefits" },
         suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
         announcements_carousel: { component: AnnouncementsCarousel, link: "/announcements" },
+        featured_suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
+        new_suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
+        featured_perks: { component: BenefitsCarousel, link: "/benefits" },
     };
 
     if (sectionsLoading) {
@@ -87,6 +90,16 @@ export default function HomePage() {
                         
                         if (!Component) return null;
 
+                        let componentProps = { ...section };
+                        if (section.type === 'featured_suppliers_carousel') {
+                            componentProps.filter = [{ field: 'isFeatured', op: '==', value: true }];
+                        } else if (section.type === 'featured_perks') {
+                            componentProps.filter = [{ field: 'isFeatured', op: '==', value: true }];
+                        } else if (section.type === 'benefits_carousel' && section.filter) {
+                            componentProps.filter = [{ field: 'category', op: '==', value: section.filter }];
+                        }
+
+
                         return (
                             <section key={section.id} className="space-y-3">
                                 <div className="flex items-center justify-between px-4">
@@ -100,7 +113,7 @@ export default function HomePage() {
                                     )}
                                 </div>
                                 <div className={section.type !== 'categories_grid' ? 'px-4' : ''}>
-                                    <Component {...section} />
+                                    <Component {...componentProps} />
                                 </div>
                             </section>
                         )
@@ -110,4 +123,3 @@ export default function HomePage() {
         </MainLayout>
     );
 }
-

@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
@@ -208,6 +209,6 @@ const createCarousel = <T extends {id: string}>(
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [{ field: 'active', op: '==', value: true }]);
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [{ field: 'isVisible', op: '==', value: true }]);
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [{ field: 'isVisible', op: '==', value: true }]);
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', [{field: 'status', op: '==', value: 'approved'}]);
