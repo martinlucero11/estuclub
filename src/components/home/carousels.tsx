@@ -9,10 +9,9 @@ import {
   where,
   orderBy,
   QueryConstraint,
-  WhereFilterOp,
 } from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, WhereFilter } from "@/types/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
@@ -20,48 +19,51 @@ import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 // --- TYPE DEFINITIONS for Query Building ---
-type FilterSpec = { field: string; op: WhereFilterOp; value: any };
 type SortSpec = { field: string; direction: "asc" | "desc" };
 
-// --- HELPER FUNCTION for Query Building ---
+
+// --- HELPER FUNCTION for SAFE Query Building ---
 const buildConstraints = ({
-  filter,
+  filters,
   sort,
   limitCount = 10,
+  defaultFilters = [],
 }: {
-  filter?: FilterSpec[];
+  filters?: WhereFilter[];
   sort?: SortSpec;
   limitCount?: number;
+  defaultFilters?: WhereFilter[];
 }): QueryConstraint[] => {
   const constraints: QueryConstraint[] = [];
 
-  // Always filter for visibility
-  constraints.push(where('isVisible', '==', true));
+  // Combine default and component-specific filters
+  const allFilters = [...defaultFilters, ...(filters || [])];
 
-  if (filter) {
-    filter.forEach((f) => {
-      // Basic validation to ensure we don't pass undefined values to where()
-      if (f.field && f.op && f.value !== undefined) {
-        constraints.push(where(f.field, f.op, f.value));
-      }
-    });
+  // Apply visibility filter by default unless it's already specified
+  if (!allFilters.some(f => f.field === 'isVisible')) {
+    constraints.push(where('isVisible', '==', true));
   }
+
+  // Convert structured filter objects into actual Firestore 'where' constraints
+  allFilters.forEach((f) => {
+    if (f.field && f.op && f.value !== undefined) {
+      constraints.push(where(f.field, f.op, f.value));
+    }
+  });
 
   if (sort && sort.field) {
     constraints.push(orderBy(sort.field, sort.direction));
   } else if (!sort && collection.name !== 'announcements') {
-      // Default sort for collections that need it if none is provided
-      constraints.push(orderBy('createdAt', 'desc'));
+    constraints.push(orderBy('createdAt', 'desc'));
   }
   
-  // Ensure limit is always applied
   constraints.push(limit(limitCount));
 
   return constraints;
 };
 
 
-// --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
+// --- BENEFIT CARD ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
     const supplierInitials = getInitials(benefit.supplierName || 'S');
     return (
@@ -145,30 +147,30 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
     </Link>
 );
 
-// --- CAROUSELS (DATA LOGIC REPAIRED) ---
+// --- CAROUSEL FACTORY ---
 const createCarousel = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
     collectionName: string, 
     dataKey: string,
-    defaultFilters: FilterSpec[] = []
+    defaultFilters: WhereFilter[] = []
 ) => {
-    return function Carousel({ filter, sort }: { filter?: FilterSpec[], sort?: SortSpec }) {
+    return function Carousel({ filters, sort }: { filters?: WhereFilter[], sort?: SortSpec }) {
         const firestore = useFirestore();
         
         const itemsQuery = useMemo(() => {
-            const combinedFilters = [...defaultFilters, ...(filter || [])];
-            
+            // Build the query safely using the helper function
             const constraints = buildConstraints({
-                filter: combinedFilters,
-                sort: sort,
+                filters,
+                sort,
                 limitCount: 10,
+                defaultFilters: defaultFilters,
             });
 
             return query(
                 collection(firestore, collectionName).withConverter(createConverter<T>()),
                 ...constraints
             );
-        }, [firestore, filter, sort]);
+        }, [firestore, filters, sort]);
 
         const { data: items, isLoading, error } = useCollection(itemsQuery);
 

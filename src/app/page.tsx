@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
-import { HomeSection, HomeSectionType, Category, Banner } from '@/types/data';
+import { HomeSection, HomeSectionType, Category, Banner, WhereFilter } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 // --- DYNAMICALLY IMPORTED COMPONENTS ---
@@ -90,13 +90,17 @@ export default function HomePage() {
                         
                         if (!Component) return null;
 
-                        let componentProps = { ...section };
+                        const componentProps: { [key: string]: any } = { ...section };
+                        
+                        // This logic correctly translates section types into structured filters
+                        // that the carousel component now expects.
                         if (section.type === 'featured_suppliers_carousel') {
-                            componentProps.filter = [{ field: 'isFeatured', op: '==', value: true }];
+                            componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
                         } else if (section.type === 'featured_perks') {
-                            componentProps.filter = [{ field: 'isFeatured', op: '==', value: true }];
+                            componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
                         } else if (section.type === 'benefits_carousel' && section.filter) {
-                            componentProps.filter = [{ field: 'category', op: '==', value: section.filter }];
+                            // Backwards compatibility for old string-based filter
+                            componentProps.filters = [{ field: 'category', op: '==', value: section.filter }];
                         }
 
 

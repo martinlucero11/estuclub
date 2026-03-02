@@ -3,7 +3,17 @@
  * @file Centralized type definitions for application-wide data models.
  */
 
-import { Timestamp } from "firebase/firestore";
+import { Timestamp, WhereFilterOp } from "firebase/firestore";
+
+/**
+ * Defines a structured filter for Firestore queries.
+ */
+export type WhereFilter = {
+  field: string;
+  op: WhereFilterOp;
+  value: any;
+};
+
 
 /**
  * Defines the possible roles a user can have within the application.
@@ -219,11 +229,13 @@ export interface HomeSection {
   type: HomeSectionType;
   order: number;
   isActive: boolean;
-  filter?: string; // For category on benefits_carousel or 'featured'
+  filters?: WhereFilter[]; // For category on benefits_carousel or 'featured'
+  filter?: string; // DEPRECATED: For backwards compatibility
   bannerId?: string; // For single_banner
   createdAt?: Timestamp;
-  [key: string]: any;
+  [key:string]: any;
 }
+
 
 export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
     createdAt: string;
