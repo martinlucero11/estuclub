@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
@@ -29,11 +30,13 @@ type SortSpec = { field: string; direction: "asc" | "desc" };
 
 // --- HELPER FUNCTION for SAFE Query Building ---
 const buildConstraints = ({
+  collectionName,
   filters,
   sort,
   limitCount = 10,
   defaultFilters = [],
 }: {
+  collectionName: string;
   filters?: WhereFilter[];
   sort?: SortSpec;
   limitCount?: number;
@@ -44,8 +47,8 @@ const buildConstraints = ({
   // Combine default and component-specific filters
   const allFilters = [...defaultFilters, ...(filters || [])];
 
-  // Apply visibility filter by default unless it's already specified
-  if (!allFilters.some(f => f.field === 'isVisible')) {
+  // Apply visibility filter by default unless it's already specified for these collections
+  if (['benefits', 'roles_supplier'].includes(collectionName) && !allFilters.some(f => f.field === 'isVisible')) {
     constraints.push(where('isVisible', '==', true));
   }
 
@@ -58,8 +61,13 @@ const buildConstraints = ({
 
   if (sort && sort.field) {
     constraints.push(orderBy(sort.field, sort.direction));
-  } else if (!sort && collection.name !== 'announcements') {
-    constraints.push(orderBy('name', 'asc'));
+  } else if (!sort) {
+     // Add a sensible default sort order if none is provided
+    if (collectionName === 'announcements') {
+        constraints.push(orderBy('createdAt', 'desc'));
+    } else {
+        constraints.push(orderBy('name', 'asc'));
+    }
   }
   
   constraints.push(limit(limitCount));
@@ -180,6 +188,7 @@ const createCarousel = <T extends {id: string}>(
         const itemsQuery = useMemo(() => {
             // Build the query safely using the helper function
             const constraints = buildConstraints({
+                collectionName,
                 filters,
                 sort,
                 limitCount: 10,
