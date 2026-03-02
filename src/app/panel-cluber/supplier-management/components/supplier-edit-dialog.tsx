@@ -27,7 +27,7 @@ export function SupplierEditDialog({ isOpen, onOpenChange, user, supplierProfile
                 <DialogHeader>
                     <DialogTitle>{isEditMode ? 'Editar Perfil de Cluber' : 'Hacer Cluber'}</DialogTitle>
                     <DialogDescription>
-                        {isEditMode ? 'Modifica los detalles del perfil de este Cluber.' : `Estás a punto de convertir al usuario ${user.email} en un Cluber.`}
+                        {isEditMode && supplierProfile ? `Modifica los detalles del perfil de ${supplierProfile.name}.` : `Estás a punto de convertir al usuario ${user.email} en un Cluber.`}
                     </DialogDescription>
                 </DialogHeader>
                 <SupplierEditForm 

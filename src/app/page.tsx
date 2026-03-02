@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { ArrowRight } from 'lucide-react';
@@ -97,6 +95,7 @@ export default function HomePage() {
                         // that the carousel component now expects.
                         if (section.type === 'featured_suppliers_carousel') {
                             componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
+                            componentProps.sort = { field: 'featuredRank', direction: 'asc' };
                         } else if (section.type === 'featured_perks') {
                             componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
                         } else if (section.type === 'benefits_carousel' && section.filter) {

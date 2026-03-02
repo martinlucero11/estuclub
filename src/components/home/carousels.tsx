@@ -57,7 +57,8 @@ const buildConstraints = ({
     }
   });
 
-  if (sort && sort.field) {
+  // IMPORTANT: For suppliers, sorting is handled client-side to avoid mandatory composite indexes.
+  if (sort && sort.field && collectionName !== 'roles_supplier') {
     constraints.push(orderBy(sort.field, sort.direction));
   } else if (!sort) {
      // Add a sensible default sort order if none is provided
@@ -65,8 +66,6 @@ const buildConstraints = ({
         constraints.push(orderBy('createdAt', 'desc'));
     } else if (collectionName === 'announcements') {
         constraints.push(orderBy('createdAt', 'desc'));
-    } else if (collectionName !== 'roles_supplier') { // DO NOT add a default sort for suppliers
-        constraints.push(orderBy('name', 'asc'));
     }
   }
   
@@ -208,6 +207,19 @@ const createCarousel = <T extends {id: string}>(
         , [firestore, collectionName]);
         const { data: suppliers } = useCollectionOnce(suppliersQuery);
         
+        const sortedItems = useMemo(() => {
+            if (!items) return [];
+            // Client-side sorting for suppliers to avoid index requirements
+            if (collectionName === 'roles_supplier' && sort && sort.field) {
+                return [...items].sort((a: any, b: any) => {
+                    if (a[sort.field] < b[sort.field]) return sort.direction === 'asc' ? -1 : 1;
+                    if (a[sort.field] > b[sort.field]) return sort.direction === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+            return items;
+        }, [items, sort]);
+
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 
         if (isLoading) {
@@ -220,14 +232,14 @@ const createCarousel = <T extends {id: string}>(
             )
         }
 
-        if (error || !items || items.length === 0) {
+        if (error || !sortedItems || sortedItems.length === 0) {
             return <p className="text-muted-foreground italic">No hay contenido disponible por el momento.</p>;
         }
 
         return (
              <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {collectionName === 'benefits' ? 
-                    items.map(item => {
+                    sortedItems.map(item => {
                         const typedItem = item as unknown as Benefit;
                         const local = suppliers?.find(s => s.id === typedItem.ownerId || s.name === typedItem.supplierName);
                         return <BenefitCard 
@@ -236,7 +248,7 @@ const createCarousel = <T extends {id: string}>(
                             supplier={local} 
                         />
                     }) :
-                    items.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
+                    sortedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
                 }
             </div>
         )

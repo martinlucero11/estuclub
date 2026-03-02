@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useAdmin } from '@/firebase/auth/use-admin';
@@ -6,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import { SupplierTable } from './components/supplier-table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { UserManagementTable } from './components/user-management-table';
 
 export default function SupplierManagementPage() {
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
@@ -38,13 +39,30 @@ export default function SupplierManagementPage() {
     <div className="space-y-4">
       <BackButton />
       <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
+          <h1 className="text-3xl font-bold">Gestión de Clubers</h1>
       </div>
       <p className="text-muted-foreground">
-        Activa o desactiva módulos y la visibilidad de cada proveedor.
+        Gestiona los perfiles de los Clubers existentes o convierte usuarios en nuevos Clubers.
       </p>
-      <SupplierTable />
+      
+      <Tabs defaultValue="manage-suppliers">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="manage-suppliers">Gestionar Clubers</TabsTrigger>
+          <TabsTrigger value="convert-user">Convertir Usuario a Cluber</TabsTrigger>
+        </TabsList>
+        <TabsContent value="manage-suppliers" className="mt-4">
+          <p className="text-sm text-muted-foreground mb-4">
+            Activa o desactiva módulos, visibilidad y estado de destacado de cada Cluber.
+          </p>
+          <SupplierTable />
+        </TabsContent>
+        <TabsContent value="convert-user" className="mt-4">
+           <p className="text-sm text-muted-foreground mb-4">
+            Selecciona un usuario de la lista para asignarle un perfil de Cluber.
+          </p>
+          <UserManagementTable />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
-

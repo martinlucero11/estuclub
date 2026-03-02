@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { SupplierEditDialog } from './supplier-edit-dialog';
+import { UserForList } from './user-management-columns';
 
 export function SupplierTable() {
   const firestore = useFirestore();
@@ -35,7 +36,7 @@ export function SupplierTable() {
       const supplierRef = doc(firestore, 'roles_supplier', supplierId);
       await updateDoc(supplierRef, { [capability]: isEnabled });
       
-      toast.success(`Proveedor actualizado: ${capability} ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
+      toast.success(`Proveedor actualizado: ${capability.toString()} ${isEnabled ? 'habilitado' : 'deshabilitado'}.`);
 
     } catch (error) {
       console.error("Error updating supplier capability:", error);
@@ -70,6 +71,16 @@ export function SupplierTable() {
 
   const columns = useMemo(() => getSupplierColumns({ onToggle: handleToggle, onDelete: handleDeleteRequest, onEdit: handleEdit, loadingStates }), [loadingStates]);
 
+  const userForDialog: UserForList | undefined = selectedSupplier ? {
+    id: selectedSupplier.id,
+    uid: selectedSupplier.id,
+    email: selectedSupplier.email,
+    firstName: selectedSupplier.name.split(' ')[0],
+    lastName: selectedSupplier.name.split(' ').slice(1).join(' '),
+    username: selectedSupplier.slug,
+    dni: ''
+  } : undefined;
+
   return (
     <>
       <DataTable
@@ -86,11 +97,12 @@ export function SupplierTable() {
           title="¿Eliminar este proveedor?"
           description="Esta acción es permanente y no se puede deshacer. Se eliminará el rol de proveedor, pero no la cuenta de usuario."
       />
-      {selectedSupplier && (
+      {isEditDialogOpen && selectedSupplier && userForDialog && (
         <SupplierEditDialog 
           isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
-          supplier={selectedSupplier}
+          user={userForDialog}
+          supplierProfile={selectedSupplier}
         />
       )}
     </>

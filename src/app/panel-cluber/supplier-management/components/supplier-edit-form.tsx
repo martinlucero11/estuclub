@@ -25,9 +25,9 @@ const formSchema = z.object({
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   address: z.string().optional(),
   whatsapp: z.string().optional(),
-  appointmentsEnabled: z.boolean().default(false),
-  announcementsEnabled: z.boolean().default(false),
   canCreatePerks: z.boolean().default(false),
+  announcementsEnabled: z.boolean().default(false),
+  appointmentsEnabled: z.boolean().default(false),
 });
 
 interface SupplierEditFormProps {
@@ -37,6 +37,7 @@ interface SupplierEditFormProps {
 }
 
 function slugify(text: string): string {
+  if (!text) return '';
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
   const p = new RegExp(a.split('').join('|'), 'g')
@@ -61,16 +62,16 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: supplierProfile?.name || '',
-            slug: supplierProfile?.slug || slugify(supplierProfile?.name || user.username),
+            name: supplierProfile?.name || user.username || '',
+            slug: supplierProfile?.slug || slugify(supplierProfile?.name || user.username || ''),
             type: supplierProfile?.type || 'Comercio',
             description: supplierProfile?.description || '',
             logoUrl: supplierProfile?.logoUrl || '',
             address: supplierProfile?.address || '',
             whatsapp: supplierProfile?.whatsapp || '',
-            appointmentsEnabled: supplierProfile?.appointmentsEnabled || false,
+            canCreatePerks: supplierProfile?.canCreatePerks || false,
             announcementsEnabled: supplierProfile?.announcementsEnabled || false,
-            canCreatePerks: supplierProfile?.canCreatePerks || true,
+            appointmentsEnabled: supplierProfile?.appointmentsEnabled || false,
         },
     });
 
@@ -99,7 +100,13 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                 ...values,
                 userId: user.id,
                 email: user.email,
-                ...(isEditMode ? {} : { createdAt: serverTimestamp() }),
+                // For new suppliers, set visibility defaults. For existing, merge to keep current values.
+                ...(isEditMode ? {} : { 
+                    createdAt: serverTimestamp(),
+                    isVisible: true,
+                    isFeatured: false,
+                    featuredRank: 999
+                }),
             };
             
             await setDoc(supplierDocRef, dataToSave, { merge: true });

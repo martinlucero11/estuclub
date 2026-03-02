@@ -19,6 +19,9 @@ export default function PanelCluberPage() {
   const dashboardNavItems = navConfig.sidebarNav
     .flatMap(section => section.items || [])
     .filter(item => {
+        // The main link to the panel itself should not be shown inside the panel
+        if (item.href === '/panel-cluber') return false;
+
         const roleMatch = hasRequiredRole([activeRole], item.role);
         if (!roleMatch) return false;
         
