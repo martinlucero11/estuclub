@@ -9,6 +9,7 @@ import {
   where,
   orderBy,
   QueryConstraint,
+  WhereFilterOp,
 } from "firebase/firestore";
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement, WhereFilter } from "@/types/data";
@@ -17,6 +18,10 @@ import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import dynamic from 'next/dynamic';
+
+const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), { ssr: false });
+
 
 // --- TYPE DEFINITIONS for Query Building ---
 type SortSpec = { field: string; direction: "asc" | "desc" };
@@ -66,6 +71,21 @@ const buildConstraints = ({
 // --- BENEFIT CARD ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
     const supplierInitials = getInitials(benefit.supplierName || 'S');
+
+    const redeemButton = (
+        <Button
+            size="sm"
+            variant="secondary"
+            className="rounded-full group-hover:bg-[#d83762] group-hover:text-white transition-colors"
+            onClick={(e) => {
+                // This is crucial to prevent the parent Link from navigating
+                e.preventDefault();
+            }}
+        >
+            Ver
+        </Button>
+    );
+
     return (
         <div className="flex-shrink-0 w-[260px] md:w-[280px] snap-start">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow duration-300 overflow-hidden group">
@@ -99,9 +119,9 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                                 </Avatar>
                                <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{benefit.supplierName}</span>
                            </div>
-                            <Button size="sm" variant="secondary" className="rounded-full group-hover:bg-[#d83762] group-hover:text-white transition-colors">
-                                Ver
-                            </Button>
+                            <RedeemBenefitDialog benefit={benefit as any}>
+                                {redeemButton}
+                            </RedeemBenefitDialog>
                         </div>
                     </div>
                 </Link>

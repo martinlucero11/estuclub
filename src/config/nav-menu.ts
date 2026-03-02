@@ -99,7 +99,7 @@ export const navConfig: NavConfig = {
         },
         {
             title: "Gestión de Clubers",
-            href: "/panel-cluber/user-management",
+            href: "/panel-cluber/supplier-management",
             icon: Users,
             role: ["admin"],
         },
