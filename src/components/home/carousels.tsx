@@ -35,6 +35,9 @@ const buildConstraints = ({
 }): QueryConstraint[] => {
   const constraints: QueryConstraint[] = [];
 
+  // Always filter for visibility
+  constraints.push(where('isVisible', '==', true));
+
   if (filter) {
     filter.forEach((f) => {
       // Basic validation to ensure we don't pass undefined values to where()
@@ -209,6 +212,6 @@ const createCarousel = <T extends {id: string}>(
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [{ field: 'isVisible', op: '==', value: true }]);
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [{ field: 'isVisible', op: '==', value: true }]);
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', [{field: 'status', op: '==', value: 'approved'}]);

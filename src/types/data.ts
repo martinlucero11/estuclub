@@ -30,10 +30,10 @@ export interface SupplierProfile {
   logoUrl?: string;
   address?: string;
   whatsapp?: string;
-  isVisible: boolean;
-  isFeatured: boolean;
-  featuredRank?: number;
-  homeCarousels?: string[];
+  isVisible: boolean; // Admin-controlled
+  isFeatured: boolean; // Admin-controlled
+  featuredRank?: number; // Admin-controlled
+  homeCarousels?: string[]; // Admin-controlled
   createdAt?: Timestamp;
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;
@@ -69,9 +69,9 @@ export interface Benefit {
   availableDays?: string[];
   redemptionCount?: number;
   active?: boolean;
-  isFeatured: boolean;
-  isVisible: boolean;
-  featuredRank?: number;
+  isFeatured: boolean; // Admin-controlled
+  isVisible: boolean; // Admin or Owner controlled
+  featuredRank?: number; // Admin-controlled
   supplierName?: string;
   status?: 'active' | 'inactive';
   stock?: number;
@@ -97,7 +97,7 @@ export interface Announcement {
   imageUrl?: string;
   linkUrl?: string;
   status: 'pending' | 'approved' | 'rejected';
-  isVisible?: boolean;
+  isVisible?: boolean; // New field
   submittedAt: Timestamp;
   approvedAt?: Timestamp;
   createdAt: Timestamp;
