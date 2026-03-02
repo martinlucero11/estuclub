@@ -1,8 +1,15 @@
-
 'use client';
 import { useMemo } from "react";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, limit, where, orderBy } from "firebase/firestore"; 
+import {
+  collection,
+  query,
+  limit,
+  where,
+  orderBy,
+  QueryConstraint,
+  WhereFilterOp,
+} from "firebase/firestore";
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement } from "@/types/data";
 import Image from "next/image";
@@ -10,6 +17,45 @@ import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+
+// --- TYPE DEFINITIONS for Query Building ---
+type FilterSpec = { field: string; op: WhereFilterOp; value: any };
+type SortSpec = { field: string; direction: "asc" | "desc" };
+
+// --- HELPER FUNCTION for Query Building ---
+const buildConstraints = ({
+  filter,
+  sort,
+  limitCount = 10,
+}: {
+  filter?: FilterSpec[];
+  sort?: SortSpec;
+  limitCount?: number;
+}): QueryConstraint[] => {
+  const constraints: QueryConstraint[] = [];
+
+  if (filter) {
+    filter.forEach((f) => {
+      // Basic validation to ensure we don't pass undefined values to where()
+      if (f.field && f.op && f.value !== undefined) {
+        constraints.push(where(f.field, f.op, f.value));
+      }
+    });
+  }
+
+  if (sort && sort.field) {
+    constraints.push(orderBy(sort.field, sort.direction));
+  } else if (!sort && collection.name !== 'announcements') {
+      // Default sort for collections that need it if none is provided
+      constraints.push(orderBy('createdAt', 'desc'));
+  }
+  
+  // Ensure limit is always applied
+  constraints.push(limit(limitCount));
+
+  return constraints;
+};
+
 
 // --- BENEFIT CARD (AVATAR LOGIC IS CORRECT) ---
 const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
@@ -100,21 +146,24 @@ const createCarousel = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
     collectionName: string, 
     dataKey: string,
-    defaultQueryConstraints: any[] = []
+    defaultFilters: FilterSpec[] = []
 ) => {
-    return function Carousel({ filter, sort }: { filter?: any[], sort?: any }) {
+    return function Carousel({ filter, sort }: { filter?: FilterSpec[], sort?: SortSpec }) {
         const firestore = useFirestore();
         
         const itemsQuery = useMemo(() => {
-            let q = query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...defaultQueryConstraints);
-            if (filter) {
-                q = query(q, ...filter);
-            }
-            if (sort) {
-                 q = query(q, orderBy(sort.field, sort.direction));
-            }
-            q = query(q, limit(10));
-            return q;
+            const combinedFilters = [...defaultFilters, ...(filter || [])];
+            
+            const constraints = buildConstraints({
+                filter: combinedFilters,
+                sort: sort,
+                limitCount: 10,
+            });
+
+            return query(
+                collection(firestore, collectionName).withConverter(createConverter<T>()),
+                ...constraints
+            );
         }, [firestore, filter, sort]);
 
         const { data: items, isLoading, error } = useCollection(itemsQuery);
@@ -159,6 +208,6 @@ const createCarousel = <T extends {id: string}>(
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [where('active', '==', true)]);
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [where('isVisible', '==', true)]);
-export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', [{ field: 'active', op: '==', value: true }]);
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', [{ field: 'isVisible', op: '==', value: true }]);
+export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', [{field: 'status', op: '==', value: 'approved'}]);
