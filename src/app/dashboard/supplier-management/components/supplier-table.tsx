@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -10,11 +9,14 @@ import { SupplierProfile } from '@/types/data';
 import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
+import { SupplierEditDialog } from './supplier-edit-dialog';
 
 export function SupplierTable() {
   const firestore = useFirestore();
   const [loadingStates, setLoadingStates] = useState<Record<string, Record<string, boolean>>>({});
   const [supplierIdToDelete, setSupplierIdToDelete] = useState<string | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierProfile | null>(null);
 
   const suppliersQuery = useMemo(
     () => query(collection(firestore, "roles_supplier").withConverter(createConverter<SupplierProfile>()), orderBy("name")),
@@ -60,8 +62,13 @@ export function SupplierTable() {
       setSupplierIdToDelete(null);
     }
   };
+  
+  const handleEdit = (supplier: SupplierProfile) => {
+    setSelectedSupplier(supplier);
+    setIsEditDialogOpen(true);
+  };
 
-  const columns = useMemo(() => getSupplierColumns({ onToggle: handleToggle, onDelete: handleDeleteRequest, loadingStates }), [loadingStates]);
+  const columns = useMemo(() => getSupplierColumns({ onToggle: handleToggle, onDelete: handleDeleteRequest, onEdit: handleEdit, loadingStates }), [loadingStates]);
 
   return (
     <>
@@ -79,7 +86,13 @@ export function SupplierTable() {
           title="¿Eliminar este proveedor?"
           description="Esta acción es permanente y no se puede deshacer. Se eliminará el rol de proveedor, pero no la cuenta de usuario."
       />
+      {selectedSupplier && (
+        <SupplierEditDialog 
+          isOpen={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
+          supplier={selectedSupplier}
+        />
+      )}
     </>
   );
 }
-
