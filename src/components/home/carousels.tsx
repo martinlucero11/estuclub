@@ -61,7 +61,9 @@ const buildConstraints = ({
     constraints.push(orderBy(sort.field, sort.direction));
   } else if (!sort) {
      // Add a sensible default sort order if none is provided
-    if (collectionName === 'announcements') {
+    if (collectionName === 'benefits') {
+        constraints.push(orderBy('createdAt', 'desc'));
+    } else if (collectionName === 'announcements') {
         constraints.push(orderBy('createdAt', 'desc'));
     } else {
         constraints.push(orderBy('name', 'asc'));
