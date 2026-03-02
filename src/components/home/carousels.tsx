@@ -1,8 +1,6 @@
-
-
 'use client';
 import { useMemo } from "react";
-import { useCollection, useFirestore } from "@/firebase";
+import { useCollectionOnce, useFirestore } from "@/firebase";
 import {
   collection,
   query,
@@ -201,12 +199,12 @@ const createCarousel = <T extends {id: string}>(
             );
         }, [firestore, filters, sort]);
 
-        const { data: items, isLoading, error } = useCollection(itemsQuery);
+        const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
 
         const suppliersQuery = useMemo(() => 
             collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null
         , [firestore, collectionName]);
-        const { data: suppliers } = useCollection(suppliersQuery);
+        const { data: suppliers } = useCollectionOnce(suppliersQuery);
         
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 

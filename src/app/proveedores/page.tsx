@@ -1,8 +1,7 @@
-
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
@@ -65,7 +64,7 @@ function CluberListPage() {
         [firestore, activeFilter]
     );
 
-    const { data: clubers, isLoading, error } = useCollection(clubersQuery);
+    const { data: clubers, isLoading, error } = useCollectionOnce(clubersQuery);
     
      if (isLoading) {
         return <ClubersPageSkeleton />;

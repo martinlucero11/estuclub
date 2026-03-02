@@ -1,6 +1,6 @@
 'use client';
 
-import { useCollection, useFirestore, useDoc } from '@/firebase';
+import { useCollectionOnce, useFirestore, useDoc } from '@/firebase';
 import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
@@ -82,13 +82,13 @@ function CluberProfileContent({ slug }: { slug: string }) {
         return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('active', '==', true));
     }, [supplier, firestore]);
 
-    const { data: benefits, isLoading: benefitsLoading } = useCollection(benefitsQuery);
+    const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
 
     const servicesQuery = useMemo(() => {
         if (!supplier) return null;
         return query(collection(firestore, `roles_supplier/${supplier.id}/services`).withConverter(createConverter<Service>()));
     }, [supplier, firestore]);
-    const { data: services } = useCollection(servicesQuery);
+    const { data: services } = useCollectionOnce(servicesQuery);
 
     const availabilityRef = useMemo(() => {
         if (!supplier) return null;

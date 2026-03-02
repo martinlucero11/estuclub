@@ -1,7 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
@@ -55,7 +55,7 @@ function CluberList() {
         [firestore]
     );
 
-    const { data: clubers, isLoading, error } = useCollection(clubersQuery);
+    const { data: clubers, isLoading, error } = useCollectionOnce(clubersQuery);
     
     if (isLoading) {
         return <TurnosPageSkeleton />;
