@@ -47,12 +47,12 @@ export function CategoryGrid() {
             {categories.map(category => (
                 <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-24 snap-start text-center group">
                     <div className={cn(
-                        'flex flex-col items-center justify-center h-20 w-20 mx-auto rounded-2xl bg-secondary transition-all',
+                        'flex flex-col items-center justify-center h-20 w-20 mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
                         'hover:shadow-lg hover:-translate-y-1'
                     )}>
                          <span className={cn("text-4xl", category.colorClass)}>{category.emoji}</span>
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary">{category.name}</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
                 </Link>
             ))}
         </div>
