@@ -142,9 +142,9 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
     return (
         <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-[#d83762]/10 hover:bg-[#d83762]/20 transition-colors flex items-center justify-center">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-card hover:bg-accent transition-colors flex items-center justify-center">
                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-contain group-hover:scale-110 transition-transform" />
+                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover group-hover:scale-110 transition-transform" />
                     <AvatarFallback className="text-xl font-bold bg-transparent">{initials}</AvatarFallback>
                 </Avatar>
             </div>

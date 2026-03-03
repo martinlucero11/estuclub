@@ -194,7 +194,7 @@ export default function EditSupplierProfileForm() {
                     </div>
                 )}
                 <Avatar className="h-32 w-32">
-                    <AvatarImage src={logoPreview || logoUrlFromForm || ''} alt="Logo" className="object-contain" />
+                    <AvatarImage src={logoPreview || logoUrlFromForm || ''} alt="Logo" className="object-cover" />
                     <AvatarFallback className="text-4xl">
                         {supplierProfile?.name.charAt(0).toUpperCase() || 'S'}
                     </AvatarFallback>
