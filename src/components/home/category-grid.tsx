@@ -52,7 +52,7 @@ export function CategoryGrid() {
                     )}>
                          <span className={cn("text-4xl", category.colorClass)}>{category.emoji}</span>
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary">{category.name}</p>
+                    <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary">{category.name}</p>
                 </Link>
             ))}
         </div>
