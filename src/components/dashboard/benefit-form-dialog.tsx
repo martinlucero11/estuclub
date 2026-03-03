@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { benefitCategories } from '@/types/data';
+import { benefitCategories, WhereFilter } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat, PlusCircle } from 'lucide-react';
 import { useFirestore, useUser, useCollection } from '@/firebase';
@@ -138,9 +139,9 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
         title: '¡Nuevo Beneficio Añadido!',
         description: `El beneficio "${values.title}" ahora está disponible.`,
       });
-
-      form.reset();
+      setIsSubmitting(false);
       onOpenChange(false);
+      form.reset();
     } catch (error: any) {
       console.error("Error adding document: ", error);
       toast({
@@ -148,7 +149,6 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
         title: "Error",
         description: error.message || "No se pudo añadir el beneficio. Inténtalo de nuevo.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   }

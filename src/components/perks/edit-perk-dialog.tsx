@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { benefitCategories, type SerializableBenefit } from '@/types/data';
+import { benefitCategories, type SerializableBenefit, WhereFilter } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat } from 'lucide-react';
 import { useFirestore } from '@/firebase';
@@ -114,6 +114,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
         title: 'Beneficio Actualizado',
         description: `El beneficio "${values.title}" ha sido actualizado.`,
       });
+      setIsSubmitting(false);
       onOpenChange(false);
     } catch (error: any) {
       console.error("Error updating document: ", error);
@@ -122,8 +123,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
         title: "Error",
         description: "No se pudo actualizar el beneficio. Inténtalo de nuevo.",
       });
-    } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   }
 
@@ -438,4 +438,3 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
     </Dialog>
   );
 }
-

@@ -71,6 +71,7 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                 });
                 toast({ title: 'Banner creado', description: 'El nuevo banner ha sido añadido.' });
             }
+            setIsSubmitting(false);
             onSuccess();
         } catch (error: any) {
             console.error("Error saving banner:", error);
@@ -79,7 +80,6 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                 title: 'Error',
                 description: 'No se pudo guardar el banner. Inténtalo de nuevo.',
             });
-        } finally {
             setIsSubmitting(false);
         }
     }

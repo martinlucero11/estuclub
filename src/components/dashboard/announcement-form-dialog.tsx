@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -80,13 +81,13 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
                 });
                 toast({ title: "Anuncio creado con éxito" });
             }
+            setIsSubmitting(false);
             onOpenChange(false);
             form.reset();
 
         } catch (error) {
             console.error("Error saving announcement: ", error);
             toast({ title: "Error al guardar el anuncio", variant: "destructive" });
-        } finally {
             setIsSubmitting(false);
         }
     }

@@ -13,7 +13,7 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { Save } from 'lucide-react';
-import { homeSectionTypes, HomeSection, Banner, HomeSectionType } from '@/types/data';
+import { homeSectionTypes, HomeSection, Banner, HomeSectionType, WhereFilter } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 
@@ -88,6 +88,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 });
                 toast({ title: 'Sección creada', description: 'La nueva sección ha sido añadida.' });
             }
+            setIsSubmitting(false);
             onSuccess();
         } catch (error: any) {
             console.error("Error saving home section:", error);
@@ -96,7 +97,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 title: 'Error',
                 description: 'No se pudo guardar la sección. Inténtalo de nuevo.',
             });
-        } finally {
             setIsSubmitting(false);
         }
     }

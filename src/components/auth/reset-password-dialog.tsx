@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -57,6 +58,7 @@ export default function ResetPasswordDialog({ children }: ResetPasswordDialogPro
         title: 'Correo enviado',
         description: 'Se ha enviado un enlace a tu correo para restablecer tu contraseña.',
       });
+      setIsSubmitting(false);
       setIsOpen(false);
       form.reset();
     } catch (error: any) {
@@ -69,7 +71,6 @@ export default function ResetPasswordDialog({ children }: ResetPasswordDialogPro
             ? 'No se encontró ninguna cuenta con ese correo electrónico.'
             : 'No se pudo enviar el correo de restablecimiento. Inténtalo de nuevo.',
       });
-    } finally {
       setIsSubmitting(false);
     }
   }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -115,6 +116,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                 title: isEditMode ? 'Cluber Actualizado' : '¡Usuario ahora es un Cluber!',
                 description: `El perfil de ${user.email} ha sido ${isEditMode ? 'actualizado' : 'creado'}.`,
             });
+            setIsSubmitting(false);
             onSuccess();
         } catch (error: any) {
             console.error("Error saving supplier profile:", error);
@@ -123,7 +125,6 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                 title: 'Error',
                 description: 'No se pudo guardar el perfil del Cluber.',
             });
-        } finally {
             setIsSubmitting(false);
         }
     }
