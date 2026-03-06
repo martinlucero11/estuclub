@@ -29,8 +29,10 @@ service cloud.firestore {
     }
 
     match /announcements/{announcementId} {
-      allow get, list: if true;
-      allow write: if isSupplier() || isAdmin();
+      allow read: if resource.data.status == 'approved' || (isOwner(resource.data.supplierId) || isAdmin());
+      allow list: if true; // Lists are filtered on client for approved status
+      allow create: if isSupplier();
+      allow update, delete: if isOwner(resource.data.supplierId) || isAdmin();
     }
 
     match /notifications/{notificationId} {
@@ -44,16 +46,21 @@ service cloud.firestore {
       // Supplier can create if they own it and are NOT setting it as featured.
       allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
       // Admin can do anything.
-      // Supplier can update if they own it and are NOT changing the isFeatured flag.
-      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && request.resource.data.isFeatured == resource.data.isFeatured) || isAdmin();
+      // Supplier can update if they own it and are NOT changing sensitive admin-only fields.
+      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'featuredRank', 'isVisible'])) || isAdmin();
       allow delete: if (isSupplier() && resource.data.ownerId == request.auth.uid) || isAdmin();
     }
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Users can read any profile, but only write to their own (or if admin)
-      allow read: if isSignedIn();
+      // Allow public profile reads for features like leaderboards or verification pages.
+      // Writes are still restricted to the owner or an admin.
+      allow read: if true;
       allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /userTokens/{userId} {
+        allow read, write: if isOwner(userId);
     }
 
     match /users/{userId}/redeemed_benefits/{redemptionId} {
@@ -62,10 +69,10 @@ service cloud.firestore {
     }
 
     match /benefitRedemptions/{redemptionId} {
-      // Any signed-in user can create a redemption record, but only admins or the designated supplier can modify/delete it
-      allow read: if isSignedIn();
+      allow read: if (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
       allow create: if isSignedIn();
-      allow update, delete: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
+      allow update: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
+      allow delete: if isAdmin();
     }
     
     match /usernames/{username} {
@@ -103,13 +110,6 @@ service cloud.firestore {
       match /availability/{schedule} {
         allow read: if true;
         allow write: if isOwner(supplierId) || isAdmin();
-      }
-
-      // LEGACY: Kept for backwards compatibility
-      match /appointments/{appointmentId} {
-          allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
-          allow create: if isSignedIn();
-          allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) || isOwner(supplierId) || isAdmin();
       }
     }
     
