@@ -122,7 +122,11 @@ export default function ProfilePage() {
     const firestore = useFirestore();
     const { toast } = useToast();
 
-    const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+    const userProfileRef = useMemo(() => {
+        if (isUserLoading || !user) return null;
+        return doc(firestore, 'users', user.uid);
+    }, [user, firestore, isUserLoading]);
+    
     const { data: userProfile, isLoading: isProfileLoading, error } = useDoc<UserProfile>(userProfileRef);
 
     // Efficiently get user rank

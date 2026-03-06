@@ -36,19 +36,15 @@ import { doc } from 'firebase/firestore';
 function Logo() {
     return (
         <Link href="/" className="flex items-center justify-center">
-            <div
-                className="w-32 h-10"
-                style={{
-                    backgroundColor: 'hsl(var(--primary))',
-                    maskImage: "url('/logo.svg')",
-                    maskSize: 'contain',
-                    maskRepeat: 'no-repeat',
-                    maskPosition: 'center',
-                    WebkitMaskImage: "url('/logo.svg')",
-                    WebkitMaskSize: 'contain',
-                    WebkitMaskRepeat: 'no-repeat',
-                    WebkitMaskPosition: 'center',
-                }}
+            {/* Using next/image with a style to invert colors in dark mode */}
+            <Image 
+                src="/logo.svg" 
+                alt="EstuClub Logo" 
+                width={128} 
+                height={38} 
+                style={{ filter: 'brightness(0) invert(1)' }} 
+                className="dark:invert-0"
+                priority
             />
         </Link>
     )

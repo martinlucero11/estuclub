@@ -1,4 +1,3 @@
-
 'use client';
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -97,13 +96,18 @@ function RankingList({ users, currentUserUid }: { users: UserProfile[] | undefin
 
 export default function LeaderboardPage() {
   const firestore = useFirestore();
-  const { user: currentUser } = useUser();
+  const { user: currentUser, isUserLoading } = useUser();
 
   const usersQuery = useMemo(
-    () => query(collection(firestore, 'users').withConverter(createConverter<UserProfile>()), orderBy('points', 'desc')),
-    [firestore]
+    () => {
+        if (isUserLoading || !currentUser) return null;
+        return query(collection(firestore, 'users').withConverter(createConverter<UserProfile>()), orderBy('points', 'desc'))
+    },
+    [firestore, currentUser, isUserLoading]
   );
   const { data: users, isLoading } = useCollection(usersQuery);
+
+  const combinedLoading = isUserLoading || isLoading;
 
   return (
     <MainLayout>
@@ -121,7 +125,7 @@ export default function LeaderboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
+            {combinedLoading ? <RankingSkeleton /> : <RankingList users={users} currentUserUid={currentUser?.uid} />}
           </CardContent>
         </Card>
       </div>

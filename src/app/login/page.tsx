@@ -9,25 +9,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import SplashScreen from '@/components/layout/splash-screen';
 
-function EstuClubLogo() {
-  return (
-    <div
-      className="w-40 h-14 mx-auto mb-6"
-      style={{
-          backgroundColor: 'hsl(var(--primary))',
-          maskImage: "url('/logo.svg')",
-          maskSize: 'contain',
-          maskRepeat: 'no-repeat',
-          maskPosition: 'center',
-          WebkitMaskImage: "url('/logo.svg')",
-          WebkitMaskSize: 'contain',
-          WebkitMaskRepeat: 'no-repeat',
-          WebkitMaskPosition: 'center',
-      }}
-    />
-  );
-}
-
 export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -47,7 +28,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <header className="mb-8 flex flex-col items-center">
             <Link href="/" className="mb-4">
-                <EstuClubLogo />
+                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} style={{ filter: 'brightness(0) invert(1)' }} className="dark:invert-0" />
             </Link>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sr-only">
             EstuClub
