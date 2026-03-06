@@ -1,9 +1,18 @@
+
 'use client';
 
 import React from 'react';
-import { LayoutGrid, User } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { User, LogOut, History, CalendarClock, LayoutGrid } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Sheet,
   SheetContent,
@@ -13,42 +22,16 @@ import {
   SheetTrigger,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthService, useUser, useDoc, useFirestore } from '@/firebase';
+import { useAuthService, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
+import { MainNav } from './main-nav';
 import { hasRequiredRole } from '@/lib/utils';
-import { LogOut, History, CalendarClock } from 'lucide-react';
-import { doc } from 'firebase/firestore';
-
-function Logo() {
-    return (
-        <Link href="/" className="flex items-center justify-center">
-            {/* Using next/image with a style to invert colors in dark mode */}
-            <Image 
-                src="/logo.svg" 
-                alt="EstuClub Logo" 
-                width={128} 
-                height={38} 
-                style={{ filter: 'brightness(0) invert(1)' }} 
-                className="dark:invert-0"
-                priority
-            />
-        </Link>
-    )
-}
 
 function UserMenu() {
   const { user, isUserLoading } = useUser(); 
@@ -122,41 +105,37 @@ function UserMenu() {
   );
 }
 
-function MainMenu() {
+function MobileNav() {
     const { roles } = useUser();
-    const isAdmin = roles.includes('admin');
-    const isSupplier = roles.includes('supplier');
     const allRoles = ['user', ...roles];
 
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="md:hidden">
                     <LayoutGrid className="h-6 w-6" />
                     <span className="sr-only">Abrir menú</span>
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0">
                 <SheetHeader className="p-6">
-                    <SheetTitle><Logo /></SheetTitle>
+                    <SheetTitle>
+                        <Link href="/" className="flex items-center justify-center">
+                            <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+                        </Link>
+                    </SheetTitle>
                     <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-1 px-6">
+                <nav className="mt-8 flex flex-col gap-1 px-4">
                     {navConfig.mainNav.map((item) => {
-                        let isVisible;
-                        if (item.href === '/panel-cluber') {
-                            isVisible = isAdmin || isSupplier;
-                        } else {
-                            isVisible = hasRequiredRole(allRoles, item.role);
-                        }
-                        
+                        const isVisible = hasRequiredRole(allRoles, item.role);
                         if (!isVisible) return null;
 
                         const Icon = item.icon;
                         return (
                             <SheetClose asChild key={item.href}>
                                 <Link href={item.href}>
-                                    <Button variant="ghost" className="w-full justify-start text-base px-3 py-2">
+                                    <Button variant="ghost" className="w-full justify-start text-base py-3 h-auto">
                                         {Icon && <Icon className="mr-3 h-5 w-5" />}
                                         {item.title}
                                     </Button>
@@ -165,10 +144,6 @@ function MainMenu() {
                         )
                     })}
                 </nav>
-                <div className="mt-auto p-6 border-t border-slate-100 dark:border-slate-800 text-center text-sm text-slate-500">
-                    <p className="font-medium">©Mismo Studio - 2026</p>
-                    <p className="mt-1 text-[#d83762] font-semibold">Con amor para Mela &lt;3</p>
-                </div>
             </SheetContent>
         </Sheet>
     );
@@ -176,15 +151,28 @@ function MainMenu() {
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="w-1/3 flex justify-start items-center gap-2">
-            <MainMenu />
+    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
+      <div className="container flex h-16 items-center justify-between">
+        
+        <div className="flex items-center gap-6">
+            {/* Mobile Nav Trigger */}
+            <MobileNav />
+            {/* Desktop Logo and Nav */}
+            <Link href="/" className="mr-6 hidden md:flex">
+                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+            </Link>
+            <MainNav items={navConfig.mainNav} />
         </div>
-        <div className="w-1/3 flex justify-center">
-            <Logo />
+
+        {/* Mobile Centered Logo */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
+            <Link href="/" className="flex items-center">
+                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+            </Link>
         </div>
-        <div className="w-1/3 flex justify-end items-center gap-2">
+        
+        {/* Right side Actions */}
+        <div className="flex items-center gap-2">
             <NotificationBell />
             <UserMenu />
         </div>
