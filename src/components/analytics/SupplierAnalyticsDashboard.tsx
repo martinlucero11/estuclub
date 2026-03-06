@@ -32,15 +32,23 @@ function LoadingSkeleton() {
 export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnalyticsDashboardProps) {
     const firestore = useFirestore();
 
-    const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(
-        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplierId))
+    const benefitsQuery = useMemo(() => 
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplierId)),
+        [firestore, supplierId]
     );
-    const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(
-        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), where('supplierId', '==', supplierId))
+    const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(benefitsQuery);
+
+    const redemptionsQuery = useMemo(() =>
+        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), where('supplierId', '==', supplierId)),
+        [firestore, supplierId]
     );
-    const { data: appointments, isLoading: appointmentsLoading } = useCollectionOnce<Appointment>(
-        query(collection(firestore, 'appointments').withConverter(createConverter<Appointment>()), where('supplierId', '==', supplierId))
+    const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
+
+    const appointmentsQuery = useMemo(() =>
+        query(collection(firestore, 'appointments').withConverter(createConverter<Appointment>()), where('supplierId', '==', supplierId)),
+        [firestore, supplierId]
     );
+    const { data: appointments, isLoading: appointmentsLoading } = useCollectionOnce<Appointment>(appointmentsQuery);
 
     const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading;
 

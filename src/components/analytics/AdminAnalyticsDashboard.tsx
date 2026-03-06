@@ -32,18 +32,29 @@ function LoadingSkeleton() {
 export default function AdminAnalyticsDashboard() {
     const firestore = useFirestore();
 
-    const { data: users, isLoading: usersLoading } = useCollectionOnce<UserProfile>(
-        query(collection(firestore, 'users').withConverter(createConverter<UserProfile>()))
+    const usersQuery = useMemo(() => 
+        query(collection(firestore, 'users').withConverter(createConverter<UserProfile>())),
+        [firestore]
     );
-    const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce<SupplierProfile>(
-        query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()))
+    const { data: users, isLoading: usersLoading } = useCollectionOnce<UserProfile>(usersQuery);
+
+    const suppliersQuery = useMemo(() =>
+        query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())),
+        [firestore]
     );
-    const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(
-        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()))
+    const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce<SupplierProfile>(suppliersQuery);
+
+    const benefitsQuery = useMemo(() =>
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())),
+        [firestore]
     );
-    const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(
-        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()))
+    const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(benefitsQuery);
+    
+    const redemptionsQuery = useMemo(() =>
+        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>())),
+        [firestore]
     );
+    const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
 
     const isLoading = usersLoading || suppliersLoading || benefitsLoading || redemptionsLoading;
 
