@@ -15,13 +15,14 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library } from 'lucide-react';
+import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp, writeBatch, query, collection, where, limit } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -46,6 +47,7 @@ export default function SignupForm() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,25 +66,32 @@ export default function SignupForm() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
+    form.clearErrors();
     
     try {
-      // Step 1: Check if username is already taken. This is a critical pre-check.
       const usernameDocRef = doc(firestore, 'usernames', values.username.toLowerCase());
       const usernameDoc = await getDoc(usernameDocRef);
       if (usernameDoc.exists()) {
           form.setError('username', { message: 'Este nombre de usuario ya está en uso.' });
-          setIsSubmitting(false); // Reset submitting state
+          setIsSubmitting(false);
           return;
       }
+      
+      const dniQuery = query(collection(firestore, 'users'), where('dni', '==', values.dni), limit(1));
+      const dniSnapshot = await getDocs(dniQuery);
+      if (!dniSnapshot.empty) {
+        form.setError('dni', { message: 'Este DNI ya está registrado.' });
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Step 2: Create the user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Step 3: Use a batch write to atomically create user profile and username documents
+      await sendEmailVerification(user);
+
       const batch = writeBatch(firestore);
 
-      // User profile document
       const userDocRef = doc(firestore, 'users', user.uid);
       batch.set(userDocRef, {
         id: user.uid,
@@ -103,38 +112,49 @@ export default function SignupForm() {
         createdAt: serverTimestamp(),
       });
       
-      // Username lookup document
       const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
       batch.set(newUsernameRef, { userId: user.uid });
 
-      // Commit the atomic batch
       await batch.commit();
       
-      // Step 4: Update the user's display name in Auth (optional but good practice)
       await updateProfile(user, {
         displayName: `${values.firstName} ${values.lastName}`,
       });
 
-      // Step 5: Notify user and redirect
-      toast({
-        title: '¡Cuenta Creada!',
-        description: 'Tu cuenta ha sido creada con éxito. Serás redirigido.',
-      });
-      
-      router.push('/');
+      setShowVerificationMessage(true);
 
     } catch (error: any) {
       console.error("Error en el registro:", error);
+      let errorMessage = 'No se pudo crear la cuenta. Inténtalo de nuevo.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Este correo electrónico ya está en uso.';
+        form.setError('email', { message: errorMessage });
+      }
       toast({
         variant: "destructive",
         title: "Error en el registro",
-        description: error.code === 'auth/email-already-in-use' 
-            ? 'Este correo electrónico ya está en uso.'
-            : 'No se pudo crear la cuenta. Inténtalo de nuevo.'
+        description: errorMessage
       });
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (showVerificationMessage) {
+    return (
+      <Card>
+        <CardContent className="pt-6 text-center space-y-4">
+            <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>¡Revisa tu correo!</AlertTitle>
+                <AlertDescription>
+                    Te hemos enviado un enlace de verificación. Por favor, haz clic en él para activar tu cuenta antes de iniciar sesión.
+                </AlertDescription>
+            </Alert>
+            <Button onClick={() => router.push('/login')}>Ir a Iniciar Sesión</Button>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (

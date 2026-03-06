@@ -1,4 +1,3 @@
-
 import { NavConfig } from "@/types/nav";
 import {
     LayoutDashboard,
@@ -15,6 +14,7 @@ import {
     CalendarDays,
     QrCode,
     Building,
+    BarChart,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -66,6 +66,12 @@ export const navConfig: NavConfig = {
           role: ["supplier"],
         },
         {
+          title: "Mis Analíticas",
+          href: "/panel-cluber/analytics",
+          icon: BarChart,
+          role: ["supplier"],
+        },
+        {
           title: "Escanear QR",
           href: "/panel-cluber/scanner",
           icon: QrCode,
@@ -97,31 +103,45 @@ export const navConfig: NavConfig = {
             role: ["supplier"],
             supplierCapability: "appointmentsEnabled",
         },
-        {
-            title: "Gestión de Clubers",
-            href: "/panel-cluber/supplier-management",
-            icon: Users,
-            role: ["admin"],
-        },
-        {
-            title: "Diseño de Inicio",
-            href: "/panel-cluber/home-builder",
-            icon: LayoutTemplate,
-            role: ["admin"],
-        },
-        {
-            title: "Gestión de Banners",
-            href: "/panel-cluber/banners",
-            icon: Image,
-            role: ["admin"],
-        },
-        {
-            title: "Gestión de Categorías",
-            href: "/panel-cluber/categories",
-            icon: Shapes,
-            role: ["admin"],
-        },
       ]
     },
+    {
+        title: "Panel de Admin",
+        href: "/panel-admin",
+        icon: LayoutDashboard,
+        role: ["admin"],
+        items: [
+            {
+                title: "Analíticas Globales",
+                href: "/panel-admin/analytics",
+                icon: BarChart,
+                role: ["admin"],
+            },
+            {
+                title: "Gestión de Clubers",
+                href: "/panel-cluber/supplier-management",
+                icon: Users,
+                role: ["admin"],
+            },
+            {
+                title: "Diseño de Inicio",
+                href: "/panel-cluber/home-builder",
+                icon: LayoutTemplate,
+                role: ["admin"],
+            },
+            {
+                title: "Gestión de Banners",
+                href: "/panel-cluber/banners",
+                icon: Image,
+                role: ["admin"],
+            },
+            {
+                title: "Gestión de Categorías",
+                href: "/panel-cluber/categories",
+                icon: Shapes,
+                role: ["admin"],
+            },
+        ]
+    }
   ],
 };

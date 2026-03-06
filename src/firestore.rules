@@ -56,6 +56,10 @@ service cloud.firestore {
       allow write: if isOwner(userId) || isAdmin();
     }
 
+    match /userTokens/{userId} {
+        allow read, write: if isOwner(userId);
+    }
+
     match /users/{userId}/redeemed_benefits/{redemptionId} {
       // A user can manage their own redemption history
       allow read, write: if isOwner(userId) || isAdmin();
@@ -120,4 +124,3 @@ service cloud.firestore {
     }
   }
 }
-

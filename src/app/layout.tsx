@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { FirebaseProvider } from "@/firebase/provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { MessagingProvider } from "@/firebase/messaging";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -30,7 +32,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <FirebaseProvider>
-            {children}
+            <MessagingProvider>
+              {children}
+            </MessagingProvider>
+            <Toaster />
           </FirebaseProvider>
         </ThemeProvider>
       </body>

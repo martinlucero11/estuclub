@@ -1,4 +1,3 @@
-
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -19,6 +18,28 @@ export type WhereFilter = {
  * Defines the possible roles a user can have within the application.
  */
 export type UserRole = 'admin' | 'supplier' | 'user';
+
+/**
+ * Represents the data stored for a user in the /users collection.
+ */
+export interface UserProfile {
+    id: string;
+    uid: string;
+    username: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    dni: string;
+    phone: string;
+    gender: string;
+    university: string;
+    major: string;
+    points: number;
+    photoURL?: string;
+    role: UserRole;
+    createdAt: Timestamp;
+}
+
 
 /**
  * Defines the categories for Clubers (suppliers).
@@ -250,4 +271,3 @@ export interface AppointmentSlot {
     bookedBy?: string; // UID of the student who booked it
     [key: string]: any;
 }
-
