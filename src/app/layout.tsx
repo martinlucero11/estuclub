@@ -6,6 +6,8 @@ import { FirebaseProvider } from "@/firebase/provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { MessagingProvider } from "@/firebase/messaging";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -31,12 +33,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <FirebaseProvider>
-            <MessagingProvider>
-              {children}
-            </MessagingProvider>
-            <Toaster />
-          </FirebaseProvider>
+          <Suspense fallback={<Loading />}>
+            <FirebaseProvider>
+              <MessagingProvider>
+                {children}
+              </MessagingProvider>
+              <Toaster />
+            </FirebaseProvider>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

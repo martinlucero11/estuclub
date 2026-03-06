@@ -1,15 +1,21 @@
-
 'use client';
 
-import { useFirebase } from '@/firebase/provider';
+import { useUser } from '@/firebase';
+import { Skeleton } from '../ui/skeleton';
 
 const WelcomeMessage = () => {
-    // FIX: Using the correct hook `useFirebase` to get the auth instance
-    const { auth } = useFirebase();
-    const user = auth?.currentUser;
+    const { user, isUserLoading } = useUser();
+    
+    if (isUserLoading) {
+        return (
+            <div className="px-4 py-6 space-y-2">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-5 w-64" />
+            </div>
+        )
+    }
 
-    // Fallback logic for display name remains the same
-    const displayName = user?.displayName?.split(' ')[0] || "Melanie";
+    const displayName = user?.displayName?.split(' ')[0] || "Bienvenido";
 
     return (
         <div className="px-4 py-6">

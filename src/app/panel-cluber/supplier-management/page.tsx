@@ -30,7 +30,7 @@ export default function SupplierManagementPage() {
       return (
         <>
             <BackButton />
-            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los proveedores." />
+            <AdminAccessDenied title="Acceso Denegado" description="Solo los administradores pueden gestionar los Clubers." />
         </>
       );
   }
