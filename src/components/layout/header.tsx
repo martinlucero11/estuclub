@@ -1,4 +1,3 @@
-
 'use client';
 
 import React from 'react';
@@ -49,9 +48,9 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="icon">
+      <Button asChild variant="ghost" size="sm">
         <Link href="/login">
-            <User className="h-6 w-6" />
+            Iniciar Sesión
         </Link>
       </Button>
     );
@@ -120,9 +119,11 @@ function MobileNav() {
             <SheetContent side="left" className="flex flex-col p-0">
                 <SheetHeader className="p-6">
                     <SheetTitle>
-                        <Link href="/" className="flex items-center justify-center">
-                            <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
-                        </Link>
+                        <SheetClose asChild>
+                            <Link href="/" className="flex items-center justify-center">
+                                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+                            </Link>
+                        </SheetClose>
                     </SheetTitle>
                     <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
@@ -152,29 +153,33 @@ function MobileNav() {
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container flex h-16 items-center justify-between">
-        
-        <div className="flex items-center gap-6">
-            {/* Mobile Nav Trigger */}
-            <MobileNav />
-            {/* Desktop Logo and Nav */}
-            <Link href="/" className="mr-6 hidden md:flex">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+      <div className="container flex h-16 items-center">
+        {/* Left Group */}
+        <div className="flex items-center">
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/" className="flex items-center space-x-2">
+              <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
             </Link>
             <MainNav items={navConfig.mainNav} />
+          </div>
+          {/* Mobile Nav Trigger */}
+          <div className="md:hidden">
+            <MobileNav />
+          </div>
         </div>
 
         {/* Mobile Centered Logo */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:hidden">
-            <Link href="/" className="flex items-center">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
-            </Link>
+        <div className="flex-1 flex justify-center md:hidden">
+          <Link href="/" aria-label="Homepage">
+            <Image src="/logo.svg" alt="EstuClub Logo" width={110} height={30} className="dark:invert" />
+          </Link>
         </div>
-        
-        {/* Right side Actions */}
-        <div className="flex items-center gap-2">
-            <NotificationBell />
-            <UserMenu />
+
+        {/* Right Group (Actions) */}
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <NotificationBell />
+          <UserMenu />
         </div>
       </div>
     </header>
