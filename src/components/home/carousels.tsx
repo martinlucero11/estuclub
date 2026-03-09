@@ -221,6 +221,4 @@ const createCarousel = <T extends {id: string}>(
 
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'suppliers', 'supplier');
-export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementsCarousel, 'announcements', 'announcement');
-
-    
+export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
