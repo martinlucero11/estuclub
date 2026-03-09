@@ -94,7 +94,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                         </div>
                     </div>
                     <div className="p-4 space-y-2">
-                        <h3 className="font-bold tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
+                        <h3 className="font-bold text-lg tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
                             {benefit.title}
                         </h3>
                         <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">

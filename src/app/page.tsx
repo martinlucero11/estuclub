@@ -1,16 +1,17 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { useMemo } from 'react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
-import { HomeSection, HomeSectionType, Category, Banner, WhereFilter } from '@/types/data';
+import { HomeSection } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 // --- DYNAMICALLY IMPORTED COMPONENTS ---
@@ -58,22 +59,6 @@ export default function HomePage() {
     , [firestore]);
 
     const { data: sections, isLoading: sectionsLoading } = useCollection(homeSectionsQuery);
-    
-    // Map section types to their corresponding components and link paths
-    const componentMap: Record<HomeSectionType, {
-        component: React.ComponentType<any>,
-        link?: string,
-        linkText?: string
-    }> = {
-        categories_grid: { component: CategoryGrid },
-        single_banner: { component: SingleBanner },
-        benefits_carousel: { component: BenefitsCarousel, link: "/benefits" },
-        suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
-        announcements_carousel: { component: AnnouncementsCarousel, link: "/announcements" },
-        featured_suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
-        new_suppliers_carousel: { component: SuppliersCarousel, link: "/proveedores" },
-        featured_perks: { component: BenefitsCarousel, link: "/benefits" },
-    };
 
     if (sectionsLoading) {
         return <PageSkeleton />;
@@ -83,45 +68,52 @@ export default function HomePage() {
         <MainLayout>
             <div className="mx-auto w-full">
                 <WelcomeMessage />
-                <div className="space-y-10 pb-8 pt-2">
-                    {sections && sections.map((section, index) => {
-                        const { component: Component, link } = componentMap[section.type] || {};
-                        
-                        if (!Component) return null;
+                <div className="space-y-6 pb-8 pt-2">
+                    {sections && sections.length > 0 ? sections.map((section) => {
+                        let Component;
+                        const props: any = { ...section.block, title: section.title };
 
-                        const componentProps: { [key: string]: any } = { ...section };
-                        
-                        // This logic correctly translates section types into structured filters
-                        // that the carousel component now expects.
-                        if (section.type === 'featured_suppliers_carousel') {
-                            componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
-                            componentProps.sort = { field: 'featuredRank', direction: 'asc' };
-                        } else if (section.type === 'featured_perks') {
-                            componentProps.filters = [{ field: 'isFeatured', op: '==', value: true }];
-                        } else if (section.type === 'benefits_carousel' && section.filter) {
-                            // Backwards compatibility for old string-based filter
-                            componentProps.filters = [{ field: 'category', op: '==', value: section.filter }];
+                        switch (section.block.kind) {
+                            case 'categories':
+                                Component = CategoryGrid;
+                                break;
+                            case 'banner':
+                                Component = SingleBanner;
+                                break;
+                            case 'carousel':
+                                if (section.block.contentType === 'benefits') Component = BenefitsCarousel;
+                                if (section.block.contentType === 'suppliers') Component = SuppliersCarousel;
+                                if (section.block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                break;
+                            default:
+                                return null;
                         }
 
+                        if (!Component) return null;
+                        const linkPath = section.block.contentType ? `/${section.block.contentType === 'suppliers' ? 'proveedores' : section.block.contentType}` : undefined;
 
                         return (
                             <section key={section.id} className="space-y-3">
                                 <div className="flex items-center justify-between px-4">
-                                    <h2 className="text-xl font-bold tracking-tight text-foreground">{section.title}</h2>
-                                    {link && (
+                                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{section.title}</h2>
+                                    {linkPath && (
                                         <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
-                                            <Link href={link}>
+                                            <Link href={linkPath}>
                                                 Ver todos <ArrowRight className="ml-2 h-4 w-4" />
                                             </Link>
                                         </Button>
                                     )}
                                 </div>
-                                <div className={section.type !== 'categories_grid' ? 'px-4' : ''}>
-                                    <Component {...componentProps} />
+                                <div className={section.block.kind !== 'categories' ? 'pl-4' : ''}>
+                                    <Component {...props} />
                                 </div>
                             </section>
                         )
-                    })}
+                    }) : (
+                        <div className="px-4">
+                            <EmptyState icon={LayoutTemplate} title="Página en construcción" description="El administrador todavía no ha añadido contenido a la página de inicio." />
+                        </div>
+                    )}
                 </div>
             </div>
         </MainLayout>

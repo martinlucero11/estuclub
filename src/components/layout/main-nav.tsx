@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -25,8 +24,8 @@ export function MainNav({ items }: MainNavProps) {
   return (
     <nav className="hidden gap-6 md:flex">
       {items.map((item, index) => {
-        // Exclude items that are better suited for the user menu or mobile sheet
-        if (item.href === '/panel-cluber' || item.href === '/settings') {
+        // Exclude items not meant for main nav
+        if (['Inicio', 'Ajustes', 'Panel Cluber'].includes(item.title)) {
           return null;
         }
 
@@ -40,7 +39,7 @@ export function MainNav({ items }: MainNavProps) {
               href={item.href}
               className={cn(
                 'flex items-center text-sm font-medium transition-colors hover:text-primary',
-                pathname === item.href ? 'text-foreground' : 'text-muted-foreground'
+                pathname.startsWith(item.href) ? 'text-foreground' : 'text-muted-foreground'
               )}
             >
               {item.title}

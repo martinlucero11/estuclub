@@ -9,7 +9,7 @@ const WelcomeMessage = () => {
     if (isUserLoading) {
         return (
             <div className="px-4 py-6 space-y-2">
-                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-10 w-48" />
                 <Skeleton className="h-5 w-64" />
             </div>
         )
@@ -19,10 +19,10 @@ const WelcomeMessage = () => {
 
     return (
         <div className="px-4 py-6">
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Hola, {displayName} 👋
             </h1>
-            <p className="text-muted-foreground font-medium mt-1">
+            <p className="text-muted-foreground font-semibold text-base mt-1">
                 Descubre los mejores beneficios cerca de ti.
             </p>
         </div>

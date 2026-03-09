@@ -121,7 +121,9 @@ function MobileNav() {
                     <SheetTitle>
                         <SheetClose asChild>
                             <Link href="/" className="flex items-center justify-center">
-                                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
+                                <div className="p-2 rounded-lg" style={{backgroundColor: '#d83762'}}>
+                                    <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} style={{filter: 'brightness(0) invert(1)'}} priority />
+                                </div>
                             </Link>
                         </SheetClose>
                     </SheetTitle>
@@ -153,31 +155,28 @@ function MobileNav() {
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container flex h-16 items-center">
-        {/* Left Group */}
-        <div className="flex items-center">
-          {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className="flex items-center space-x-2">
-              <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
-            </Link>
+      <div className="container grid h-16 grid-cols-3 items-center">
+        {/* Left Slot: Navigation */}
+        <div className="flex items-center justify-start">
+          <div className="hidden md:flex">
             <MainNav items={navConfig.mainNav} />
           </div>
-          {/* Mobile Nav Trigger */}
           <div className="md:hidden">
             <MobileNav />
           </div>
         </div>
 
-        {/* Mobile Centered Logo */}
-        <div className="flex-1 flex justify-center md:hidden">
+        {/* Center Slot: Logo */}
+        <div className="flex items-center justify-center">
           <Link href="/" aria-label="Homepage">
-            <Image src="/logo.svg" alt="EstuClub Logo" width={110} height={30} className="dark:invert" />
+            <div className="flex items-center justify-center h-10 w-auto px-3 rounded-lg" style={{backgroundColor: '#d83762'}}>
+              <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} style={{filter: 'brightness(0) invert(1)'}} priority />
+            </div>
           </Link>
         </div>
 
-        {/* Right Group (Actions) */}
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        {/* Right Slot: Actions */}
+        <div className="flex items-center justify-end space-x-2">
           <NotificationBell />
           <UserMenu />
         </div>
