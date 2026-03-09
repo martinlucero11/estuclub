@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -151,33 +150,39 @@ export default function HomeBuilderPage() {
             </div>
 
             <div className="space-y-4">
-                {localSections.length > 0 ? localSections.map((section, index) => (
-                    <Card key={section.id} className="flex items-center p-4 gap-4">
-                        <div className="flex flex-col gap-1">
-                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, 'up')} disabled={index === 0}>
-                                <ArrowUp className="h-4 w-4" />
-                            </Button>
-                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, 'down')} disabled={index === localSections.length - 1}>
-                                <ArrowDown className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <div className="flex-1">
-                            <CardTitle className="text-lg">{section.title}</CardTitle>
-                            <CardDescription>{section.type}</CardDescription>
-                        </div>
-                        <Badge variant={section.isActive ? 'default' : 'outline'}>
-                            {section.isActive ? 'Activo' : 'Inactivo'}
-                        </Badge>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="icon" onClick={() => handleEdit(section)}>
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="destructive" size="icon" onClick={() => handleDeleteRequest(section.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </Card>
-                )) : (
+                {localSections.length > 0 ? localSections.map((section, index) => {
+                    const description = section.block.contentType 
+                        ? `${section.block.kind} de ${section.block.contentType}` 
+                        : section.block.kind;
+
+                    return (
+                        <Card key={section.id} className="flex items-center p-4 gap-4">
+                            <div className="flex flex-col gap-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, 'up')} disabled={index === 0}>
+                                    <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleMove(index, 'down')} disabled={index === localSections.length - 1}>
+                                    <ArrowDown className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="flex-1">
+                                <CardTitle className="text-lg">{section.title}</CardTitle>
+                                <CardDescription className="capitalize">{description}</CardDescription>
+                            </div>
+                            <Badge variant={section.isActive ? 'default' : 'outline'}>
+                                {section.isActive ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="icon" onClick={() => handleEdit(section)}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="destructive" size="icon" onClick={() => handleDeleteRequest(section.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </Card>
+                    )
+                }) : (
                      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
                         <LayoutTemplate className="mx-auto h-12 w-12 text-muted-foreground" />
                         <h3 className="mt-4 text-xl font-semibold">Aún no hay secciones</h3>

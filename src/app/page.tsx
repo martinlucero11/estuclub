@@ -71,51 +71,14 @@ export default function HomePage() {
                 <div className="space-y-6 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
                         
-                        let block: HomeSection['block'] | undefined = section.block;
-                        const title = section.title;
-
-                        // --- Backwards Compatibility Layer ---
-                        // If 'block' doesn't exist, it's an old section. We normalize it.
-                        if (!block) {
-                            const oldType = (section as any).type;
-                            switch (oldType) {
-                                case 'categories_grid':
-                                    block = { kind: 'categories' };
-                                    break;
-                                case 'single_banner':
-                                    block = { kind: 'banner', bannerId: (section as any).bannerId };
-                                    break;
-                                case 'benefits_carousel':
-                                    block = { 
-                                        kind: 'carousel', 
-                                        contentType: 'benefits',
-                                        query: (section as any).filter ? { filters: [{ field: 'category', op: '==', value: (section as any).filter }] } : undefined
-                                    };
-                                    break;
-                                case 'suppliers_carousel':
-                                    block = { kind: 'carousel', contentType: 'suppliers' };
-                                    break;
-                                case 'announcements_carousel':
-                                    block = { kind: 'carousel', contentType: 'announcements' };
-                                    break;
-                                case 'featured_suppliers_carousel':
-                                    block = { kind: 'carousel', contentType: 'suppliers', query: { filters: [{ field: 'isFeatured', op: '==', value: true }] } };
-                                    break;
-                                case 'featured_perks':
-                                    block = { kind: 'carousel', contentType: 'benefits', query: { filters: [{ field: 'isFeatured', op: '==', value: true }] } };
-                                    break;
-                                default:
-                                    return null; // Unrecognized old type
-                            }
-                        }
-                        // --- End of Backwards Compatibility Layer ---
-
-                        if (!block) { // Final safety check
-                            return null;
+                        if (!section.block) {
+                            return null; // Ignore sections that don't conform to the new schema
                         }
 
+                        const { block, title } = section;
                         let Component;
-                        const props: any = { ...block, title: title };
+                        const props: any = { ...block, title };
+                        const linkPath = block.contentType ? `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}` : undefined;
 
                         switch (block.kind) {
                             case 'categories':
@@ -134,7 +97,6 @@ export default function HomePage() {
                         }
 
                         if (!Component) return null;
-                        const linkPath = block.contentType ? `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}` : undefined;
 
                         return (
                             <section key={section.id} className="space-y-3">

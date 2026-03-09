@@ -21,17 +21,19 @@ export function HomeSectionDialog({ isOpen, onOpenChange, section }: HomeSection
     
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-3xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>{isEditMode ? 'Editar Sección' : 'Crear Nueva Sección'}</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Editar Bloque de Inicio' : 'Crear Nuevo Bloque'}</DialogTitle>
                     <DialogDescription>
-                        {isEditMode ? 'Modifica los detalles de la sección.' : 'Completa el formulario para añadir una nueva sección a la Home.'}
+                        {isEditMode ? 'Modifica la configuración de este bloque.' : 'Configura un nuevo bloque de contenido para la página principal.'}
                     </DialogDescription>
                 </DialogHeader>
-                <HomeSectionForm 
-                    section={section} 
-                    onSuccess={() => onOpenChange(false)}
-                />
+                <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+                    <HomeSectionForm 
+                        section={section} 
+                        onSuccess={() => onOpenChange(false)}
+                    />
+                </div>
             </DialogContent>
         </Dialog>
     );
