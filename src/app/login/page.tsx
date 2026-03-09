@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -28,7 +27,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <header className="mb-8 flex flex-col items-center">
             <Link href="/" className="mb-4">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} className="dark:invert" />
+                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} className="invert dark:invert-0" />
             </Link>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sr-only">
             EstuClub
