@@ -1,4 +1,3 @@
-
 'use client';
 
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
@@ -71,15 +70,54 @@ export default function HomePage() {
                 <WelcomeMessage />
                 <div className="space-y-6 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
-                        // Guard clause to prevent crash on old data
-                        if (!section.block) {
+                        
+                        let block: HomeSection['block'] | undefined = section.block;
+                        const title = section.title;
+
+                        // --- Backwards Compatibility Layer ---
+                        // If 'block' doesn't exist, it's an old section. We normalize it.
+                        if (!block) {
+                            const oldType = (section as any).type;
+                            switch (oldType) {
+                                case 'categories_grid':
+                                    block = { kind: 'categories' };
+                                    break;
+                                case 'single_banner':
+                                    block = { kind: 'banner', bannerId: (section as any).bannerId };
+                                    break;
+                                case 'benefits_carousel':
+                                    block = { 
+                                        kind: 'carousel', 
+                                        contentType: 'benefits',
+                                        query: (section as any).filter ? { filters: [{ field: 'category', op: '==', value: (section as any).filter }] } : undefined
+                                    };
+                                    break;
+                                case 'suppliers_carousel':
+                                    block = { kind: 'carousel', contentType: 'suppliers' };
+                                    break;
+                                case 'announcements_carousel':
+                                    block = { kind: 'carousel', contentType: 'announcements' };
+                                    break;
+                                case 'featured_suppliers_carousel':
+                                    block = { kind: 'carousel', contentType: 'suppliers', query: { filters: [{ field: 'isFeatured', op: '==', value: true }] } };
+                                    break;
+                                case 'featured_perks':
+                                    block = { kind: 'carousel', contentType: 'benefits', query: { filters: [{ field: 'isFeatured', op: '==', value: true }] } };
+                                    break;
+                                default:
+                                    return null; // Unrecognized old type
+                            }
+                        }
+                        // --- End of Backwards Compatibility Layer ---
+
+                        if (!block) { // Final safety check
                             return null;
                         }
 
                         let Component;
-                        const props: any = { ...section.block, title: section.title };
+                        const props: any = { ...block, title: title };
 
-                        switch (section.block.kind) {
+                        switch (block.kind) {
                             case 'categories':
                                 Component = CategoryGrid;
                                 break;
@@ -87,16 +125,16 @@ export default function HomePage() {
                                 Component = SingleBanner;
                                 break;
                             case 'carousel':
-                                if (section.block.contentType === 'benefits') Component = BenefitsCarousel;
-                                if (section.block.contentType === 'suppliers') Component = SuppliersCarousel;
-                                if (section.block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                if (block.contentType === 'benefits') Component = BenefitsCarousel;
+                                if (block.contentType === 'suppliers') Component = SuppliersCarousel;
+                                if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
                                 break;
                             default:
                                 return null;
                         }
 
                         if (!Component) return null;
-                        const linkPath = section.block.contentType ? `/${section.block.contentType === 'suppliers' ? 'proveedores' : section.block.contentType}` : undefined;
+                        const linkPath = block.contentType ? `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}` : undefined;
 
                         return (
                             <section key={section.id} className="space-y-3">
@@ -110,7 +148,7 @@ export default function HomePage() {
                                         </Button>
                                     )}
                                 </div>
-                                <div className={section.block.kind !== 'categories' ? 'pl-4' : ''}>
+                                <div className={block.kind !== 'categories' ? 'pl-4' : ''}>
                                     <Component {...props} />
                                 </div>
                             </section>
