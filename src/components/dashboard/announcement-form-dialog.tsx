@@ -44,7 +44,7 @@ interface AnnouncementFormDialogProps {
 }
 
 export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: AnnouncementFormDialogProps) {
-    const { user } = useUser();
+    const { user, supplierData } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,31 +63,50 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        if (!user) return;
+        if (!user || !supplierData) return;
         setIsSubmitting(true);
         try {
             if (announcement) {
                 // Update existing announcement
                 const announcementRef = doc(firestore, "announcements", announcement.id);
-                await updateDoc(announcementRef, values);
+                await updateDoc(announcementRef, {
+                    ...values,
+                    updatedAt: serverTimestamp(),
+                });
                 toast({ title: "Anuncio actualizado con éxito" });
             } else {
                 // Create new announcement
-                await addDoc(collection(firestore, "announcements"), {
+                const announcementData = {
                     ...values,
                     supplierId: user.uid,
                     status: 'pending', // Or 'approved' if you want to bypass admin approval
                     submittedAt: serverTimestamp(),
-                });
-                toast({ title: "Anuncio creado con éxito" });
+                    createdAt: serverTimestamp(),
+                };
+                const announcementDocRef = await addDoc(collection(firestore, "announcements"), announcementData);
+
+                 if (announcementDocRef.id) {
+                    const notificationData = {
+                        title: `Nuevo Anuncio de ${supplierData.name}`,
+                        description: values.title,
+                        type: 'announcement',
+                        referenceId: announcementDocRef.id,
+                        supplierId: user.uid,
+                        target: 'subscribers',
+                        createdAt: serverTimestamp(),
+                    };
+                    await addDoc(collection(firestore, 'notifications'), notificationData);
+                }
+
+                toast({ title: "Anuncio enviado para revisión" });
             }
-            setIsSubmitting(false);
             onOpenChange(false);
             form.reset();
 
         } catch (error) {
             console.error("Error saving announcement: ", error);
             toast({ title: "Error al guardar el anuncio", variant: "destructive" });
+        } finally {
             setIsSubmitting(false);
         }
     }
@@ -98,7 +117,7 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
         <DialogHeader>
           <DialogTitle>{announcement ? "Editar Anuncio" : "Crear Anuncio"}</DialogTitle>
           <DialogDescription>
-            {announcement ? "Modifica los detalles de tu anuncio." : "Crea un nuevo anuncio para la comunidad."}
+            {announcement ? "Modifica los detalles de tu anuncio." : "Crea un nuevo anuncio para la comunidad. Será revisado por un administrador."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -144,11 +163,11 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
             />
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button type="button" variant="secondary">Cancelar</Button>
+                    <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>Cancelar</Button>
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {announcement ? "Guardar Cambios" : "Crear Anuncio"}
+                  {announcement ? "Guardar Cambios" : "Enviar Anuncio"}
                 </Button>
             </DialogFooter>
           </form>
@@ -157,3 +176,5 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
     </Dialog>
   );
 }
+
+    

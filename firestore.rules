@@ -53,9 +53,8 @@ service cloud.firestore {
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Allow public profile reads for features like leaderboards or verification pages.
-      // Writes are still restricted to the owner or an admin.
-      allow read: if true;
+      // Allow signed-in users to read profiles, but only owner/admin can write.
+      allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
     }
 
@@ -111,6 +110,11 @@ service cloud.firestore {
         allow read: if true;
         allow write: if isOwner(supplierId) || isAdmin();
       }
+      
+      match /subscribers/{userId} {
+        allow read, create, delete: if isOwner(userId);
+        allow list: if isOwner(supplierId) || isAdmin();
+      }
     }
     
     // --- Admin-Only Data ---
@@ -120,3 +124,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

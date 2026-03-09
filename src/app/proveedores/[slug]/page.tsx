@@ -16,6 +16,7 @@ import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
 import { getInitials } from '@/lib/utils';
+import SubscribeButton from '@/components/supplier/subscribe-button';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -153,6 +154,9 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     <TypeIcon className="h-4 w-4" />
                     <p className="capitalize">{supplier.type}</p>
                 </div>
+                 <div className="mt-4">
+                    <SubscribeButton supplierId={supplier.id} />
+                </div>
             </header>
             
             <main className="w-full max-w-5xl mx-auto">
@@ -195,3 +199,5 @@ export default function CluberProfilePage({ params }: { params: { slug: string }
         </MainLayout>
     );
 }
+
+    

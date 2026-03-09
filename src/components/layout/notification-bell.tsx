@@ -9,27 +9,19 @@ import {
 import { Button } from '@/components/ui/button';
 import { Bell, Gift, Megaphone } from 'lucide-react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
-
-interface Notification {
-    id: string;
-    title: string;
-    description: string;
-    type: 'benefit' | 'announcement';
-    referenceId: string;
-    createdAt: Timestamp;
-}
+import type { Notification } from '@/types/data';
 
 const typeIcons = {
     benefit: Gift,
     announcement: Megaphone
 };
 
-function formatTime(timestamp: Timestamp) {
+function formatTime(timestamp: Notification['createdAt']) {
     if (!timestamp) return 'Justo ahora';
     const date = timestamp.toDate();
     const now = new Date();
@@ -123,3 +115,5 @@ export default function NotificationBell() {
     </Popover>
   );
 }
+
+    

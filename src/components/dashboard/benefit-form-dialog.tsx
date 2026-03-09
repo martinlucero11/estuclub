@@ -74,7 +74,7 @@ interface BenefitFormDialogProps {
 export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const { user } = useUser();
+  const { user, supplierData } = useUser();
   const { isAdmin } = useAdmin();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -133,13 +133,34 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
         delete dataToSave.redemptionLimit;
       }
 
-      await addDoc(benefitsRef, dataToSave);
+      const benefitDocRef = await addDoc(benefitsRef, dataToSave);
+
+      // Create a notification for subscribers
+      if (benefitDocRef.id) {
+          let supplierName = '';
+          if (isAdmin) {
+              supplierName = suppliers?.find(s => s.id === values.ownerId)?.name || 'Un proveedor';
+          } else if (supplierData) {
+              supplierName = supplierData.name;
+          }
+
+          const notificationData = {
+            title: `Nuevo Beneficio de ${supplierName}`,
+            description: values.title,
+            type: 'benefit',
+            referenceId: benefitDocRef.id,
+            supplierId: values.ownerId,
+            target: 'subscribers',
+            createdAt: serverTimestamp(),
+          };
+          await addDoc(collection(firestore, 'notifications'), notificationData);
+      }
+
 
       toast({
         title: '¡Nuevo Beneficio Añadido!',
         description: `El beneficio "${values.title}" ahora está disponible.`,
       });
-      setIsSubmitting(false);
       onOpenChange(false);
       form.reset();
     } catch (error: any) {
@@ -149,6 +170,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
         title: "Error",
         description: error.message || "No se pudo añadir el beneficio. Inténtalo de nuevo.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   }
@@ -434,7 +456,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Activo</FormLabel>
                                 <FormDescription>
-                                Desmarcar para ocultar el beneficio temporalmente.
+                                Desmarcar para que no se pueda canjear temporalmente.
                                 </FormDescription>
                             </div>
                             <FormControl>
@@ -467,3 +489,5 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
     </Dialog>
   );
 }
+
+    

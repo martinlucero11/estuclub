@@ -232,31 +232,29 @@ export interface Category {
   [key: string]: any;
 }
 
-export const homeSectionTypes = [
-    'categories_grid', 
-    'benefits_carousel', 
-    'single_banner', 
-    'suppliers_carousel',
-    'announcements_carousel',
-    'featured_suppliers_carousel',
-    'new_suppliers_carousel',
-    'featured_perks',
-] as const;
-export type HomeSectionType = typeof homeSectionTypes[number];
-
 export interface HomeSection {
   id: string;
   title: string;
-  type: HomeSectionType;
   order: number;
   isActive: boolean;
-  filters?: WhereFilter[]; // For category on benefits_carousel or 'featured'
-  filter?: string; // DEPRECATED: For backwards compatibility
-  bannerId?: string; // For single_banner
   createdAt?: Timestamp;
-  [key:string]: any;
+  block: {
+    kind: "carousel" | "grid" | "banner" | "categories";
+    contentType?: "benefits" | "suppliers" | "announcements";
+    mode?: "auto" | "manual";
+    layout?: {
+      gridPreset?: "1x4" | "1x5" | "2x4" | "2x5",
+      itemWidth?: number
+    },
+    query?: {
+      filters?: WhereFilter[],
+      sort?: { field: string, direction: "asc" | "desc" },
+      limit?: number
+    },
+    items?: string[], // For manual mode
+    bannerId?: string // For banner kind
+  }
 }
-
 
 export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
     createdAt: string;
@@ -271,3 +269,16 @@ export interface AppointmentSlot {
     bookedBy?: string; // UID of the student who booked it
     [key: string]: any;
 }
+
+export interface Notification {
+  id: string;
+  title: string;
+  description: string;
+  type: 'benefit' | 'announcement' | 'appointment';
+  referenceId: string; // ID of the benefit, announcement, etc.
+  supplierId?: string; // ID of the supplier who triggered it
+  target?: 'all' | 'subscribers'; // Who should receive it
+  createdAt: Timestamp;
+}
+
+    

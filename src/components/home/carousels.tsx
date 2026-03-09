@@ -8,68 +8,53 @@ import {
   where,
   orderBy,
   QueryConstraint,
-  WhereFilterOp,
 } from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, WhereFilter } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, WhereFilter, HomeSection } from "@/types/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import dynamic from 'next/dynamic';
+import { Card } from "../ui/card";
+import { Award } from "lucide-react";
 
 const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), { ssr: false });
 
+type CarouselProps = HomeSection['block'];
 
-// --- TYPE DEFINITIONS for Query Building ---
-type SortSpec = { field: string; direction: "asc" | "desc" };
-
-
-// --- HELPER FUNCTION for SAFE Query Building ---
 const buildConstraints = ({
-  collectionName,
-  filters,
-  sort,
-  limitCount = 10,
-  defaultFilters = [],
-}: {
-  collectionName: string;
-  filters?: WhereFilter[];
-  sort?: SortSpec;
-  limitCount?: number;
-  defaultFilters?: WhereFilter[];
-}): QueryConstraint[] => {
+  contentType,
+  query: queryConfig,
+}: CarouselProps): QueryConstraint[] => {
   const constraints: QueryConstraint[] = [];
 
-  // Combine default and component-specific filters
-  const allFilters = [...defaultFilters, ...(filters || [])];
-
-  // Apply visibility filter by default unless it's already specified for these collections
-  if (['benefits', 'roles_supplier'].includes(collectionName) && !allFilters.some(f => f.field === 'isVisible')) {
+  // Default filters
+  if (contentType === 'benefits' || contentType === 'suppliers') {
     constraints.push(where('isVisible', '==', true));
   }
+  if (contentType === 'announcements') {
+      constraints.push(where('status', '==', 'approved'));
+  }
 
-  // Convert structured filter objects into actual Firestore 'where' constraints
-  allFilters.forEach((f) => {
+  // Apply custom filters from Home Builder
+  queryConfig?.filters?.forEach((f) => {
     if (f.field && f.op && f.value !== undefined) {
       constraints.push(where(f.field, f.op, f.value));
     }
   });
 
-  // IMPORTANT: For suppliers, sorting is handled client-side to avoid mandatory composite indexes.
-  if (sort && sort.field && collectionName !== 'roles_supplier') {
-    constraints.push(orderBy(sort.field, sort.direction));
-  } else if (!sort) {
-     // Add a sensible default sort order if none is provided
-    if (collectionName === 'benefits') {
-        constraints.push(orderBy('createdAt', 'desc'));
-    } else if (collectionName === 'announcements') {
-        constraints.push(orderBy('createdAt', 'desc'));
-    }
+  // Apply sorting
+  if (queryConfig?.sort?.field) {
+    constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
+  } else if (contentType !== 'suppliers') {
+      // Default sort for benefits and announcements if not specified
+      constraints.push(orderBy('createdAt', 'desc'));
   }
   
-  constraints.push(limit(limitCount));
+  // Apply limit
+  constraints.push(limit(queryConfig?.limit || 10));
 
   return constraints;
 };
@@ -82,37 +67,34 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
     const redeemButton = (
         <Button
             size="sm"
-            variant="secondary"
-            className="rounded-full group-hover:bg-[#d83762] group-hover:text-white transition-colors"
+            className="rounded-full bg-primary text-primary-foreground group-hover:bg-primary/90 transition-colors"
             onClick={(e) => {
-                // This is crucial to prevent the parent Link from navigating
                 e.preventDefault();
             }}
         >
-            Ver
+            Canjear
         </Button>
     );
 
     return (
-        <div className="flex-shrink-0 w-[260px] md:w-[280px] snap-start">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow duration-300 overflow-hidden group">
+        <div className="w-[280px] snap-start">
+             <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg">
                 <Link href={`/benefits/${benefit.id}`} className="block">
-                    <div className="relative h-32 w-full">
+                    <div className="relative h-40 w-full">
                         <Image 
-                            src={benefit.imageUrl || "https://picsum.photos/seed/benefit/280/128"}
+                            src={benefit.imageUrl}
                             alt={benefit.title}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
                             sizes="(max-width: 768px) 50vw, 33vw"
                         />
-                        {supplier?.logoUrl && (
-                            <div className="absolute top-3 right-3 bg-white p-1 rounded-full shadow-md">
-                                <Image src={supplier.logoUrl} alt={`${supplier.name} logo`} width={32} height={32} className="rounded-full" />
-                            </div>
-                        )}
+                        <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
+                            <Award className="h-3 w-3" />
+                            <span>{benefit.points} PTS</span>
+                        </div>
                     </div>
                     <div className="p-4 space-y-2">
-                        <h3 className="text-lg font-bold tracking-tight line-clamp-1 group-hover:text-[#d83762] transition-colors">
+                        <h3 className="font-bold tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
                             {benefit.title}
                         </h3>
                         <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
@@ -124,7 +106,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                                     <AvatarImage src={supplier?.logoUrl} alt={supplier?.name || ''} />
                                     <AvatarFallback className="text-xs">{supplierInitials}</AvatarFallback>
                                 </Avatar>
-                               <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{benefit.supplierName}</span>
+                               <span className="text-xs font-semibold text-muted-foreground">{benefit.supplierName}</span>
                            </div>
                             <RedeemBenefitDialog benefit={benefit as any}>
                                 {redeemButton}
@@ -132,7 +114,7 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
                         </div>
                     </div>
                 </Link>
-            </div>
+            </Card>
         </div>
     );
 }
@@ -141,15 +123,14 @@ const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: Suppl
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
     return (
-        <Link href={`/proveedores/${supplier.slug}`} className="block flex-shrink-0 snap-start text-center group w-24">
+        <Link href={`/proveedores/${supplier.slug}`} className="block w-24 snap-start text-center group">
             <div className="w-20 h-20 mx-auto rounded-2xl bg-card hover:bg-accent transition-colors flex items-center justify-center">
-                 <Avatar className="h-12 w-12">
+                 <Avatar className="h-16 w-16">
                     <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover group-hover:scale-110 transition-transform" />
                     <AvatarFallback className="text-xl font-bold bg-transparent">{initials}</AvatarFallback>
                 </Avatar>
             </div>
-            <p className="text-sm font-semibold text-center mt-2 line-clamp-1">{supplier.name}</p>
-            <p className="text-xs text-muted-foreground line-clamp-1">{supplier.type}</p>
+            <p className="text-sm font-semibold text-center mt-2 line-clamp-1 group-hover:text-primary">{supplier.name}</p>
         </Link>
     );
 };
@@ -157,7 +138,7 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
 
 // --- ANNOUNCEMENT CARD ---
 const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
-    <Link href={announcement.linkUrl || '#'} target="_blank" rel="noopener noreferrer" className="block flex-shrink-0 snap-start group w-80">
+    <Link href={announcement.linkUrl || '#'} target="_blank" rel="noopener noreferrer" className="block w-80 snap-start group">
         <div className="relative h-48 w-full rounded-2xl overflow-hidden shadow-sm">
             <Image 
                 src={announcement.imageUrl || 'https://picsum.photos/seed/announcement/320/192'}
@@ -178,75 +159,58 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
 const createCarousel = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
     collectionName: string, 
-    dataKey: string,
-    defaultFilters: WhereFilter[] = []
+    dataKey: string
 ) => {
-    return function Carousel({ filters, sort }: { filters?: WhereFilter[], sort?: SortSpec }) {
+    return function Carousel(props: CarouselProps) {
         const firestore = useFirestore();
         
         const itemsQuery = useMemo(() => {
-            // Build the query safely using the helper function
-            const constraints = buildConstraints({
-                collectionName,
-                filters,
-                sort,
-                limitCount: 10,
-                defaultFilters: defaultFilters,
-            });
-
-            return query(
-                collection(firestore, collectionName).withConverter(createConverter<T>()),
-                ...constraints
-            );
-        }, [firestore, filters, sort]);
+            const constraints = buildConstraints({ contentType: collectionName as any, ...props });
+            return query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...constraints);
+        }, [firestore, props]);
 
         const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
-
+        
         const suppliersQuery = useMemo(() => 
             collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null
-        , [firestore, collectionName]);
+        , [firestore]);
         const { data: suppliers } = useCollectionOnce(suppliersQuery);
         
         const sortedItems = useMemo(() => {
             if (!items) return [];
-            // Client-side sorting for suppliers to avoid index requirements
-            if (collectionName === 'roles_supplier' && sort && sort.field) {
+            // Client-side sort for suppliers to avoid index on name
+            if (collectionName === 'suppliers' && props.query?.sort?.field === 'name') {
                 return [...items].sort((a: any, b: any) => {
-                    if (a[sort.field] < b[sort.field]) return sort.direction === 'asc' ? -1 : 1;
-                    if (a[sort.field] > b[sort.field]) return sort.direction === 'asc' ? 1 : -1;
-                    return 0;
+                    const direction = props.query?.sort?.direction === 'asc' ? 1 : -1;
+                    return a.name.localeCompare(b.name) * direction;
                 });
             }
             return items;
-        }, [items, sort]);
+        }, [items, props.query?.sort]);
 
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 
         if (isLoading) {
             return (
-                <div className={`flex gap-4 overflow-hidden`}>
+                <div className="flex gap-4 overflow-hidden">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className={`flex-shrink-0 w-[280px] ${skeletonHeight} bg-muted/50 rounded-3xl animate-pulse`}></div>
+                        <div key={i} className={`w-[280px] ${skeletonHeight} bg-muted/50 rounded-3xl animate-pulse`}></div>
                     ))}
                 </div>
             )
         }
 
         if (error || !sortedItems || sortedItems.length === 0) {
-            return <p className="text-muted-foreground italic">No hay contenido disponible por el momento.</p>;
+            return <p className="text-muted-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
 
         return (
-             <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+             <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {collectionName === 'benefits' ? 
                     sortedItems.map(item => {
                         const typedItem = item as unknown as Benefit;
-                        const local = suppliers?.find(s => s.id === typedItem.ownerId || s.name === typedItem.supplierName);
-                        return <BenefitCard 
-                            key={item.id} 
-                            benefit={typedItem} 
-                            supplier={local} 
-                        />
+                        const supplier = suppliers?.find(s => s.id === typedItem.ownerId);
+                        return <BenefitCard key={item.id} benefit={typedItem} supplier={supplier} />
                     }) :
                     sortedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
                 }
@@ -256,5 +220,7 @@ const createCarousel = <T extends {id: string}>(
 }
 
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
-export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', [{field: 'status', op: '==', value: 'approved'}]);
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'suppliers', 'supplier');
+export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementsCarousel, 'announcements', 'announcement');
+
+    
