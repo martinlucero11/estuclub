@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
@@ -70,6 +71,11 @@ export default function HomePage() {
                 <WelcomeMessage />
                 <div className="space-y-6 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
+                        // Guard clause to prevent crash on old data
+                        if (!section.block) {
+                            return null;
+                        }
+
                         let Component;
                         const props: any = { ...section.block, title: section.title };
 
