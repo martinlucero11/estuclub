@@ -54,18 +54,18 @@ function CluberListPage() {
     const [activeFilter, setActiveFilter] = useState<CluberCategory | 'Todos'>('Todos');
 
     const clubersQuery = useMemo(
-        () => {
-            const constraints = [where('isVisible', '==', true), orderBy('name')];
-            if (activeFilter !== 'Todos') {
-                constraints.push(where('type', '==', activeFilter));
-            }
-            return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), ...constraints);
-        },
-        [firestore, activeFilter]
+        () => query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), where('isVisible', '==', true), orderBy('name')),
+        [firestore]
     );
 
-    const { data: clubers, isLoading, error } = useCollectionOnce(clubersQuery);
+    const { data: allClubers, isLoading, error } = useCollectionOnce(clubersQuery);
     
+    const clubers = useMemo(() => {
+        if (!allClubers) return [];
+        if (activeFilter === 'Todos') return allClubers;
+        return allClubers.filter(cluber => cluber.type === activeFilter);
+    }, [allClubers, activeFilter]);
+
      if (isLoading) {
         return <ClubersPageSkeleton />;
     }

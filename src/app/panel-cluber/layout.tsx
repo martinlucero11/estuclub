@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser } from '@/firebase';
@@ -39,7 +38,7 @@ export default function PanelCluberLayout({
       <div className="flex min-h-screen flex-col">
         <DashboardHeader />
         {/* Add bottom padding for mobile to avoid overlap with BottomNav */}
-        <main className="flex-1 p-4 md:p-8 pb-20 md:pb-8">
+        <main className="flex-1 p-4 md:p-8 pb-20">
             {children}
         </main>
         <BottomNav /> {/* Add BottomNav here */}

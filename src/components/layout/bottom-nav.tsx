@@ -24,7 +24,7 @@ export function BottomNav() {
   const gridClass = showScanner ? 'grid-cols-5' : 'grid-cols-4';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border/50 md:hidden">
+    <nav className={cn("fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border/50")}>
       <div className={cn("grid h-16", gridClass)}>
         {navItems.map((item) => (
           <Link

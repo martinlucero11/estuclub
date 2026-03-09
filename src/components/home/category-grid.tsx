@@ -11,11 +11,11 @@ import { cn } from '@/lib/utils';
 
 function CategoryGridSkeleton() {
     return (
-        <div className="flex gap-4 overflow-x-auto px-4 pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex gap-8 overflow-x-auto px-4 pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-24 text-center space-y-2">
-                    <Skeleton className="h-20 w-20 rounded-2xl mx-auto" />
-                    <Skeleton className="h-4 w-16 mx-auto" />
+                <div key={i} className="flex-shrink-0 w-40 text-center space-y-2">
+                    <Skeleton className="h-40 w-40 rounded-3xl mx-auto" />
+                    <Skeleton className="h-5 w-24 mx-auto" />
                 </div>
             ))}
         </div>
@@ -43,16 +43,16 @@ export function CategoryGrid() {
     }
 
     return (
-        <div className="flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex gap-8 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {categories.map(category => (
-                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-24 snap-start text-center group">
+                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-40 snap-start text-center group">
                     <div className={cn(
-                        'flex flex-col items-center justify-center h-20 w-20 mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
+                        'flex flex-col items-center justify-center h-40 w-40 mx-auto rounded-3xl bg-secondary dark:bg-card transition-all',
                         'hover:shadow-lg hover:-translate-y-1'
                     )}>
-                         <span className={cn("text-4xl", category.colorClass)}>{category.emoji}</span>
+                         <span className={cn("text-6xl", category.colorClass)}>{category.emoji}</span>
                     </div>
-                    <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
+                    <p className="mt-4 text-base font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
                 </Link>
             ))}
         </div>
