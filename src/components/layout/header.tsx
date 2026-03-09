@@ -121,9 +121,7 @@ function MobileNav() {
                     <SheetTitle>
                         <SheetClose asChild>
                             <Link href="/" className="flex items-center justify-center">
-                                <div className="p-2 rounded-lg" style={{backgroundColor: '#d83762'}}>
-                                    <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} style={{filter: 'brightness(0) invert(1)'}} priority />
-                                </div>
+                                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
                             </Link>
                         </SheetClose>
                     </SheetTitle>
@@ -169,9 +167,7 @@ export default function Header() {
         {/* Center Slot: Logo */}
         <div className="flex items-center justify-center">
           <Link href="/" aria-label="Homepage">
-            <div className="flex items-center justify-center h-10 w-auto px-3 rounded-lg" style={{backgroundColor: '#d83762'}}>
-              <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} style={{filter: 'brightness(0) invert(1)'}} priority />
-            </div>
+            <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} className="dark:invert" priority />
           </Link>
         </div>
 

@@ -28,7 +28,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <header className="mb-8 flex flex-col items-center">
             <Link href="/" className="mb-4">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} style={{ filter: 'brightness(0) invert(1)' }} className="dark:invert-0" />
+                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} className="dark:invert" />
             </Link>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sr-only">
             EstuClub
