@@ -24,10 +24,10 @@ const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk
 
 type CarouselProps = HomeSection['block'];
 
-const buildConstraints = ({
-  contentType,
-  query: queryConfig,
-}: CarouselProps): QueryConstraint[] => {
+const buildConstraints = (
+  props: CarouselProps
+): QueryConstraint[] => {
+  const { contentType, query: queryConfig } = props;
   const constraints: QueryConstraint[] = [];
 
   // Default filters
@@ -165,7 +165,8 @@ const createCarousel = <T extends {id: string}>(
         const firestore = useFirestore();
         
         const itemsQuery = useMemo(() => {
-            const constraints = buildConstraints({ contentType: collectionName as any, ...props });
+            if (!props.contentType) return null; // Guard against missing contentType
+            const constraints = buildConstraints(props);
             return query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...constraints);
         }, [firestore, props]);
 
@@ -179,14 +180,14 @@ const createCarousel = <T extends {id: string}>(
         const sortedItems = useMemo(() => {
             if (!items) return [];
             // Client-side sort for suppliers to avoid index on name
-            if (collectionName === 'suppliers' && props.query?.sort?.field === 'name') {
+            if (props.contentType === 'suppliers' && props.query?.sort?.field === 'name') {
                 return [...items].sort((a: any, b: any) => {
                     const direction = props.query?.sort?.direction === 'asc' ? 1 : -1;
                     return a.name.localeCompare(b.name) * direction;
                 });
             }
             return items;
-        }, [items, props.query?.sort]);
+        }, [items, props.contentType, props.query?.sort]);
 
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 
@@ -220,5 +221,5 @@ const createCarousel = <T extends {id: string}>(
 }
 
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'suppliers', 'supplier');
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
