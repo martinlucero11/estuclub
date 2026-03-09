@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -50,7 +51,7 @@ export function CategoryGrid() {
                         'flex flex-col items-center justify-center h-28 w-28 mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
                         'hover:shadow-md hover:-translate-y-0.5'
                     )}>
-                         <span className={cn("text-5xl", category.colorClass)}>{category.emoji}</span>
+                         <span className={cn("text-7xl", category.colorClass)}>{category.emoji}</span>
                     </div>
                     <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
                 </Link>
