@@ -159,10 +159,10 @@ export default function Header() {
           <AppSidebar />
         </div>
 
-        {/* Center Slot: Logo with Pink Background */}
+        {/* Center Slot: Logo */}
         <div className="flex items-center justify-center col-span-1">
-            <Link href="/" aria-label="Homepage" className="bg-primary rounded-b-lg px-3 py-1.5 shadow-md">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} className="invert brightness-0" priority />
+            <Link href="/" aria-label="Homepage">
+                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
             </Link>
         </div>
 
