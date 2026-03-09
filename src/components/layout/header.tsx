@@ -29,7 +29,6 @@ import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
-import { MainNav } from './main-nav';
 import { hasRequiredRole } from '@/lib/utils';
 
 function UserMenu() {
@@ -104,30 +103,31 @@ function UserMenu() {
   );
 }
 
-function MobileNav() {
+// Sidebar for all screen sizes
+function AppSidebar() {
     const { roles } = useUser();
     const allRoles = ['user', ...roles];
 
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon">
                     <LayoutGrid className="h-6 w-6" />
                     <span className="sr-only">Abrir menú</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0">
-                <SheetHeader className="p-6">
+            <SheetContent side="left" className="flex flex-col p-0 w-72 sm:w-80">
+                <SheetHeader className="p-6 border-b">
                     <SheetTitle>
                         <SheetClose asChild>
-                            <Link href="/" className="flex items-center justify-center">
+                             <Link href="/" className="flex items-center justify-center">
                                 <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="dark:invert" priority />
                             </Link>
                         </SheetClose>
                     </SheetTitle>
                     <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-8 flex flex-col gap-1 px-4">
+                <nav className="mt-6 flex-1 flex-col gap-1 px-4">
                     {navConfig.mainNav.map((item) => {
                         const isVisible = hasRequiredRole(allRoles, item.role);
                         if (!isVisible) return null;
@@ -154,25 +154,20 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="container grid h-16 grid-cols-3 items-center">
-        {/* Left Slot: Navigation */}
-        <div className="flex items-center justify-start">
-          <div className="hidden md:flex">
-            <MainNav items={navConfig.mainNav} />
-          </div>
-          <div className="md:hidden">
-            <MobileNav />
-          </div>
+        {/* Left Slot: Sidebar Navigation */}
+        <div className="flex items-center justify-start col-span-1">
+          <AppSidebar />
         </div>
 
-        {/* Center Slot: Logo */}
-        <div className="flex items-center justify-center">
-          <Link href="/" aria-label="Homepage">
-            <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} className="dark:invert" priority />
-          </Link>
+        {/* Center Slot: Logo with Pink Background */}
+        <div className="flex items-center justify-center col-span-1">
+            <Link href="/" aria-label="Homepage" className="bg-primary rounded-b-lg px-3 py-1.5 shadow-md">
+                <Image src="/logo.svg" alt="EstuClub Logo" width={100} height={26} className="invert brightness-0" priority />
+            </Link>
         </div>
 
         {/* Right Slot: Actions */}
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-end space-x-2 col-span-1">
           <NotificationBell />
           <UserMenu />
         </div>
