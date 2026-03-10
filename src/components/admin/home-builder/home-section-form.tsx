@@ -19,21 +19,18 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 
+// Standardized schema using "auto"
 const formSchema = z.object({
   title: z.string().min(3, 'El título es requerido.'),
   isActive: z.boolean().default(true),
   
-  // Section: Content
   contentType: z.enum(["benefits", "suppliers", "announcements", "categories", "banner"]),
 
-  // Section: Presentation
   layout_kind: z.enum(["carousel", "grid"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
 
-  // Section: Data Source
   data_source_mode: z.enum(["auto", "manual"]),
   
-  // Fields for Automatic Mode
   query_isFeatured: z.boolean().optional(),
   query_isVisible: z.boolean().optional(),
   query_category: z.string().optional(),
@@ -42,7 +39,6 @@ const formSchema = z.object({
   query_sort_direction: z.enum(["asc", "desc"]).optional(),
   query_limit: z.coerce.number().optional(),
 
-  // Fields for Manual Mode
   manual_items: z.array(z.string()).optional(),
   manual_bannerId: z.string().optional(),
 });
@@ -60,7 +56,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEditMode = !!section;
     
-    // --- Data fetching for selects and manual mode ---
     const { data: banners } = useCollection(query(collection(firestore, 'banners').withConverter(createConverter<Banner>())));
     const { data: benefits } = useCollection(query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())));
     const { data: suppliers } = useCollection(query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())));
@@ -74,9 +69,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             contentType: section?.block.contentType || 'benefits',
             layout_kind: section?.block.kind === 'categories' || section?.block.kind === 'banner' ? 'grid' : section?.block.kind || 'carousel',
             layout_gridPreset: section?.block.layout?.gridPreset,
+            // Normalize "automatic" to "auto" for backward compatibility
             data_source_mode: section?.block.mode === 'automatic' ? 'auto' : (section?.block.mode || 'auto'),
             query_isFeatured: section?.block.query?.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
-            query_isVisible: section?.block.query?.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true, // default to true
+            query_isVisible: section?.block.query?.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true,
             query_category: section?.block.query?.filters?.find(f => f.field === 'category')?.value || '',
             query_supplierType: section?.block.query?.filters?.find(f => f.field === 'type')?.value || '',
             query_sort_field: section?.block.query?.sort?.field || 'createdAt',
@@ -87,12 +83,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         },
     });
 
-    // --- Form watchers for conditional UI ---
     const watchContentType = form.watch('contentType');
     const watchLayoutKind = form.watch('layout_kind');
     const watchDataSourceMode = form.watch('data_source_mode');
     
-    // --- State for manual item selector ---
     const [searchTerm, setSearchTerm] = useState('');
     const manualItems = form.watch('manual_items') || [];
     
@@ -117,10 +111,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     async function onSubmit(values: FormValues) {
         setIsSubmitting(true);
         try {
-            // --- Build the final HomeSection object from form values ---
             const finalBlock: HomeSection['block'] = {
                 kind: values.contentType === 'categories' || values.contentType === 'banner' ? values.contentType : values.layout_kind,
                 contentType: (values.contentType !== 'categories' && values.contentType !== 'banner') ? values.contentType : undefined,
+                // Ensure "auto" is saved, not "automatic"
                 mode: (values.contentType !== 'categories' && values.contentType !== 'banner') ? values.data_source_mode : undefined,
                 layout: values.layout_kind === 'grid' ? { gridPreset: values.layout_gridPreset } : undefined,
                 bannerId: values.contentType === 'banner' ? values.manual_bannerId : undefined,
@@ -181,8 +175,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-1">
-
-                {/* --- Section 1: Content --- */}
                 <div className="space-y-4 rounded-md border p-4">
                     <h3 className="font-semibold text-lg">1. Contenido</h3>
                     <FormField control={form.control} name="title" render={({ field }) => (
@@ -203,7 +195,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     )} />
                 </div>
                 
-                {/* --- Section 2: Presentation (Not for special kinds) --- */}
                 {!isSpecialKind && (
                     <div className="space-y-4 rounded-md border p-4">
                         <h3 className="font-semibold text-lg">2. Presentación</h3>
@@ -232,7 +223,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     </div>
                 )}
 
-                {/* --- Section 3: Data Source (Not for special kinds) --- */}
                  {!isSpecialKind && (
                      <div className="space-y-4 rounded-md border p-4">
                         <h3 className="font-semibold text-lg">3. Fuente de Datos</h3>
@@ -240,13 +230,13 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                             <FormItem><FormLabel>Modo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
+                                    {/* Using "auto" here */}
                                     <SelectItem value="auto">Automático (con consulta)</SelectItem>
                                     <SelectItem value="manual">Manual (seleccionar ítems)</SelectItem>
                                 </SelectContent>
                             </Select></FormItem>
                         )} />
 
-                        {/* --- 3a: Automatic Mode --- */}
                         {watchDataSourceMode === 'auto' && (
                              <div className="space-y-4 pt-2">
                                 <div className="grid grid-cols-2 gap-4">
@@ -276,8 +266,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                 )} />
                              </div>
                         )}
-
-                        {/* --- 3b: Manual Mode --- */}
+                        
                         {watchDataSourceMode === 'manual' && (
                              <div className="space-y-4 pt-2">
                                 <div className="relative">
@@ -300,7 +289,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                      </div>
                 )}
                 
-                {/* --- Section Banner Specific --- */}
                 {watchContentType === 'banner' && (
                     <div className="space-y-4 rounded-md border p-4">
                         <h3 className="font-semibold text-lg">Banner Específico</h3>
@@ -314,7 +302,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 )}
 
 
-                {/* --- Section 4: State --- */}
                 <div className="space-y-4 rounded-md border p-4">
                     <h3 className="font-semibold text-lg">4. Estado</h3>
                      <FormField control={form.control} name="isActive" render={({ field }) => (
@@ -337,3 +324,4 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         </Form>
     );
 }
+    
