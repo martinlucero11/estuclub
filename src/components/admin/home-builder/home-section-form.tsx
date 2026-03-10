@@ -31,7 +31,7 @@ const formSchema = z.object({
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
 
   // Section: Data Source
-  data_source_mode: z.enum(["automatic", "manual"]),
+  data_source_mode: z.enum(["auto", "manual"]),
   
   // Fields for Automatic Mode
   query_isFeatured: z.boolean().optional(),
@@ -74,9 +74,9 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             contentType: section?.block.contentType || 'benefits',
             layout_kind: section?.block.kind === 'categories' || section?.block.kind === 'banner' ? 'grid' : section?.block.kind || 'carousel',
             layout_gridPreset: section?.block.layout?.gridPreset,
-            data_source_mode: section?.block.mode || 'automatic',
+            data_source_mode: section?.block.mode === 'automatic' ? 'auto' : (section?.block.mode || 'auto'),
             query_isFeatured: section?.block.query?.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
-            query_isVisible: section?.block.query?.filters?.some(f => f.field === 'isVisible' && f.value === true) || true, // default to true
+            query_isVisible: section?.block.query?.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true, // default to true
             query_category: section?.block.query?.filters?.find(f => f.field === 'category')?.value || '',
             query_supplierType: section?.block.query?.filters?.find(f => f.field === 'type')?.value || '',
             query_sort_field: section?.block.query?.sort?.field || 'createdAt',
@@ -128,7 +128,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 items: undefined,
             };
 
-            if (finalBlock.mode === 'automatic') {
+            if (finalBlock.mode === 'auto') {
                 const filters: WhereFilter[] = [];
                 if (values.query_isVisible) filters.push({ field: 'isVisible', op: '==', value: true });
                 if (values.query_isFeatured) filters.push({ field: 'isFeatured', op: '==', value: true });
@@ -240,14 +240,14 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                             <FormItem><FormLabel>Modo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    <SelectItem value="automatic">Automático (con consulta)</SelectItem>
+                                    <SelectItem value="auto">Automático (con consulta)</SelectItem>
                                     <SelectItem value="manual">Manual (seleccionar ítems)</SelectItem>
                                 </SelectContent>
                             </Select></FormItem>
                         )} />
 
                         {/* --- 3a: Automatic Mode --- */}
-                        {watchDataSourceMode === 'automatic' && (
+                        {watchDataSourceMode === 'auto' && (
                              <div className="space-y-4 pt-2">
                                 <div className="grid grid-cols-2 gap-4">
                                      <FormField control={form.control} name="query_isFeatured" render={({ field }) => (

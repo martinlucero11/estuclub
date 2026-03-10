@@ -71,11 +71,24 @@ export default function HomePage() {
                 <div className="space-y-6 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
                         
-                        if (!section.block) {
+                        // NEW: Retro-compatibility layer
+                        const block = section.block ?? {
+                            kind: (section as any).type.includes('carousel') ? 'carousel' : (section as any).type.includes('grid') ? 'grid' : 'banner',
+                            contentType: (section as any).type.replace('_carousel', '').replace('_grid', ''),
+                            mode: 'auto', // OLD sections were always automatic
+                            query: {
+                                filters: (section as any).type === 'featured_perks' ? [{ field: 'isFeatured', op: '==', value: true }] : [],
+                                sort: { field: 'createdAt', direction: 'desc' },
+                                limit: 10
+                            }
+                        };
+
+
+                        if (!block) {
                             return null; // Ignore sections that don't conform to the new schema
                         }
 
-                        const { block, title } = section;
+                        const { title } = section;
                         let Component;
                         const props: any = { ...block, title };
                         const linkPath = block.contentType ? `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}` : undefined;
@@ -86,6 +99,7 @@ export default function HomePage() {
                                 break;
                             case 'banner':
                                 Component = SingleBanner;
+                                props.bannerId = block.bannerId || (section as any).bannerId;
                                 break;
                             case 'carousel':
                                 if (block.contentType === 'benefits') Component = BenefitsCarousel;
