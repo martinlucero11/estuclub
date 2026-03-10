@@ -151,9 +151,11 @@ export default function HomeBuilderPage() {
 
             <div className="space-y-4">
                 {localSections.length > 0 ? localSections.map((section, index) => {
-                    const description = section.block.contentType 
-                        ? `${section.block.kind} de ${section.block.contentType}` 
-                        : section.block.kind;
+                    const block = section.block;
+                    const description =
+                        'contentType' in block && block.contentType
+                        ? `${block.kind} de ${block.contentType}`
+                        : block.kind;
 
                     return (
                         <Card key={section.id} className="flex items-center p-4 gap-4">
