@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
-import { HomeSection, HomeSectionBlock } from '@/types/data';
+import { HomeSection } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 // --- DYNAMICALLY IMPORTED COMPONENTS ---
@@ -21,6 +21,10 @@ const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').th
 const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel));
 const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid));
 const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner));
+
+const BenefitsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.BenefitsGrid), { ssr: false });
+const SuppliersGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.SuppliersGrid), { ssr: false });
+const AnnouncementsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.AnnouncementsGrid), { ssr: false });
 
 
 // --- SKELETON LOADER ---
@@ -88,18 +92,27 @@ export default function HomePage() {
                                 break;
                             case 'banner':
                                 Component = SingleBanner;
-                                props.bannerId = block.bannerId; // Type-safe access
+                                props.bannerId = block.bannerId;
                                 break;
                             case 'carousel':
-                            case 'grid': // Assuming grid uses carousel components for now
-                                if (block.contentType === 'benefits') Component = BenefitsCarousel;
-                                if (block.contentType === 'suppliers') Component = SuppliersCarousel;
-                                if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
-                                
-                                if (block.contentType) {
+                                if ('contentType' in block) {
+                                    if (block.contentType === 'benefits') Component = BenefitsCarousel;
+                                    if (block.contentType === 'suppliers') Component = SuppliersCarousel;
+                                    if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                    
                                     linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                    props = { ...block, title };
                                 }
-                                props = { ...block, title };
+                                break;
+                            case 'grid':
+                                if ('contentType' in block) {
+                                    if (block.contentType === 'benefits') Component = BenefitsGrid;
+                                    if (block.contentType === 'suppliers') Component = SuppliersGrid;
+                                    if (block.contentType === 'announcements') Component = AnnouncementsGrid;
+                                    
+                                    linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                    props = { ...block, title };
+                                }
                                 break;
                             default:
                                 return null;
@@ -119,7 +132,7 @@ export default function HomePage() {
                                         </Button>
                                     )}
                                 </div>
-                                <div className={block.kind !== 'categories' ? 'pl-4' : ''}>
+                                <div className={block.kind !== 'categories' ? 'px-4' : ''}>
                                     <Component {...props} />
                                 </div>
                             </section>

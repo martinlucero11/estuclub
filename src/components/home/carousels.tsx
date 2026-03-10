@@ -10,23 +10,24 @@ import {
   QueryConstraint,
 } from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, WhereFilter, HomeSection } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, HomeSection, SerializableBenefit } from "@/types/data";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import dynamic from 'next/dynamic';
 import { Card } from "../ui/card";
-import { Award } from "lucide-react";
+import { makeBenefitSerializable } from "@/lib/data";
+import BenefitCard from "../perks/perk-card";
 
-const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), { ssr: false });
 
 type CarouselProps = HomeSection['block'];
 
 const buildConstraints = (
   props: CarouselProps
 ): QueryConstraint[] => {
+  if (props.kind === 'banner' || props.kind === 'categories') {
+    return [];
+  }
   const { contentType, query: queryConfig } = props;
   const constraints: QueryConstraint[] = [];
 
@@ -58,66 +59,6 @@ const buildConstraints = (
 
   return constraints;
 };
-
-
-// --- BENEFIT CARD ---
-const BenefitCard = ({ benefit, supplier }: { benefit: Benefit, supplier?: SupplierProfile }) => {
-    const supplierInitials = getInitials(benefit.supplierName || 'S');
-
-    const redeemButton = (
-        <Button
-            size="sm"
-            className="rounded-full bg-primary text-primary-foreground group-hover:bg-primary/90 transition-colors"
-            onClick={(e) => {
-                e.preventDefault();
-            }}
-        >
-            Canjear
-        </Button>
-    );
-
-    return (
-        <div className="w-[280px] snap-start">
-             <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg">
-                <Link href={`/benefits/${benefit.id}`} className="block">
-                    <div className="relative h-40 w-full">
-                        <Image 
-                            src={benefit.imageUrl}
-                            alt={benefit.title}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            sizes="(max-width: 768px) 50vw, 33vw"
-                        />
-                        <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-primary/80 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
-                            <Award className="h-3 w-3" />
-                            <span>{benefit.points} PTS</span>
-                        </div>
-                    </div>
-                    <div className="p-4 space-y-2">
-                        <h3 className="font-bold text-lg tracking-tight line-clamp-1 group-hover:text-primary transition-colors">
-                            {benefit.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 h-[40px]">
-                            {benefit.description}
-                        </p>
-                        <div className="flex items-center justify-between pt-2">
-                           <div className="flex items-center gap-1.5">
-                                <Avatar className="h-5 w-5">
-                                    <AvatarImage src={supplier?.logoUrl} alt={supplier?.name || ''} />
-                                    <AvatarFallback className="text-xs">{supplierInitials}</AvatarFallback>
-                                </Avatar>
-                               <span className="text-xs font-semibold text-muted-foreground">{benefit.supplierName}</span>
-                           </div>
-                            <RedeemBenefitDialog benefit={benefit as any}>
-                                {redeemButton}
-                            </RedeemBenefitDialog>
-                        </div>
-                    </div>
-                </Link>
-            </Card>
-        </div>
-    );
-}
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
@@ -159,35 +100,40 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
 const createCarousel = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
     collectionName: string, 
-    dataKey: string
+    dataKey: string,
+    contentType: "benefits" | "suppliers" | "announcements"
 ) => {
     return function Carousel(props: CarouselProps) {
         const firestore = useFirestore();
         
         const itemsQuery = useMemo(() => {
-            if (!props.contentType) return null; // Guard against missing contentType
+            if (props.kind !== 'carousel') return null;
             const constraints = buildConstraints(props);
             return query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...constraints);
         }, [firestore, props]);
 
         const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
         
-        const suppliersQuery = useMemo(() => 
-            collectionName === 'benefits' ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null
-        , [firestore]);
-        const { data: suppliers } = useCollectionOnce(suppliersQuery);
-        
         const sortedItems = useMemo(() => {
             if (!items) return [];
             // Client-side sort for suppliers to avoid index on name
-            if (props.contentType === 'suppliers' && props.query?.sort?.field === 'name') {
+            if (props.kind === 'carousel' && props.contentType === 'suppliers' && props.query?.sort?.field === 'name') {
                 return [...items].sort((a: any, b: any) => {
                     const direction = props.query?.sort?.direction === 'asc' ? 1 : -1;
                     return a.name.localeCompare(b.name) * direction;
                 });
             }
             return items;
-        }, [items, props.contentType, props.query?.sort]);
+        }, [items, props]);
+        
+        const processedItems = useMemo(() => {
+            if (!sortedItems) return [];
+            if (contentType === 'benefits') {
+                 return sortedItems.map(b => makeBenefitSerializable(b as any as Benefit));
+            }
+            return sortedItems;
+        }, [sortedItems, contentType]);
+
 
         const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
 
@@ -201,25 +147,18 @@ const createCarousel = <T extends {id: string}>(
             )
         }
 
-        if (error || !sortedItems || sortedItems.length === 0) {
+        if (error || !processedItems || processedItems.length === 0) {
             return <p className="text-muted-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
 
         return (
              <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {collectionName === 'benefits' ? 
-                    sortedItems.map(item => {
-                        const typedItem = item as unknown as Benefit;
-                        const supplier = suppliers?.find(s => s.id === typedItem.ownerId);
-                        return <BenefitCard key={item.id} benefit={typedItem} supplier={supplier} />
-                    }) :
-                    sortedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
-                }
+                {processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} variant="carousel" className="w-[280px] snap-start" />)}
             </div>
         )
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit');
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier');
-export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement');
+export const BenefitsCarousel = createCarousel<SerializableBenefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
+export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
+export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
