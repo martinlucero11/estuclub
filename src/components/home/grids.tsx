@@ -123,7 +123,7 @@ const createGrid = <T extends {id: string}>(
                 });
             }
             if (props.kind === 'grid' && props.contentType === 'benefits') {
-                 return items.map(b => makeBenefitSerializable(b as any as Benefit));
+                 return items.map(b => makeBenefitSerializable(b as unknown as Benefit));
             }
             return items;
         }, [items, props]);
@@ -152,6 +152,6 @@ const createGrid = <T extends {id: string}>(
     }
 }
 
-export const BenefitsGrid = createGrid<SerializableBenefit>(BenefitCard, 'benefits', 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4");
+export const BenefitsGrid = createGrid<Benefit>(BenefitCard, 'benefits', 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4");
 export const SuppliersGrid = createGrid<SupplierProfile>(SupplierGridCard, 'roles_supplier', 'supplier', "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5");
 export const AnnouncementsGrid = createGrid<Announcement>(AnnouncementCard, 'announcements', 'announcement', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3");
