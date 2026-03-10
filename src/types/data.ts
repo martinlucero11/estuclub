@@ -232,29 +232,44 @@ export interface Category {
   [key: string]: any;
 }
 
+// Discriminated union for HomeSection.block
+type DynamicContentConfig = {
+  contentType: "benefits" | "suppliers" | "announcements";
+  mode: "auto" | "manual";
+  query?: {
+    filters?: WhereFilter[];
+    sort?: { field: string; direction: "asc" | "desc" };
+    limit?: number;
+  };
+  items?: string[];
+}
+
+export type HomeSectionBlock =
+  | (DynamicContentConfig & {
+      kind: "carousel";
+      layout?: { itemWidth?: number };
+    })
+  | (DynamicContentConfig & {
+      kind: "grid";
+      layout?: { gridPreset?: "1x4" | "1x5" | "2x4" | "2x5" };
+    })
+  | {
+      kind: "banner";
+      bannerId: string;
+    }
+  | {
+      kind: "categories";
+    };
+
 export interface HomeSection {
   id: string;
   title: string;
   order: number;
   isActive: boolean;
   createdAt?: Timestamp;
-  block: {
-    kind: "carousel" | "grid" | "banner" | "categories";
-    contentType?: "benefits" | "suppliers" | "announcements";
-    mode?: "auto" | "manual";
-    layout?: {
-      gridPreset?: "1x4" | "1x5" | "2x4" | "2x5",
-      itemWidth?: number
-    },
-    query?: {
-      filters?: WhereFilter[],
-      sort?: { field: string, direction: "asc" | "desc" },
-      limit?: number
-    },
-    items?: string[], // For manual mode
-    bannerId?: string // For banner kind
-  }
+  block: HomeSectionBlock;
 }
+
 
 export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
     createdAt: string;
@@ -280,5 +295,3 @@ export interface Notification {
   target?: 'all' | 'subscribers'; // Who should receive it
   createdAt: Timestamp;
 }
-
-    

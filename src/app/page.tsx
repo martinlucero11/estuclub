@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeMessage from '@/components/home/welcome-message';
 import dynamic from 'next/dynamic';
-import { HomeSection } from '@/types/data';
+import { HomeSection, HomeSectionBlock } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 // --- DYNAMICALLY IMPORTED COMPONENTS ---
@@ -71,27 +71,16 @@ export default function HomePage() {
                 <div className="space-y-6 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
                         
-                        // NEW: Retro-compatibility layer
-                        const block = section.block ?? {
-                            kind: (section as any).type.includes('carousel') ? 'carousel' : (section as any).type.includes('grid') ? 'grid' : 'banner',
-                            contentType: (section as any).type.replace('_carousel', '').replace('_grid', ''),
-                            mode: 'auto', // OLD sections were always automatic
-                            query: {
-                                filters: (section as any).type === 'featured_perks' ? [{ field: 'isFeatured', op: '==', value: true }] : [],
-                                sort: { field: 'createdAt', direction: 'desc' },
-                                limit: 10
-                            }
-                        };
-
+                        const { block } = section;
 
                         if (!block) {
-                            return null; // Ignore sections that don't conform to the new schema
+                            return null;
                         }
 
                         const { title } = section;
                         let Component;
-                        const props: any = { ...block, title };
-                        const linkPath = block.contentType ? `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}` : undefined;
+                        let props: any = { title };
+                        let linkPath: string | undefined;
 
                         switch (block.kind) {
                             case 'categories':
@@ -99,12 +88,18 @@ export default function HomePage() {
                                 break;
                             case 'banner':
                                 Component = SingleBanner;
-                                props.bannerId = block.bannerId || (section as any).bannerId;
+                                props.bannerId = block.bannerId; // Type-safe access
                                 break;
                             case 'carousel':
+                            case 'grid': // Assuming grid uses carousel components for now
                                 if (block.contentType === 'benefits') Component = BenefitsCarousel;
                                 if (block.contentType === 'suppliers') Component = SuppliersCarousel;
                                 if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                
+                                if (block.contentType) {
+                                    linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                }
+                                props = { ...block, title };
                                 break;
                             default:
                                 return null;

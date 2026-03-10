@@ -12,14 +12,13 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import { Save, Search } from 'lucide-react';
-import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, cluberCategories, WhereFilter, Announcement } from '@/types/data';
+import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 
-// Standardized schema using "auto"
 const formSchema = z.object({
   title: z.string().min(3, 'El título es requerido.'),
   isActive: z.boolean().default(true),
@@ -41,7 +40,16 @@ const formSchema = z.object({
 
   manual_items: z.array(z.string()).optional(),
   manual_bannerId: z.string().optional(),
+}).refine(data => {
+    if (data.contentType === 'banner') {
+        return !!data.manual_bannerId;
+    }
+    return true;
+}, {
+    message: "Debes seleccionar un banner.",
+    path: ["manual_bannerId"],
 });
+
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -63,24 +71,77 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: section?.title || '',
-            isActive: section?.isActive ?? true,
-            contentType: section?.block.contentType || 'benefits',
-            layout_kind: section?.block.kind === 'categories' || section?.block.kind === 'banner' ? 'grid' : section?.block.kind || 'carousel',
-            layout_gridPreset: section?.block.layout?.gridPreset,
-            // Normalize "automatic" to "auto" for backward compatibility
-            data_source_mode: section?.block.mode === 'automatic' ? 'auto' : (section?.block.mode || 'auto'),
-            query_isFeatured: section?.block.query?.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
-            query_isVisible: section?.block.query?.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true,
-            query_category: section?.block.query?.filters?.find(f => f.field === 'category')?.value || '',
-            query_supplierType: section?.block.query?.filters?.find(f => f.field === 'type')?.value || '',
-            query_sort_field: section?.block.query?.sort?.field || 'createdAt',
-            query_sort_direction: section?.block.query?.sort?.direction || 'desc',
-            query_limit: section?.block.query?.limit || 10,
-            manual_items: section?.block.items || [],
-            manual_bannerId: section?.block.bannerId,
-        },
+        defaultValues: useMemo(() => {
+            const defaults = {
+                title: '',
+                isActive: true,
+                contentType: 'benefits' as const,
+                layout_kind: 'carousel' as const,
+                data_source_mode: 'auto' as const,
+                query_isFeatured: false,
+                query_isVisible: true,
+                query_category: '',
+                query_supplierType: '',
+                query_sort_field: 'createdAt',
+                query_sort_direction: 'desc' as const,
+                query_limit: 10,
+                manual_items: [],
+                manual_bannerId: '',
+            };
+            if (!section) return defaults;
+
+            const { block } = section;
+            const base = {
+                title: section.title,
+                isActive: section.isActive,
+            };
+
+            if (block.kind === 'banner') {
+                return {
+                    ...defaults,
+                    ...base,
+                    contentType: 'banner',
+                    manual_bannerId: block.bannerId,
+                };
+            }
+            if (block.kind === 'categories') {
+                return {
+                    ...defaults,
+                    ...base,
+                    contentType: 'categories',
+                };
+            }
+            
+            const dynamicContentDefaults = {
+                ...defaults,
+                ...base,
+                contentType: block.contentType,
+                layout_kind: block.kind,
+                data_source_mode: block.mode,
+                ...(block.kind === 'grid' && block.layout && { layout_gridPreset: block.layout.gridPreset }),
+            };
+
+            if (block.mode === 'auto' && block.query) {
+                return {
+                    ...dynamicContentDefaults,
+                    query_isFeatured: block.query.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
+                    query_isVisible: block.query.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true,
+                    query_category: block.query.filters?.find(f => f.field === 'category')?.value as string || '',
+                    query_supplierType: block.query.filters?.find(f => f.field === 'type')?.value as string || '',
+                    query_sort_field: block.query.sort?.field || 'createdAt',
+                    query_sort_direction: block.query.sort?.direction || 'desc',
+                    query_limit: block.query.limit || 10,
+                }
+            }
+            if (block.mode === 'manual') {
+                return {
+                    ...dynamicContentDefaults,
+                    manual_items: block.items || [],
+                }
+            }
+            
+            return dynamicContentDefaults;
+        }, [section]),
     });
 
     const watchContentType = form.watch('contentType');
@@ -111,52 +172,70 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     async function onSubmit(values: FormValues) {
         setIsSubmitting(true);
         try {
-            const finalBlock: HomeSection['block'] = {
-                kind: values.contentType === 'categories' || values.contentType === 'banner' ? values.contentType : values.layout_kind,
-                contentType: (values.contentType !== 'categories' && values.contentType !== 'banner') ? values.contentType : undefined,
-                // Ensure "auto" is saved, not "automatic"
-                mode: (values.contentType !== 'categories' && values.contentType !== 'banner') ? values.data_source_mode : undefined,
-                layout: values.layout_kind === 'grid' ? { gridPreset: values.layout_gridPreset } : undefined,
-                bannerId: values.contentType === 'banner' ? values.manual_bannerId : undefined,
-                query: undefined,
-                items: undefined,
-            };
+            let finalBlock: HomeSectionBlock;
 
-            if (finalBlock.mode === 'auto') {
-                const filters: WhereFilter[] = [];
-                if (values.query_isVisible) filters.push({ field: 'isVisible', op: '==', value: true });
-                if (values.query_isFeatured) filters.push({ field: 'isFeatured', op: '==', value: true });
-                if (values.query_category) filters.push({ field: 'category', op: '==', value: values.query_category });
-                if (values.query_supplierType) filters.push({ field: 'type', op: '==', value: values.query_supplierType });
+            switch (values.contentType) {
+                case 'banner':
+                    finalBlock = {
+                        kind: 'banner',
+                        bannerId: values.manual_bannerId!,
+                    };
+                    break;
+                case 'categories':
+                    finalBlock = {
+                        kind: 'categories',
+                    };
+                    break;
+                default: // Dynamic content
+                    const query = {
+                        filters: [] as WhereFilter[],
+                        sort: {
+                            field: values.query_sort_field || 'createdAt',
+                            direction: values.query_sort_direction || 'desc',
+                        },
+                        limit: values.query_limit || 10,
+                    };
+                    if (values.query_isVisible) query.filters.push({ field: 'isVisible', op: '==', value: true });
+                    if (values.query_isFeatured) query.filters.push({ field: 'isFeatured', op: '==', value: true });
+                    if (values.query_category) query.filters.push({ field: 'category', op: '==', value: values.query_category });
+                    if (values.query_supplierType) query.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
 
-                finalBlock.query = {
-                    filters,
-                    sort: {
-                        field: values.query_sort_field || 'createdAt',
-                        direction: values.query_sort_direction || 'desc',
-                    },
-                    limit: values.query_limit || 10,
-                };
+                    const commonDynamicProps = {
+                        contentType: values.contentType,
+                        mode: values.data_source_mode,
+                        ...(values.data_source_mode === 'auto' && { query }),
+                        ...(values.data_source_mode === 'manual' && { items: values.manual_items || [] }),
+                    };
+
+                    if (values.layout_kind === 'carousel') {
+                        finalBlock = {
+                            kind: 'carousel',
+                            ...commonDynamicProps,
+                        };
+                    } else { // grid
+                        finalBlock = {
+                            kind: 'grid',
+                            layout: { gridPreset: values.layout_gridPreset },
+                            ...commonDynamicProps,
+                        };
+                    }
+                    break;
             }
 
-            if (finalBlock.mode === 'manual') {
-                finalBlock.items = values.manual_items || [];
-            }
-            
-            const dataToSave = {
+            const dataToSave: Omit<HomeSection, 'id' | 'createdAt'> = {
                 title: values.title,
                 isActive: values.isActive,
                 block: finalBlock,
+                order: section?.order ?? new Date().getTime(),
             };
 
             if (isEditMode && section) {
                 const sectionRef = doc(firestore, 'home_sections', section.id);
-                await updateDoc(sectionRef, dataToSave);
+                await updateDoc(sectionRef, dataToSave as any);
                 toast({ title: 'Bloque actualizado' });
             } else {
                 await addDoc(collection(firestore, 'home_sections'), {
                     ...dataToSave,
-                    order: new Date().getTime(),
                     createdAt: serverTimestamp(),
                 });
                 toast({ title: 'Bloque creado' });
@@ -230,7 +309,6 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                             <FormItem><FormLabel>Modo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    {/* Using "auto" here */}
                                     <SelectItem value="auto">Automático (con consulta)</SelectItem>
                                     <SelectItem value="manual">Manual (seleccionar ítems)</SelectItem>
                                 </SelectContent>
