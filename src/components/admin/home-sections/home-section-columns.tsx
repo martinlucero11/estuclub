@@ -62,11 +62,15 @@ export const getHomeSectionColumns = (
     )
   },
   {
-    accessorKey: 'type',
+    accessorKey: 'block',
     header: 'Tipo de Sección',
     cell: ({ row }) => {
-        const type = row.original.type;
-        return <Badge variant="secondary">{type}</Badge>;
+        const block = row.original.block;
+        const description =
+            'contentType' in block && block.contentType
+            ? `${block.kind} · ${block.contentType}`
+            : block.kind;
+        return <Badge variant="secondary" className="capitalize">{description}</Badge>;
     }
   },
    {
