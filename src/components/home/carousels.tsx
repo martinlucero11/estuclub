@@ -129,7 +129,7 @@ const createCarousel = <T extends {id: string}>(
         const processedItems = useMemo(() => {
             if (!sortedItems) return [];
             if (contentType === 'benefits') {
-                 return sortedItems.map(b => makeBenefitSerializable(b as any as Benefit));
+                 return sortedItems.map(b => makeBenefitSerializable(b as any));
             }
             return sortedItems;
         }, [sortedItems, contentType]);
@@ -159,6 +159,6 @@ const createCarousel = <T extends {id: string}>(
     }
 }
 
-export const BenefitsCarousel = createCarousel<SerializableBenefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
+export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
