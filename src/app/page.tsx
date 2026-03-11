@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
@@ -87,6 +88,11 @@ export default function HomePage() {
                         let props: any = { title };
                         let linkPath: string | undefined;
 
+                        // --- TEMPORARY LOGS FOR DEBUGGING ---
+                        console.log('[HOME SECTION]', section);
+                        console.log('[HOME BLOCK]', section.block);
+                        // ------------------------------------
+
                         switch (block.kind) {
                             case 'categories':
                                 Component = CategoryGrid;
@@ -114,14 +120,22 @@ export default function HomePage() {
                                     if (block.contentType === 'benefits') Component = BenefitsGrid;
                                     if (block.contentType === 'suppliers') Component = SuppliersGrid;
                                     if (block.contentType === 'announcements') Component = AnnouncementsGrid;
+                                    if (block.contentType === 'banners') Component = BannersCarousel;
                                     
                                     linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                    if (block.contentType === 'banners') {
+                                        linkPath = undefined;
+                                    }
                                     props = { ...block, title };
                                 }
                                 break;
                             default:
                                 return null;
                         }
+
+                        // --- TEMPORARY LOGS FOR DEBUGGING ---
+                        console.log('[HOME COMPONENT RESOLVED]', Component);
+                        // ------------------------------------
 
                         if (!Component) return null;
 
