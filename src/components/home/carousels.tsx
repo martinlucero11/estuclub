@@ -113,7 +113,7 @@ function useCarouselData<T extends { id: string }>(
   const items = useMemo(() => {
     if (!queriedItems) return [];
     if (mode === 'manual') {
-      const parsedItemIds = JSON.parse(stringifiedItemIds);
+      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]');
       if (!parsedItemIds || parsedItemIds.length === 0) return [];
       const orderMap = new Map(parsedItemIds.map((id: string, index: number) => [id, index]));
       return [...queriedItems].sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
@@ -243,7 +243,9 @@ export function AnnouncementsCarousel(props: CarouselProps) {
 
 
 export function BannersCarousel(props: CarouselProps) {
+    console.log('[BannersCarousel Props]:', JSON.stringify(props, null, 2));
     const { items: banners, isLoading, error } = useCarouselData<Banner>('banners', props);
+    console.log('[BannersCarousel Data]:', { isLoading, error, banners });
 
     if (isLoading) {
         return (
