@@ -20,7 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 
 const formSchema = z.object({
-  title: z.string().min(3, 'El título es requerido.'),
+  title: z.string().optional(),
   isActive: z.boolean().default(true),
   
   contentType: z.enum(["benefits", "suppliers", "announcements", "categories", "banner"]),
@@ -223,7 +223,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             }
 
             const dataToSave: Omit<HomeSection, 'id' | 'createdAt'> = {
-                title: values.title,
+                title: values.title || '',
                 isActive: values.isActive,
                 block: finalBlock,
                 order: section?.order ?? new Date().getTime(),
@@ -257,7 +257,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 <div className="space-y-4 rounded-md border p-4">
                     <h3 className="font-semibold text-lg">1. Contenido</h3>
                     <FormField control={form.control} name="title" render={({ field }) => (
-                        <FormItem><FormLabel>Título del Bloque</FormLabel><FormControl><Input {...field} placeholder="Ej: Beneficios Destacados" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Título del Bloque (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: Beneficios Destacados" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="contentType" render={({ field }) => (
                         <FormItem><FormLabel>Tipo de Contenido</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
@@ -373,7 +373,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         <FormField control={form.control} name="manual_bannerId" render={({ field }) => (
                             <FormItem><FormLabel>Banner a Mostrar</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un banner" /></SelectTrigger></FormControl>
-                                <SelectContent>{banners?.map(b => <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>)}</SelectContent>
+                                <SelectContent>{banners?.map(b => <SelectItem key={b.id} value={b.id}>{b.title || `Banner sin título (${b.id.substring(0,5)})`}</SelectItem>)}</SelectContent>
                             </Select><FormMessage /></FormItem>
                         )} />
                     </div>
@@ -402,4 +402,3 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         </Form>
     );
 }
-    

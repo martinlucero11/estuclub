@@ -122,16 +122,18 @@ export default function HomePage() {
 
                         return (
                             <section key={section.id} className="space-y-2">
-                                <div className="flex items-center justify-between px-4">
-                                    <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
-                                    {linkPath && (
-                                        <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
-                                            <Link href={linkPath}>
-                                                Ver todos <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                    )}
-                                </div>
+                                {section.title && (
+                                    <div className="flex items-center justify-between px-4">
+                                        <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
+                                        {linkPath && (
+                                            <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
+                                                <Link href={linkPath}>
+                                                    Ver todos <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
                                 <div className="px-4">
                                     <Component {...props} />
                                 </div>
