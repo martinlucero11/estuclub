@@ -11,12 +11,11 @@ import {
   documentId,
 } from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, HomeSection, SerializableBenefit, Banner } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, HomeSection, Banner } from "@/types/data";
 import Image from "next/image";
 import { createConverter } from "@/lib/firestore-converter";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Card } from "../ui/card";
 import { makeBenefitSerializable } from "@/lib/data";
 import BenefitCard from "../perks/perk-card";
 import { Skeleton } from "../ui/skeleton";
@@ -106,7 +105,7 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
     </Link>
 );
 
-// --- NEW BANNER CAROUSEL CARD ---
+// --- BANNER CAROUSEL CARD ---
 const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
     const bannerImage = (
         <Image
@@ -136,48 +135,86 @@ const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
 };
 
 
-// --- CAROUSEL FACTORY ---
-const createCarousel = <T extends {id: string}>(
+// --- UNIFIED CAROUSEL FACTORY ---
+const createDynamicCarousel = <T extends {id: string, name?: string, title?: string}>(
     CardComponent: React.FC<any>, 
     collectionName: string, 
     dataKey: string,
-    contentType: "benefits" | "suppliers" | "announcements"
+    contentType: "benefits" | "suppliers" | "announcements" | "banners"
 ) => {
     return function Carousel(props: CarouselProps) {
         const firestore = useFirestore();
-        
-        const itemsQuery = useMemo(() => {
-            if (props.kind !== 'carousel') return null;
-            const constraints = buildConstraints(props);
-            return query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...constraints);
-        }, [firestore, props]);
+        const { kind, mode, items: itemIds, query: queryConfig } = props;
 
-        const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
+        // Use stringified versions for stable dependencies in useMemo
+        const stringifiedItemIds = JSON.stringify(itemIds);
+        const stringifiedQueryConfig = JSON.stringify(queryConfig);
+
+        const itemsQuery = useMemo(() => {
+            if (kind !== 'carousel' || !firestore) return null;
+
+            const itemsCollection = collection(firestore, collectionName).withConverter(createConverter<T>());
+            
+            if (mode === 'manual' && itemIds && itemIds.length > 0) {
+                const currentItemIds = itemIds.slice(0, 30);
+                if (currentItemIds.length === 0) return null;
+                return query(itemsCollection, where(documentId(), 'in', currentItemIds));
+            }
+            
+            if (mode === 'auto') {
+                const stableProps = { kind, mode, query: queryConfig, contentType };
+                const constraints = buildConstraints(stableProps as any);
+                return query(itemsCollection, ...constraints);
+            }
+
+            return null;
+        }, [firestore, kind, mode, stringifiedItemIds, stringifiedQueryConfig, contentType]);
         
-        const sortedItems = useMemo(() => {
-            if (!items) return [];
-            // Client-side sort for suppliers to avoid index on name
-            if (props.kind === 'carousel' && props.contentType === 'suppliers' && props.query?.sort?.field === 'name') {
-                return [...items].sort((a: any, b: any) => {
-                    const direction = props.query?.sort?.direction === 'asc' ? 1 : -1;
+        const { data: queriedItems, isLoading, error } = useCollectionOnce(itemsQuery);
+        
+        const items = useMemo(() => {
+            if (!queriedItems) return [];
+            
+            if (mode === 'manual' && itemIds) {
+                const orderMap = new Map(itemIds.map((id, index) => [id, index]));
+                return [...queriedItems].sort((a, b) => {
+                    const orderA = orderMap.get(a.id);
+                    const orderB = orderMap.get(b.id);
+                    if (orderA === undefined || orderB === undefined) return 0;
+                    return orderA - orderB;
+                });
+            }
+            
+            if (kind === 'carousel' && contentType === 'suppliers' && queryConfig?.sort?.field === 'name') {
+                 return [...queriedItems].sort((a: any, b: any) => {
+                    const direction = queryConfig?.sort?.direction === 'asc' ? 1 : -1;
                     return a.name.localeCompare(b.name) * direction;
                 });
             }
-            return items;
-        }, [items, props]);
-        
+            
+            return queriedItems;
+        }, [queriedItems, mode, stringifiedItemIds, kind, contentType, queryConfig]);
+
         const processedItems = useMemo(() => {
-            if (!sortedItems) return [];
+            if (!items) return [];
             if (contentType === 'benefits') {
-                 return sortedItems.map(b => makeBenefitSerializable(b as unknown as Benefit));
+                 return items.map(b => makeBenefitSerializable(b as unknown as Benefit));
             }
-            return sortedItems;
-        }, [sortedItems, contentType]);
+            return items;
+        }, [items]);
 
-
-        const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
+        const isBannerCarousel = contentType === 'banners';
 
         if (isLoading) {
+            if (isBannerCarousel) {
+                return (
+                    <div className="flex w-full gap-4 overflow-hidden">
+                        <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+                        <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+                    </div>
+                );
+            }
+            const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
             return (
                 <div className="flex gap-4 overflow-hidden">
                     {[...Array(4)].map((_, i) => (
@@ -191,6 +228,22 @@ const createCarousel = <T extends {id: string}>(
             return <p className="text-muted-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
 
+        if (isBannerCarousel) {
+            return (
+                <Carousel opts={{ align: "start" }} className="w-full">
+                    <CarouselContent className="-ml-4">
+                        {processedItems.map(item => (
+                            <CarouselItem key={item.id} className="basis-4/5 md:basis-1/2 pl-4">
+                                <BannerCarouselCard banner={item as Banner} />
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="hidden sm:flex" />
+                    <CarouselNext className="hidden sm:flex" />
+                </Carousel>
+            );
+        }
+
         return (
              <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} variant="carousel" className="w-52 snap-start" />)}
@@ -199,74 +252,7 @@ const createCarousel = <T extends {id: string}>(
     }
 }
 
-export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
-export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
-export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
-
-// --- NEW BANNERS CAROUSEL ---
-export function BannersCarousel(props: CarouselProps) {
-    const firestore = useFirestore();
-    
-    const itemsQuery = useMemo(() => {
-        if (props.kind !== 'carousel' || !firestore) return null;
-        
-        const bannersCollection = collection(firestore, 'banners').withConverter(createConverter<Banner>());
-
-        if (props.mode === 'manual' && props.items && props.items.length > 0) {
-            const itemIds = props.items.slice(0, 30); // Firestore 'in' query limit is 30
-            if (itemIds.length === 0) return null;
-            return query(bannersCollection, where(documentId(), 'in', itemIds));
-        }
-        
-        if (props.mode === 'auto') {
-            const constraints = buildConstraints(props);
-            return query(bannersCollection, ...constraints);
-        }
-
-        return null; // No items to fetch
-    }, [firestore, props]);
-
-    const { data: queriedItems, isLoading, error } = useCollectionOnce(itemsQuery);
-    
-    // Sort manually selected items to respect the order from the home-builder
-    const items = useMemo(() => {
-        if (!queriedItems) return [];
-        if (props.kind === 'carousel' && props.mode === 'manual' && props.items) {
-            const orderMap = new Map(props.items.map((id, index) => [id, index]));
-            return [...queriedItems].sort((a, b) => {
-                const orderA = orderMap.get(a.id);
-                const orderB = orderMap.get(b.id);
-                if (orderA === undefined || orderB === undefined) return 0;
-                return orderA - orderB;
-            });
-        }
-        return queriedItems;
-    }, [queriedItems, props]);
-    
-    if (isLoading) {
-         return (
-            <div className="flex w-full gap-4 overflow-hidden">
-                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
-                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
-            </div>
-        )
-    }
-
-    if (error || !items || items.length === 0) {
-        return <p className="text-muted-foreground italic text-sm">No hay banners para mostrar.</p>;
-    }
-
-    return (
-         <Carousel opts={{ align: "start" }} className="w-full">
-            <CarouselContent className="-ml-4">
-                {items.map(item => (
-                    <CarouselItem key={item.id} className="basis-4/5 md:basis-1/2 pl-4">
-                        <BannerCarouselCard banner={item} />
-                    </CarouselItem>
-                ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-        </Carousel>
-    )
-}
+export const BenefitsCarousel = createDynamicCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
+export const SuppliersCarousel = createDynamicCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
+export const AnnouncementsCarousel = createDynamicCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
+export const BannersCarousel = createDynamicCarousel<Banner>(BannerCarouselCard, 'banners', 'banner', 'banners');
