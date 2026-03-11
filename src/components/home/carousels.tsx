@@ -129,7 +129,7 @@ const createCarousel = <T extends {id: string}>(
         const processedItems = useMemo(() => {
             if (!sortedItems) return [];
             if (contentType === 'benefits') {
-                 return sortedItems.map(b => makeBenefitSerializable(b as any));
+                 return sortedItems.map(b => makeBenefitSerializable(b as unknown as Benefit));
             }
             return sortedItems;
         }, [sortedItems, contentType]);
@@ -141,7 +141,7 @@ const createCarousel = <T extends {id: string}>(
             return (
                 <div className="flex gap-4 overflow-hidden">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className={`w-[280px] ${skeletonHeight} bg-muted/50 rounded-3xl animate-pulse`}></div>
+                        <div key={i} className={`w-52 ${skeletonHeight} bg-muted/50 rounded-3xl animate-pulse`}></div>
                     ))}
                 </div>
             )
@@ -153,7 +153,7 @@ const createCarousel = <T extends {id: string}>(
 
         return (
              <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} variant="carousel" className="w-[280px] snap-start" />)}
+                {processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} variant="carousel" className="w-52 snap-start" />)}
             </div>
         )
     }
