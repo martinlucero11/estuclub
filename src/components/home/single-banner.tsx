@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -33,13 +32,14 @@ export function SingleBanner({ bannerId }: { bannerId: string }) {
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            fill
-            className="object-cover"
+            width={1160}
+            height={230}
+            className="w-full h-auto" // Let Next/Image handle the aspect ratio
             priority
         />
     );
     
-    const containerClasses = "relative aspect-[1160/230] w-full overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full overflow-hidden rounded-2xl"; // Keep rounding and overflow on container
 
     if (banner.link) {
         return (
