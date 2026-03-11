@@ -8,6 +8,7 @@ import {
   where,
   orderBy,
   QueryConstraint,
+  documentId,
 } from "firebase/firestore";
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement, HomeSection, CluberCategory, SerializableBenefit } from "@/types/data";
@@ -16,7 +17,7 @@ import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
 import { Skeleton } from "../ui/skeleton";
-import BenefitCard from '../perks/perk-card'; // The one from perks directory
+import BenefitCard from '../perks/perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Users } from 'lucide-react';
 import { makeBenefitSerializable } from "@/lib/data";
@@ -25,7 +26,7 @@ import { makeBenefitSerializable } from "@/lib/data";
 const buildConstraints = (
   props: HomeSection['block']
 ): QueryConstraint[] => {
-    if (props.kind === 'banner' || props.kind === 'categories') {
+    if (props.kind !== 'grid') {
         return [];
     }
 
@@ -39,6 +40,10 @@ const buildConstraints = (
   if (contentType === 'announcements') {
       constraints.push(where('status', '==', 'approved'));
   }
+  if (contentType === 'suppliers') {
+      constraints.push(where('isVisible', '==', true));
+  }
+
 
   // Apply custom filters from Home Builder
   queryConfig?.filters?.forEach((f) => {
@@ -50,8 +55,7 @@ const buildConstraints = (
   // Apply sorting
   if (queryConfig?.sort?.field) {
     constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
-  } else if (contentType !== 'suppliers') {
-      // Default sort for benefits and announcements if not specified
+  } else {
       constraints.push(orderBy('createdAt', 'desc'));
   }
   
@@ -60,6 +64,56 @@ const buildConstraints = (
 
   return constraints;
 };
+
+function useGridData<T extends { id: string }>(
+  collectionName: string,
+  props: HomeSection['block']
+) {
+  const firestore = useFirestore();
+
+  if (props.kind !== 'grid') {
+    return { items: [], isLoading: false, error: null };
+  }
+
+  const { mode, items: itemIds, query: queryConfig, contentType } = props;
+
+  const stringifiedItemIds = JSON.stringify(itemIds);
+  const stringifiedQueryConfig = JSON.stringify(queryConfig);
+
+  const dataQuery = useMemo(() => {
+    if (!firestore) return null;
+
+    const itemsCollection = collection(firestore, collectionName).withConverter(createConverter<T>());
+    
+    if (mode === 'manual') {
+      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]') as string[];
+      if (parsedItemIds.length === 0) return null;
+      return query(itemsCollection, where(documentId(), 'in', parsedItemIds.slice(0, 30)));
+    }
+    
+    if (mode === 'auto') {
+      const stableProps = { kind: 'grid', mode, query: queryConfig, contentType };
+      const constraints = buildConstraints(stableProps as any);
+      return query(itemsCollection, ...constraints);
+    }
+
+    return null;
+  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedQueryConfig, contentType]);
+
+  const { data: queriedItems, isLoading, error } = useCollectionOnce(dataQuery);
+  
+  const items = useMemo(() => {
+    if (!queriedItems) return [];
+    if (mode === 'manual') {
+      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]') as string[];
+      const orderMap = new Map(parsedItemIds.map((id, index) => [id, index]));
+      return [...queriedItems].sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
+    }
+    return queriedItems;
+  }, [queriedItems, mode, stringifiedItemIds]);
+
+  return { items, isLoading, error };
+}
 
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
@@ -104,24 +158,10 @@ const createGrid = <T extends {id: string}>(
     gridClass: string
 ) => {
     return function Grid(props: HomeSection['block']) {
-        const firestore = useFirestore();
-        
-        const itemsQuery = useMemo(() => {
-            if (props.kind !== 'grid') return null;
-            const constraints = buildConstraints(props);
-            return query(collection(firestore, collectionName).withConverter(createConverter<T>()), ...constraints);
-        }, [firestore, props]);
-
-        const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
+        const { items, isLoading, error } = useGridData<T>(collectionName, props);
         
         const processedItems = useMemo(() => {
             if (!items) return [];
-            if (props.kind === 'grid' && props.contentType === 'suppliers' && props.query?.sort?.field === 'name') {
-                return [...items].sort((a: any, b: any) => {
-                    const direction = props.query?.sort?.direction === 'asc' ? 1 : -1;
-                    return a.name.localeCompare(b.name) * direction;
-                });
-            }
             if (props.kind === 'grid' && props.contentType === 'benefits') {
                  return items.map(b => makeBenefitSerializable(b as unknown as Benefit));
             }
@@ -131,7 +171,7 @@ const createGrid = <T extends {id: string}>(
         if (isLoading) {
             return (
                 <div className={gridClass}>
-                    {[...Array(4)].map((_, i) => (
+                    {[...Array(8)].map((_, i) => (
                         <Skeleton key={i} className="h-48 w-full rounded-2xl" />
                     ))}
                 </div>
@@ -152,6 +192,6 @@ const createGrid = <T extends {id: string}>(
     }
 }
 
-export const BenefitsGrid = createGrid<Benefit>(BenefitCard, 'benefits', 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5");
+export const BenefitsGrid = createGrid<SerializableBenefit>(BenefitCard, 'benefits', 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5");
 export const SuppliersGrid = createGrid<SupplierProfile>(SupplierGridCard, 'roles_supplier', 'supplier', "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5");
 export const AnnouncementsGrid = createGrid<Announcement>(AnnouncementCard, 'announcements', 'announcement', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3");
