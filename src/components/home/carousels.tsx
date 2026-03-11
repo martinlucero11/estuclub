@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useMemo } from "react";
 import { useCollectionOnce, useFirestore } from "@/firebase";
@@ -154,9 +153,8 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            width={600}
-            height={300}
-            className="w-full h-auto object-cover"
+            fill
+            className="w-full h-full object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />

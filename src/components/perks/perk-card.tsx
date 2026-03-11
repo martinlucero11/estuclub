@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -21,10 +20,10 @@ const RedeemBenefitDialog = dynamic(() => import('./redeem-perk-dialog'), {
 interface BenefitCardProps {
   benefit: SerializableBenefit;
   className?: string;
-  variant?: 'default' | 'carousel';
+  variant?: 'grid' | 'carousel';
 }
 
-export default function BenefitCard({ benefit, className, variant = 'default' }: BenefitCardProps) {
+export default function BenefitCard({ benefit, className, variant = 'grid' }: BenefitCardProps) {
   const firestore = useFirestore();
 
   const supplierRef = useMemo(() => {
@@ -35,7 +34,7 @@ export default function BenefitCard({ benefit, className, variant = 'default' }:
   const { data: supplier } = useDocOnce(supplierRef);
 
   const supplierName = supplier?.name || "Club de Beneficios";
-  const isGrid = variant === 'default';
+  const isGrid = variant === 'grid';
 
   const primaryText = benefit.highlight || benefit.title;
   const secondaryText = benefit.highlight ? benefit.title : benefit.description;
