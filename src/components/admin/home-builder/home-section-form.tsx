@@ -23,7 +23,7 @@ const formSchema = z.object({
   title: z.string().optional(),
   isActive: z.boolean().default(true),
   
-  contentType: z.enum(["benefits", "suppliers", "announcements", "categories", "banner"]),
+  contentType: z.enum(["benefits", "suppliers", "announcements", "banners", "categories", "banner"]),
 
   layout_kind: z.enum(["carousel", "grid"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
@@ -156,10 +156,11 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
         if (watchContentType === 'benefits' && benefits) items = benefits.map(b => ({ id: b.id, name: b.title }));
         if (watchContentType === 'suppliers' && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
         if (watchContentType === 'announcements' && announcements) items = announcements.map(a => ({ id: a.id, name: a.title }));
+        if (watchContentType === 'banners' && banners) items = banners.map(b => ({ id: b.id, name: b.title || `Banner sin título (${b.id.substring(0,5)})` }));
         
         if (!searchTerm) return items;
         return items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [watchContentType, benefits, suppliers, announcements, searchTerm]);
+    }, [watchContentType, benefits, suppliers, announcements, banners, searchTerm]);
 
     const handleSelectItem = (itemId: string) => {
         const currentItems = form.getValues('manual_items') || [];
@@ -201,7 +202,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     if (values.query_supplierType) query.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
 
                     const commonDynamicProps = {
-                        contentType: values.contentType,
+                        contentType: values.contentType as "benefits" | "suppliers" | "announcements" | "banners",
                         mode: values.data_source_mode,
                         ...(values.data_source_mode === 'auto' && { query }),
                         ...(values.data_source_mode === 'manual' && { items: values.manual_items || [] }),
@@ -266,6 +267,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                 <SelectItem value="benefits">Beneficios</SelectItem>
                                 <SelectItem value="suppliers">Proveedores (Clubers)</SelectItem>
                                 <SelectItem value="announcements">Anuncios</SelectItem>
+                                <SelectItem value="banners">Carrusel de Banners</SelectItem>
                                 <Separator className="my-1" />
                                 <SelectItem value="categories">Grilla de Categorías</SelectItem>
                                 <SelectItem value="banner">Banner Individual</SelectItem>

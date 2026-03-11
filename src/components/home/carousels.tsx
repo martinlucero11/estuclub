@@ -10,14 +10,22 @@ import {
   QueryConstraint,
 } from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, HomeSection, SerializableBenefit } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, HomeSection, SerializableBenefit, Banner } from "@/types/data";
 import Image from "next/image";
 import { createConverter } from "@/lib/firestore-converter";
-import { getInitials } from "@/lib/utils";
+import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
 import { makeBenefitSerializable } from "@/lib/data";
 import BenefitCard from "../perks/perk-card";
+import { Skeleton } from "../ui/skeleton";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
 
 type CarouselProps = HomeSection['block'];
@@ -96,6 +104,36 @@ const AnnouncementCard = ({ announcement }: { announcement: Announcement }) => (
     </Link>
 );
 
+// --- NEW BANNER CAROUSEL CARD ---
+const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
+    const bannerImage = (
+        <Image
+            src={banner.imageUrl}
+            alt={banner.title || 'Banner promocional'}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 80vw, 50vw"
+        />
+    );
+
+    const containerClasses = "relative w-full overflow-hidden rounded-2xl aspect-[1160/230]";
+
+    if (banner.link) {
+        return (
+            <Link href={banner.link} target="_blank" rel="noopener noreferrer" className={cn(containerClasses)}>
+                {bannerImage}
+            </Link>
+        )
+    }
+
+    return (
+        <div className={cn(containerClasses)}>
+            {bannerImage}
+        </div>
+    );
+};
+
+
 // --- CAROUSEL FACTORY ---
 const createCarousel = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
@@ -162,3 +200,44 @@ const createCarousel = <T extends {id: string}>(
 export const BenefitsCarousel = createCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
 export const SuppliersCarousel = createCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
 export const AnnouncementsCarousel = createCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
+
+// --- NEW BANNERS CAROUSEL ---
+export function BannersCarousel(props: CarouselProps) {
+    const firestore = useFirestore();
+    
+    const itemsQuery = useMemo(() => {
+        if (props.kind !== 'carousel') return null;
+        const baseConstraints = buildConstraints(props);
+        // Banners have 'isActive', not 'isVisible'
+        const bannerConstraints = [where('isActive', '==', true), ...baseConstraints];
+        return query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), ...bannerConstraints);
+    }, [firestore, props]);
+
+    const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
+    
+    if (isLoading) {
+         return (
+            <div className="flex w-full gap-4 overflow-hidden">
+                <Skeleton className="h-24 w-full" />
+            </div>
+        )
+    }
+
+    if (error || !items || items.length === 0) {
+        return <p className="text-muted-foreground italic text-sm">No hay banners para mostrar.</p>;
+    }
+
+    return (
+         <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-4">
+                {items.map(item => (
+                    <CarouselItem key={item.id} className="basis-4/5 md:basis-1/2 pl-4">
+                        <BannerCarouselCard banner={item} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+    )
+}

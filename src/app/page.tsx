@@ -19,6 +19,7 @@ import { createConverter } from '@/lib/firestore-converter';
 const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel));
 const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel));
 const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel));
+const BannersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BannersCarousel));
 const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid), { ssr: false });
 const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner));
 
@@ -31,7 +32,7 @@ const AnnouncementsGrid = dynamic(() => import('@/components/home/grids').then(m
 
 const PageSkeleton = () => (
     <MainLayout>
-        <div className="mx-auto w-full max-w-4xl space-y-12 px-4 py-8">
+        <div className="w-full space-y-12 px-4 py-8">
             <div className="space-y-2">
                 <Skeleton className="h-10 w-3/4" />
                 <Skeleton className="h-5 w-1/2" />
@@ -99,8 +100,12 @@ export default function HomePage() {
                                     if (block.contentType === 'benefits') Component = BenefitsCarousel;
                                     if (block.contentType === 'suppliers') Component = SuppliersCarousel;
                                     if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                    if (block.contentType === 'banners') Component = BannersCarousel;
                                     
                                     linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                    if (block.contentType === 'banners') {
+                                      linkPath = undefined;
+                                    }
                                     props = { ...block, title };
                                 }
                                 break;

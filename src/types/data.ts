@@ -234,7 +234,7 @@ export interface Category {
 
 // Discriminated union for HomeSection.block
 type DynamicContentConfig = {
-  contentType: "benefits" | "suppliers" | "announcements";
+  contentType: "benefits" | "suppliers" | "announcements" | "banners";
   mode: "auto" | "manual";
   query?: {
     filters?: WhereFilter[];
