@@ -1,6 +1,6 @@
 'use client';
 
-import { useCollectionOnce, useFirestore, useDoc } from '@/firebase';
+import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
@@ -51,6 +51,7 @@ function ProfileSkeleton() {
 
 function CluberProfileContent({ slug }: { slug: string }) {
     const firestore = useFirestore();
+    const { user } = useUser();
     const [supplier, setSupplier] = useState<SupplierProfile | null>(null);
     const [isLoadingSupplier, setIsLoadingSupplier] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -130,6 +131,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     const TypeIcon = categoryIcons[supplier.type] || Users;
     const supplierInitials = getInitials(supplier.name);
+    const isOwnProfile = user?.uid === supplier.id;
 
     return (
         <div className="flex flex-col">
@@ -155,7 +157,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     <p className="capitalize">{supplier.type}</p>
                 </div>
                  <div className="mt-4">
-                    <SubscribeButton supplierId={supplier.id} />
+                    {!isOwnProfile && <SubscribeButton supplierId={supplier.id} />}
                 </div>
             </header>
             
