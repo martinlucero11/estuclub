@@ -8,6 +8,7 @@ import {
   where,
   orderBy,
   QueryConstraint,
+  documentId,
 } from "firebase/firestore";
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement, HomeSection, SerializableBenefit, Banner } from "@/types/data";
@@ -42,9 +43,10 @@ const buildConstraints = (
   // Default filters
   if (contentType === 'benefits') {
     constraints.push(where('isVisible', '==', true));
-  }
-  if (contentType === 'announcements') {
+  } else if (contentType === 'announcements') {
       constraints.push(where('status', '==', 'approved'));
+  } else if (contentType === 'banners') {
+      constraints.push(where('isActive', '==', true));
   }
 
   // Apply custom filters from Home Builder
@@ -116,7 +118,7 @@ const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
         />
     );
 
-    const containerClasses = "relative w-full overflow-hidden rounded-2xl aspect-[1160/230]";
+    const containerClasses = "relative w-full overflow-hidden rounded-2xl aspect-video";
 
     if (banner.link) {
         return (
@@ -206,19 +208,46 @@ export function BannersCarousel(props: CarouselProps) {
     const firestore = useFirestore();
     
     const itemsQuery = useMemo(() => {
-        if (props.kind !== 'carousel') return null;
-        const baseConstraints = buildConstraints(props);
-        // Banners have 'isActive', not 'isVisible'
-        const bannerConstraints = [where('isActive', '==', true), ...baseConstraints];
-        return query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), ...bannerConstraints);
+        if (props.kind !== 'carousel' || !firestore) return null;
+        
+        const bannersCollection = collection(firestore, 'banners').withConverter(createConverter<Banner>());
+
+        if (props.mode === 'manual' && props.items && props.items.length > 0) {
+            const itemIds = props.items.slice(0, 30); // Firestore 'in' query limit is 30
+            if (itemIds.length === 0) return null;
+            return query(bannersCollection, where(documentId(), 'in', itemIds));
+        }
+        
+        if (props.mode === 'auto') {
+            const constraints = buildConstraints(props);
+            return query(bannersCollection, ...constraints);
+        }
+
+        return null; // No items to fetch
     }, [firestore, props]);
 
-    const { data: items, isLoading, error } = useCollectionOnce(itemsQuery);
+    const { data: queriedItems, isLoading, error } = useCollectionOnce(itemsQuery);
+    
+    // Sort manually selected items to respect the order from the home-builder
+    const items = useMemo(() => {
+        if (!queriedItems) return [];
+        if (props.kind === 'carousel' && props.mode === 'manual' && props.items) {
+            const orderMap = new Map(props.items.map((id, index) => [id, index]));
+            return [...queriedItems].sort((a, b) => {
+                const orderA = orderMap.get(a.id);
+                const orderB = orderMap.get(b.id);
+                if (orderA === undefined || orderB === undefined) return 0;
+                return orderA - orderB;
+            });
+        }
+        return queriedItems;
+    }, [queriedItems, props]);
     
     if (isLoading) {
          return (
             <div className="flex w-full gap-4 overflow-hidden">
-                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
             </div>
         )
     }
