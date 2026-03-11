@@ -19,10 +19,10 @@ function LoadingSkeleton() {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
             </div>
             <Skeleton className="h-80 w-full" />
         </div>
@@ -80,10 +80,10 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Beneficios Activos" value={stats.totalBenefits} icon={Gift} />
-                <StatCard title="Canjes Totales" value={stats.totalRedemptions} icon={Ticket} />
+                <StatCard title="Beneficios Activos" value={stats.totalBenefits} icon={Gift} href="/panel-cluber/benefits" />
+                <StatCard title="Canjes Totales" value={stats.totalRedemptions} icon={Ticket} href="/panel-cluber/redemptions" />
                 <StatCard title="Suscriptores" value={stats.totalSubscribers} icon={Users} />
-                <StatCard title="Turnos Reservados" value={stats.totalAppointments} icon={Calendar} />
+                <StatCard title="Turnos Reservados" value={stats.totalAppointments} icon={Calendar} href="/panel-cluber/appointments" />
             </div>
 
             <Card>

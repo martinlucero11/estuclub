@@ -16,10 +16,10 @@ function LoadingSkeleton() {
     return (
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
-                <Skeleton className="h-28" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
+                <Skeleton className="h-40" />
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 <Skeleton className="lg:col-span-4 h-80" />
@@ -92,9 +92,9 @@ export default function AdminAnalyticsDashboard() {
         <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Usuarios Totales" value={stats.totalUsers} icon={Users} />
-                <StatCard title="Proveedores Totales" value={stats.totalSuppliers} icon={Building} />
-                <StatCard title="Beneficios Totales" value={stats.totalBenefits} icon={Gift} />
-                <StatCard title="Canjes Globales" value={stats.totalRedemptions} icon={Ticket} />
+                <StatCard title="Proveedores Totales" value={stats.totalSuppliers} icon={Building} href="/panel-cluber/supplier-management" />
+                <StatCard title="Beneficios Totales" value={stats.totalBenefits} icon={Gift} href="/panel-cluber/benefits" />
+                <StatCard title="Canjes Globales" value={stats.totalRedemptions} icon={Ticket} href="/panel-cluber/redemptions" />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
