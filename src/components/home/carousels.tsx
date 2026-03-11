@@ -47,7 +47,12 @@ const buildConstraints = (
   } else if (contentType === 'announcements') {
       constraints.push(where('status', '==', 'approved'));
   } else if (contentType === 'banners') {
-      constraints.push(where('isActive', '==', true));
+      // Logic for banners: handle both isActive and the legacy isVisible
+      if (queryConfig?.filters?.some(f => f.field === 'isVisible')) {
+        constraints.push(where('isActive', '==', true)); // Map legacy filter
+      } else if (!queryConfig?.filters?.some(f => f.field === 'isActive')) {
+        constraints.push(where('isActive', '==', true)); // Add default if not present
+      }
   } else if (contentType === 'suppliers') {
       constraints.push(where('isVisible', '==', true));
   }
@@ -55,9 +60,8 @@ const buildConstraints = (
   // Apply custom filters from Home Builder
   queryConfig?.filters?.forEach((f) => {
     if (f.field && f.op && f.value !== undefined) {
-      // Defensively map 'isVisible' to 'isActive' for banners to support old sections
       if (contentType === 'banners' && f.field === 'isVisible') {
-        constraints.push(where('isActive', f.op, f.value));
+        // This case is handled above, so we skip adding it again to avoid duplicate constraints.
       } else {
         constraints.push(where(f.field, f.op, f.value));
       }
@@ -153,8 +157,9 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            fill
-            className="w-full h-full object-cover"
+            width={800}
+            height={400}
+            className="w-full h-auto object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
@@ -190,19 +195,27 @@ export function BenefitsCarousel(props: CarouselProps) {
 
     if (isLoading) {
         return (
-            <div className="flex gap-4 overflow-hidden">
-                {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="w-80 aspect-[2/1] bg-muted/50 rounded-2xl" />
-                ))}
+            <div className="flex gap-4 overflow-hidden -mx-4 px-4">
+                <Skeleton className="w-[82vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
+                <Skeleton className="w-[82vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
             </div>
         )
     }
     if (error || serializableBenefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
-        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {serializableBenefits.map(item => <BenefitCard key={item.id} benefit={item} variant="carousel" className="w-80 snap-start" />)}
-        </div>
+       <Carousel 
+            opts={{ align: "start" }} 
+            className="w-full -ml-4"
+        >
+            <CarouselContent>
+                {serializableBenefits.map(item => (
+                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
+                        <BenefitCard benefit={item} variant="carousel" />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+        </Carousel>
     )
 }
 
