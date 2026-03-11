@@ -8,7 +8,7 @@ const WelcomeMessage = () => {
     
     if (isUserLoading) {
         return (
-            <div className="px-4 py-4 space-y-2">
+            <div className="py-4 space-y-2">
                 <Skeleton className="h-8 w-40" />
                 <Skeleton className="h-4 w-56" />
             </div>
@@ -18,8 +18,8 @@ const WelcomeMessage = () => {
     const displayName = user?.displayName?.split(' ')[0] || "Bienvenido";
 
     return (
-        <div className="px-4 py-4">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <div className="py-4">
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Hola, {displayName} 👋
             </h1>
             <p className="text-muted-foreground font-semibold text-sm mt-1">

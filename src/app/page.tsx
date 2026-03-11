@@ -70,7 +70,7 @@ export default function HomePage() {
 
     return (
         <MainLayout>
-            <div className="mx-auto w-full">
+            <div className="mx-auto w-full px-4">
                 <WelcomeMessage />
                 <div className="space-y-1 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
@@ -123,7 +123,7 @@ export default function HomePage() {
                         return (
                             <section key={section.id} className="space-y-1">
                                 {section.title && (
-                                    <div className="flex items-center justify-between px-4">
+                                    <div className="flex items-center justify-between">
                                         <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
                                         {linkPath && (
                                             <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
@@ -134,13 +134,13 @@ export default function HomePage() {
                                         )}
                                     </div>
                                 )}
-                                <div className="px-4">
+                                <div>
                                     <Component {...props} />
                                 </div>
                             </section>
                         )
                     }) : (
-                        <div className="px-4">
+                        <div>
                             <EmptyState icon={LayoutTemplate} title="Página en construcción" description="El administrador todavía no ha añadido contenido a la página de inicio." />
                         </div>
                     )}
