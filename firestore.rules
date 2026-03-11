@@ -112,8 +112,10 @@ service cloud.firestore {
       }
       
       match /subscribers/{userId} {
-        allow read, create, delete: if isOwner(userId);
+        allow get: if isOwner(userId) || isOwner(supplierId) || isAdmin();
         allow list: if isOwner(supplierId) || isAdmin();
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId) || isAdmin();
       }
     }
     
@@ -124,5 +126,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

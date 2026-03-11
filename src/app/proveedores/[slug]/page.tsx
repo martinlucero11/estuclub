@@ -199,5 +199,3 @@ export default function CluberProfilePage({ params }: { params: { slug: string }
         </MainLayout>
     );
 }
-
-    

@@ -1,9 +1,9 @@
 'use client';
 
 import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where } from 'firebase/firestore';
 import { useMemo } from 'react';
-import { Gift, Ticket, Users, Calendar, BarChart } from 'lucide-react';
+import { Gift, Ticket, Users, Calendar } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { TimeSeriesChart } from './TimeSeriesChart';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -50,20 +50,24 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
     );
     const { data: appointments, isLoading: appointmentsLoading } = useCollectionOnce<Appointment>(appointmentsQuery);
 
-    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading;
+    const subscribersQuery = useMemo(() =>
+        query(collection(firestore, 'roles_supplier', supplierId, 'subscribers')),
+        [firestore, supplierId]
+    );
+    const { data: subscribers, isLoading: subscribersLoading } = useCollectionOnce(subscribersQuery);
+
+    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading || subscribersLoading;
 
     const stats = useMemo(() => {
-        if (!benefits || !redemptions || !appointments) return null;
-        
-        const uniqueUsers = new Set(redemptions.map(r => r.userId));
+        if (!benefits || !redemptions || !appointments || !subscribers) return null;
 
         return {
             totalBenefits: benefits.length,
             totalRedemptions: redemptions.length,
             totalAppointments: appointments.length,
-            uniqueUsers: uniqueUsers.size,
+            totalSubscribers: subscribers.length,
         };
-    }, [benefits, redemptions, appointments]);
+    }, [benefits, redemptions, appointments, subscribers]);
 
     if (isLoading) {
         return <LoadingSkeleton />;
@@ -78,8 +82,8 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Beneficios Activos" value={stats.totalBenefits} icon={Gift} />
                 <StatCard title="Canjes Totales" value={stats.totalRedemptions} icon={Ticket} />
+                <StatCard title="Suscriptores" value={stats.totalSubscribers} icon={Users} />
                 <StatCard title="Turnos Reservados" value={stats.totalAppointments} icon={Calendar} />
-                <StatCard title="Clientes Únicos" value={stats.uniqueUsers} icon={Users} />
             </div>
 
             <Card>
