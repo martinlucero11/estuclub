@@ -156,7 +156,7 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
             alt={banner.title || 'Banner promocional'}
             width={600}
             height={300}
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
@@ -194,7 +194,7 @@ export function BenefitsCarousel(props: CarouselProps) {
         return (
             <div className="flex gap-4 overflow-hidden">
                 {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="w-60 aspect-[2/1] bg-muted/50 rounded-2xl" />
+                    <Skeleton key={i} className="w-80 aspect-[2/1] bg-muted/50 rounded-2xl" />
                 ))}
             </div>
         )
@@ -203,7 +203,7 @@ export function BenefitsCarousel(props: CarouselProps) {
 
     return (
         <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {serializableBenefits.map(item => <BenefitCard key={item.id} benefit={item} variant="carousel" className="w-60 snap-start" />)}
+            {serializableBenefits.map(item => <BenefitCard key={item.id} benefit={item} variant="carousel" className="w-80 snap-start" />)}
         </div>
     )
 }
