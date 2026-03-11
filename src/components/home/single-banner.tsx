@@ -20,34 +20,41 @@ export function SingleBanner({ bannerId }: { bannerId: string }) {
     const { data: banner, isLoading } = useDocOnce(bannerRef);
 
     if (isLoading) {
-        return <Skeleton className="aspect-[16/9] w-full rounded-2xl" />;
+        return <Skeleton className="aspect-video w-full rounded-2xl" />;
     }
 
     if (!banner) {
         return null;
     }
     
-    const bannerContent = (
-         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl group">
-            <Image
-                src={banner.imageUrl}
-                alt={banner.title || 'Banner promocional'}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                priority
-            />
-        </div>
+    const bannerImage = (
+        <Image
+            src={banner.imageUrl}
+            alt={banner.title || 'Banner promocional'}
+            fill
+            className="object-cover"
+            priority
+        />
     );
     
     if (banner.link) {
         return (
-            <Link href={banner.link} target="_blank" rel="noopener noreferrer" className="block">
-                {bannerContent}
+            <Link 
+                href={banner.link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block relative aspect-video w-full overflow-hidden rounded-2xl"
+            >
+                {bannerImage}
             </Link>
         )
     }
 
-    return bannerContent;
+    return (
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl">
+            {bannerImage}
+        </div>
+    );
 }
 
 export default SingleBanner;
