@@ -2,7 +2,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import type { SerializableBenefit, BenefitCategory } from '@/types/data';
 import { Building, Award, Flame, Plane, Gift, ShoppingCart, Ticket, Music, GraduationCap, Utensils, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -29,9 +29,10 @@ const categoryIcons: Record<BenefitCategory, LucideIcon> = {
 interface BenefitCardProps {
   benefit: SerializableBenefit;
   className?: string;
+  variant?: 'default' | 'carousel';
 }
 
-export default function BenefitCard({ benefit, className }: BenefitCardProps) {
+export default function BenefitCard({ benefit, className, variant = 'default' }: BenefitCardProps) {
   const firestore = useFirestore();
 
   const supplierRef = useMemo(() => {
@@ -44,49 +45,62 @@ export default function BenefitCard({ benefit, className }: BenefitCardProps) {
   const CategoryIcon = categoryIcons[benefit.category as BenefitCategory] || Gift;
   const supplierName = supplier?.name || "Club de Beneficios";
 
-  // The whole card is a trigger for the dialog
+  // Carousel variant - a compact, horizontal version
+  if (variant === 'carousel') {
+    return (
+      <RedeemBenefitDialog benefit={benefit} isCarouselTrigger>
+        <Card className={cn("group relative h-full w-full cursor-pointer overflow-hidden rounded-2xl text-white shadow-lg", className)}>
+          <Image
+            src={benefit.imageUrl}
+            alt={benefit.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+          <div className="relative z-10 flex h-full flex-col justify-end p-3">
+            <h3 className="text-base font-bold leading-tight line-clamp-2">{benefit.title}</h3>
+            <p className="mt-0.5 text-xs text-white/80 line-clamp-1">{supplierName}</p>
+          </div>
+        </Card>
+      </RedeemBenefitDialog>
+    );
+  }
+
+  // Default variant - the larger card for grids
   return (
     <RedeemBenefitDialog benefit={benefit}>
-      <Card className={cn(
-        "group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-2xl text-white shadow-lg",
-        "transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl",
-        className
-      )}>
-        
-        {/* Background Image */}
-        <Image
-          src={benefit.imageUrl}
-          alt={benefit.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-110"
-        />
-
-        {/* Glassmorphism Info Box */}
-        <div className="absolute inset-x-4 top-4 bottom-4 z-10 m-auto flex h-fit max-w-[90%] flex-col rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-lg md:p-6">
-          
-          <div className="text-center">
-            <h2 className="text-2xl font-black uppercase text-white drop-shadow-lg md:text-4xl lg:text-5xl">
-              {benefit.title}
-            </h2>
-            <p className="mt-1 text-base font-bold text-white/90 drop-shadow-md md:text-lg">
-              {benefit.description}
-            </p>
+      <Card className={cn("group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl", className)}>
+        <div className="relative aspect-video w-full">
+          <Image
+            src={benefit.imageUrl}
+            alt={benefit.title}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-transparent" />
+          {benefit.isFeatured && (
+            <div className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
+              <Flame className="h-4 w-4" /><span>Destacado</span>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-1 flex-col p-4">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <CategoryIcon className="h-4 w-4" />
+            <span>{benefit.category}</span>
           </div>
-          
-          <div className="mt-4 flex justify-center">
-             <div className="flex items-center gap-2 rounded-full bg-primary/90 px-4 py-1.5 text-sm font-semibold text-primary-foreground">
-                <CategoryIcon className="h-4 w-4" />
-                <span>{benefit.category}</span>
-             </div>
+          <h3 className="mt-2 text-lg font-bold text-foreground line-clamp-2">{benefit.title}</h3>
+          <div className="mt-auto flex items-center justify-between pt-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Building className="h-4 w-4" />
+              <span className="truncate">{supplierName}</span>
+            </div>
+            <div className="flex items-center gap-1 text-sm font-bold text-primary">
+              <Award className="h-4 w-4" />
+              <span>{benefit.points} PTS</span>
+            </div>
           </div>
-
-          <hr className="my-3 border-t-2 border-dashed border-white/20 md:my-4" />
-          
-          <div className="flex items-center justify-center gap-2 text-sm font-medium text-white/80">
-             <Gift className="h-4 w-4" />
-             <span>Subido por {supplierName}</span>
-          </div>
-
         </div>
       </Card>
     </RedeemBenefitDialog>
