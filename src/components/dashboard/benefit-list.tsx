@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 import type { Benefit, SerializableBenefit, UserRole } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
@@ -35,8 +35,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
-    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc'));
-    // If user is not admin, they must be a supplier, so filter by their ID
+    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()));
     if (!isAdmin) {
       q = query(q, where('ownerId', '==', user.uid));
     }
@@ -44,11 +43,20 @@ export default function BenefitList({ user }: BenefitListProps) {
   }, [firestore, isAdmin, user.uid]);
 
   const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
-  
-  const serializableBenefits: SerializableBenefit[] = useMemo(() => {
+
+  const sortedBenefits = useMemo(() => {
     if (!benefits) return [];
-    return benefits.map(makeBenefitSerializable);
+    return [...benefits].sort((a, b) => {
+      const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0;
+      const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0;
+      return dateB - dateA;
+    });
   }, [benefits]);
+
+  const serializableBenefits: SerializableBenefit[] = useMemo(() => {
+    if (!sortedBenefits) return [];
+    return sortedBenefits.map(makeBenefitSerializable);
+  }, [sortedBenefits]);
 
   const handleEdit = (benefit: SerializableBenefit) => {
     setSelectedBenefit(benefit);

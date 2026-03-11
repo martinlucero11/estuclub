@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import type { Benefit, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
-import { collection, orderBy, query, OrderByDirection, where } from 'firebase/firestore';
+import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
 import { ArrowDownUp } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -41,36 +41,38 @@ function BenefitsList() {
 
     const benefitsQuery = useMemo(() => {
         if (!firestore) return null;
-
-        let field: string, direction: OrderByDirection;
-
-        switch (sortOption) {
-            case 'createdAt_asc':
-                field = 'createdAt';
-                direction = 'asc';
-                break;
-            case 'createdAt_desc':
-            default:
-                field = 'createdAt';
-                direction = 'desc';
-                break;
-        }
         
-        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy(field, direction));
+        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()));
 
         if (categoryFilter) {
             q = query(q, where('category', '==', categoryFilter));
         }
 
         return q;
-    }, [firestore, sortOption, categoryFilter]);
+    }, [firestore, categoryFilter]);
 
     const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
+
+    const sortedBenefits = useMemo(() => {
+        if (!benefits) return [];
+        
+        const sorted = [...benefits].sort((a, b) => {
+            const dateA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0;
+            const dateB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0;
+            
+            if (sortOption === 'createdAt_asc') {
+                return dateA - dateB;
+            }
+            return dateB - dateA; // Default to desc
+        });
+
+        return sorted;
+    }, [benefits, sortOption]);
     
     const serializableBenefits: SerializableBenefit[] = useMemo(() => {
-        if (!benefits) return [];
-        return benefits.map(makeBenefitSerializable);
-    }, [benefits]);
+        if (!sortedBenefits) return [];
+        return sortedBenefits.map(makeBenefitSerializable);
+    }, [sortedBenefits]);
 
     const combinedIsLoading = isUserLoading || isLoading;
 

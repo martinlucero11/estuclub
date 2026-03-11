@@ -88,40 +88,31 @@ export default function UserAppointmentsList() {
         if (!user) return null;
         return query(
             collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
-            where('userId', '==', user.uid),
-            orderBy('startTime', 'desc')
+            where('userId', '==', user.uid)
         );
     }, [user, firestore]);
 
     const { data: appointments, isLoading, error } = useCollection(appointmentsQuery);
 
-    if (error && 'code' in error && error.code === 'failed-precondition') {
-        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'estuclub';
-        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=appointments&field[0].fieldPath=userId&field[0].order=ASCENDING&field[1].fieldPath=startTime&field[1].order=DESCENDING`;
-        return (
-            <Card className="border-destructive">
-                 <CardHeader>
-                    <CardTitle className="text-destructive">Error de Configuración de Base de Datos</CardTitle>
-                    <CardDescription className="text-destructive">
-                        Esta consulta requiere un índice compuesto en Firestore que no ha sido creado.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <p className="mb-4 text-sm font-medium">Para solucionar este problema, un administrador del proyecto de Firebase debe crear el índice requerido.</p>
-                    <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
-                        Crear Índice en Firebase Console
-                    </a>
-                    <p className="mt-4 text-xs text-muted-foreground">Una vez creado, recarga esta página.</p>
-                </CardContent>
-            </Card>
-        );
-    }
-    
+    const sortedAppointments = useMemo(() => {
+        if (!appointments) return [];
+        return [...appointments].sort((a, b) => {
+            const dateA = (a.startTime as Timestamp).toMillis();
+            const dateB = (b.startTime as Timestamp).toMillis();
+            return dateB - dateA;
+        });
+    }, [appointments]);
+
     if (isLoading) {
         return <AppointmentsListSkeleton />;
     }
+    
+    if (error) {
+       return <p className="text-destructive text-center">Error al cargar los turnos: {error.message}</p>;
+    }
 
-    if (!appointments || appointments.length === 0) {
+
+    if (!sortedAppointments || sortedAppointments.length === 0) {
         return (
             <EmptyState 
                 icon={History}
@@ -133,7 +124,7 @@ export default function UserAppointmentsList() {
     
     return (
         <div className="w-full space-y-4">
-            {appointments.map(appointment => (
+            {sortedAppointments.map(appointment => (
                 <AppointmentCard key={appointment.id} appointment={appointment} />
             ))}
         </div>

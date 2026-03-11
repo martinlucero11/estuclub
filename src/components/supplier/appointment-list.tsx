@@ -46,25 +46,29 @@ export default function AppointmentList() {
     }, [user, firestore]);
     const { data: legacyAppointments, isLoading: isLoadingLegacy } = useCollection(legacyAppointmentsQuery);
 
-    // Query for NEW appointments in root collection
+    // Query for NEW appointments in root collection - simplified to avoid index
     const newAppointmentsQuery = useMemo(() => {
         if (!user) return null;
         return query(
             collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
-            where('supplierId', '==', user.uid),
-            where('startTime', '>=', new Date()),
-            orderBy('startTime', 'asc')
+            where('supplierId', '==', user.uid)
         );
     }, [user, firestore]);
     const { data: newAppointments, isLoading: isLoadingNew, error } = useCollection(newAppointmentsQuery);
 
-    // Combine and sort appointments from both sources
+    // Combine, filter, and sort appointments from both sources on the client
     const appointments = useMemo(() => {
         const combined = [...(legacyAppointments || []), ...(newAppointments || [])];
-        // Sort by startTime to have a consistent order
-        combined.sort((a, b) => (a.startTime as Timestamp).toMillis() - (b.startTime as Timestamp).toMillis());
-        // Simple deduplication based on ID, though IDs should be unique across collections
-        const uniqueAppointments = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        const now = new Date();
+        
+        // Client-side filtering for future appointments
+        const futureAppointments = combined.filter(apt => (apt.startTime as Timestamp).toDate() >= now);
+
+        // Client-side sorting
+        futureAppointments.sort((a, b) => (a.startTime as Timestamp).toMillis() - (b.startTime as Timestamp).toMillis());
+        
+        // Simple deduplication based on ID
+        const uniqueAppointments = Array.from(new Map(futureAppointments.map(item => [item.id, item])).values());
         return uniqueAppointments;
     }, [legacyAppointments, newAppointments]);
 
@@ -75,8 +79,7 @@ export default function AppointmentList() {
     }
 
      if (error) {
-        // You might want to handle this better, e.g., showing an error message for the new query
-        return <p className="text-destructive text-center">Error al cargar los turnos. Es posible que se requiera un índice de base de datos. </p>;
+        return <p className="text-destructive text-center">Error al cargar los turnos: {error.message}.</p>;
     }
 
 
