@@ -32,7 +32,7 @@ const buildConstraints = (
   const constraints: QueryConstraint[] = [];
 
   // Default filters
-  if (contentType === 'benefits' || contentType === 'suppliers') {
+  if (contentType === 'benefits') {
     constraints.push(where('isVisible', '==', true));
   }
   if (contentType === 'announcements') {
