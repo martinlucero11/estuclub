@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from "react";
 import { useCollectionOnce, useFirestore } from "@/firebase";
@@ -248,7 +249,9 @@ export function AnnouncementsCarousel(props: CarouselProps) {
 
 
 export function BannersCarousel(props: CarouselProps) {
+    console.log('[BannersCarousel Props]', props);
     const { items: banners, isLoading, error } = useCarouselData<Banner>('banners', props);
+    console.log('[BannersCarousel Data]', { banners, isLoading, error });
 
     if (isLoading) {
         return (
