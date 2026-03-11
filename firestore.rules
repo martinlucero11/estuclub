@@ -111,16 +111,17 @@ service cloud.firestore {
         allow write: if isOwner(supplierId) || isAdmin();
       }
       
+      // Rule for subscribers subcollection.
       match /subscribers/{subscriberId} {
-        // A user can get their own subscription doc, or a supplier/admin can.
+        // A user can read their own subscription document. A supplier or admin can also read it.
         allow get: if isOwner(subscriberId) || isOwner(supplierId) || isAdmin();
         // Only the supplier or an admin can list all subscribers.
         allow list: if isOwner(supplierId) || isAdmin();
-        // A user can create their own subscription doc.
+        // A user can create their own subscription document.
         allow create: if isOwner(subscriberId);
-        // A user can update their own subscription doc (e.g. notification preferences).
+        // A user can update their own subscription document.
         allow update: if isOwner(subscriberId) || isAdmin();
-        // A user can delete their own subscription doc (unsubscribe).
+        // A user can delete their own subscription document (unsubscribe).
         allow delete: if isOwner(subscriberId) || isAdmin();
       }
     }
