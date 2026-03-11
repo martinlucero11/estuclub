@@ -42,7 +42,7 @@ export default function BenefitCard({ benefit, className, variant = 'default' }:
 
   return (
     <RedeemBenefitDialog benefit={benefit}>
-      <Card className={cn("group relative flex aspect-[3/4] w-full flex-col justify-end overflow-hidden rounded-2xl text-white transition-all duration-300 hover:shadow-xl", className)}>
+      <Card className={cn("group relative flex aspect-[2/1] w-full flex-col justify-end overflow-hidden rounded-2xl text-white transition-all duration-300 hover:shadow-xl", className)}>
         <Image
           src={benefit.imageUrl}
           alt={benefit.title}

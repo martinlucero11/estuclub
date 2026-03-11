@@ -194,7 +194,7 @@ export function BenefitsCarousel(props: CarouselProps) {
         return (
             <div className="flex gap-4 overflow-hidden">
                 {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="w-60 aspect-[3/4] bg-muted/50 rounded-2xl" />
+                    <Skeleton key={i} className="w-60 aspect-[2/1] bg-muted/50 rounded-2xl" />
                 ))}
             </div>
         )
