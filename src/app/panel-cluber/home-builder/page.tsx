@@ -152,6 +152,21 @@ export default function HomeBuilderPage() {
             <div className="space-y-4">
                 {localSections.length > 0 ? localSections.map((section, index) => {
                     const block = section.block;
+                    
+                    if (!block) {
+                        return (
+                             <Card key={section.id} className="flex items-center p-4 gap-4 border-destructive">
+                                <div className="flex-1">
+                                    <CardTitle className="text-lg text-destructive">Error: Bloque no definido</CardTitle>
+                                    <CardDescription>La configuración para la sección "{section.title}" está incompleta. Por favor, elimínala y créala de nuevo.</CardDescription>
+                                </div>
+                                <Button variant="destructive" size="icon" onClick={() => handleDeleteRequest(section.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </Card>
+                        )
+                    }
+
                     const description =
                         'contentType' in block && block.contentType
                         ? `${block.kind} de ${block.contentType}`
