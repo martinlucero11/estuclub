@@ -76,14 +76,6 @@ export default function SignupForm() {
           setIsSubmitting(false);
           return;
       }
-      
-      const dniQuery = query(collection(firestore, 'users'), where('dni', '==', values.dni), limit(1));
-      const dniSnapshot = await getDocs(dniQuery);
-      if (!dniSnapshot.empty) {
-        form.setError('dni', { message: 'Este DNI ya está registrado.' });
-        setIsSubmitting(false);
-        return;
-      }
 
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
