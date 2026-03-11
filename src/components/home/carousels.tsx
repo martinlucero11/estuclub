@@ -153,14 +153,15 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            fill
-            className="object-cover"
+            width={600}
+            height={300}
+            className="w-full h-auto object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
     );
 
-    const containerClasses = "relative w-full overflow-hidden rounded-2xl h-48";
+    const containerClasses = "w-full overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
@@ -278,3 +279,5 @@ export function BannersCarousel(props: CarouselProps) {
         </Carousel>
     );
 }
+
+    
