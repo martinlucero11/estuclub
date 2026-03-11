@@ -19,10 +19,10 @@ const WelcomeMessage = () => {
 
     return (
         <div className="px-4 py-4">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Hola, {displayName} 👋
             </h1>
-            <p className="text-muted-foreground font-semibold text-xs mt-1">
+            <p className="text-muted-foreground font-semibold text-sm mt-1">
                 Descubre los mejores beneficios cerca de ti.
             </p>
         </div>
