@@ -51,11 +51,15 @@ const buildConstraints = (
       constraints.push(where('isVisible', '==', true));
   }
 
-
   // Apply custom filters from Home Builder
   queryConfig?.filters?.forEach((f) => {
     if (f.field && f.op && f.value !== undefined) {
-      constraints.push(where(f.field, f.op, f.value));
+      // Defensively map 'isVisible' to 'isActive' for banners to support old sections
+      if (contentType === 'banners' && f.field === 'isVisible') {
+        constraints.push(where('isActive', f.op, f.value));
+      } else {
+        constraints.push(where(f.field, f.op, f.value));
+      }
     }
   });
 
@@ -97,11 +101,12 @@ function useCarouselData<T extends { id: string }>(
     if (mode === 'manual') {
       const parsedItemIds = JSON.parse(stringifiedItemIds);
       if (parsedItemIds.length === 0) return null;
+      // Firestore 'in' query is limited to 30 items
       return query(itemsCollection, where(documentId(), 'in', parsedItemIds.slice(0, 30)));
     }
     
     // Auto mode
-    const parsedQueryConfig = JSON.parse(stringifiedQueryConfig);
+    const parsedQueryConfig = JSON.parse(stringifiedQueryConfig || '{}');
     const stableProps = { kind: 'carousel', contentType, query: parsedQueryConfig };
     const constraints = buildConstraints(stableProps as any);
     return query(itemsCollection, ...constraints);
@@ -243,9 +248,7 @@ export function AnnouncementsCarousel(props: CarouselProps) {
 
 
 export function BannersCarousel(props: CarouselProps) {
-    console.log('[BannersCarousel Props]:', JSON.stringify(props, null, 2));
     const { items: banners, isLoading, error } = useCarouselData<Banner>('banners', props);
-    console.log('[BannersCarousel Data]:', { isLoading, error, banners });
 
     if (isLoading) {
         return (

@@ -122,10 +122,11 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             };
 
             if (block.mode === 'auto' && block.query) {
+                const isVisibleFilter = block.query.filters?.find(f => f.field === 'isVisible' || f.field === 'isActive');
                 return {
                     ...dynamicContentDefaults,
                     query_isFeatured: block.query.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
-                    query_isVisible: block.query.filters?.some(f => f.field === 'isVisible' && f.value === true) ?? true,
+                    query_isVisible: isVisibleFilter ? isVisibleFilter.value : true,
                     query_category: block.query.filters?.find(f => f.field === 'category')?.value as string || '',
                     query_supplierType: block.query.filters?.find(f => f.field === 'type')?.value as string || '',
                     query_sort_field: block.query.sort?.field || 'createdAt',
@@ -196,7 +197,12 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         },
                         limit: values.query_limit || 10,
                     };
-                    if (values.query_isVisible) query.filters.push({ field: 'isVisible', op: '==', value: true });
+                    
+                    if (values.query_isVisible) {
+                        const visibilityField = values.contentType === 'banners' ? 'isActive' : 'isVisible';
+                        query.filters.push({ field: visibilityField, op: '==', value: true });
+                    }
+
                     if (values.query_isFeatured) query.filters.push({ field: 'isFeatured', op: '==', value: true });
                     if (values.query_category) query.filters.push({ field: 'category', op: '==', value: values.query_category });
                     if (values.query_supplierType) query.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
@@ -324,7 +330,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                         <FormItem className="flex items-center justify-between rounded-lg border p-3"><FormLabel>Solo Destacados</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
                                     )} />
                                      <FormField control={form.control} name="query_isVisible" render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between rounded-lg border p-3"><FormLabel>Solo Visibles</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                                            <FormLabel>{watchContentType === 'banners' ? 'Solo Activos' : 'Solo Visibles'}</FormLabel>
+                                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                        </FormItem>
                                     )} />
                                 </div>
                                 {watchContentType === 'benefits' && <FormField control={form.control} name="query_category" render={({ field }) => (
