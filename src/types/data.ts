@@ -1,4 +1,5 @@
 
+
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -90,6 +91,7 @@ export interface Benefit {
   title: string;
   description: string;
   category: BenefitCategory;
+  highlight?: string;
   image: string;
   imageUrl: string;
   location?: string;

@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useMemo } from "react";
 import { useCollectionOnce, useFirestore } from "@/firebase";
@@ -155,13 +156,13 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
             alt={banner.title || 'Banner promocional'}
             width={600}
             height={300}
-            className="w-full h-auto object-cover"
+            className="w-full h-full object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
     );
 
-    const containerClasses = "w-full overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full overflow-hidden rounded-2xl h-48";
 
     if (banner.link) {
         return (
@@ -193,7 +194,7 @@ export function BenefitsCarousel(props: CarouselProps) {
         return (
             <div className="flex gap-4 overflow-hidden">
                 {[...Array(4)].map((_, i) => (
-                    <Skeleton key={i} className="w-52 h-[280px] bg-muted/50 rounded-3xl" />
+                    <Skeleton key={i} className="w-60 aspect-[3/4] bg-muted/50 rounded-2xl" />
                 ))}
             </div>
         )
@@ -201,8 +202,8 @@ export function BenefitsCarousel(props: CarouselProps) {
     if (error || serializableBenefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
-        <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {serializableBenefits.map(item => <BenefitCard key={item.id} benefit={item} variant="carousel" className="w-52 snap-start" />)}
+        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 -mx-4 px-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {serializableBenefits.map(item => <BenefitCard key={item.id} benefit={item} variant="carousel" className="w-60 snap-start" />)}
         </div>
     )
 }
@@ -279,5 +280,3 @@ export function BannersCarousel(props: CarouselProps) {
         </Carousel>
     );
 }
-
-    

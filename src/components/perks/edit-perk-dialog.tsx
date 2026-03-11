@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,6 +45,7 @@ const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
+  highlight: z.string().optional(),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
   category: z.enum(benefitCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
@@ -75,6 +77,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: benefit.title,
+      highlight: benefit.highlight || '',
       description: benefit.description,
       category: benefit.category,
       imageUrl: benefit.imageUrl,
@@ -107,6 +110,10 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
         }
         if (!values.availableDays || values.availableDays.length === 0) {
             delete dataToUpdate.availableDays;
+        }
+
+        if (!values.highlight) {
+            delete dataToUpdate.highlight;
         }
 
       await updateDoc(benefitRef, dataToUpdate);
@@ -150,6 +157,20 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                     <FormMessage />
                     </FormItem>
                 )}
+                />
+                <FormField
+                    control={form.control}
+                    name="highlight"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Texto Destacado (Opcional)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ej: 2x1, 50% OFF, Envío Gratis" {...field} />
+                        </FormControl>
+                        <FormDescription>Este texto aparecerá de forma prominente en la tarjeta.</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
                 <FormField
                 control={form.control}

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +47,7 @@ const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
 // Schema now includes ownerId for admins
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
+  highlight: z.string().optional(),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
   category: z.enum(benefitCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
@@ -87,6 +89,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
     defaultValues: {
       title: '',
       description: '',
+      highlight: '',
       imageUrl: '',
       location: '',
       points: 0,
@@ -131,6 +134,10 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
 
       if (!values.redemptionLimit) {
         delete dataToSave.redemptionLimit;
+      }
+
+      if (!values.highlight) {
+        delete dataToSave.highlight;
       }
 
       const benefitDocRef = await addDoc(benefitsRef, dataToSave);
@@ -218,6 +225,20 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         <FormControl>
                             <Input {...field} />
                         </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="highlight"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Texto Destacado (Opcional)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="Ej: 2x1, 50% OFF, Envío Gratis" {...field} />
+                        </FormControl>
+                        <FormDescription>Este texto aparecerá de forma prominente en la tarjeta.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -488,6 +509,5 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
       </DialogContent>
     </Dialog>
   );
-}
 
     

@@ -1,30 +1,22 @@
 
+
 'use client';
 
 import Image from 'next/image';
-import { Card, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import type { SerializableBenefit, BenefitCategory } from '@/types/data';
-import { Building, Award, Flame, Plane, Gift, ShoppingCart, Ticket, Music, GraduationCap, Utensils, type LucideIcon } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import type { SerializableBenefit } from '@/types/data';
+import { Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDocOnce } from '@/firebase';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { doc } from 'firebase/firestore';
+import { Badge } from '../ui/badge';
 
 const RedeemBenefitDialog = dynamic(() => import('./redeem-perk-dialog'), {
   ssr: false,
   loading: () => <div className="w-full h-full bg-secondary animate-pulse rounded-2xl" />
 });
-
-// Icon mapping for benefit categories
-const categoryIcons: Record<BenefitCategory, LucideIcon> = {
-  Turismo: Plane,
-  Comercios: ShoppingCart,
-  Eventos: Ticket,
-  Comida: Utensils,
-  Educación: GraduationCap,
-  Entretenimiento: Music,
-};
 
 interface BenefitCardProps {
   benefit: SerializableBenefit;
@@ -42,65 +34,48 @@ export default function BenefitCard({ benefit, className, variant = 'default' }:
 
   const { data: supplier } = useDocOnce(supplierRef);
 
-  const CategoryIcon = categoryIcons[benefit.category as BenefitCategory] || Gift;
   const supplierName = supplier?.name || "Club de Beneficios";
+  const isGrid = variant === 'default';
 
-  // Carousel variant - a compact, horizontal version
-  if (variant === 'carousel') {
-    return (
-      <RedeemBenefitDialog benefit={benefit} isCarouselTrigger>
-        <Card className={cn("group relative h-full w-full cursor-pointer overflow-hidden rounded-2xl text-white shadow-lg", className)}>
-          <Image
-            src={benefit.imageUrl}
-            alt={benefit.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+  const primaryText = benefit.highlight || benefit.title;
+  const secondaryText = benefit.highlight ? benefit.title : benefit.description;
 
-          <div className="relative z-10 flex h-full flex-col justify-end p-3">
-            <h3 className="text-base font-bold leading-tight line-clamp-2">{benefit.title}</h3>
-            <p className="mt-0.5 text-xs text-white/80 line-clamp-1">{supplierName}</p>
-          </div>
-        </Card>
-      </RedeemBenefitDialog>
-    );
-  }
-
-  // Default variant - the larger card for grids
   return (
     <RedeemBenefitDialog benefit={benefit}>
-      <Card className={cn("group flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl", className)}>
-        <div className="relative aspect-video w-full">
-          <Image
-            src={benefit.imageUrl}
-            alt={benefit.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-primary/20 to-transparent" />
-          {benefit.isFeatured && (
-            <div className="absolute top-2 right-2 z-10 flex items-center gap-1 rounded-full bg-red-600 px-2.5 py-1 text-xs font-bold text-white shadow-lg">
-              <Flame className="h-4 w-4" /><span>Destacado</span>
+      <Card className={cn("group relative flex aspect-[3/4] w-full flex-col justify-end overflow-hidden rounded-2xl text-white transition-all duration-300 hover:shadow-xl", className)}>
+        <Image
+          src={benefit.imageUrl}
+          alt={benefit.title}
+          fill
+          className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        
+        <div className={cn("relative z-10 space-y-2 p-4 md:p-5", isGrid ? 'space-y-3' : 'space-y-1')}>
+            <div className="space-y-1">
+                 <Badge variant="secondary" className="bg-white/20 text-white backdrop-blur-sm border-0">{benefit.category}</Badge>
+                <h3 className={cn(
+                    "font-extrabold uppercase tracking-tight line-clamp-2",
+                    isGrid ? 'text-3xl' : 'text-xl'
+                )}>
+                    {primaryText}
+                </h3>
+                {secondaryText && (
+                  <p className={cn(
+                      "font-medium text-white/80 line-clamp-2",
+                      isGrid ? 'text-base' : 'text-sm'
+                    )}>
+                      {secondaryText}
+                  </p>
+                )}
             </div>
-          )}
-        </div>
-        <div className="flex flex-1 flex-col p-4">
-          <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-            <CategoryIcon className="h-4 w-4" />
-            <span>{benefit.category}</span>
-          </div>
-          <h3 className="mt-2 text-lg font-bold text-foreground line-clamp-2">{benefit.title}</h3>
-          <div className="mt-auto flex items-center justify-between pt-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Building className="h-4 w-4" />
-              <span className="truncate">{supplierName}</span>
+            
+            <div className="pt-2">
+                <div className="flex items-center gap-2 text-xs text-white/70">
+                    <Building className="h-4 w-4" />
+                    <span>{supplierName}</span>
+                </div>
             </div>
-            <div className="flex items-center gap-1 text-sm font-bold text-primary">
-              <Award className="h-4 w-4" />
-              <span>{benefit.points} PTS</span>
-            </div>
-          </div>
         </div>
       </Card>
     </RedeemBenefitDialog>
