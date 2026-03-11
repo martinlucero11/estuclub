@@ -88,11 +88,6 @@ export default function HomePage() {
                         let props: any = { title };
                         let linkPath: string | undefined;
 
-                        // --- TEMPORARY LOGS FOR DEBUGGING ---
-                        console.log('[HOME SECTION]', section);
-                        console.log('[HOME BLOCK]', section.block);
-                        // ------------------------------------
-
                         switch (block.kind) {
                             case 'categories':
                                 Component = CategoryGrid;
@@ -132,10 +127,6 @@ export default function HomePage() {
                             default:
                                 return null;
                         }
-
-                        // --- TEMPORARY LOGS FOR DEBUGGING ---
-                        console.log('[HOME COMPONENT RESOLVED]', Component);
-                        // ------------------------------------
 
                         if (!Component) return null;
 

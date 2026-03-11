@@ -148,7 +148,7 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
 };
 
 // --- BANNER CAROUSEL CARD ---
-const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
+const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, priority?: boolean }) => {
     const bannerImage = (
         <Image
             src={banner.imageUrl}
@@ -156,10 +156,11 @@ const BannerCarouselCard = ({ banner }: { banner: Banner }) => {
             fill
             className="object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
+            priority={priority}
         />
     );
 
-    const containerClasses = "relative w-full overflow-hidden rounded-2xl aspect-[1160/400]"; // Adjusted aspect ratio
+    const containerClasses = "relative h-full w-full overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
@@ -249,14 +250,12 @@ export function AnnouncementsCarousel(props: CarouselProps) {
 
 
 export function BannersCarousel(props: CarouselProps) {
-    console.log('[BannersCarousel Props]', props);
     const { items: banners, isLoading, error } = useCarouselData<Banner>('banners', props);
-    console.log('[BannersCarousel Data]', { banners, isLoading, error });
 
     if (isLoading) {
         return (
             <div className="w-full">
-                <Skeleton className="w-full aspect-[1160/400] rounded-2xl" />
+                <Skeleton className="w-full aspect-[16/7] rounded-2xl" />
             </div>
         );
     }
@@ -268,9 +267,9 @@ export function BannersCarousel(props: CarouselProps) {
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent className="-ml-4">
-                {banners.map(banner => (
-                    <CarouselItem key={banner.id} className="basis-full md:basis-1/2 pl-4">
-                        <BannerCarouselCard banner={banner as Banner} />
+                {banners.map((banner, index) => (
+                    <CarouselItem key={banner.id} className="basis-full md:basis-1/2 pl-4 h-48">
+                        <BannerCarouselCard banner={banner as Banner} priority={index === 0} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
