@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser, useFirestore, useCollection, useCollectionOnce } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, documentId, Timestamp } from 'firebase/firestore';
 import { useMemo } from 'react';
 import BackButton from '@/components/layout/back-button';
@@ -57,7 +57,7 @@ function SubscriberList() {
         );
     }, [firestore, subscriberIds]);
 
-    const { data: userProfiles, isLoading: isLoadingUsers } = useCollectionOnce(usersQuery);
+    const { data: userProfiles, isLoading: isLoadingUsers } = useCollection(usersQuery);
     
     // 4. Combine the data
     const enrichedSubscribers = useMemo((): EnrichedSubscriber[] => {
