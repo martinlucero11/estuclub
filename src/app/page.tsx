@@ -72,7 +72,7 @@ export default function HomePage() {
         <MainLayout>
             <div className="mx-auto w-full">
                 <WelcomeMessage />
-                <div className="space-y-4 pb-8 pt-2">
+                <div className="space-y-1 pb-8 pt-2">
                     {sections && sections.length > 0 ? sections.map((section) => {
                         
                         const { block } = section;
