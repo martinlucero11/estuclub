@@ -84,7 +84,7 @@ export default function BenefitCard({ benefit, className, variant = 'default' }:
   if (variant === 'carousel') {
     return (
       <RedeemBenefitDialog benefit={benefit} isCarouselTrigger>
-        <Card className={cn("relative h-full overflow-hidden text-white transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer", className)}>
+        <Card className={cn("relative aspect-video overflow-hidden text-white transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer", className)}>
             <Image
               src={benefit.imageUrl}
               alt={benefit.title}

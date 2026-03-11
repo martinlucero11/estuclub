@@ -7,7 +7,7 @@ export default function PerkDetailSkeleton() {
     <MainLayout>
       <div className="p-4 md:p-8">
         <Card className="overflow-hidden">
-          <Skeleton className="h-64 w-full md:h-80" />
+          <Skeleton className="aspect-video w-full" />
           <CardHeader>
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-5 w-1/4" />

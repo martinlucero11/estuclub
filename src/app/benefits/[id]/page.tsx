@@ -60,7 +60,7 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
         <MainLayout>
             <div className="p-4 md:p-8">
                 <Card className="overflow-hidden">
-                     <div className="relative w-full h-64 md:h-80">
+                     <div className="relative w-full aspect-video">
                         <Image
                             src={serializableBenefit.imageUrl}
                             alt={serializableBenefit.title}
