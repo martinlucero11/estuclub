@@ -13,9 +13,9 @@ function CategoryGridSkeleton() {
     return (
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {[...Array(8)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[70px] text-center space-y-2">
-                    <Skeleton className="h-[70px] w-[70px] rounded-2xl mx-auto" />
-                    <Skeleton className="h-4 w-[70px] mx-auto" />
+                <div key={i} className="flex-shrink-0 w-[92px] text-center space-y-2">
+                    <Skeleton className="h-[92px] w-[92px] rounded-2xl mx-auto" />
+                    <Skeleton className="h-4 w-[92px] mx-auto" />
                 </div>
             ))}
         </div>
@@ -45,12 +45,12 @@ export function CategoryGrid() {
     return (
         <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {categories.map(category => (
-                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-[70px] snap-start text-center group">
+                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-[92px] snap-start text-center group">
                     <div className={cn(
-                        'flex flex-col items-center justify-center h-[70px] w-[70px] mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
+                        'flex flex-col items-center justify-center h-[92px] w-[92px] mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
                         'hover:shadow-md hover:-translate-y-0.5'
                     )}>
-                         <span className={cn("text-4xl", category.colorClass)}>{category.emoji}</span>
+                         <span className={cn("text-5xl", category.colorClass)}>{category.emoji}</span>
                     </div>
                     <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
                 </Link>
