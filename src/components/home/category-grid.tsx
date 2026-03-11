@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 
 function CategoryGridSkeleton() {
     return (
-        <div className="flex gap-4 overflow-x-auto px-4 pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {[...Array(8)].map((_, i) => (
                 <div key={i} className="flex-shrink-0 w-28 text-center space-y-2">
                     <Skeleton className="h-28 w-28 rounded-2xl mx-auto" />
@@ -40,11 +40,11 @@ export function CategoryGrid() {
     }
 
     if (!categories || categories.length === 0) {
-        return <p className="text-muted-foreground italic px-4">No hay categorías disponibles.</p>;
+        return <p className="text-muted-foreground italic">No hay categorías disponibles.</p>;
     }
 
     return (
-        <div className="flex gap-4 overflow-x-auto px-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {categories.map(category => (
                 <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-28 snap-start text-center group">
                     <div className={cn(

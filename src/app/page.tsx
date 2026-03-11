@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
@@ -132,7 +133,7 @@ export default function HomePage() {
                                         </Button>
                                     )}
                                 </div>
-                                <div className={block.kind !== 'categories' ? 'px-4' : ''}>
+                                <div className="px-4">
                                     <Component {...props} />
                                 </div>
                             </section>
