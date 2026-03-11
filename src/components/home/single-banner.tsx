@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -8,6 +9,7 @@ import { doc } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Banner } from '@/types/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 export function SingleBanner({ bannerId }: { bannerId: string }) {
     const firestore = useFirestore();
@@ -20,7 +22,7 @@ export function SingleBanner({ bannerId }: { bannerId: string }) {
     const { data: banner, isLoading } = useDocOnce(bannerRef);
 
     if (isLoading) {
-        return <Skeleton className="aspect-video w-full rounded-2xl" />;
+        return <Skeleton className="aspect-[1160/230] w-full rounded-2xl" />;
     }
 
     if (!banner) {
@@ -37,13 +39,15 @@ export function SingleBanner({ bannerId }: { bannerId: string }) {
         />
     );
     
+    const containerClasses = "relative aspect-[1160/230] w-full overflow-hidden rounded-2xl";
+
     if (banner.link) {
         return (
             <Link 
                 href={banner.link} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="block relative aspect-video w-full overflow-hidden rounded-2xl"
+                className={cn(containerClasses)}
             >
                 {bannerImage}
             </Link>
@@ -51,7 +55,7 @@ export function SingleBanner({ bannerId }: { bannerId: string }) {
     }
 
     return (
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl">
+        <div className={cn(containerClasses)}>
             {bannerImage}
         </div>
     );
