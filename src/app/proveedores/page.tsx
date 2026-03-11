@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -71,7 +71,29 @@ function CluberListPage() {
     }
 
     if (error) {
-        return <p className="text-destructive">Error al cargar los Clubers.</p>;
+        // Proactive error handling for missing Firestore index.
+        if ('code' in error && error.code === 'failed-precondition') {
+            const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'estuclub'; // Using a fallback just in case
+            const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=roles_supplier&field[0].fieldPath=isVisible&field[0].order=ASCENDING&field[1].fieldPath=name&field[1].order=ASCENDING`;
+            return (
+                <Card className="border-destructive">
+                     <CardHeader>
+                        <CardTitle className="text-destructive">Error de Configuración de Base de Datos</CardTitle>
+                        <CardDescription className="text-destructive">
+                            La consulta para mostrar los Clubers requiere un índice compuesto en Firestore que no ha sido creado.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="mb-4 text-sm font-medium">Para solucionar este problema, un administrador del proyecto de Firebase debe crear el índice requerido.</p>
+                        <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
+                            Crear Índice en Firebase Console
+                        </a>
+                        <p className="mt-4 text-xs text-muted-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active. Luego, recarga esta página.</p>
+                    </CardContent>
+                </Card>
+            );
+        }
+        return <p className="text-destructive">Error al cargar los Clubers: {error.message}</p>;
     }
 
     return (
