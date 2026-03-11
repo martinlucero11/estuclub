@@ -40,13 +40,15 @@ const buildConstraints = (
   const { contentType, query: queryConfig } = props;
   const constraints: QueryConstraint[] = [];
 
-  // Default filters
+  // Default filters for auto mode
   if (contentType === 'benefits') {
     constraints.push(where('isVisible', '==', true));
   } else if (contentType === 'announcements') {
       constraints.push(where('status', '==', 'approved'));
   } else if (contentType === 'banners') {
       constraints.push(where('isActive', '==', true));
+  } else if (contentType === 'suppliers') {
+      constraints.push(where('isVisible', '==', true));
   }
 
 
@@ -60,7 +62,7 @@ const buildConstraints = (
   // Apply sorting
   if (queryConfig?.sort?.field) {
     constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
-  } else if (contentType !== 'banners') { // Banners might not have createdAt
+  } else if (contentType !== 'banners') { // Banners might not have a reliable createdAt
       constraints.push(orderBy('createdAt', 'desc'));
   }
   
@@ -81,11 +83,12 @@ function useCarouselData<T extends { id: string }>(
     return { items: [], isLoading: false, error: null };
   }
 
-  const { mode, items: itemIds, query: queryConfig, contentType } = props;
+  const { mode = 'auto', items: itemIds = [], query: queryConfig, contentType } = props;
 
-  // Create stable dependencies for useMemo
+  // Stable dependencies for useMemo
   const stringifiedItemIds = JSON.stringify(itemIds);
-  const stringifiedQueryConfig = JSON.stringify(queryConfig);
+  const stringifiedProps = JSON.stringify(props);
+
 
   const dataQuery = useMemo(() => {
     if (!firestore) return null;
@@ -93,27 +96,25 @@ function useCarouselData<T extends { id: string }>(
     const itemsCollection = collection(firestore, collectionName).withConverter(createConverter<T>());
     
     if (mode === 'manual') {
-      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]') as string[];
-      if (parsedItemIds.length === 0) return null;
+      const parsedItemIds = JSON.parse(stringifiedItemIds);
+      if (parsedItemIds.length === 0) return null; // No items to fetch
       return query(itemsCollection, where(documentId(), 'in', parsedItemIds.slice(0, 30)));
     }
     
-    if (mode === 'auto') {
-      const stableProps = { kind: 'carousel', mode, query: queryConfig, contentType };
-      const constraints = buildConstraints(stableProps as any);
-      return query(itemsCollection, ...constraints);
-    }
+    // Auto mode
+    const stableProps = JSON.parse(stringifiedProps);
+    const constraints = buildConstraints(stableProps);
+    return query(itemsCollection, ...constraints);
 
-    return null;
-  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedQueryConfig, contentType]);
+  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedProps]);
 
   const { data: queriedItems, isLoading, error } = useCollectionOnce(dataQuery);
   
   const items = useMemo(() => {
     if (!queriedItems) return [];
     if (mode === 'manual') {
-      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]') as string[];
-      const orderMap = new Map(parsedItemIds.map((id, index) => [id, index]));
+      const parsedItemIds = JSON.parse(stringifiedItemIds);
+      const orderMap = new Map(parsedItemIds.map((id: string, index: number) => [id, index]));
       return [...queriedItems].sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
     }
     return queriedItems;
