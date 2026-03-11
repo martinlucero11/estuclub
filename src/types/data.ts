@@ -1,3 +1,4 @@
+
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -75,6 +76,7 @@ export interface SupplierProfile {
 
 
 export const benefitCategories = [
+  'Turismo',
   'Comercios',
   'Eventos',
   'Comida',

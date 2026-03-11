@@ -1,36 +1,37 @@
 
+'use client';
+
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import type { SerializableBenefit } from '@/types/data';
-import { Building, MapPin, Award, Flame, ArrowRight } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import type { SerializableBenefit, BenefitCategory } from '@/types/data';
+import { Building, Award, Flame, Plane, Gift, ShoppingCart, Ticket, Music, GraduationCap, Utensils, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser, useFirestore, useDocOnce } from '@/firebase';
-import { Button } from '../ui/button';
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { doc } from 'firebase/firestore';
 
 const RedeemBenefitDialog = dynamic(() => import('./redeem-perk-dialog'), {
   ssr: false,
-  loading: () => <Button className="w-full" disabled>Cargando...</Button>
+  loading: () => <div className="w-full h-full bg-secondary animate-pulse rounded-2xl" />
 });
+
+// Icon mapping for benefit categories
+const categoryIcons: Record<BenefitCategory, LucideIcon> = {
+  Turismo: Plane,
+  Comercios: ShoppingCart,
+  Eventos: Ticket,
+  Comida: Utensils,
+  Educación: GraduationCap,
+  Entretenimiento: Music,
+};
 
 interface BenefitCardProps {
   benefit: SerializableBenefit;
   className?: string;
-  variant?: 'default' | 'carousel';
 }
 
-// Badge para beneficios destacados
-const FeaturedBadge = () => (
-  <div className="absolute top-2 left-2 z-10 flex items-center gap-1 rounded-full bg-red-600 px-2 py-1 text-xs font-bold text-white shadow-lg">
-    <Flame className="h-3 w-3" />
-    <span>Destacado</span>
-  </div>
-);
-
-export default function BenefitCard({ benefit, className, variant = 'default' }: BenefitCardProps) {
-  const { user, isUserLoading } = useUser();
+export default function BenefitCard({ benefit, className }: BenefitCardProps) {
   const firestore = useFirestore();
 
   const supplierRef = useMemo(() => {
@@ -40,96 +41,54 @@ export default function BenefitCard({ benefit, className, variant = 'default' }:
 
   const { data: supplier } = useDocOnce(supplierRef);
 
-  const redeemButton = (
-      <Button className="w-full" variant="default" disabled={isUserLoading || !user}>
-        {isUserLoading ? 'Cargando...' : 'Canjear Beneficio'}
-        {!isUserLoading && <ArrowRight className="ml-2 h-4 w-4" />}
-      </Button>
-    );
+  const CategoryIcon = categoryIcons[benefit.category as BenefitCategory] || Gift;
+  const supplierName = supplier?.name || "Club de Beneficios";
 
-  const cardContent = (
-      <Card className={cn("flex h-full flex-col overflow-hidden transition-all duration-200 hover:shadow-lg active:scale-95", className)}>
-        <div className="relative w-full aspect-video">
-            <Image
-                src={benefit.imageUrl}
-                alt={benefit.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            {/* Premium gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/70 via-primary/30 to-transparent" />
+  // The whole card is a trigger for the dialog
+  return (
+    <RedeemBenefitDialog benefit={benefit}>
+      <Card className={cn(
+        "group relative aspect-[16/9] w-full cursor-pointer overflow-hidden rounded-2xl text-white shadow-lg",
+        "transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl",
+        className
+      )}>
+        
+        {/* Background Image */}
+        <Image
+          src={benefit.imageUrl}
+          alt={benefit.title}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
+        />
 
-            {benefit.isFeatured && <FeaturedBadge />}
+        {/* Glassmorphism Info Box */}
+        <div className="absolute inset-x-4 top-4 bottom-4 z-10 m-auto flex h-fit max-w-[90%] flex-col rounded-2xl border border-white/10 bg-black/25 p-4 backdrop-blur-lg md:p-6">
+          
+          <div className="text-center">
+            <h2 className="text-2xl font-black uppercase text-white drop-shadow-lg md:text-4xl lg:text-5xl">
+              {benefit.title}
+            </h2>
+            <p className="mt-1 text-base font-bold text-white/90 drop-shadow-md md:text-lg">
+              {benefit.description}
+            </p>
+          </div>
+          
+          <div className="mt-4 flex justify-center">
+             <div className="flex items-center gap-2 rounded-full bg-primary/90 px-4 py-1.5 text-sm font-semibold text-primary-foreground">
+                <CategoryIcon className="h-4 w-4" />
+                <span>{benefit.category}</span>
+             </div>
+          </div>
 
-            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
-                <Award className="h-3 w-3" />
-                <span>{benefit.points} PTS</span>
-            </div>
-            
-            <div className="absolute bottom-0 left-0 right-0 p-4">
-                <CardTitle className="line-clamp-2 text-xl text-white">{benefit.title}</CardTitle>
-                <CardDescription className="text-white/80">{benefit.category}</CardDescription>
-            </div>
-        </div>
-        <div className='flex flex-1 flex-col p-4'>
-          <CardContent className="flex-grow space-y-3 p-0">
-            <p className="text-sm text-muted-foreground line-clamp-2">{benefit.description}</p>
-              {supplier && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Building className="h-4 w-4 flex-shrink-0" />
-                    <span>{supplier.name}</span>
-                </div>
-            )}
-            {benefit.location && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span>{benefit.location}</span>
-                </div>
-            )}
-          </CardContent>
-          <CardFooter className="p-0 pt-4">
-            <RedeemBenefitDialog benefit={benefit}>
-                {redeemButton}
-            </RedeemBenefitDialog>
-          </CardFooter>
+          <hr className="my-3 border-t-2 border-dashed border-white/20 md:my-4" />
+          
+          <div className="flex items-center justify-center gap-2 text-sm font-medium text-white/80">
+             <Gift className="h-4 w-4" />
+             <span>Subido por {supplierName}</span>
+          </div>
+
         </div>
       </Card>
+    </RedeemBenefitDialog>
   );
-
-  if (variant === 'carousel') {
-    return (
-      <RedeemBenefitDialog benefit={benefit} isCarouselTrigger>
-        <Card className={cn("relative aspect-video overflow-hidden text-white transition-all duration-200 hover:shadow-lg active:scale-95 cursor-pointer", className)}>
-            <Image
-              src={benefit.imageUrl}
-              alt={benefit.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
-          <div className="relative z-10 flex h-full flex-col justify-end p-4">
-            {benefit.isFeatured && <FeaturedBadge />}
-            <div className="absolute top-2 right-2 flex items-center gap-1 rounded-full bg-black/40 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
-                <Award className="h-3 w-3" />
-                <span>{benefit.points} PTS</span>
-            </div>
-            <div>
-              <CardTitle className="text-xl line-clamp-2">{benefit.title}</CardTitle>
-              <CardDescription className='text-white/80'>{benefit.category}</CardDescription>
-              {supplier && (
-                <div className="flex items-center gap-2 text-xs text-white/80 pt-1">
-                    <Building className="h-3 w-3" />
-                    <span>{supplier.name}</span>
-                </div>
-            )}
-            </div>
-          </div>
-        </Card>
-      </RedeemBenefitDialog>
-    );
-  }
-
-  return cardContent;
 }
