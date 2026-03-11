@@ -72,6 +72,12 @@ export const navConfig: NavConfig = {
           role: ["supplier"],
         },
         {
+          title: "Suscriptores",
+          href: "/panel-cluber/subscribers",
+          icon: Users,
+          role: ["supplier"],
+        },
+        {
           title: "Escanear QR",
           href: "/panel-cluber/scanner",
           icon: QrCode,

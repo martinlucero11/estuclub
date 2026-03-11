@@ -82,7 +82,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard title="Beneficios Activos" value={stats.totalBenefits} icon={Gift} href="/panel-cluber/benefits" />
                 <StatCard title="Canjes Totales" value={stats.totalRedemptions} icon={Ticket} href="/panel-cluber/redemptions" />
-                <StatCard title="Suscriptores" value={stats.totalSubscribers} icon={Users} />
+                <StatCard title="Suscriptores" value={stats.totalSubscribers} icon={Users} href="/panel-cluber/subscribers" />
                 <StatCard title="Turnos Reservados" value={stats.totalAppointments} icon={Calendar} href="/panel-cluber/appointments" />
             </div>
 
