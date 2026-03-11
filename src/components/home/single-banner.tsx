@@ -7,11 +7,10 @@ import Link from 'next/link';
 import { useFirestore, useDocOnce } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
-import type { Banner, HomeSection } from '@/types/data';
+import type { Banner } from '@/types/data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
 
-export function SingleBanner({ bannerId }: HomeSection) {
+export function SingleBanner({ bannerId }: { bannerId: string }) {
     const firestore = useFirestore();
 
     const bannerRef = useMemo(() => {
@@ -26,11 +25,11 @@ export function SingleBanner({ bannerId }: HomeSection) {
     }
 
     if (!banner) {
-        return null; // Don't render anything if the banner isn't found
+        return null;
     }
     
     const bannerContent = (
-         <Card className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl group">
+         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl group">
             <Image
                 src={banner.imageUrl}
                 alt={banner.title || 'Banner promocional'}
@@ -38,7 +37,7 @@ export function SingleBanner({ bannerId }: HomeSection) {
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
                 priority
             />
-        </Card>
+        </div>
     );
     
     if (banner.link) {

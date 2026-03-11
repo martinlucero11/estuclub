@@ -121,7 +121,7 @@ export default function HomePage() {
                         if (!Component) return null;
 
                         return (
-                            <section key={section.id} className="space-y-2">
+                            <section key={section.id} className="space-y-1">
                                 {section.title && (
                                     <div className="flex items-center justify-between px-4">
                                         <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
