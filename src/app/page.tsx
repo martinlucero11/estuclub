@@ -19,7 +19,7 @@ import { createConverter } from '@/lib/firestore-converter';
 const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel));
 const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel));
 const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel));
-const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid));
+const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid), { ssr: false });
 const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner));
 
 const BenefitsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.BenefitsGrid), { ssr: false });
@@ -121,9 +121,9 @@ export default function HomePage() {
                         if (!Component) return null;
 
                         return (
-                            <section key={section.id} className="space-y-3">
+                            <section key={section.id} className="space-y-2">
                                 <div className="flex items-center justify-between px-4">
-                                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{section.title}</h2>
+                                    <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
                                     {linkPath && (
                                         <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
                                             <Link href={linkPath}>
