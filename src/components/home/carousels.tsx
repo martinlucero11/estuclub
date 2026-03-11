@@ -44,8 +44,6 @@ const buildConstraints = (
     constraints.push(where('isVisible', '==', true));
   } else if (contentType === 'announcements') {
       constraints.push(where('status', '==', 'approved'));
-  } else if (contentType === 'banners') {
-      constraints.push(where('isActive', '==', true));
   }
 
   // Apply custom filters from Home Builder
@@ -140,7 +138,7 @@ const createDynamicCarousel = <T extends {id: string, name?: string, title?: str
     CardComponent: React.FC<any>, 
     collectionName: string, 
     dataKey: string,
-    contentType: "benefits" | "suppliers" | "announcements" | "banners"
+    contentType: "benefits" | "suppliers" | "announcements"
 ) => {
     return function Carousel(props: CarouselProps) {
         const firestore = useFirestore();
@@ -203,17 +201,7 @@ const createDynamicCarousel = <T extends {id: string, name?: string, title?: str
             return items;
         }, [items]);
 
-        const isBannerCarousel = contentType === 'banners';
-
         if (isLoading) {
-            if (isBannerCarousel) {
-                return (
-                    <div className="flex w-full gap-4 overflow-hidden">
-                        <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
-                        <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
-                    </div>
-                );
-            }
             const skeletonHeight = collectionName === 'benefits' ? 'h-[280px]' : 'h-[150px]';
             return (
                 <div className="flex gap-4 overflow-hidden">
@@ -228,22 +216,6 @@ const createDynamicCarousel = <T extends {id: string, name?: string, title?: str
             return <p className="text-muted-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
 
-        if (isBannerCarousel) {
-            return (
-                <Carousel opts={{ align: "start" }} className="w-full">
-                    <CarouselContent className="-ml-4">
-                        {processedItems.map(item => (
-                            <CarouselItem key={item.id} className="basis-4/5 md:basis-1/2 pl-4">
-                                <BannerCarouselCard banner={item as Banner} />
-                            </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious className="hidden sm:flex" />
-                    <CarouselNext className="hidden sm:flex" />
-                </Carousel>
-            );
-        }
-
         return (
              <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} variant="carousel" className="w-52 snap-start" />)}
@@ -252,7 +224,88 @@ const createDynamicCarousel = <T extends {id: string, name?: string, title?: str
     }
 }
 
+// --- DEDICATED BANNERS CAROUSEL ---
+export function BannersCarousel(props: CarouselProps) {
+    const firestore = useFirestore();
+    
+    // Explicitly destructure props needed for banner carousel
+    if (props.kind !== 'carousel' || props.contentType !== 'banners') return null;
+    const { mode, items: itemIds, query: queryConfig } = props;
+
+    // Memoize query based on props
+    const bannersQuery = useMemo(() => {
+        if (!firestore) return null;
+
+        const bannersCollection = collection(firestore, 'banners').withConverter(createConverter<Banner>());
+        
+        if (mode === 'manual') {
+            if (!itemIds || itemIds.length === 0) return null;
+            const currentItemIds = itemIds.slice(0, 30); // Firestore 'in' limit
+            if (currentItemIds.length === 0) return null;
+            return query(bannersCollection, where(documentId(), 'in', currentItemIds));
+        }
+
+        if (mode === 'auto') {
+             const constraints: QueryConstraint[] = [where('isActive', '==', true)];
+             if (queryConfig?.sort?.field) {
+                constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
+             } else {
+                // A default sort is good practice
+                constraints.push(orderBy('createdAt', 'desc'));
+             }
+             constraints.push(limit(queryConfig?.limit || 10));
+             return query(bannersCollection, ...constraints);
+        }
+
+        return null;
+    }, [firestore, mode, itemIds, queryConfig]);
+
+    const { data: queriedItems, isLoading, error } = useCollectionOnce(bannersQuery);
+
+    const banners = useMemo(() => {
+        if (!queriedItems) return [];
+        if (mode === 'manual' && itemIds) {
+            // Re-order based on the selection order
+            const orderMap = new Map(itemIds.map((id, index) => [id, index]));
+            return [...queriedItems].sort((a, b) => {
+                const orderA = orderMap.get(a.id);
+                const orderB = orderMap.get(b.id);
+                if (orderA === undefined || orderB === undefined) return 0;
+                return orderA - orderB;
+            });
+        }
+        return queriedItems;
+    }, [queriedItems, mode, itemIds]);
+
+
+    if (isLoading) {
+        return (
+            <div className="flex w-full gap-4 overflow-hidden">
+                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+            </div>
+        );
+    }
+    
+    if (error || !banners || banners.length === 0) {
+        return <p className="text-muted-foreground italic text-sm">No hay banners para mostrar.</p>;
+    }
+    
+    return (
+        <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-4">
+                {banners.map(banner => (
+                    <CarouselItem key={banner.id} className="basis-4/5 md:basis-1/2 pl-4">
+                        <BannerCarouselCard banner={banner as Banner} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden sm:flex" />
+            <CarouselNext className="hidden sm:flex" />
+        </Carousel>
+    );
+}
+
 export const BenefitsCarousel = createDynamicCarousel<Benefit>(BenefitCard, 'benefits', 'benefit', 'benefits');
 export const SuppliersCarousel = createDynamicCarousel<SupplierProfile>(SupplierCard, 'roles_supplier', 'supplier', 'suppliers');
 export const AnnouncementsCarousel = createDynamicCarousel<Announcement>(AnnouncementCard, 'announcements', 'announcement', 'announcements');
-export const BannersCarousel = createDynamicCarousel<Banner>(BannerCarouselCard, 'banners', 'banner', 'banners');
