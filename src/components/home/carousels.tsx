@@ -85,10 +85,9 @@ function useCarouselData<T extends { id: string }>(
 
   const { mode = 'auto', items: itemIds = [], query: queryConfig, contentType } = props;
 
-  // Stable dependencies for useMemo
+  // Create stable stringified versions of props that are objects/arrays
   const stringifiedItemIds = JSON.stringify(itemIds);
-  const stringifiedProps = JSON.stringify(props);
-
+  const stringifiedQueryConfig = JSON.stringify(queryConfig);
 
   const dataQuery = useMemo(() => {
     if (!firestore) return null;
@@ -97,16 +96,17 @@ function useCarouselData<T extends { id: string }>(
     
     if (mode === 'manual') {
       const parsedItemIds = JSON.parse(stringifiedItemIds);
-      if (parsedItemIds.length === 0) return null; // No items to fetch
+      if (parsedItemIds.length === 0) return null;
       return query(itemsCollection, where(documentId(), 'in', parsedItemIds.slice(0, 30)));
     }
     
     // Auto mode
-    const stableProps = JSON.parse(stringifiedProps);
-    const constraints = buildConstraints(stableProps);
+    const parsedQueryConfig = JSON.parse(stringifiedQueryConfig);
+    const stableProps = { kind: 'carousel', contentType, query: parsedQueryConfig };
+    const constraints = buildConstraints(stableProps as any);
     return query(itemsCollection, ...constraints);
 
-  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedProps]);
+  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedQueryConfig, contentType]);
 
   const { data: queriedItems, isLoading, error } = useCollectionOnce(dataQuery);
   
@@ -114,6 +114,7 @@ function useCarouselData<T extends { id: string }>(
     if (!queriedItems) return [];
     if (mode === 'manual') {
       const parsedItemIds = JSON.parse(stringifiedItemIds);
+      if (!parsedItemIds || parsedItemIds.length === 0) return [];
       const orderMap = new Map(parsedItemIds.map((id: string, index: number) => [id, index]));
       return [...queriedItems].sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
     }
