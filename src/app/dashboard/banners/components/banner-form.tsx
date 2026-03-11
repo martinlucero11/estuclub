@@ -25,8 +25,8 @@ import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import type { SerializableBanner } from '@/types/data';
 
 const formSchema = z.object({
-  title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
-  description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
+  title: z.string().optional(),
+  description: z.string().optional(),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.'),
   link: z.string().url('Por favor, introduce una URL de enlace válida.').optional().or(z.literal('')),
   colorScheme: z.enum(['pink', 'yellow', 'blue'], {
@@ -91,14 +91,14 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                     control={form.control}
                     name="title"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Título</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Título (Opcional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                 <FormField
                     control={form.control}
                     name="description"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Descripción (Opcional)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                 <FormField
