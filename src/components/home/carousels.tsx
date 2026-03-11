@@ -34,7 +34,7 @@ type CarouselProps = HomeSection['block'];
 const buildConstraints = (
   props: CarouselProps
 ): QueryConstraint[] => {
-  if (props.kind !== 'carousel' || props.kind === 'banner' || props.kind === 'categories') {
+  if (props.kind !== 'carousel') {
     return [];
   }
   const { contentType, query: queryConfig } = props;
@@ -60,7 +60,7 @@ const buildConstraints = (
   // Apply sorting
   if (queryConfig?.sort?.field) {
     constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
-  } else {
+  } else if (contentType !== 'banners') { // Banners might not have createdAt
       constraints.push(orderBy('createdAt', 'desc'));
   }
   
@@ -245,9 +245,8 @@ export function BannersCarousel(props: CarouselProps) {
 
     if (isLoading) {
         return (
-            <div className="flex w-full gap-4 overflow-hidden">
-                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
-                <Skeleton className="h-36 basis-4/5 md:basis-1/2" />
+            <div className="w-full">
+                <Skeleton className="w-full aspect-[1160/400] rounded-2xl" />
             </div>
         );
     }
@@ -257,10 +256,10 @@ export function BannersCarousel(props: CarouselProps) {
     }
     
     return (
-        <Carousel opts={{ align: "start" }} className="w-full">
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent className="-ml-4">
                 {banners.map(banner => (
-                    <CarouselItem key={banner.id} className="basis-4/5 md:basis-1/2 pl-4">
+                    <CarouselItem key={banner.id} className="basis-full md:basis-1/2 pl-4">
                         <BannerCarouselCard banner={banner as Banner} />
                     </CarouselItem>
                 ))}
