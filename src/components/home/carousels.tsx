@@ -1,25 +1,12 @@
-
 'use client';
 import { useMemo } from "react";
-import { useCollectionOnce, useFirestore } from "@/firebase";
-import {
-  collection,
-  query,
-  limit,
-  where,
-  orderBy,
-  QueryConstraint,
-  documentId,
-} from "firebase/firestore";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, HomeSection, Banner, SerializableBenefit } from "@/types/data";
+import type { Benefit, SupplierProfile, Announcement, Banner, SerializableBenefit } from "@/types/data";
 import Image from "next/image";
-import { createConverter } from "@/lib/firestore-converter";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { makeBenefitSerializable } from "@/lib/data";
 import BenefitCard from "../perks/perk-card";
-import { Skeleton } from "../ui/skeleton";
 import {
   Carousel,
   CarouselContent,
@@ -28,112 +15,6 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import AnnouncementCard from "../announcements/announcement-card";
-
-
-type CarouselProps = HomeSection['block'];
-
-const buildConstraints = (
-  props: CarouselProps
-): QueryConstraint[] => {
-  if (props.kind !== 'carousel') {
-    return [];
-  }
-  const { contentType, query: queryConfig } = props;
-  const constraints: QueryConstraint[] = [];
-
-  // Default filters for auto mode
-  if (contentType === 'benefits') {
-    constraints.push(where('isVisible', '==', true));
-  } else if (contentType === 'announcements') {
-      constraints.push(where('status', '==', 'approved'));
-  } else if (contentType === 'banners') {
-      // Logic for banners: handle both isActive and the legacy isVisible
-      if (queryConfig?.filters?.some(f => f.field === 'isVisible')) {
-        constraints.push(where('isActive', '==', true)); // Map legacy filter
-      } else if (!queryConfig?.filters?.some(f => f.field === 'isActive')) {
-        constraints.push(where('isActive', '==', true)); // Add default if not present
-      }
-  } else if (contentType === 'suppliers') {
-      constraints.push(where('isVisible', '==', true));
-  }
-
-  // Apply custom filters from Home Builder
-  queryConfig?.filters?.forEach((f) => {
-    if (f.field && f.op && f.value !== undefined) {
-      if (contentType === 'banners' && f.field === 'isVisible') {
-        // This case is handled above, so we skip adding it again to avoid duplicate constraints.
-      } else {
-        constraints.push(where(f.field, f.op, f.value));
-      }
-    }
-  });
-
-  // Apply sorting
-  if (queryConfig?.sort?.field) {
-    constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
-  } else if (contentType !== 'banners') { // Banners might not have a reliable createdAt
-      constraints.push(orderBy('createdAt', 'desc'));
-  }
-  
-  // Apply limit
-  constraints.push(limit(queryConfig?.limit || 10));
-
-  return constraints;
-};
-
-
-function useCarouselData<T extends { id: string }>(
-  collectionName: string,
-  props: CarouselProps
-) {
-  const firestore = useFirestore();
-
-  if (props.kind !== 'carousel') {
-    return { items: [], isLoading: false, error: null };
-  }
-
-  const { mode = 'auto', items: itemIds = [], query: queryConfig, contentType } = props;
-
-  // Create stable stringified versions of props that are objects/arrays
-  const stringifiedItemIds = JSON.stringify(itemIds);
-  const stringifiedQueryConfig = JSON.stringify(queryConfig);
-
-  const dataQuery = useMemo(() => {
-    if (!firestore) return null;
-
-    const itemsCollection = collection(firestore, collectionName).withConverter(createConverter<T>());
-    
-    if (mode === 'manual') {
-      const parsedItemIds = JSON.parse(stringifiedItemIds);
-      if (parsedItemIds.length === 0) return null;
-      // Firestore 'in' query is limited to 30 items
-      return query(itemsCollection, where(documentId(), 'in', parsedItemIds.slice(0, 30)));
-    }
-    
-    // Auto mode
-    const parsedQueryConfig = JSON.parse(stringifiedQueryConfig || '{}');
-    const stableProps = { kind: 'carousel', contentType, query: parsedQueryConfig };
-    const constraints = buildConstraints(stableProps as any);
-    return query(itemsCollection, ...constraints);
-
-  }, [firestore, collectionName, mode, stringifiedItemIds, stringifiedQueryConfig, contentType]);
-
-  const { data: queriedItems, isLoading, error } = useCollectionOnce(dataQuery);
-  
-  const items = useMemo(() => {
-    if (!queriedItems) return [];
-    if (mode === 'manual') {
-      const parsedItemIds = JSON.parse(stringifiedItemIds || '[]');
-      if (!parsedItemIds || parsedItemIds.length === 0) return [];
-      const orderMap = new Map(parsedItemIds.map((id: string, index: number) => [id, index]));
-      return [...queriedItems].sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
-    }
-    return queriedItems;
-  }, [queriedItems, mode, stringifiedItemIds]);
-
-  return { items, isLoading, error };
-}
-
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
@@ -185,23 +66,13 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
 
 // --- CAROUSEL COMPONENTS ---
 
-export function BenefitsCarousel(props: CarouselProps) {
-    const { items, isLoading, error } = useCarouselData<Benefit>('benefits', props);
-
+export function BenefitsCarousel({ items }: { items: any[] }) {
     const serializableBenefits: SerializableBenefit[] = useMemo(() => {
         if (!items) return [];
         return items.map(b => makeBenefitSerializable(b as Benefit));
     }, [items]);
 
-    if (isLoading) {
-        return (
-            <div className="flex gap-4 overflow-hidden -mx-4 px-4">
-                <Skeleton className="w-[78vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
-                <Skeleton className="w-[78vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
-            </div>
-        )
-    }
-    if (error || serializableBenefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
+    if (!serializableBenefits || serializableBenefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
        <Carousel 
@@ -221,19 +92,8 @@ export function BenefitsCarousel(props: CarouselProps) {
     )
 }
 
-export function SuppliersCarousel(props: CarouselProps) {
-    const { items: suppliers, isLoading, error } = useCarouselData<SupplierProfile>('roles_supplier', props);
-
-    if (isLoading) {
-        return (
-            <div className="flex gap-4 overflow-hidden">
-                {[...Array(6)].map((_, i) => (
-                    <Skeleton key={i} className="w-24 h-[124px] bg-muted/50 rounded-3xl" />
-                ))}
-            </div>
-        )
-    }
-    if (error || suppliers.length === 0) return <p className="text-muted-foreground italic text-sm">No hay proveedores para mostrar.</p>;
+export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
+    if (!suppliers || suppliers.length === 0) return <p className="text-muted-foreground italic text-sm">No hay proveedores para mostrar.</p>;
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full">
@@ -250,19 +110,8 @@ export function SuppliersCarousel(props: CarouselProps) {
     )
 }
 
-export function AnnouncementsCarousel(props: CarouselProps) {
-    const { items: announcements, isLoading, error } = useCarouselData<Announcement>('announcements', props);
-
-    if (isLoading) {
-        return (
-            <div className="flex gap-6 overflow-hidden">
-                {[...Array(3)].map((_, i) => (
-                    <Skeleton key={i} className="w-80 h-48 bg-muted/50 rounded-2xl" />
-                ))}
-            </div>
-        )
-    }
-    if (error || announcements.length === 0) return <p className="text-muted-foreground italic text-sm">No hay anuncios para mostrar.</p>;
+export function AnnouncementsCarousel({ items: announcements }: { items: any[] }) {
+    if (!announcements || announcements.length === 0) return <p className="text-muted-foreground italic text-sm">No hay anuncios para mostrar.</p>;
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full">
@@ -279,19 +128,8 @@ export function AnnouncementsCarousel(props: CarouselProps) {
     )
 }
 
-
-export function BannersCarousel(props: CarouselProps) {
-    const { items: banners, isLoading, error } = useCarouselData<Banner>('banners', props);
-    
-    if (isLoading) {
-        return (
-            <div className="w-full">
-                <Skeleton className="w-full aspect-[16/7] rounded-2xl" />
-            </div>
-        );
-    }
-    
-    if (error || !banners || banners.length === 0) {
+export function BannersCarousel({ items: banners }: { items: any[] }) {
+    if (!banners || banners.length === 0) {
         return <p className="text-muted-foreground italic text-sm">No hay banners para mostrar.</p>;
     }
     

@@ -1,155 +1,169 @@
-
-'use client';
-
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { collection, query, where, orderBy, getDocs, doc, documentId, getDoc } from 'firebase/firestore';
+import { firestore } from '@/firebase/server-config';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
 import WelcomeMessage from '@/components/home/welcome-message';
-import dynamic from 'next/dynamic';
-import { HomeSection } from '@/types/data';
+import { HomeSection, Benefit, SupplierProfile, Announcement, Banner } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
-// --- DYNAMICALLY IMPORTED COMPONENTS ---
+import { BenefitsCarousel, SuppliersCarousel, AnnouncementsCarousel, BannersCarousel } from '@/components/home/carousels';
+import { CategoryGrid } from '@/components/home/category-grid';
+import { SingleBanner } from '@/components/home/single-banner';
+import { BenefitsGrid, SuppliersGrid, AnnouncementsGrid } from '@/components/home/grids';
+import { makeBenefitSerializable } from '@/lib/data';
 
-const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel), { ssr: false });
-const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel), { ssr: false });
-const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel), { ssr: false });
-const BannersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BannersCarousel), { ssr: false });
-const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid), { ssr: false });
-const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner), { ssr: false });
-
-const BenefitsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.BenefitsGrid), { ssr: false });
-const SuppliersGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.SuppliersGrid), { ssr: false });
-const AnnouncementsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.AnnouncementsGrid), { ssr: false });
-
-
-// --- SKELETON LOADER ---
-
-const PageSkeleton = () => (
-    <MainLayout>
-        <div className="w-full space-y-12 px-4 py-8">
-            <div className="space-y-2">
-                <Skeleton className="h-10 w-3/4" />
-                <Skeleton className="h-5 w-1/2" />
-            </div>
-            <div className="space-y-3">
-                <Skeleton className="h-7 w-40" />
-                <Skeleton className="h-48 w-full" />
-            </div>
-             <div className="space-y-3">
-                <Skeleton className="h-7 w-40" />
-                <Skeleton className="h-48 w-full" />
-            </div>
-        </div>
-    </MainLayout>
-);
-
-
-// --- MAIN PAGE COMPONENT ---
-
-export default function HomePage() {
-    const firestore = useFirestore();
-
-    const homeSectionsQuery = useMemo(() => 
-        query(
-            collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()),
-            where('isActive', '==', true),
-            orderBy('order', 'asc')
-        )
-    , [firestore]);
-
-    const { data: sections, isLoading: sectionsLoading } = useCollection(homeSectionsQuery);
-
-    if (sectionsLoading) {
-        return <PageSkeleton />;
+async function getHomeSections() {
+    const sectionsRef = collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>());
+    const q = query(sectionsRef, where('isActive', '==', true), orderBy('order', 'asc'));
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) {
+        return [];
     }
+    return snapshot.docs.map(doc => doc.data());
+}
+
+async function getSectionData(section: HomeSection) {
+    const { block } = section;
+
+    if (block.kind === 'categories' || block.kind === 'banner') {
+        return null; // No extra data needed
+    }
+
+    const { contentType, mode, items: itemIds = [], query: queryConfig } = block;
+
+    const collectionName = contentType === 'suppliers' ? 'roles_supplier' : contentType;
+    const itemsCollection = collection(firestore, collectionName);
+
+    if (mode === 'manual') {
+        if (!itemIds || itemIds.length === 0) return [];
+        const manualQuery = query(itemsCollection, where(documentId(), 'in', itemIds.slice(0, 30)));
+        const snapshot = await getDocs(manualQuery);
+        const fetchedItems = snapshot.docs.map(d => ({...d.data(), id: d.id}));
+        // Re-order based on the original itemIds array
+        const orderMap = new Map(itemIds.map((id, index) => [id, index]));
+        return fetchedItems.sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
+    }
+
+    // Auto mode
+    const constraints = [];
+    if (contentType === 'benefits' || contentType === 'suppliers') {
+        constraints.push(where('isVisible', '==', true));
+    }
+    if (contentType === 'announcements') {
+        constraints.push(where('status', '==', 'approved'));
+    }
+    if (contentType === 'banners') {
+        constraints.push(where('isActive', '==', true));
+    }
+
+    queryConfig?.filters?.forEach(f => {
+        if (f.field && f.op && f.value !== undefined) {
+            constraints.push(where(f.field, f.op, f.value));
+        }
+    });
+
+    if (queryConfig?.sort?.field) {
+        constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
+    } else if (contentType !== 'banners') {
+        constraints.push(orderBy('createdAt', 'desc'));
+    }
+
+    if (queryConfig?.limit) {
+        constraints.push(limit(queryConfig.limit));
+    }
+
+    const autoQuery = query(itemsCollection, ...constraints);
+    const snapshot = await getDocs(autoQuery);
+    return snapshot.docs.map(d => ({...d.data(), id: d.id}));
+}
+
+export default async function HomePage() {
+    const sections = await getHomeSections();
 
     return (
         <MainLayout>
             <div className="mx-auto w-full px-4">
                 <WelcomeMessage />
                 <div className="space-y-1 pb-8 pt-2">
-                    {sections && sections.length > 0 ? sections.map((section) => {
-                        
-                        const { block } = section;
+                    {sections && sections.length > 0 ? (
+                        await Promise.all(sections.map(async (section) => {
+                            const items = await getSectionData(section);
+                            const { block } = section;
 
-                        if (!block) {
-                            return null;
-                        }
+                            if (!block) return null;
 
-                        const { title } = section;
-                        let Component;
-                        let props: any = { title };
-                        let linkPath: string | undefined;
+                            const { title } = section;
+                            let Component;
+                            let props: any = { title, ...block };
+                            let linkPath: string | undefined;
 
-                        switch (block.kind) {
-                            case 'categories':
-                                Component = CategoryGrid;
-                                break;
-                            case 'banner':
-                                Component = SingleBanner;
-                                props.bannerId = block.bannerId;
-                                break;
-                            case 'carousel':
-                                if ('contentType' in block) {
-                                    if (block.contentType === 'benefits') Component = BenefitsCarousel;
-                                    if (block.contentType === 'suppliers') Component = SuppliersCarousel;
-                                    if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
-                                    if (block.contentType === 'banners') Component = BannersCarousel;
-                                    
-                                    linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
-                                    if (block.contentType === 'banners') {
-                                      linkPath = undefined;
+                            switch (block.kind) {
+                                case 'categories':
+                                    const categoriesSnapshot = await getDocs(query(collection(firestore, 'categories').withConverter(createConverter<any>()), orderBy('name', 'asc')));
+                                    const categories = categoriesSnapshot.docs.map(d => d.data());
+                                    Component = CategoryGrid;
+                                    props.categories = categories;
+                                    break;
+                                case 'banner':
+                                    const bannerRef = doc(firestore, 'banners', block.bannerId).withConverter(createConverter<any>());
+                                    const bannerSnap = await getDoc(bannerRef);
+                                    Component = SingleBanner;
+                                    props.banner = bannerSnap.exists() ? bannerSnap.data() : null;
+                                    break;
+                                case 'carousel':
+                                    if ('contentType' in block) {
+                                        if (block.contentType === 'benefits') Component = BenefitsCarousel;
+                                        if (block.contentType === 'suppliers') Component = SuppliersCarousel;
+                                        if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
+                                        if (block.contentType === 'banners') Component = BannersCarousel;
+
+                                        linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                        if (block.contentType === 'banners') linkPath = undefined;
+                                        props.items = items;
                                     }
-                                    props = { ...block, title };
-                                }
-                                break;
-                            case 'grid':
-                                if ('contentType' in block) {
-                                    if (block.contentType === 'benefits') Component = BenefitsGrid;
-                                    if (block.contentType === 'suppliers') Component = SuppliersGrid;
-                                    if (block.contentType === 'announcements') Component = AnnouncementsGrid;
-                                    if (block.contentType === 'banners') Component = BannersCarousel;
-                                    
-                                    linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
-                                    if (block.contentType === 'banners') {
-                                        linkPath = undefined;
+                                    break;
+                                case 'grid':
+                                    if ('contentType' in block) {
+                                        if (block.contentType === 'benefits') Component = BenefitsGrid;
+                                        if (block.contentType === 'suppliers') Component = SuppliersGrid;
+                                        if (block.contentType === 'announcements') Component = AnnouncementsGrid;
+
+                                        linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
+                                        props.items = items;
                                     }
-                                    props = { ...block, title };
-                                }
-                                break;
-                            default:
-                                return null;
-                        }
+                                    break;
+                                default:
+                                    return null;
+                            }
 
-                        if (!Component) return null;
+                            if (!Component) return null;
+                            if ((block.kind === 'carousel' || block.kind === 'grid') && !props.items) return null;
+                            if (block.kind === 'banner' && !props.banner) return null;
 
-                        return (
-                            <section key={section.id} className="space-y-1">
-                                {section.title && (
-                                    <div className="flex items-center justify-between">
-                                        <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
-                                        {linkPath && (
-                                            <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
-                                                <Link href={linkPath}>
-                                                    Ver todos <ArrowRight className="ml-2 h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                        )}
+                            return (
+                                <section key={section.id} className="space-y-1">
+                                    {section.title && (
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
+                                            {linkPath && (
+                                                <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
+                                                    <Link href={linkPath}>
+                                                        Ver todos <ArrowRight className="ml-2 h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <Component {...props} />
                                     </div>
-                                )}
-                                <div>
-                                    <Component {...props} />
-                                </div>
-                            </section>
-                        )
-                    }) : (
+                                </section>
+                            );
+                        }))
+                    ) : (
                         <div>
                             <EmptyState icon={LayoutTemplate} title="Página en construcción" description="El administrador todavía no ha añadido contenido a la página de inicio." />
                         </div>

@@ -1,12 +1,4 @@
-
 'use client';
-
-import { useMemo } from 'react';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { createConverter } from '@/lib/firestore-converter';
-import type { Category } from '@/types/data';
-import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import {
@@ -16,37 +8,9 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from '@/components/ui/carousel';
+import type { Category } from '@/types/data';
 
-
-function CategoryGridSkeleton() {
-    return (
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {[...Array(8)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[92px] text-center space-y-2">
-                    <Skeleton className="h-[92px] w-[92px] rounded-2xl mx-auto" />
-                    <Skeleton className="h-4 w-[92px] mx-auto" />
-                </div>
-            ))}
-        </div>
-    );
-}
-
-export function CategoryGrid() {
-    const firestore = useFirestore();
-    const categoriesQuery = useMemo(() => 
-        query(
-            collection(firestore, 'categories').withConverter(createConverter<Category>()),
-            orderBy('name', 'asc')
-        ),
-        [firestore]
-    );
-
-    const { data: categories, isLoading } = useCollection(categoriesQuery);
-
-    if (isLoading) {
-        return <CategoryGridSkeleton />;
-    }
-
+export function CategoryGrid({ categories }: { categories: Category[] }) {
     if (!categories || categories.length === 0) {
         return <p className="text-muted-foreground italic">No hay categorías disponibles.</p>;
     }
