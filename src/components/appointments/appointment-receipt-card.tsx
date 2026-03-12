@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import QRCode from 'qrcode';
 import Image from 'next/image';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
@@ -23,16 +23,18 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
 
     const qrCodeValue = JSON.stringify({ appointmentId: appointment.id });
 
-    QRCode.toDataURL(qrCodeValue, {
-        errorCorrectionLevel: 'H',
-        width: 512,
-        margin: 2,
-    })
-    .then(url => {
-        setQrCodeUrl(url);
-    })
-    .catch(err => {
-        console.error("QR Code Generation Error:", err);
+    import('qrcode').then(QRCode => {
+        QRCode.toDataURL(qrCodeValue, {
+            errorCorrectionLevel: 'H',
+            width: 512,
+            margin: 2,
+        })
+        .then(url => {
+            setQrCodeUrl(url);
+        })
+        .catch(err => {
+            console.error("QR Code Generation Error:", err);
+        });
     });
   }, [appointment.id]);
 

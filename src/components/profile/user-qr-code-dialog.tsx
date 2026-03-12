@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import QRCode from 'qrcode';
 import {
   Dialog,
   DialogContent,
@@ -26,17 +26,19 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
     // We need to check for window to ensure this code only runs on the client
     if (typeof window !== 'undefined') {
         const verificationUrl = `${window.location.origin}/verify?userId=${userId}`;
-        QRCode.toDataURL(verificationUrl, {
-            errorCorrectionLevel: 'H',
-            width: 256,
-        })
-        .then(url => {
-            setQrCodeUrl(url);
-            setIsLoading(false);
-        })
-        .catch(err => {
-            console.error(err);
-            setIsLoading(false);
+        import('qrcode').then(QRCode => {
+            QRCode.toDataURL(verificationUrl, {
+                errorCorrectionLevel: 'H',
+                width: 256,
+            })
+            .then(url => {
+                setQrCodeUrl(url);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setIsLoading(false);
+            });
         });
     }
   }, [userId]);

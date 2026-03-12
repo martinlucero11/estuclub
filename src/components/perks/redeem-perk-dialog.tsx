@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import QRCode from 'qrcode';
 import {
   Dialog,
   DialogContent,
@@ -72,16 +71,18 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
     
     const qrCodeValue = JSON.stringify({ redemptionId: redemptionId });
 
-    QRCode.toDataURL(qrCodeValue, {
-        errorCorrectionLevel: 'H',
-        width: 256,
-    })
-    .then(url => {
-        setQrCodeUrl(url);
-    })
-    .catch(err => {
-        console.error("QR Code Generation Error:", err);
-        setError("No se pudo generar el código QR.");
+    import('qrcode').then(QRCode => {
+        QRCode.toDataURL(qrCodeValue, {
+            errorCorrectionLevel: 'H',
+            width: 256,
+        })
+        .then(url => {
+            setQrCodeUrl(url);
+        })
+        .catch(err => {
+            console.error("QR Code Generation Error:", err);
+            setError("No se pudo generar el código QR.");
+        });
     });
   }, [redemptionId]);
 
