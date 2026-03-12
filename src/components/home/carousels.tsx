@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from "react";
 import { useCollectionOnce, useFirestore } from "@/firebase";
@@ -214,8 +215,8 @@ export function BenefitsCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     )
 }
@@ -243,8 +244,8 @@ export function SuppliersCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     )
 }
@@ -272,8 +273,8 @@ export function AnnouncementsCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     )
 }
@@ -303,8 +304,8 @@ export function BannersCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     );
 }

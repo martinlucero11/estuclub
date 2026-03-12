@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -8,6 +9,14 @@ import type { Category } from '@/types/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from '@/components/ui/carousel';
+
 
 function CategoryGridSkeleton() {
     return (
@@ -43,18 +52,24 @@ export function CategoryGrid() {
     }
 
     return (
-        <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {categories.map(category => (
-                <Link key={category.id} href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block flex-shrink-0 w-[92px] snap-start text-center group">
-                    <div className={cn(
-                        'flex flex-col items-center justify-center h-[92px] w-[92px] mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
-                        'hover:shadow-md hover:-translate-y-0.5'
-                    )}>
-                         <span className={cn("text-5xl", category.colorClass)}>{category.emoji}</span>
-                    </div>
-                    <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
-                </Link>
-            ))}
-        </div>
+        <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-4">
+                {categories.map(category => (
+                    <CarouselItem key={category.id} className="basis-auto pl-4">
+                        <Link href={`/benefits?category=${encodeURIComponent(category.name)}`} className="block w-[92px] text-center group">
+                            <div className={cn(
+                                'flex flex-col items-center justify-center h-[92px] w-[92px] mx-auto rounded-2xl bg-secondary dark:bg-card transition-all',
+                                'hover:shadow-md hover:-translate-y-0.5'
+                            )}>
+                                <span className={cn("text-5xl", category.colorClass)}>{category.emoji}</span>
+                            </div>
+                            <p className="mt-2 text-sm font-semibold text-foreground group-hover:text-primary flex-wrap">{category.name}</p>
+                        </Link>
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+        </Carousel>
     );
 }
