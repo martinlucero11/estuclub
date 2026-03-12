@@ -64,10 +64,17 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEditMode = !!section;
     
-    const { data: banners } = useCollection(query(collection(firestore, 'banners').withConverter(createConverter<Banner>())));
-    const { data: benefits } = useCollection(query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())));
-    const { data: suppliers } = useCollection(query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())));
-    const { data: announcements } = useCollection(query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>())));
+    const bannersQuery = useMemo(() => firestore ? query(collection(firestore, 'banners').withConverter(createConverter<Banner>())) : null, [firestore]);
+    const { data: banners } = useCollection(bannersQuery);
+
+    const benefitsQuery = useMemo(() => firestore ? query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())) : null, [firestore]);
+    const { data: benefits } = useCollection(benefitsQuery);
+
+    const suppliersQuery = useMemo(() => firestore ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null, [firestore]);
+    const { data: suppliers } = useCollection(suppliersQuery);
+
+    const announcementsQuery = useMemo(() => firestore ? query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>())) : null, [firestore]);
+    const { data: announcements } = useCollection(announcementsQuery);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
