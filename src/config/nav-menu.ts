@@ -30,6 +30,11 @@ export const navConfig: NavConfig = {
       icon: Ticket,
     },
     {
+      title: "Clubers",
+      href: "/proveedores",
+      icon: Building,
+    },
+    {
       title: "Anuncios",
       href: "/announcements",
       icon: Megaphone,

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, QrCode, CalendarDays, Megaphone } from 'lucide-react';
+import { Home, Ticket, QrCode, CalendarDays, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 
@@ -16,8 +16,8 @@ export function BottomNav() {
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/benefits', label: 'Beneficios', icon: Ticket },
     ...(showScanner ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] : []),
+    { href: '/proveedores', label: 'Clubers', icon: Building },
     { href: '/turnos', label: 'Turnos', icon: CalendarDays },
-    { href: '/announcements', label: 'Anuncios', icon: Megaphone },
   ];
 
   // Use a purge-safe method to set grid columns
