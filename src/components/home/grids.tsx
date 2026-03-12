@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 import type { Benefit, SupplierProfile, Announcement, CluberCategory, SerializableBenefit } from "@/types/data";
 import { getInitials } from "@/lib/utils";
