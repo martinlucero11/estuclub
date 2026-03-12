@@ -17,12 +17,12 @@ import { createConverter } from '@/lib/firestore-converter';
 
 // --- DYNAMICALLY IMPORTED COMPONENTS ---
 
-const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel));
-const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel));
-const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel));
-const BannersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BannersCarousel));
+const BenefitsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BenefitsCarousel), { ssr: false });
+const SuppliersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.SuppliersCarousel), { ssr: false });
+const AnnouncementsCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.AnnouncementsCarousel), { ssr: false });
+const BannersCarousel = dynamic(() => import('@/components/home/carousels').then(mod => mod.BannersCarousel), { ssr: false });
 const CategoryGrid = dynamic(() => import('@/components/home/category-grid').then(mod => mod.CategoryGrid), { ssr: false });
-const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner));
+const SingleBanner = dynamic(() => import('@/components/home/single-banner').then(mod => mod.SingleBanner), { ssr: false });
 
 const BenefitsGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.BenefitsGrid), { ssr: false });
 const SuppliersGrid = dynamic(() => import('@/components/home/grids').then(mod => mod.SuppliersGrid), { ssr: false });
