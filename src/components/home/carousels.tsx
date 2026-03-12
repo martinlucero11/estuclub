@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from "react";
 import Link from "next/link";
-import type { Benefit, SupplierProfile, Announcement, Banner, SerializableBenefit } from "@/types/data";
+import type { Banner, SupplierProfile, Announcement, SerializableBenefit } from "@/types/data";
 import Image from "next/image";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -37,9 +37,8 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            width={800}
-            height={400}
-            className="w-full h-auto object-cover"
+            fill
+            className="object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
