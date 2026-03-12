@@ -3,8 +3,8 @@ import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { collection, query, where, orderBy, getDocs, doc, documentId, getDoc, limit } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-config';
+import type { firestore as adminFirestore } from 'firebase-admin';
 import { EmptyState } from '@/components/ui/empty-state';
 import WelcomeMessage from '@/components/home/welcome-message';
 import { HomeSection, Benefit, SupplierProfile, Announcement, Banner } from '@/types/data';
@@ -17,9 +17,9 @@ import { BenefitsGrid, SuppliersGrid, AnnouncementsGrid } from '@/components/hom
 import { makeBenefitSerializable } from '@/lib/data';
 
 async function getHomeSections() {
-    const sectionsRef = collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>());
-    const q = query(sectionsRef, where('isActive', '==', true), orderBy('order', 'asc'));
-    const snapshot = await getDocs(q);
+    const sectionsRef = firestore.collection('home_sections').withConverter(createConverter<HomeSection>());
+    const q = sectionsRef.where('isActive', '==', true).orderBy('order', 'asc');
+    const snapshot = await q.get();
     if (snapshot.empty) {
         return [];
     }
@@ -35,47 +35,49 @@ async function getSectionData(section: HomeSection) {
 
     const { contentType, mode, items: itemIds = [], query: queryConfig } = block;
     const collectionName = contentType === 'suppliers' ? 'roles_supplier' : contentType;
-    const itemsCollection = collection(firestore, collectionName);
+    const itemsCollection = firestore.collection(collectionName);
 
     let fetchedItems: any[] = [];
 
     if (mode === 'manual') {
         if (!itemIds || itemIds.length === 0) return [];
-        const manualQuery = query(itemsCollection, where(documentId(), 'in', itemIds.slice(0, 30)));
-        const snapshot = await getDocs(manualQuery);
-        const itemsFromDb = snapshot.docs.map(d => ({...d.data(), id: d.id}));
+        
+        const itemPromises = itemIds.slice(0, 30).map(id => itemsCollection.doc(id).get());
+        const itemSnapshots = await Promise.all(itemPromises);
+        const itemsFromDb = itemSnapshots.filter(snap => snap.exists).map(snap => ({ ...snap.data(), id: snap.id }));
+
         const orderMap = new Map(itemIds.map((id, index) => [id, index]));
         fetchedItems = itemsFromDb.sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
     } else { // Auto mode
-        const constraints: any[] = [];
+        let autoQuery: adminFirestore.Query = itemsCollection;
+
         if (contentType === 'benefits' || contentType === 'suppliers') {
-            constraints.push(where('isVisible', '==', true));
+            autoQuery = autoQuery.where('isVisible', '==', true);
         }
         if (contentType === 'announcements') {
-            constraints.push(where('status', '==', 'approved'));
+            autoQuery = autoQuery.where('status', '==', 'approved');
         }
         if (contentType === 'banners') {
-            constraints.push(where('isActive', '==', true));
+            autoQuery = autoQuery.where('isActive', '==', true);
         }
 
         queryConfig?.filters?.forEach(f => {
             if (f.field && f.op && f.value !== undefined) {
-                constraints.push(where(f.field, f.op, f.value));
+                 autoQuery = autoQuery.where(f.field, f.op, f.value);
             }
         });
 
         if (queryConfig?.sort?.field) {
-            constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
+            autoQuery = autoQuery.orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc');
         } else if (contentType !== 'banners') {
-            constraints.push(orderBy('createdAt', 'desc'));
+            autoQuery = autoQuery.orderBy('createdAt', 'desc');
         }
 
         if (queryConfig?.limit) {
-            constraints.push(limit(queryConfig.limit));
+            autoQuery = autoQuery.limit(queryConfig.limit);
         }
 
-        const autoQuery = query(itemsCollection, ...constraints);
-        const snapshot = await getDocs(autoQuery);
+        const snapshot = await autoQuery.get();
         fetchedItems = snapshot.docs.map(d => ({...d.data(), id: d.id}));
     }
 
@@ -85,9 +87,9 @@ async function getSectionData(section: HomeSection) {
                 let supplierName = "Club de Beneficios";
                 if (benefit.ownerId) {
                     try {
-                        const supplierDoc = await getDoc(doc(firestore, 'roles_supplier', benefit.ownerId));
-                        if (supplierDoc.exists()) {
-                            supplierName = supplierDoc.data().name;
+                        const supplierDoc = await firestore.collection('roles_supplier').doc(benefit.ownerId).get();
+                        if (supplierDoc.exists) {
+                            supplierName = supplierDoc.data()?.name;
                         }
                     } catch (e) {
                         console.error(`Failed to fetch supplier for benefit ${benefit.id}:`, e);
@@ -124,16 +126,16 @@ export default async function HomePage() {
 
                             switch (block.kind) {
                                 case 'categories':
-                                    const categoriesSnapshot = await getDocs(query(collection(firestore, 'categories').withConverter(createConverter<any>()), orderBy('name', 'asc')));
+                                    const categoriesSnapshot = await firestore.collection('categories').withConverter(createConverter<any>()).orderBy('name', 'asc').get();
                                     const categories = categoriesSnapshot.docs.map(d => d.data());
                                     Component = CategoryGrid;
                                     props.categories = categories;
                                     break;
                                 case 'banner':
-                                    const bannerRef = doc(firestore, 'banners', block.bannerId).withConverter(createConverter<any>());
-                                    const bannerSnap = await getDoc(bannerRef);
+                                    const bannerRef = firestore.collection('banners').doc(block.bannerId).withConverter(createConverter<any>());
+                                    const bannerSnap = await bannerRef.get();
                                     Component = SingleBanner;
-                                    props.banner = bannerSnap.exists() ? bannerSnap.data() : null;
+                                    props.banner = bannerSnap.exists ? bannerSnap.data() : null;
                                     break;
                                 case 'carousel':
                                     if ('contentType' in block) {
@@ -164,7 +166,7 @@ export default async function HomePage() {
                             }
 
                             if (!Component) return null;
-                            if ((block.kind === 'carousel' || block.kind === 'grid') && !props.items) return null;
+                            if ((block.kind === 'carousel' || block.kind === 'grid') && (!props.items || props.items.length === 0)) return null;
                             if (block.kind === 'banner' && !props.banner) return null;
 
                             return (

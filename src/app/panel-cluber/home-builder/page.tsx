@@ -79,6 +79,7 @@ export default function HomeBuilderPage() {
     };
 
     const handleSaveChanges = async () => {
+        if (!firestore) return;
         const batch = writeBatch(firestore);
         localSections.forEach((section, index) => {
             const docRef = doc(firestore, 'home_sections', section.id);
@@ -105,7 +106,7 @@ export default function HomeBuilderPage() {
     };
     
     const handleDeleteConfirm = async () => {
-        if (!sectionIdToDelete) return;
+        if (!sectionIdToDelete || !firestore) return;
         const sectionRef = doc(firestore, 'home_sections', sectionIdToDelete);
         try {
             await deleteDoc(sectionRef);
