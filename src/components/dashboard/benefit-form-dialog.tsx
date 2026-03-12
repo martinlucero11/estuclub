@@ -81,7 +81,10 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch suppliers for the admin dropdown
-  const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>())), [firestore]);
+  const suppliersQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>()));
+  }, [firestore]);
   const { data: suppliers } = useCollection(suppliersQuery);
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -509,6 +512,4 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
       </DialogContent>
     </Dialog>
   );
-
-    
-
+}
