@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Search, Server } from 'lucide-react';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
@@ -17,6 +17,8 @@ import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
 import { getInitials } from '@/lib/utils';
 import SubscribeButton from '@/components/supplier/subscribe-button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -81,7 +83,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
     
     const benefitsQuery = useMemo(() => {
         if (!supplier) return null;
-        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('active', '==', true));
+        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('isVisible', '==', true));
     }, [supplier, firestore]);
 
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
@@ -133,6 +135,12 @@ function CluberProfileContent({ slug }: { slug: string }) {
     const supplierInitials = getInitials(supplier.name);
     const isOwnProfile = user?.uid === supplier.id;
 
+    const hasBenefits = benefits && benefits.length > 0;
+    const hasServices = supplier.appointmentsEnabled && services && services.length > 0;
+    
+    // Determine default tab
+    const defaultTab = hasBenefits ? "benefits" : hasServices ? "services" : "benefits";
+
     return (
         <div className="flex flex-col">
             {/* UI/UX FIX: New premium, minimalist header without cover photo */}
@@ -161,34 +169,32 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 </div>
             </header>
             
-            <main className="w-full max-w-5xl mx-auto">
-                <div className="px-6 py-8">
-                    <p className="text-muted-foreground max-w-xl mx-auto text-center">{supplier.description || 'Este proveedor aún no ha añadido una descripción.'}</p>
-                </div>
-
-                {/* Active Benefits Section */}
-                {(benefits && benefits.length > 0) && (
-                    <section id="benefits-section" className="px-6 py-8 scroll-mt-20">
-                        <h2 className="text-2xl font-bold mb-4 text-center">Beneficios Activos</h2>
-                        {benefitsLoading ? <Skeleton className="h-48 w-full" /> : <BenefitsGrid benefits={serializableBenefits} />}
-                    </section>
+            <main className="w-full max-w-5xl mx-auto px-4 py-8">
+                {supplier.description && (
+                     <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-8">{supplier.description}</p>
                 )}
 
-                {/* Available Services Section */}
-                {supplier.appointmentsEnabled && services && services.length > 0 && (
-                    <>
-                        <Separator className="my-4" />
-                        <section id="services-section" className="px-6 py-8 scroll-mt-20">
-                            <h2 className="text-2xl font-bold mb-4 text-center">Servicios Disponibles</h2>
+                <Tabs defaultValue={defaultTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mx-auto max-w-md">
+                        <TabsTrigger value="benefits" disabled={!hasBenefits}>Beneficios</TabsTrigger>
+                        {hasServices && <TabsTrigger value="services">Turnos y Servicios</TabsTrigger>}
+                    </TabsList>
+                    <TabsContent value="benefits" className="mt-6">
+                         {benefitsLoading ? <Skeleton className="h-48 w-full" /> : (
+                            hasBenefits ? <BenefitsGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
+                         )}
+                    </TabsContent>
+                    {hasServices && (
+                        <TabsContent value="services" className="mt-6">
                             <ServiceList 
                                 services={services || []} 
                                 availability={availability} 
                                 supplierId={supplier.id} 
                                 allowsBooking={!!supplier.appointmentsEnabled}
                             />
-                        </section>
-                    </>
-                )}
+                        </TabsContent>
+                    )}
+                </Tabs>
             </main>
         </div>
     );

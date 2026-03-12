@@ -196,8 +196,8 @@ export function BenefitsCarousel(props: CarouselProps) {
     if (isLoading) {
         return (
             <div className="flex gap-4 overflow-hidden -mx-4 px-4">
-                <Skeleton className="w-[82vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
-                <Skeleton className="w-[82vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
+                <Skeleton className="w-[78vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
+                <Skeleton className="w-[78vw] sm:w-80 aspect-video bg-muted/50 rounded-2xl" />
             </div>
         )
     }
@@ -210,7 +210,7 @@ export function BenefitsCarousel(props: CarouselProps) {
         >
             <CarouselContent>
                 {serializableBenefits.map(item => (
-                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
+                    <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
                         <BenefitCard benefit={item} variant="carousel" />
                     </CarouselItem>
                 ))}

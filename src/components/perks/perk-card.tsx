@@ -34,8 +34,8 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
   const supplierName = supplier?.name || "Club de Beneficios";
 
   const primaryText = benefit.highlight || benefit.title;
-  // If highlight exists, title becomes secondary. If not, and description exists, use it.
-  const secondaryText = benefit.highlight ? benefit.title : (benefit.description || '');
+  // If highlight exists, title becomes secondary. If not, description is not shown on cards anymore to keep it clean.
+  const secondaryText = benefit.highlight ? benefit.title : '';
 
   return (
     <RedeemBenefitDialog benefit={benefit}>
@@ -56,25 +56,24 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
             {/* Aggressive overlay for readability */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
             
-            <Badge variant="secondary" className="absolute top-4 left-4 bg-white/20 text-white backdrop-blur-sm border-0 z-20">
+            <Badge variant="secondary" className="absolute top-3 left-3 bg-white/20 text-white backdrop-blur-sm border-0 z-20">
                 {benefit.category}
             </Badge>
 
             {/* Content container at the bottom */}
-            <div className="relative z-10 flex h-full flex-col justify-end p-4 text-left md:p-5">
+            <div className="relative z-10 flex h-full flex-col justify-end p-4 text-left">
                 <div className='space-y-1'>
                     <h3 className={cn(
-                        "font-extrabold uppercase tracking-tight line-clamp-2",
+                        "font-bold uppercase tracking-tight line-clamp-3",
                         // Dynamic font size based on variant
-                        variant === 'grid' ? 'text-3xl' : 'text-2xl'
+                        "text-2xl md:text-3xl"
                     )}>
                         {primaryText}
                     </h3>
                     {secondaryText && (
                       <p className={cn(
-                          "font-medium text-white/80 line-clamp-2",
-                           // Hide secondary text on small carousels to keep it clean
-                          variant === 'grid' ? 'text-base' : 'text-sm hidden sm:block'
+                          "font-medium text-white/90 line-clamp-2",
+                          "text-base"
                         )}>
                           {secondaryText}
                       </p>
@@ -82,7 +81,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
                 </div>
                 
                 {/* Supplier info at the bottom */}
-                <div className="pt-2">
+                <div className="pt-4">
                     <div className="flex items-center gap-2 text-xs text-white/70">
                         <Building className="h-4 w-4" />
                         <span>{supplierName}</span>
