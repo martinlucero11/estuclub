@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -16,10 +17,16 @@ export function UserManagementTable() {
     const [selectedUser, setSelectedUser] = useState<UserForList | null>(null);
     const [selectedSupplierProfile, setSelectedSupplierProfile] = useState<SupplierProfile | null>(null);
 
-    const usersQuery = useMemo(() => query(collection(firestore, 'users').withConverter(createConverter<UserForList>()), orderBy('email', 'asc')), [firestore]);
+    const usersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'users').withConverter(createConverter<UserForList>()), orderBy('email', 'asc'));
+    }, [firestore]);
     const { data: users, isLoading: usersLoading } = useCollection(usersQuery);
 
-    const suppliersQuery = useMemo(() => query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())), [firestore]);
+    const suppliersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()));
+    }, [firestore]);
     const { data: suppliers, isLoading: suppliersLoading } = useCollection(suppliersQuery);
 
     const isLoading = usersLoading || suppliersLoading;

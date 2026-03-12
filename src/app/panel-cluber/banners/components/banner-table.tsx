@@ -24,7 +24,10 @@ export function BannerTable() {
     const [selectedBanner, setSelectedBanner] = useState<SerializableBanner | null>(null);
     const [bannerIdToDelete, setBannerIdToDelete] = useState<string | null>(null);
 
-    const bannersQuery = useMemo(() => query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc')), [firestore]);
+    const bannersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc'));
+    }, [firestore]);
     const { data: banners, isLoading } = useCollection(bannersQuery);
 
     const serializableBanners: SerializableBanner[] = useMemo(() => {

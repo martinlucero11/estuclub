@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
@@ -60,7 +61,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     useEffect(() => {
         const fetchSupplier = async () => {
-            if (!slug) return;
+            if (!slug || !firestore) return;
             setIsLoadingSupplier(true);
             try {
                 const q = query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), where('slug', '==', slug), limit(1));
@@ -82,20 +83,20 @@ function CluberProfileContent({ slug }: { slug: string }) {
     }, [firestore, slug]);
     
     const benefitsQuery = useMemo(() => {
-        if (!supplier) return null;
+        if (!supplier || !firestore) return null;
         return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('isVisible', '==', true));
     }, [supplier, firestore]);
 
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
 
     const servicesQuery = useMemo(() => {
-        if (!supplier) return null;
+        if (!supplier || !firestore) return null;
         return query(collection(firestore, `roles_supplier/${supplier.id}/services`).withConverter(createConverter<Service>()));
     }, [supplier, firestore]);
     const { data: services } = useCollectionOnce(servicesQuery);
 
     const availabilityRef = useMemo(() => {
-        if (!supplier) return null;
+        if (!supplier || !firestore) return null;
         return doc(firestore, `roles_supplier/${supplier.id}/availability/schedule`);
     }, [supplier, firestore]);
     const { data: availability } = useDoc<Availability>(availabilityRef);

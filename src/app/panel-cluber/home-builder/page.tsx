@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -52,7 +53,10 @@ export default function HomeBuilderPage() {
     const [localSections, setLocalSections] = useState<HomeSection[]>([]);
     const [hasOrderChanged, setHasOrderChanged] = useState(false);
 
-    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), orderBy('order', 'asc')), [firestore]);
+    const sectionsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), orderBy('order', 'asc'));
+    }, [firestore]);
     const { data: remoteSections, isLoading: isSectionsLoading } = useCollection(sectionsQuery);
 
     useEffect(() => {
@@ -169,7 +173,7 @@ export default function HomeBuilderPage() {
 
                     const description =
                         'contentType' in block && block.contentType
-                        ? `${block.kind} de ${block.contentType}`
+                        ? `${block.kind} · ${block.contentType}`
                         : block.kind;
 
                     return (
