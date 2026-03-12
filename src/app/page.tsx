@@ -2,7 +2,7 @@ import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import Link from 'next/link';
-import { collection, query, where, orderBy, getDocs, doc, documentId, getDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, doc, documentId, getDoc, limit } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-config';
 import { EmptyState } from '@/components/ui/empty-state';
 import WelcomeMessage from '@/components/home/welcome-message';
@@ -29,56 +29,77 @@ async function getSectionData(section: HomeSection) {
     const { block } = section;
 
     if (block.kind === 'categories' || block.kind === 'banner') {
-        return null; // No extra data needed
+        return null;
     }
 
     const { contentType, mode, items: itemIds = [], query: queryConfig } = block;
-
     const collectionName = contentType === 'suppliers' ? 'roles_supplier' : contentType;
     const itemsCollection = collection(firestore, collectionName);
+
+    let fetchedItems: any[] = [];
 
     if (mode === 'manual') {
         if (!itemIds || itemIds.length === 0) return [];
         const manualQuery = query(itemsCollection, where(documentId(), 'in', itemIds.slice(0, 30)));
         const snapshot = await getDocs(manualQuery);
-        const fetchedItems = snapshot.docs.map(d => ({...d.data(), id: d.id}));
-        // Re-order based on the original itemIds array
+        const itemsFromDb = snapshot.docs.map(d => ({...d.data(), id: d.id}));
         const orderMap = new Map(itemIds.map((id, index) => [id, index]));
-        return fetchedItems.sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
-    }
-
-    // Auto mode
-    const constraints = [];
-    if (contentType === 'benefits' || contentType === 'suppliers') {
-        constraints.push(where('isVisible', '==', true));
-    }
-    if (contentType === 'announcements') {
-        constraints.push(where('status', '==', 'approved'));
-    }
-    if (contentType === 'banners') {
-        constraints.push(where('isActive', '==', true));
-    }
-
-    queryConfig?.filters?.forEach(f => {
-        if (f.field && f.op && f.value !== undefined) {
-            constraints.push(where(f.field, f.op, f.value));
+        fetchedItems = itemsFromDb.sort((a, b) => (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity));
+    } else { // Auto mode
+        const constraints: any[] = [];
+        if (contentType === 'benefits' || contentType === 'suppliers') {
+            constraints.push(where('isVisible', '==', true));
         }
-    });
+        if (contentType === 'announcements') {
+            constraints.push(where('status', '==', 'approved'));
+        }
+        if (contentType === 'banners') {
+            constraints.push(where('isActive', '==', true));
+        }
 
-    if (queryConfig?.sort?.field) {
-        constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
-    } else if (contentType !== 'banners') {
-        constraints.push(orderBy('createdAt', 'desc'));
+        queryConfig?.filters?.forEach(f => {
+            if (f.field && f.op && f.value !== undefined) {
+                constraints.push(where(f.field, f.op, f.value));
+            }
+        });
+
+        if (queryConfig?.sort?.field) {
+            constraints.push(orderBy(queryConfig.sort.field, queryConfig.sort.direction || 'desc'));
+        } else if (contentType !== 'banners') {
+            constraints.push(orderBy('createdAt', 'desc'));
+        }
+
+        if (queryConfig?.limit) {
+            constraints.push(limit(queryConfig.limit));
+        }
+
+        const autoQuery = query(itemsCollection, ...constraints);
+        const snapshot = await getDocs(autoQuery);
+        fetchedItems = snapshot.docs.map(d => ({...d.data(), id: d.id}));
     }
 
-    if (queryConfig?.limit) {
-        constraints.push(limit(queryConfig.limit));
+    if (contentType === 'benefits' && fetchedItems.length > 0) {
+        return Promise.all(
+            fetchedItems.map(async (benefit: Benefit) => {
+                let supplierName = "Club de Beneficios";
+                if (benefit.ownerId) {
+                    try {
+                        const supplierDoc = await getDoc(doc(firestore, 'roles_supplier', benefit.ownerId));
+                        if (supplierDoc.exists()) {
+                            supplierName = supplierDoc.data().name;
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch supplier for benefit ${benefit.id}:`, e);
+                    }
+                }
+                return { ...benefit, supplierName };
+            })
+        );
     }
 
-    const autoQuery = query(itemsCollection, ...constraints);
-    const snapshot = await getDocs(autoQuery);
-    return snapshot.docs.map(d => ({...d.data(), id: d.id}));
+    return fetchedItems;
 }
+
 
 export default async function HomePage() {
     const sections = await getHomeSections();
@@ -115,6 +136,7 @@ export default async function HomePage() {
                                     break;
                                 case 'carousel':
                                     if ('contentType' in block) {
+                                        props.items = (items as any[])?.map(makeBenefitSerializable) || [];
                                         if (block.contentType === 'benefits') Component = BenefitsCarousel;
                                         if (block.contentType === 'suppliers') Component = SuppliersCarousel;
                                         if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
@@ -122,17 +144,18 @@ export default async function HomePage() {
 
                                         linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
                                         if (block.contentType === 'banners') linkPath = undefined;
-                                        props.items = items;
                                     }
                                     break;
                                 case 'grid':
-                                    if ('contentType' in block) {
-                                        if (block.contentType === 'benefits') Component = BenefitsGrid;
-                                        if (block.contentType === 'suppliers') Component = SuppliersGrid;
-                                        if (block.contentType === 'announcements') Component = AnnouncementsGrid;
-
+                                     if ('contentType' in block) {
+                                        if (block.contentType === 'benefits') {
+                                            Component = BenefitsGrid;
+                                            props.items = (items as Benefit[])?.map(makeBenefitSerializable) || [];
+                                        } else {
+                                            Component = block.contentType === 'suppliers' ? SuppliersGrid : AnnouncementsGrid;
+                                            props.items = items;
+                                        }
                                         linkPath = `/${block.contentType === 'suppliers' ? 'proveedores' : block.contentType}`;
-                                        props.items = items;
                                     }
                                     break;
                                 default:

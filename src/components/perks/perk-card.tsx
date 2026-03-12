@@ -1,34 +1,20 @@
-'use server';
+'use client';
 
 import Image from 'next/image';
 import type { SerializableBenefit } from '@/types/data';
 import { Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '@/firebase/server-config';
 import { Badge } from '../ui/badge';
 import RedeemBenefitDialog from './redeem-perk-dialog';
 
 interface BenefitCardProps {
-  benefit: SerializableBenefit;
+  benefit: SerializableBenefit & { supplierName?: string };
   className?: string;
   variant?: 'grid' | 'carousel';
 }
 
-async function getSupplierName(ownerId: string): Promise<string> {
-    if (!ownerId) return "Club de Beneficios";
-    try {
-        const supplierRef = doc(firestore, 'roles_supplier', ownerId);
-        const supplierSnap = await getDoc(supplierRef);
-        return supplierSnap.exists() ? supplierSnap.data().name : "Club de Beneficios";
-    } catch (error) {
-        console.error("Failed to fetch supplier name:", error);
-        return "Club de Beneficios";
-    }
-}
-
-export default async function BenefitCard({ benefit, className, variant = 'grid' }: BenefitCardProps) {
-  const supplierName = await getSupplierName(benefit.ownerId);
+export default function BenefitCard({ benefit, className, variant = 'grid' }: BenefitCardProps) {
+  const supplierName = benefit.supplierName || "Club de Beneficios";
 
   const primaryText = benefit.highlight || benefit.title;
   const secondaryText = benefit.highlight ? benefit.title : '';

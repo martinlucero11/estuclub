@@ -6,8 +6,6 @@ import { Card } from "../ui/card";
 import BenefitCard from '../perks/perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Users } from 'lucide-react';
-import { makeBenefitSerializable } from "@/lib/data";
-import { useMemo } from "react";
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -47,32 +45,23 @@ const SupplierGridCard = ({ supplier }: { supplier: SupplierProfile }) => {
 const createGrid = <T extends {id: string}>(
     CardComponent: React.FC<any>, 
     dataKey: string,
-    gridClass: string,
-    useSerialization: boolean = false
+    gridClass: string
 ) => {
     return function Grid({ items }: { items: T[] }) {
-        const processedItems = useMemo(() => {
-            if (!items) return [];
-            if (useSerialization) {
-                return items.map(b => makeBenefitSerializable(b as unknown as Benefit));
-            }
-            return items;
-        }, [items]);
-        
-        if (!processedItems || processedItems.length === 0) {
+        if (!items || items.length === 0) {
             return <p className="text-muted-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
 
         return (
              <div className={gridClass}>
                 {
-                    processedItems.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
+                    items.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
                 }
             </div>
         )
     }
 }
 
-export const BenefitsGrid = createGrid<SerializableBenefit>(BenefitCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4", true);
+export const BenefitsGrid = createGrid<SerializableBenefit>(BenefitCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4");
 export const SuppliersGrid = createGrid<SupplierProfile>(SupplierGridCard, 'supplier', "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5");
 export const AnnouncementsGrid = createGrid<Announcement>(AnnouncementCard, 'announcement', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3");

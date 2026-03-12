@@ -5,7 +5,6 @@ import type { Benefit, SupplierProfile, Announcement, Banner, SerializableBenefi
 import Image from "next/image";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { makeBenefitSerializable } from "@/lib/data";
 import BenefitCard from "../perks/perk-card";
 import {
   Carousel,
@@ -66,13 +65,8 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
 
 // --- CAROUSEL COMPONENTS ---
 
-export function BenefitsCarousel({ items }: { items: any[] }) {
-    const serializableBenefits: SerializableBenefit[] = useMemo(() => {
-        if (!items) return [];
-        return items.map(b => makeBenefitSerializable(b as Benefit));
-    }, [items]);
-
-    if (!serializableBenefits || serializableBenefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
+export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
+    if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
        <Carousel 
@@ -80,7 +74,7 @@ export function BenefitsCarousel({ items }: { items: any[] }) {
             className="w-full"
         >
             <CarouselContent>
-                {serializableBenefits.map(item => (
+                {benefits.map(item => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
                         <BenefitCard benefit={item} variant="carousel" />
                     </CarouselItem>
