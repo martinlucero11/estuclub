@@ -1,3 +1,4 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -46,6 +47,7 @@ function CluberList() {
     
     const clubersQuery = useMemo(
         () => {
+            if (!firestore) return null;
             return query(
                 collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), 
                 where('appointmentsEnabled', '==', true), 

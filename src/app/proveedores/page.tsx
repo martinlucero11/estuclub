@@ -1,3 +1,4 @@
+
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
@@ -54,7 +55,10 @@ function CluberListPage() {
     const [activeFilter, setActiveFilter] = useState<CluberCategory | 'Todos'>('Todos');
 
     const clubersQuery = useMemo(
-        () => query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), orderBy('name')),
+        () => {
+            if (!firestore) return null;
+            return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), orderBy('name'));
+        },
         [firestore]
     );
 

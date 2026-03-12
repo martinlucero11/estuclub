@@ -32,7 +32,10 @@ function AnnouncementsListSkeleton() {
 function Announcements() {
     const firestore = useFirestore();
     const announcementsQuery = useMemo(
-        () => query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc')),
+        () => {
+            if (!firestore) return null;
+            return query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc'))
+        },
         [firestore]
     );
 

@@ -1,3 +1,4 @@
+
 'use client';
 import MainLayout from '@/components/layout/main-layout';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -100,7 +101,7 @@ export default function LeaderboardPage() {
 
   const usersQuery = useMemo(
     () => {
-        if (isUserLoading || !currentUser) return null;
+        if (!firestore || isUserLoading || !currentUser) return null;
         return query(collection(firestore, 'users').withConverter(createConverter<UserProfile>()), orderBy('points', 'desc'))
     },
     [firestore, currentUser, isUserLoading]

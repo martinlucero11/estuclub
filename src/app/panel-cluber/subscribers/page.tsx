@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -38,7 +39,7 @@ function SubscriberList() {
 
     // 1. Fetch the list of subscriber documents (which contain just subscribedAt)
     const subscribersQuery = useMemo(() => {
-        if (!user) return null;
+        if (!user || !firestore) return null;
         return query(collection(firestore, 'roles_supplier', user.uid, 'subscribers').withConverter(createConverter<Subscriber>()));
     }, [user, firestore]);
     
@@ -48,16 +49,14 @@ function SubscriberList() {
     const subscriberIds = useMemo(() => subscribers?.map(sub => sub.id) || [], [subscribers]);
 
     // 3. Fetch the user profiles for those IDs
-    const usersQuery = useMemo(() => {
+    const { data: userProfiles, isLoading: isLoadingUsers } = useCollection(useMemo(() => {
         if (!firestore || subscriberIds.length === 0) return null;
         // Firestore 'in' queries are limited to 30 items. For this version, we'll fetch up to 30.
         return query(
             collection(firestore, 'users').withConverter(createConverter<UserProfile>()), 
             where(documentId(), 'in', subscriberIds.slice(0, 30))
         );
-    }, [firestore, subscriberIds]);
-
-    const { data: userProfiles, isLoading: isLoadingUsers } = useCollection(usersQuery);
+    }, [firestore, subscriberIds]));
     
     // 4. Combine the data
     const enrichedSubscribers = useMemo((): EnrichedSubscriber[] => {
