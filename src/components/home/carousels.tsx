@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo } from "react";
 import { useCollectionOnce, useFirestore } from "@/firebase";
@@ -206,7 +205,7 @@ export function BenefitsCarousel(props: CarouselProps) {
     return (
        <Carousel 
             opts={{ align: "start" }} 
-            className="w-full -ml-4"
+            className="w-full"
         >
             <CarouselContent>
                 {serializableBenefits.map(item => (
@@ -215,6 +214,8 @@ export function BenefitsCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     )
 }
@@ -234,9 +235,17 @@ export function SuppliersCarousel(props: CarouselProps) {
     if (error || suppliers.length === 0) return <p className="text-muted-foreground italic text-sm">No hay proveedores para mostrar.</p>;
 
     return (
-        <div className="flex flex-nowrap overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {suppliers.map(item => <SupplierCard key={item.id} supplier={item as SupplierProfile} />)}
-        </div>
+        <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent>
+                {suppliers.map(item => (
+                    <CarouselItem key={item.id} className="basis-auto pl-4">
+                        <SupplierCard supplier={item as SupplierProfile} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+        </Carousel>
     )
 }
 
@@ -245,7 +254,7 @@ export function AnnouncementsCarousel(props: CarouselProps) {
 
     if (isLoading) {
         return (
-            <div className="flex gap-4 overflow-hidden">
+            <div className="flex gap-6 overflow-hidden">
                 {[...Array(3)].map((_, i) => (
                     <Skeleton key={i} className="w-80 h-48 bg-muted/50 rounded-2xl" />
                 ))}
@@ -255,9 +264,17 @@ export function AnnouncementsCarousel(props: CarouselProps) {
     if (error || announcements.length === 0) return <p className="text-muted-foreground italic text-sm">No hay anuncios para mostrar.</p>;
 
     return (
-        <div className="flex flex-nowrap overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-            {announcements.map(item => <AnnouncementCard key={item.id} announcement={item as Announcement} variant="carousel" />)}
-        </div>
+        <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-6">
+                {announcements.map(item => (
+                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6">
+                        <AnnouncementCard announcement={item as Announcement} variant="carousel" />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+        </Carousel>
     )
 }
 
@@ -286,8 +303,8 @@ export function BannersCarousel(props: CarouselProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
+            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     );
 }
