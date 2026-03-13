@@ -53,8 +53,11 @@ service cloud.firestore {
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Allow signed-in users to read profiles, but only owner/admin can write.
-      allow read: if isSignedIn();
+      // Split read into get/list to help resolve auth race conditions.
+      // Any signed-in user can get a profile (for verification/leaderboard) or list users (for leaderboard).
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      // Only the user themselves or an admin can modify a profile.
       allow write: if isOwner(userId) || isAdmin();
     }
 
@@ -128,7 +131,7 @@ service cloud.firestore {
     
     // --- Admin-Only Data ---
     match /roles_admin/{adminId} {
-      allow read: if isOwner(adminId) || isAdmin(); // Allow users to read their own admin status
+      allow read: if isSignedIn(); // Allow any signed-in user to check admin status
       allow write: if isAdmin(); // Only other admins can make someone an admin
     }
   }
