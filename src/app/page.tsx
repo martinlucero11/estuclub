@@ -59,7 +59,7 @@ function HomeContent() {
                     {section.title && (
                         <div className="flex items-center justify-between">
                             <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
-                            {'contentType' in section.block && section.block.contentType && section.block.kind !== 'banner' && section.block.contentType !== 'banners' && (
+                            {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
                                 <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
                                     <Link href={`/${section.block.contentType === 'suppliers' ? 'proveedores' : section.block.contentType}`}>
                                         Ver todos <ArrowRight className="ml-2 h-4 w-4" />
