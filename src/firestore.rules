@@ -53,8 +53,9 @@ service cloud.firestore {
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Allow signed-in users to read profiles, but only owner/admin can write.
-      allow read: if isSignedIn();
+      // Splitting 'read' into 'get' and 'list' for more explicit rule evaluation.
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
     }
 
@@ -109,6 +110,20 @@ service cloud.firestore {
       match /availability/{schedule} {
         allow read: if true;
         allow write: if isOwner(supplierId) || isAdmin();
+      }
+      
+      // Rule for subscribers subcollection.
+      match /subscribers/{subscriberId} {
+        // A user can read their own subscription document. A supplier or admin can also read it.
+        allow get: if isOwner(subscriberId) || isOwner(supplierId) || isAdmin();
+        // Only the supplier or an admin can list all subscribers.
+        allow list: if isOwner(supplierId) || isAdmin();
+        // A user can create their own subscription document.
+        allow create: if isOwner(subscriberId);
+        // A user can update their own subscription document.
+        allow update: if isOwner(subscriberId) || isAdmin();
+        // A user can delete their own subscription document (unsubscribe).
+        allow delete: if isOwner(subscriberId) || isAdmin();
       }
     }
     
