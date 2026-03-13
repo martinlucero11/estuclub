@@ -15,7 +15,7 @@ export function PageHeader({ title, children, className }: PageHeaderProps) {
             <div className="absolute left-0">
                 <BackButton />
             </div>
-            <h1 className="text-lg font-semibold tracking-tight text-foreground truncate px-12">
+            <h1 className="text-base sm:text-lg font-semibold tracking-tight text-foreground truncate px-10 sm:px-12">
                 {title}
             </h1>
             <div className="absolute right-0">
