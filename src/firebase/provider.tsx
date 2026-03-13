@@ -68,9 +68,13 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
       if (firebaseUser) {
-        let userRoles: string[] = ['user'];
-        let supplierData: SupplierData | null = null;
         try {
+            // Force token refresh to mitigate race conditions between auth and firestore
+            await firebaseUser.getIdToken(true);
+            
+            let userRoles: string[] = ['user'];
+            let supplierData: SupplierData | null = null;
+
             const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
             const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
             
@@ -96,6 +100,7 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             });
 
         } catch (error) {
+            console.error("Error fetching user roles:", error);
             // Silently fail and set basic user role, as per instructions.
             setUserAuthState({
                 user: firebaseUser,
