@@ -1,6 +1,6 @@
 
 'use client';
-import { useUser, useFirestore, useDoc, useStorage } from '@/firebase';
+import { useUser, useFirestore, useDocOnce, useStorage } from '@/firebase';
 import MainLayout from '@/components/layout/main-layout';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -127,7 +127,7 @@ export default function ProfilePage() {
         return doc(firestore, 'users', user.uid);
     }, [user, firestore, isUserLoading]);
     
-    const { data: userProfile, isLoading: isProfileLoading, error } = useDoc<UserProfile>(userProfileRef);
+    const { data: userProfile, isLoading: isProfileLoading, error } = useDocOnce<UserProfile>(userProfileRef);
 
     // Efficiently get user rank
     const { rank, isLoading: isRankLoading } = useUserRank(user?.uid, userProfile?.points);
