@@ -1,9 +1,9 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -29,7 +29,6 @@ const formSchema = z.object({
 });
 
 export default function LoginForm() {
-  const router = useRouter();
   const { toast } = useToast();
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -74,11 +73,12 @@ export default function LoginForm() {
         return;
       }
       
+      // The redirect is now handled by the useEffect in login/page.tsx,
+      // which waits for the useUser() hook to be fully updated.
       toast({
         title: 'Iniciando sesión...',
         description: 'Serás redirigido en un momento.',
       });
-      router.push('/');
     } catch (error: any) {
       let description = "Las credenciales son incorrectas. Por favor, inténtalo de nuevo.";
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
