@@ -69,7 +69,6 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
       if (firebaseUser) {
         try {
-            // Force token refresh to mitigate race conditions between auth and firestore
             await firebaseUser.getIdToken(true);
             
             let userRoles: string[] = ['user'];
@@ -78,17 +77,24 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
             const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
             
-            const [adminSnap, supplierSnap] = await Promise.all([
+            // Using Promise.allSettled to make role fetching resilient.
+            // This prevents a failure in one role check from stopping the other.
+            const [adminResult, supplierResult] = await Promise.allSettled([
                 getDoc(adminRoleRef),
                 getDoc(supplierRoleRef)
             ]);
 
-            if (adminSnap.exists()) {
+            if (adminResult.status === 'fulfilled' && adminResult.value.exists()) {
                 userRoles.push('admin');
+            } else if (adminResult.status === 'rejected') {
+                console.warn("Could not check admin role:", adminResult.reason);
             }
-            if (supplierSnap.exists()) {
+
+            if (supplierResult.status === 'fulfilled' && supplierResult.value.exists()) {
                 userRoles.push('supplier');
-                supplierData = supplierSnap.data() as SupplierData;
+                supplierData = supplierResult.value.data() as SupplierData;
+            } else if (supplierResult.status === 'rejected') {
+                console.warn("Could not check supplier role:", supplierResult.reason);
             }
 
             setUserAuthState({
@@ -100,14 +106,14 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             });
 
         } catch (error) {
-            console.error("Error fetching user roles:", error);
-            // Silently fail and set basic user role, as per instructions.
+            console.error("Error fetching user state:", error);
+            // This catch is for critical errors like token refresh failure.
             setUserAuthState({
                 user: firebaseUser,
                 roles: ['user'],
                 supplierData: null,
                 isUserLoading: false,
-                userError: null // Do not surface permission errors here
+                userError: error as Error
             });
         }
       } else {
