@@ -63,7 +63,15 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
   const [redemptionId, setRedemptionId] = useState<string | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
-  const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const userProfileRef = useMemo(() => {
+    // Only create the user profile document reference if the user is logged in AND the dialog is open.
+    // This prevents the useDoc hook from running on page load for every benefit card.
+    if (user && isOpen) {
+      return doc(firestore, 'users', user.uid);
+    }
+    return null;
+  }, [user, firestore, isOpen]);
+
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
