@@ -1,7 +1,7 @@
-
 'use client';
 
 import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { getMessaging, onMessage } from 'firebase/messaging';
 import { useFirebase } from './provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -21,20 +21,18 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         if (typeof window !== 'undefined' && 'serviceWorker' in navigator && firebaseApp) {
-            import('firebase/messaging').then(({ getMessaging, onMessage }) => {
-                const messaging = getMessaging(firebaseApp);
+            const messaging = getMessaging(firebaseApp);
 
-                // Handle messages when app is in foreground
-                const unsubscribe = onMessage(messaging, (payload) => {
-                    console.log('Message received in foreground. ', payload);
-                    toast({
-                        title: payload.notification?.title,
-                        description: payload.notification?.body,
-                    });
+            // Handle messages when app is in foreground
+            const unsubscribe = onMessage(messaging, (payload) => {
+                console.log('Message received in foreground. ', payload);
+                toast({
+                    title: payload.notification?.title,
+                    description: payload.notification?.body,
                 });
-
-                return () => unsubscribe();
             });
+
+            return () => unsubscribe();
         }
     }, [firebaseApp, toast]);
 
