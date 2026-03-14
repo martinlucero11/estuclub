@@ -1,47 +1,36 @@
-
 'use client';
 
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useUser } from '@/firebase/provider';
+import type { SupplierProfile } from '@/types/data';
 import { useMemo } from 'react';
-
-interface SupplierProfile {
-    id: string;
-    name: string;
-    type: 'Institucion' | 'Club' | 'Iglesia' | 'Comercio' | 'Estado';
-    slug: string;
-    logoUrl?: string;
-    description?: string;
-    allowsBooking?: boolean;
-}
 
 /**
  * Hook to get the current user's supplier profile data.
+ * It retrieves the data directly from the central `FirebaseProvider` context,
+ * avoiding redundant database calls.
  *
  * @returns An object containing:
- *  - `supplierProfile`: The supplier profile data object, or null if not a supplier.
- *  - `isLoading`: A boolean that is `true` while the user's auth state and supplier profile are being fetched.
+ *  - `supplierProfile`: The supplier profile data object, or null if the user is not a supplier.
+ *  - `isLoading`: A boolean that is `true` while the user's auth state and profile are being fetched by the provider.
  */
 export function useSupplierProfile() {
-    const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
+    const { user, supplierData, isUserLoading } = useUser();
 
-    const supplierProfileRef = useMemo(
-        () => (user ? doc(firestore, 'roles_supplier', user.uid) : null),
-        [user, firestore]
-    );
-
-    // Use useDoc which subscribes to real-time updates
-    const { data: supplierProfileData, isLoading: isProfileLoading } = useDoc<SupplierProfile>(supplierProfileRef);
-
-    // Add the id to the profile data
-    const supplierProfile = supplierProfileData ? { ...supplierProfileData, id: supplierProfileRef?.id } : null;
-
-    // We are loading if the user is loading, or if we have a user but are still checking their role profile
-    const isLoading = isUserLoading || (user ? isProfileLoading : false);
+    // Memoize the profile object to ensure stable references across re-renders.
+    const supplierProfile = useMemo((): SupplierProfile | null => {
+        if (!user || !supplierData) {
+            return null;
+        }
+        // The data from the provider already has all the fields except the ID,
+        // which we can get from the user object.
+        return {
+            id: user.uid,
+            ...supplierData,
+        } as SupplierProfile;
+    }, [user, supplierData]);
 
     return { 
-        supplierProfile: supplierProfile as SupplierProfile | null,
-        isLoading
+        supplierProfile,
+        isLoading: isUserLoading
     };
 }

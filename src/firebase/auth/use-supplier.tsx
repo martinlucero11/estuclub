@@ -1,38 +1,25 @@
-
 'use client';
 
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useUser } from '@/firebase/provider';
 
 /**
  * Hook to determine if the current user is a supplier.
  *
- * This hook checks for the existence of a document in the `/roles_supplier/{userId}`
- * collection in Firestore. The existence of this document grants supplier privileges.
+ * This hook checks the `roles` array provided by the central `useUser` hook,
+ * which is the single source of truth for user authentication and authorization data.
+ * This avoids redundant database fetches and potential race conditions.
  *
  * @returns An object containing:
  *  - `isSupplier`: A boolean that is `true` if the user is a supplier, otherwise `false`.
- *  - `isLoading`: A boolean that is `true` while the user's auth state and supplier status are being checked.
+ *  - `isLoading`: A boolean that is `true` while the user's auth state is being resolved by the provider.
  */
 export function useSupplier() {
-    const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
+    const { roles, isUserLoading } = useUser();
 
-    const supplierRoleRef = useMemo(
-        () => (user ? doc(firestore, 'roles_supplier', user.uid) : null),
-        [user, firestore]
-    );
-
-    const { data: supplierDoc, isLoading: isSupplierDocLoading } = useDoc(supplierRoleRef);
-    
-    const isSupplier = !!supplierDoc;
-
-    // We are loading if the user is loading, or if we have a user but are still checking their role
-    const isLoading = isUserLoading || (user ? isSupplierDocLoading : false);
+    const isSupplier = roles.includes('supplier');
 
     return { 
         isSupplier, 
-        isLoading
+        isLoading: isUserLoading
     };
 }

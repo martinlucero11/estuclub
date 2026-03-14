@@ -1,43 +1,25 @@
-
 'use client';
 
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useUser } from '@/firebase/provider';
 
 /**
  * Hook to determine if the current user is an administrator.
  *
- * This hook checks for the existence of a document in the `/roles_admin/{userId}`
- * collection in Firestore. The existence of this document grants admin privileges.
- * This approach aligns with the security rules (`isAdmin()` function).
+ * This hook checks the `roles` array provided by the central `useUser` hook,
+ * which is the single source of truth for user authentication and authorization data.
+ * This avoids redundant database fetches and potential race conditions.
  *
  * @returns An object containing:
  *  - `isAdmin`: A boolean that is `true` if the user is an admin, otherwise `false`.
- *  - `isLoading`: A boolean that is `true` while the user's auth state and admin status are being checked.
+ *  - `isLoading`: A boolean that is `true` while the user's auth state is being resolved by the provider.
  */
 export function useAdmin() {
-    const { user, isUserLoading } = useUser();
-    const firestore = useFirestore();
+    const { roles, isUserLoading } = useUser();
 
-    // Create a memoized reference to the user's admin role document.
-    const adminRoleRef = useMemo(
-        () => (user ? doc(firestore, 'roles_admin', user.uid) : null),
-        [user, firestore]
-    );
-
-    // Use the useDoc hook to check if the admin role document exists.
-    // We only care about its existence, so we don't need the data itself.
-    const { data: adminDoc, isLoading: isAdminDocLoading } = useDoc(adminRoleRef);
-    
-    // The user is an admin if the document exists.
-    const isAdmin = !!adminDoc;
-
-    // The overall loading state depends on both the user loading and the document loading.
-    const isLoading = isUserLoading || (user ? isAdminDocLoading : false);
+    const isAdmin = roles.includes('admin');
 
     return { 
         isAdmin, 
-        isLoading
+        isLoading: isUserLoading
     };
 }
