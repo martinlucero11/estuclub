@@ -153,21 +153,21 @@ function AppSidebar() {
 export default function Header() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container grid h-16 grid-cols-3 items-center">
-        {/* Left Slot: Sidebar Navigation */}
-        <div className="flex items-center justify-start col-span-1">
+      <div className="container relative flex h-16 items-center justify-between px-4">
+        {/* Left Slot: Actions */}
+        <div className="flex items-center">
           <AppSidebar />
         </div>
 
-        {/* Center Slot: Logo */}
-        <div className="flex items-center justify-center col-span-1">
+        {/* Center Slot: Absolutely Positioned Logo */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" aria-label="Homepage">
                 <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="invert dark:invert-0" priority style={{ height: 'auto' }} />
             </Link>
         </div>
 
         {/* Right Slot: Actions */}
-        <div className="flex items-center justify-end space-x-2 col-span-1">
+        <div className="flex items-center space-x-2">
           <NotificationBell />
           <UserMenu />
         </div>
