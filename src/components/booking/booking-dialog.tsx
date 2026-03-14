@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -39,7 +38,13 @@ export default function BookingDialog({ service, availability, supplierId, child
   const [selectedSlot, setSelectedSlot] = useState<Date | null>(null);
   const [isBooking, setIsBooking] = useState(false);
 
-  const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
+  const userProfileRef = useMemo(() => {
+    if (user && isOpen) {
+      return doc(firestore, 'users', user.uid);
+    }
+    return null;
+  }, [user, firestore, isOpen]);
+
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
   
   const dayNames = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];

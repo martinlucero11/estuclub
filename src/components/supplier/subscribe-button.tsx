@@ -17,9 +17,9 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
     const [isProcessing, setIsProcessing] = useState(false);
 
     const subscriptionRef = useMemo(() => {
-        if (!user || !supplierId) return null;
+        if (!user || !supplierId || isUserLoading) return null;
         return doc(firestore, 'roles_supplier', supplierId, 'subscribers', user.uid);
-    }, [user, supplierId, firestore]);
+    }, [user, supplierId, firestore, isUserLoading]);
 
     const { data: subscription, isLoading: isSubscriptionLoading } = useDoc(subscriptionRef);
     const isSubscribed = !!subscription;
