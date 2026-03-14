@@ -129,8 +129,8 @@ export default function ProfilePage() {
     
     const { data: userProfile, isLoading: isProfileLoading, error } = useDocOnce<UserProfile>(userProfileRef);
 
-    // Efficiently get user rank
-    const { rank, isLoading: isRankLoading } = useUserRank(user?.uid, userProfile?.points);
+    // Efficiently get user rank, but only when the user profile is actually loaded.
+    const { rank, isLoading: isRankLoading } = useUserRank(userProfile ? user?.uid : undefined, userProfile?.points);
     
     const form = useForm<z.infer<typeof profileFormSchema>>({
         resolver: zodResolver(profileFormSchema),
