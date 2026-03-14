@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, History, CalendarClock, LayoutGrid } from 'lucide-react';
+import { User, LogOut, History, CalendarClock, LayoutGrid, LogIn } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,9 +47,10 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="sm">
+      <Button asChild variant="ghost" size="icon">
         <Link href="/login">
-            Iniciar Sesión
+            <LogIn className="h-6 w-6" />
+            <span className="sr-only">Iniciar Sesión</span>
         </Link>
       </Button>
     );
@@ -151,6 +152,7 @@ function AppSidebar() {
 }
 
 export default function Header() {
+  const { user, isUserLoading } = useUser();
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="container relative flex h-16 items-center justify-between px-4">
@@ -168,7 +170,7 @@ export default function Header() {
 
         {/* Right Slot: Actions */}
         <div className="flex items-center space-x-2">
-          <NotificationBell />
+          {!isUserLoading && user && <NotificationBell />}
           <UserMenu />
         </div>
       </div>
