@@ -53,11 +53,8 @@ service cloud.firestore {
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Split read into get/list to help resolve auth race conditions.
-      // Any signed-in user can get a profile (for verification/leaderboard) or list users (for leaderboard).
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      // Only the user themselves or an admin can modify a profile.
+      // Allow signed-in users to read profiles, but only owner/admin can write.
+      allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
     }
 
