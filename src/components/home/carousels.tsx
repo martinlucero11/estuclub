@@ -1,7 +1,7 @@
 'use client';
 import { useMemo } from "react";
 import Link from "next/link";
-import type { Banner, SupplierProfile, Announcement, SerializableBenefit } from "@/types/data";
+import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
 import Image from "next/image";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -14,6 +14,7 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 import AnnouncementCard from "../announcements/announcement-card";
+import { makeAnnouncementSerializable } from "@/lib/data";
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
@@ -103,7 +104,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
     )
 }
 
-export function AnnouncementsCarousel({ items: announcements }: { items: any[] }) {
+export function AnnouncementsCarousel({ items: announcements }: { items: Announcement[] }) {
     if (!announcements || announcements.length === 0) return <p className="text-muted-foreground italic text-sm">No hay anuncios para mostrar.</p>;
 
     return (
@@ -111,7 +112,7 @@ export function AnnouncementsCarousel({ items: announcements }: { items: any[] }
             <CarouselContent className="-ml-6">
                 {announcements.map(item => (
                     <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6">
-                        <AnnouncementCard announcement={item as Announcement} variant="carousel" />
+                        <AnnouncementCard announcement={makeAnnouncementSerializable(item)} variant="carousel" />
                     </CarouselItem>
                 ))}
             </CarouselContent>
