@@ -111,7 +111,7 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
         <Carousel opts={{ align: "start" }} className="w-full">
             <CarouselContent className="-ml-6">
                 {announcements.map(item => (
-                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6">
+                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6 h-48">
                         <AnnouncementCard announcement={makeAnnouncementSerializable(item)} variant="carousel" />
                     </CarouselItem>
                 ))}
