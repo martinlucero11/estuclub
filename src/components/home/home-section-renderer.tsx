@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -75,15 +76,6 @@ function SectionContent({ section }: { section: HomeSection }) {
         const autoQuery = useMemo(() => {
             if (!firestore) return null;
             let q: Query<DocumentData> = query(collection(firestore, collectionName));
-            if (block.contentType === 'benefits' || block.contentType === 'suppliers') {
-                q = query(q, where('isVisible', '==', true));
-            }
-            if (block.contentType === 'announcements') {
-                q = query(q, where('status', '==', 'approved'));
-            }
-            if (block.contentType === 'banners') {
-                q = query(q, where('isActive', '==', true));
-            }
 
             block.query?.filters?.forEach(f => {
                 if (f.field && f.op && f.value !== undefined) {
