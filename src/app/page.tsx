@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense, useMemo } from 'react';
@@ -57,7 +58,7 @@ function HomeContent() {
             {sections.map((section) => (
                 <section key={section.id} className="space-y-1">
                     {section.title && (
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-baseline justify-between">
                             <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
                                 <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
