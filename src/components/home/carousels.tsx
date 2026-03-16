@@ -131,7 +131,7 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-full md:basis-1/2 pl-4">
+                    <CarouselItem key={banner.id} className="basis-full md:basis-1/2 pl-4 h-48">
                         <BannerCarouselCard banner={banner as Banner} priority={index === 0} />
                     </CarouselItem>
                 ))}

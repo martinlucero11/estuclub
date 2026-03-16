@@ -79,8 +79,8 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
   );
   
   if (variant === 'carousel') {
-      const carouselCardContent = (
-        <Card className={cn('relative h-full overflow-hidden text-white transition-all hover:shadow-lg', className)}>
+    const carouselCardContent = (
+        <Card className={cn('relative h-48 overflow-hidden text-white transition-all hover:shadow-lg', className)}>
             <Image
                 src={imageUrl}
                 alt={announcement.title}
@@ -93,7 +93,7 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
                 <div>
                     <CardTitle className="text-xl line-clamp-2">{announcement.title}</CardTitle>
                 </div>
-                 <div className="flex items-center gap-2 text-sm pt-2">
+                <div className="flex items-center gap-2 text-sm pt-2">
                     <Avatar className="h-6 w-6 text-foreground">
                         <AvatarFallback>{authorInitial}</AvatarFallback>
                     </Avatar>
@@ -102,9 +102,10 @@ export default function AnnouncementCard({ announcement, variant = 'default', cl
             </div>
         </Card>
       )
+      
       return (
         <AnnouncementDialog announcement={announcement}>
-          <div className="h-full cursor-pointer">{carouselCardContent}</div>
+          <div className="cursor-pointer">{carouselCardContent}</div>
         </AnnouncementDialog>
       )
   }
