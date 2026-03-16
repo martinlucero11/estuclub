@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useFirestore, useCollection, useDocOnce, useCollectionOnce } from '@/firebase';
-import { collection, query, where, orderBy, doc, limit as firestoreLimit } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, limit as firestoreLimit, DocumentData, Query } from 'firebase/firestore';
 import { HomeSection, Benefit, SupplierProfile, Announcement, Banner, Category } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { makeBenefitSerializable } from '@/lib/data';
@@ -74,18 +74,35 @@ function SectionContent({ section }: { section: HomeSection }) {
     } else { // Auto mode
         const autoQuery = useMemo(() => {
             if (!firestore) return null;
-            let q = query(collection(firestore, collectionName));
-            if (block.contentType === 'benefits' || block.contentType === 'suppliers') q = query(q, where('isVisible', '==', true));
-            if (block.contentType === 'announcements') q = query(q, where('status', '==', 'approved'));
-            if (block.contentType === 'banners') q = query(q, where('isActive', '==', true));
+            let q: Query<DocumentData> = query(collection(firestore, collectionName));
+            if (block.contentType === 'benefits' || block.contentType === 'suppliers') {
+                q = query(q, where('isVisible', '==', true));
+            }
+            if (block.contentType === 'announcements') {
+                q = query(q, where('status', '==', 'approved'));
+            }
+            if (block.contentType === 'banners') {
+                q = query(q, where('isActive', '==', true));
+            }
+
             block.query?.filters?.forEach(f => {
-                if (f.field && f.op && f.value !== undefined) q = query(q, where(f.field, f.op, f.value));
+                if (f.field && f.op && f.value !== undefined) {
+                    q = query(q, where(f.field, f.op, f.value));
+                }
             });
-            if (block.query?.sort?.field) q = query(q, orderBy(block.query.sort.field, block.query.sort.direction || 'desc'));
-            else if (block.contentType !== 'banners') q = query(q, orderBy('createdAt', 'desc'));
-            if (block.query?.limit) q = query(q, firestoreLimit(block.query.limit));
+
+            if (block.query?.sort?.field) {
+                q = query(q, orderBy(block.query.sort.field, block.query.sort.direction || 'desc'));
+            } else {
+                // Ensure there is always a default sort order. Most collections have `createdAt`.
+                q = query(q, orderBy('createdAt', 'desc'));
+            }
+
+            if (block.query?.limit) {
+                q = query(q, firestoreLimit(block.query.limit));
+            }
             return q;
-        }, [firestore, block]);
+        }, [firestore, block, collectionName]);
 
         const { data: autoItems, isLoading: autoLoading } = useCollectionOnce(autoQuery);
         items = autoItems;
