@@ -64,6 +64,6 @@ const createGrid = <T extends {id: string}>(
     }
 }
 
-export const BenefitsGrid = createGrid<SerializableBenefit>(BenefitCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4");
+export const BenefitsGrid = createGrid<SerializableBenefit & { id: string }>(BenefitCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4");
 export const SuppliersGrid = createGrid<SupplierProfile>(SupplierGridCard, 'supplier', "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5");
 export const AnnouncementsGrid = createGrid<Announcement>(AnnouncementCard, 'announcement', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3");
