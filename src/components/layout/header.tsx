@@ -122,7 +122,7 @@ function AppSidebar() {
                     <SheetTitle>
                         <SheetClose asChild>
                              <Link href="/" className="flex items-center justify-center">
-                                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="invert dark:invert-0" priority style={{ height: 'auto' }} />
+                                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="text-primary dark:text-primary-foreground" priority style={{ height: 'auto' }} />
                             </Link>
                         </SheetClose>
                     </SheetTitle>
@@ -164,7 +164,7 @@ export default function Header() {
         {/* Center Slot: Absolutely Positioned Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" aria-label="Homepage">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="invert dark:invert-0" priority style={{ height: 'auto' }} />
+                <Image src="/logo.svg" alt="EstuClub Logo" width={120} height={32} className="text-primary dark:text-primary-foreground" priority style={{ height: 'auto' }} />
             </Link>
         </div>
 
