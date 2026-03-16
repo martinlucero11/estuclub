@@ -97,8 +97,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-2 top-6 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-2 top-6 hidden sm:flex" />
         </Carousel>
     )
 }
