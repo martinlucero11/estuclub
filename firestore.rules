@@ -120,8 +120,9 @@ service cloud.firestore {
     
     // --- Admin-Only Data ---
     match /roles_admin/{adminId} {
-      allow get: if isSignedIn(); // Allow any signed-in user to check THEIR OWN admin status
-      allow list, write: if isAdmin(); // Only admins can list other admins or create new ones
+      // Only allow a user to read their own admin role document
+      allow get: if request.auth.uid == adminId;
+      allow list, write: if isAdmin();
     }
   }
 }
