@@ -44,7 +44,7 @@ const BannerCarouselCard = ({ banner, priority = false, className }: { banner: B
         />
     );
 
-    const containerClasses = "relative w-full h-48 overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full h-full overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
@@ -96,8 +96,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")} />
-            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-10 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-10 -translate-y-1/2")} />
         </Carousel>
     )
 }
@@ -134,7 +134,7 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
         <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
             <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4">
+                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4 h-48">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0} 
