@@ -64,6 +64,8 @@ const BannerCarouselCard = ({ banner, priority = false, className }: { banner: B
 
 // --- CAROUSEL COMPONENTS (ESTRUCTURA FINAL Y ROBUSTA) ---
 
+const carouselArrowClasses = "hidden sm:flex items-center justify-center bg-white/80 hover:bg-white text-foreground rounded-full shadow-md transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:scale-100 w-10 h-10";
+
 export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
     if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
@@ -76,8 +78,8 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")}/>
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
         </Carousel>
     )
 }
@@ -94,8 +96,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-2 top-6 hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-2 top-6 hidden sm:flex" />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-6")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-6")} />
         </Carousel>
     )
 }
@@ -117,8 +119,8 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
         </Carousel>
     )
 }
@@ -130,10 +132,10 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
-            <CarouselContent className="-ml-2">
+            <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-1/2 pl-2">
-                        <div className="relative aspect-[5/1]">
+                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4">
+                        <div className="relative aspect-[4/1] sm:aspect-[5/1]">
                             <BannerCarouselCard 
                                 banner={banner as Banner} 
                                 priority={index === 0} 
@@ -143,8 +145,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex" />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
         </Carousel>
     );
 }

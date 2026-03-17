@@ -289,7 +289,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                         </div>
                     ) : (
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-white">
-                           <div className="p-4 bg-black/40 rounded-lg backdrop-blur-sm">
+                           <div className="p-3 bg-black/[.56] rounded-lg backdrop-blur-sm">
                                <p className="text-5xl">📷</p>
                            </div>
                            <p className="mt-4 font-bold text-shadow" style={{textShadow: '0 1px 3px rgba(0,0,0,0.5)'}}>Buscando código QR...</p>
