@@ -20,11 +20,11 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
     return (
-        <Link href={`/proveedores/${supplier.slug}`} className="block w-28 snap-start text-center group">
-            <div className="w-24 h-24 mx-auto rounded-2xl bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex items-center justify-center shadow-md border">
-                 <Avatar className="h-20 w-20">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
-                    <AvatarFallback className="text-2xl font-bold bg-muted text-muted-foreground">{initials}</AvatarFallback>
+        <Link href={`/proveedores/${supplier.slug}`} className="block w-28 text-center group">
+            <div className="relative w-28 h-28 mx-auto rounded-2xl bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden shadow-md border group-hover:border-primary">
+                 <Avatar className="h-full w-full rounded-none">
+                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <AvatarFallback className="text-2xl rounded-none font-bold bg-muted text-muted-foreground">{initials}</AvatarFallback>
                 </Avatar>
             </div>
             <p className="text-sm font-semibold text-foreground text-center mt-2 line-clamp-2 group-hover:text-primary">{supplier.name}</p>
@@ -134,9 +134,9 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-            <CarouselContent className="-ml-2">
+            <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
+                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-4">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
@@ -144,8 +144,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-0 top-1/2 -translate-y-1/2")} />
-            <CarouselNext className={cn(carouselArrowClasses, "absolute right-0 top-1/2 -translate-y-1/2")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
         </Carousel>
     );
 }
