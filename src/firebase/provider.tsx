@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -70,35 +71,35 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
         try {
             await firebaseUser.getIdToken(true);
             
-            let userRoles: string[] = ['user'];
+            const userRoles: string[] = ['user'];
             let supplierData: SupplierData | null = null;
 
-            const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
-            const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
-            
-            // Use Promise.allSettled to make role fetching resilient.
-            // This prevents a failure in one role check from stopping the other (e.g., due to security rules).
-            const [adminResult, supplierResult] = await Promise.allSettled([
-                getDoc(adminRoleRef),
-                getDoc(supplierRoleRef)
-            ]);
-
-            if (adminResult.status === 'fulfilled' && adminResult.value.exists()) {
-                userRoles.push('admin');
-            } else if (adminResult.status === 'rejected') {
-                console.warn("Could not check admin role due to permissions or network error:", adminResult.reason);
+            // --- Admin Role Check ---
+            try {
+                const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
+                const adminDoc = await getDoc(adminRoleRef);
+                if (adminDoc.exists()) {
+                    userRoles.push('admin');
+                }
+            } catch (error) {
+                 console.warn("Could not check admin role due to permissions or network error:", error);
             }
 
-            if (supplierResult.status === 'fulfilled' && supplierResult.value.exists()) {
-                userRoles.push('supplier');
-                supplierData = supplierResult.value.data() as SupplierData;
-            } else if (supplierResult.status === 'rejected') {
-                console.warn("Could not check supplier role due to permissions or network error:", supplierResult.reason);
+            // --- Supplier Role Check ---
+            try {
+                const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+                const supplierDoc = await getDoc(supplierRoleRef);
+                if (supplierDoc.exists()) {
+                    userRoles.push('supplier');
+                    supplierData = supplierDoc.data() as SupplierData;
+                }
+            } catch (error) {
+                console.warn("Could not check supplier role due to permissions or network error:", error);
             }
 
             setUserAuthState({
                 user: firebaseUser,
-                roles: Array.from(new Set(userRoles)), // Use Set to prevent duplicate roles
+                roles: Array.from(new Set(userRoles)),
                 supplierData,
                 isUserLoading: false,
                 userError: null
