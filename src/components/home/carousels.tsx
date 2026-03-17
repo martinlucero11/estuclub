@@ -42,7 +42,7 @@ interface BannerCarouselCardProps {
 
 const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
     const bannerContent = (
-      <div className="relative w-full overflow-hidden rounded-2xl aspect-video min-h-[180px]">
+      <div className="relative w-full overflow-hidden rounded-2xl aspect-video">
           <Image
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
@@ -56,7 +56,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
 
     if (banner.link) {
         return (
-            <Link href={banner.link} target="_blank" rel="noopener noreferrer">
+            <Link href={banner.link} target="_blank" rel="noopener noreferrer" className="block">
                 {bannerContent}
             </Link>
         )
@@ -136,9 +136,9 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-            <CarouselContent>
+            <CarouselContent className="-ml-2">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-4">
+                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
