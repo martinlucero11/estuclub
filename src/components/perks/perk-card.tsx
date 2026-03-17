@@ -34,7 +34,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         
-        <Badge variant="secondary" className="absolute top-3 left-3 bg-white/20 text-white backdrop-blur-sm border-0 z-20">
+        <Badge variant="secondary" className="absolute top-3 left-3 bg-pink-600 text-white border-0 z-20">
             {benefit.category}
         </Badge>
 

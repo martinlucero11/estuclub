@@ -111,7 +111,7 @@ export default function TurnosPage() {
     return (
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Solicitar Turno">
+                <PageHeader title="Solicitar Turno" className="flex-col md:flex-row items-start md:items-center">
                      <Button asChild>
                         <Link href="/mis-turnos">
                             <CalendarClock className="mr-2 h-4 w-4" />

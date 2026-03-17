@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import LoginForm from '@/components/auth/login-form';
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
@@ -27,7 +26,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <header className="mb-8 flex flex-col items-center">
             <Link href="/" className="mb-4">
-                <Image src="/logo.svg" alt="EstuClub Logo" width={140} height={42} className="text-primary dark:text-primary-foreground" priority style={{ height: 'auto' }} />
+                <div
+                    className="h-[42px] w-[140px] bg-primary dark:bg-primary-foreground [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                    aria-label="EstuClub Logo"
+                />
             </Link>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sr-only">
             EstuClub
@@ -47,5 +49,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    

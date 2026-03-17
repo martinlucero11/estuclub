@@ -29,31 +29,27 @@ service cloud.firestore {
     }
 
     match /announcements/{announcementId} {
-      allow read: if resource.data.status == 'approved' || (isOwner(resource.data.supplierId) || isAdmin());
-      allow list: if true; // Lists are filtered on client for approved status
+      allow read: if resource.data.status == 'approved' || (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
+      allow list: if true;
       allow create: if isSupplier();
-      allow update, delete: if isOwner(resource.data.supplierId) || isAdmin();
+      allow update, delete: if (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
     }
 
     match /notifications/{notificationId} {
-      allow list, get: if true;
-      allow write: if isSupplier() || isAdmin();
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update, delete: if isSupplier() || isAdmin();
     }
 
     match /benefits/{benefitId} {
       allow read: if true;
-      // Admin can do anything.
-      // Supplier can create if they own it and are NOT setting it as featured.
       allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
-      // Admin can do anything.
-      // Supplier can update if they own it and are NOT changing sensitive admin-only fields.
-      allow update: if (isSupplier() && resource.data.ownerId == request.auth.uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'featuredRank', 'isVisible'])) || isAdmin();
-      allow delete: if (isSupplier() && resource.data.ownerId == request.auth.uid) || isAdmin();
+      allow update: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'featuredRank', 'isVisible'])) || isAdmin();
+      allow delete: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
     }
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      // Allow signed-in users to read profiles, but only owner/admin can write.
       allow read: if isSignedIn();
       allow write: if isOwner(userId) || isAdmin();
     }
@@ -63,7 +59,6 @@ service cloud.firestore {
     }
 
     match /users/{userId}/redeemed_benefits/{redemptionId} {
-      // A user can manage their own redemption history
       allow read, write: if isOwner(userId) || isAdmin();
     }
 
@@ -94,8 +89,6 @@ service cloud.firestore {
     // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
       allow read: if true; // Publicly viewable profile
-      // Admin can write anything.
-      // Owner can write, but cannot change sensitive, admin-only fields.
       allow write: if isAdmin() || 
                     (isOwner(supplierId) && 
                      !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVisible', 'isFeatured', 'featuredRank']));
@@ -111,25 +104,24 @@ service cloud.firestore {
         allow write: if isOwner(supplierId) || isAdmin();
       }
       
-      // Rule for subscribers subcollection.
       match /subscribers/{subscriberId} {
-        // A user can read their own subscription document. A supplier or admin can also read it.
         allow get: if isOwner(subscriberId) || isOwner(supplierId) || isAdmin();
-        // Only the supplier or an admin can list all subscribers.
         allow list: if isOwner(supplierId) || isAdmin();
-        // A user can create their own subscription document.
         allow create: if isOwner(subscriberId);
-        // A user can update their own subscription document.
         allow update: if isOwner(subscriberId) || isAdmin();
-        // A user can delete their own subscription document (unsubscribe).
         allow delete: if isOwner(subscriberId) || isAdmin();
+      }
+
+      // Legacy appointments subcollection
+      match /appointments/{appointmentId} {
+        allow read, write: if isOwner(supplierId) || isAdmin();
       }
     }
     
     // --- Admin-Only Data ---
     match /roles_admin/{adminId} {
-      allow read: if isSignedIn(); // Allow any signed-in user to check admin status
-      allow write: if isAdmin(); // Only other admins can make someone an admin
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }
