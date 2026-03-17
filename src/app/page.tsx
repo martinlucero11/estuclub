@@ -54,9 +54,9 @@ function HomeContent() {
     }
 
     return (
-        <div className="space-y-1 pb-8 pt-2">
+        <div className="space-y-6 pb-8 pt-2">
             {sections.map((section) => (
-                <section key={section.id} className="space-y-1">
+                <section key={section.id} className="space-y-2">
                     {section.title && (
                         <div className="flex items-baseline justify-between">
                             <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>

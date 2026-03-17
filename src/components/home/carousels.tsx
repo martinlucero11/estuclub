@@ -1,3 +1,4 @@
+
 'use client';
 import Link from "next/link";
 import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
@@ -132,8 +133,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     }
     
     return (
-        <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
-            <CarouselContent className="-ml-2">
+        <Carousel opts={{ align: "start", loop: true }} className="w-full -ml-2">
+            <CarouselContent>
                 {banners.map((banner, index) => (
                     <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
