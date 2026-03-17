@@ -45,7 +45,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
             fill
-            className="object-contain"
+            className="object-cover"
             priority={priority}
             sizes="100vw"
           />
@@ -133,8 +133,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     }
     
     return (
-        <Carousel opts={{ align: "start", loop: true }} className="w-full -ml-2">
-            <CarouselContent>
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
+            <CarouselContent className="-ml-2">
                 {banners.map((banner, index) => (
                     <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
