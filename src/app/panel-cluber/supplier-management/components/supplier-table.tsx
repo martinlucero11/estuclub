@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { getSupplierColumns } from './columns'; 
+import { getSupplierColumns } from '@/app/dashboard/supplier-management/components/columns'; 
 import { DataTable } from '@/components/ui/data-table';
 import { SupplierProfile } from '@/types/data';
 import { toast } from 'sonner';
