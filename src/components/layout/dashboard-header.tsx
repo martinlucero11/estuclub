@@ -16,7 +16,7 @@ export function DashboardHeader() {
       <div className="h-16 flex items-center justify-end px-8">
         {/* Role Selector: Show only if the user has more than one dashboard role (i.e., is both admin and supplier) */}
         {dashboardRoles.length > 1 ? (
-          <Select onValueChange={(role) => setActiveRole(role as any)} defaultValue={activeRole}>
+          <Select onValueChange={(role) => setActiveRole(role as any)} value={activeRole}>
             <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Seleccionar Vista" />
             </SelectTrigger>
