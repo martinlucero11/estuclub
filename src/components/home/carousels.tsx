@@ -44,7 +44,7 @@ const BannerCarouselCard = ({ banner, priority = false, className }: { banner: B
         />
     );
 
-    const containerClasses = "relative w-full overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full h-48 overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
@@ -134,11 +134,10 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
         <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
             <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4 h-48">
+                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
-                            className="h-full"
                         />
                     </CarouselItem>
                 ))}
