@@ -26,7 +26,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                                     'flex flex-col items-center justify-center h-28 w-28 mx-auto rounded-2xl transition-all',
                                     'hover:shadow-lg hover:-translate-y-1'
                                 )}
-                                style={{ backgroundColor: 'rgba(223, 70, 149, 0.67)' }}
+                                style={{ backgroundColor: 'rgba(223, 70, 149, 0.75)' }}
                             >
                                 <span className={cn("text-6xl", category.colorClass)}>{category.emoji}</span>
                             </div>
