@@ -1,3 +1,4 @@
+
 'use client';
 import Link from "next/link";
 import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
@@ -19,14 +20,14 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
     return (
-        <Link href={`/proveedores/${supplier.slug}`} className="block w-24 snap-start text-center group">
-            <div className="w-20 h-20 mx-auto rounded-2xl bg-card hover:bg-accent transition-colors flex items-center justify-center">
-                 <Avatar className="h-16 w-16">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover group-hover:scale-110 transition-transform" />
-                    <AvatarFallback className="text-xl font-bold bg-transparent">{initials}</AvatarFallback>
+        <Link href={`/proveedores/${supplier.slug}`} className="block w-28 snap-start text-center group">
+            <div className="w-24 h-24 mx-auto rounded-2xl bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1 flex items-center justify-center shadow-md border">
+                 <Avatar className="h-20 w-20">
+                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
+                    <AvatarFallback className="text-2xl font-bold bg-muted text-muted-foreground">{initials}</AvatarFallback>
                 </Avatar>
             </div>
-            <p className="text-sm font-semibold text-center mt-2 line-clamp-1 group-hover:text-primary">{supplier.name}</p>
+            <p className="text-sm font-semibold text-foreground text-center mt-2 line-clamp-2 group-hover:text-primary">{supplier.name}</p>
         </Link>
     );
 };
@@ -39,12 +40,12 @@ interface BannerCarouselCardProps {
 
 const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
     const bannerContent = (
-        <div className="relative w-full overflow-hidden rounded-2xl h-40">
+      <div className="relative w-full overflow-hidden rounded-2xl aspect-[16/7] min-h-[180px]">
           <Image
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
             fill
-            className="object-contain"
+            className="object-cover"
             priority={priority}
             sizes="100vw"
           />
@@ -90,7 +91,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full relative">
-            <CarouselContent>
+            <CarouselContent className="-ml-4">
                 {suppliers.map(item => (
                     <CarouselItem key={item.id} className="basis-auto pl-4">
                         <SupplierCard supplier={item as SupplierProfile} />
@@ -133,9 +134,9 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
-            <CarouselContent>
+            <CarouselContent className="-ml-2">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2">
+                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
@@ -143,8 +144,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-1/2 -translate-y-1/2")} />
-            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-1/2 -translate-y-1/2")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-0 top-1/2 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-0 top-1/2 -translate-y-1/2")} />
         </Carousel>
     );
 }

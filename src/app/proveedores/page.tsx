@@ -16,6 +16,7 @@ import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data'
 import { Button } from '@/components/ui/button';
 import { createConverter } from '@/lib/firestore-converter';
 import { getInitials } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 // Mapping new categories to icons
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
@@ -112,27 +113,27 @@ function CluberListPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type] || Users;
-                        const initials = getInitials(cluber.name);
-
+                        
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
-                                <Card className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-slate-100 dark:border-slate-800 p-6 flex flex-col items-center text-center transition-all hover:shadow-lg h-full">
-                                    <div className="w-24 h-24 rounded-full border-4 border-[#d83762]/10 mb-4 overflow-hidden">
-                                        <Avatar className="h-full w-full">
-                                            <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-cover" />
-                                            <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
-                                                {initials}
+                                <Card className="overflow-hidden rounded-2xl border hover:border-primary transition-all duration-300 hover:shadow-xl flex flex-col h-full bg-card">
+                                    <div className="relative overflow-hidden aspect-[4/3] bg-muted">
+                                        <Avatar className="h-full w-full rounded-none">
+                                            <AvatarImage src={cluber.logoUrl || undefined} alt={cluber.name} className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-500" />
+                                            <AvatarFallback className="rounded-none bg-muted flex items-center justify-center">
+                                                <TypeIcon className="h-16 w-16 text-muted-foreground/50" />
                                             </AvatarFallback>
                                         </Avatar>
+                                        <div className="absolute top-3 right-3">
+                                            <Badge variant="secondary" className="capitalize backdrop-blur-sm bg-background/70">{cluber.type}</Badge>
+                                        </div>
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{cluber.name}</h3>
-                                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[#d83762]/10 text-[#d83762] capitalize">
-                                        <TypeIcon className="h-4 w-4 mr-2" />
-                                        {cluber.type}
-                                    </div>
-                                    <p className="text-sm text-slate-500 line-clamp-2 mb-4 flex-grow">{cluber.description}</p>
-                                    <div className="w-full mt-auto py-2 rounded-full bg-[#d83762] text-white font-medium text-sm transition-all hover:bg-[#c22f55]">
-                                        Ver Perfil
+                                    <div className="p-4 flex flex-col flex-grow">
+                                        <h3 className="text-lg font-bold text-foreground mb-1 line-clamp-1 group-hover:text-primary transition-colors">{cluber.name}</h3>
+                                        <p className="text-sm text-muted-foreground line-clamp-2 flex-grow mb-4">{cluber.description}</p>
+                                        <div className="w-full mt-auto">
+                                            <Button className="w-full" variant="secondary" tabIndex={-1}>Ver Perfil</Button>
+                                        </div>
                                     </div>
                                 </Card>
                             </Link>
