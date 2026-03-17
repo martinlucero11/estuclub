@@ -1,4 +1,3 @@
-
 'use client';
 import Link from "next/link";
 import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
@@ -40,12 +39,12 @@ interface BannerCarouselCardProps {
 
 const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
     const bannerContent = (
-        <div className="relative w-full overflow-hidden rounded-2xl aspect-[16/7] min-h-[180px]">
+        <div className="relative w-full overflow-hidden rounded-2xl h-40">
           <Image
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
             fill
-            className="object-cover"
+            className="object-contain"
             priority={priority}
             sizes="100vw"
           />
