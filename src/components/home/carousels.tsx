@@ -32,33 +32,34 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
 };
 
 // --- BANNER CAROUSEL CARD ---
-const BannerCarouselCard = ({ banner, priority = false, className }: { banner: Banner, priority?: boolean, className?: string }) => {
-    const bannerImage = (
-        <Image
+interface BannerCarouselCardProps {
+  banner: Banner
+  priority?: boolean
+}
+
+const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
+    const bannerContent = (
+        <div className="relative w-full overflow-hidden rounded-2xl aspect-[16/7] min-h-[180px]">
+          <Image
             src={banner.imageUrl}
-            alt={banner.title || 'Banner promocional'}
+            alt={banner.title || "Banner"}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
-        />
+            sizes="100vw"
+          />
+        </div>
     );
-
-    const containerClasses = "relative w-full h-48 overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
-            <Link href={banner.link} target="_blank" rel="noopener noreferrer" className={cn(containerClasses, className)}>
-                {bannerImage}
+            <Link href={banner.link} target="_blank" rel="noopener noreferrer">
+                {bannerContent}
             </Link>
         )
     }
 
-    return (
-        <div className={cn(containerClasses, className)}>
-            {bannerImage}
-        </div>
-    );
+    return bannerContent;
 };
 
 
@@ -132,9 +133,9 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     
     return (
         <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
-            <CarouselContent className="-ml-4">
+            <CarouselContent>
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4">
+                    <CarouselItem key={banner.id ?? index} className="basis-full">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
