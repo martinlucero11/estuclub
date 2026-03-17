@@ -1,4 +1,3 @@
-
 'use client';
 import Link from "next/link";
 import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
@@ -20,14 +19,17 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
     return (
-        <Link href={`/proveedores/${supplier.slug}`} className="block w-28 text-center group">
-            <div className="relative w-28 h-28 mx-auto rounded-2xl bg-card transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden shadow-md border group-hover:border-primary">
-                 <Avatar className="h-full w-full rounded-none">
-                    <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                    <AvatarFallback className="text-2xl rounded-none font-bold bg-muted text-muted-foreground">{initials}</AvatarFallback>
-                </Avatar>
+        <Link href={`/proveedores/${supplier.slug}`} className="block w-full group">
+            <div className="relative w-full aspect-square overflow-hidden rounded-2xl bg-card shadow-md border group-hover:border-primary transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <Image
+                    src={supplier.logoUrl || ''}
+                    alt={supplier.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 to-transparent" />
+                 <p className="absolute bottom-2 left-3 text-sm font-bold text-white line-clamp-2">{supplier.name}</p>
             </div>
-            <p className="text-sm font-semibold text-foreground text-center mt-2 line-clamp-2 group-hover:text-primary">{supplier.name}</p>
         </Link>
     );
 };
@@ -45,7 +47,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
             fill
-            className="object-cover"
+            className="object-contain"
             priority={priority}
             sizes="100vw"
           />
@@ -93,7 +95,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
         <Carousel opts={{ align: "start" }} className="w-full relative">
             <CarouselContent className="-ml-4">
                 {suppliers.map(item => (
-                    <CarouselItem key={item.id} className="basis-auto pl-4">
+                    <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
                         <SupplierCard supplier={item as SupplierProfile} />
                     </CarouselItem>
                 ))}
