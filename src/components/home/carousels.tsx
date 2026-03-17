@@ -44,7 +44,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
             fill
-            className="object-cover"
+            className="object-contain"
             priority={priority}
             sizes="100vw"
           />
