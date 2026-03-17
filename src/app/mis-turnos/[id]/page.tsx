@@ -1,7 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useDoc, useFirestore, useDocOnce } from '@/firebase';
+import { useDoc, useFirestore, useDocOnce, useUser } from '@/firebase'; // Import useUser
 import { doc, Timestamp } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Appointment, SupplierProfile } from '@/types/data';
@@ -9,7 +9,7 @@ import AppointmentReceiptCard from '@/components/appointments/appointment-receip
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, ShieldAlert } from 'lucide-react'; // Import ShieldAlert
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -73,13 +73,18 @@ function AppointmentDetails({ appointment }: { appointment: Appointment }) {
 export default function AppointmentReceiptPage({ params }: { params: { id: string } }) {
     const { id: appointmentId } = params;
     const firestore = useFirestore();
+    const { user, isUserLoading } = useUser(); // <-- Add useUser
 
     const appointmentRef = useMemo(
-        () => appointmentId ? doc(firestore, 'appointments', appointmentId) : null,
-        [appointmentId, firestore]
+        // Only create ref if user is logged in
+        () => user && appointmentId ? doc(firestore, 'appointments', appointmentId) : null,
+        [appointmentId, firestore, user]
     );
 
     const { data: appointment, isLoading, error } = useDoc<Appointment>(appointmentRef);
+    
+    // Combine loading states
+    const combinedIsLoading = isUserLoading || isLoading;
 
     return (
         <MainLayout>
@@ -90,9 +95,19 @@ export default function AppointmentReceiptPage({ params }: { params: { id: strin
                 </p>
 
                 <div className="flex justify-center">
-                    {isLoading && <ReceiptSkeleton />}
+                    {combinedIsLoading && <ReceiptSkeleton />}
+
+                    {!combinedIsLoading && !user && (
+                         <Alert variant="destructive" className="max-w-md">
+                            <ShieldAlert className="h-4 w-4" />
+                            <AlertTitle>Acceso Denegado</AlertTitle>
+                            <AlertDescription>
+                                Debes iniciar sesión para ver los detalles de tu turno.
+                            </AlertDescription>
+                        </Alert>
+                    )}
                     
-                    {!isLoading && error && (
+                    {!combinedIsLoading && user && error && (
                         <Alert variant="destructive" className="max-w-md">
                             <AlertTitle>Error</AlertTitle>
                             <AlertDescription>
@@ -101,11 +116,11 @@ export default function AppointmentReceiptPage({ params }: { params: { id: strin
                         </Alert>
                     )}
 
-                    {!isLoading && !error && appointment && (
+                    {!combinedIsLoading && user && !error && appointment && (
                         <AppointmentDetails appointment={appointment} />
                     )}
 
-                    {!isLoading && !appointment && !error && (
+                    {!combinedIsLoading && user && !appointment && !error && (
                          <Alert className="max-w-md">
                             <AlertTitle>Turno no encontrado</AlertTitle>
                             <AlertDescription>
