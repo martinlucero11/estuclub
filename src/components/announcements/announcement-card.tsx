@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import Image from 'next/image';
@@ -15,104 +13,117 @@ interface AnnouncementCardProps {
   announcement: SerializableAnnouncement;
   variant?: 'default' | 'carousel';
   className?: string;
+  priority?: boolean;
 }
 
 function formatTime(isoString: string) {
-    if (!isoString) return 'Justo ahora';
-    const date = new Date(isoString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
+  if (!isoString) return 'Justo ahora';
+  const date = new Date(isoString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-    if (days > 0) return `Hace ${days} día${days > 1 ? 's' : ''}`;
-    if (hours > 0) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
-    if (minutes > 0) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
-    return 'Justo ahora';
+  if (days > 0) return `Hace ${days} día${days > 1 ? 's' : ''}`;
+  if (hours > 0) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+  if (minutes > 0) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+  return 'Justo ahora';
 }
 
-const fallbackImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==";
+const fallbackImageUrl =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==';
 
-
-export default function AnnouncementCard({ announcement, variant = 'default', className }: AnnouncementCardProps) {
+export default function AnnouncementCard({
+  announcement,
+  variant = 'default',
+  className,
+  priority = false,
+}: AnnouncementCardProps) {
   const authorInitial = announcement.authorUsername ? announcement.authorUsername.charAt(0).toUpperCase() : 'A';
   const imageUrl = announcement.imageUrl || fallbackImageUrl;
 
+  // Variant: Default (non-carousel)
   const cardContent = (
     <Card className={cn('flex h-full flex-col overflow-hidden transition-all hover:shadow-lg', className)}>
-        <div className="relative h-48 w-full">
-            <Image
-                src={imageUrl}
-                alt={announcement.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-            />
-        </div>
-        <div className="flex flex-1 flex-col">
-            <CardHeader>
-                <CardTitle className="line-clamp-2">{announcement.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                 <p className="text-sm text-muted-foreground line-clamp-3">{announcement.content}</p>
-            </CardContent>
-            <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-6 w-6">
-                        <AvatarFallback>{authorInitial}</AvatarFallback>
-                    </Avatar>
-                    <span className="truncate">@{announcement.authorUsername}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    {announcement.linkUrl && (
-                        <Link href={announcement.linkUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                            <Link2 className="h-4 w-4 hover:text-primary" />
-                        </Link>
-                    )}
-                    <span>{formatTime(announcement.createdAt)}</span>
-                </div>
-            </CardFooter>
-        </div>
+      <div className="relative h-48 w-full">
+        <Image
+          src={imageUrl}
+          alt={announcement.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+      </div>
+      <div className="flex flex-1 flex-col">
+        <CardHeader>
+          <CardTitle className="line-clamp-2">{announcement.title}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          <p className="text-sm text-muted-foreground line-clamp-3">{announcement.content}</p>
+        </CardContent>
+        <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarFallback>{authorInitial}</AvatarFallback>
+            </Avatar>
+            <span className="truncate">@{announcement.authorUsername}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            {announcement.linkUrl && (
+              <Link href={announcement.linkUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                <Link2 className="h-4 w-4 hover:text-primary" />
+              </Link>
+            )}
+            <span>{formatTime(announcement.createdAt)}</span>
+          </div>
+        </CardFooter>
+      </div>
     </Card>
   );
   
+  // Variant: Carousel
   if (variant === 'carousel') {
     const carouselCardContent = (
-        <Card className={cn('relative h-48 overflow-hidden text-white transition-all hover:shadow-lg', className)}>
-            <Image
-                src={imageUrl}
-                alt={announcement.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            <div className="relative z-10 flex h-full flex-col justify-end p-4">
-                <div>
-                    <CardTitle className="text-xl line-clamp-2">{announcement.title}</CardTitle>
-                </div>
-                <div className="flex items-center gap-2 text-sm pt-2">
-                    <Avatar className="h-6 w-6 text-foreground">
-                        <AvatarFallback>{authorInitial}</AvatarFallback>
-                    </Avatar>
-                    <span>{formatTime(announcement.createdAt)}</span>
-                </div>
-            </div>
-        </Card>
-      )
-      
-      return (
-        <AnnouncementDialog announcement={announcement}>
-          <div className="cursor-pointer">{carouselCardContent}</div>
-        </AnnouncementDialog>
-      )
+      <Card className={'relative h-full w-full overflow-hidden text-white transition-all hover:shadow-lg'}>
+        <Image
+          src={imageUrl}
+          alt={announcement.title}
+          fill
+          priority={priority}
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, 50vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="relative z-10 flex h-full flex-col justify-end p-4">
+          <div>
+            <CardTitle className="text-xl line-clamp-2">{announcement.title}</CardTitle>
+          </div>
+          <div className="flex items-center gap-2 pt-2 text-sm">
+            <Avatar className="h-6 w-6 text-foreground">
+              <AvatarFallback>{authorInitial}</AvatarFallback>
+            </Avatar>
+            <span>{formatTime(announcement.createdAt)}</span>
+          </div>
+        </div>
+      </Card>
+    );
+
+    return (
+      <AnnouncementDialog announcement={announcement}>
+        {/* The className is applied to this wrapper, which receives the absolute positioning */}
+        <div className={cn('cursor-pointer', className)}> 
+            {carouselCardContent}
+        </div>
+      </AnnouncementDialog>
+    );
   }
-  
+
+  // Return default card if not carousel
   return (
     <AnnouncementDialog announcement={announcement}>
       <div className="h-full cursor-pointer">{cardContent}</div>
     </AnnouncementDialog>
-  )
+  );
 }

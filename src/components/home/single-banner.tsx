@@ -13,14 +13,14 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
         <Image
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            width={1160}
-            height={230}
-            className="w-full h-auto"
+            fill
+            className="object-cover"
             priority
+            sizes="100vw"
         />
     );
     
-    const containerClasses = "relative w-full overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full h-56 overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
