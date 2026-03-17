@@ -35,8 +35,8 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious variant="ghost" className="absolute left-0 top-[38px] hidden sm:flex" />
-            <CarouselNext variant="ghost" className="absolute right-0 top-[38px] hidden sm:flex" />
+            <CarouselPrevious variant="ghost" className="absolute left-0 top-14 -translate-y-1/2 hidden sm:flex" />
+            <CarouselNext variant="ghost" className="absolute right-0 top-14 -translate-y-1/2 hidden sm:flex" />
         </Carousel>
     );
 }

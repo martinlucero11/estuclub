@@ -38,13 +38,13 @@ const BannerCarouselCard = ({ banner, priority = false, className }: { banner: B
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
             fill
-            className="object-contain" // Asegura que la imagen completa sea visible
+            className="object-cover"
             sizes="(max-width: 768px) 80vw, 50vw"
             priority={priority}
         />
     );
 
-    const containerClasses = "w-full h-full overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full h-48 overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (
@@ -96,8 +96,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-6")} />
-            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-6")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "absolute left-2 top-10 -translate-y-1/2")} />
+            <CarouselNext className={cn(carouselArrowClasses, "absolute right-2 top-10 -translate-y-1/2")} />
         </Carousel>
     )
 }
@@ -109,7 +109,7 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
         <Carousel opts={{ align: "start" }} className="w-full">
             <CarouselContent className="-ml-6">
                 {announcements.map((item, index) => (
-                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6 relative aspect-[16/9]">
+                    <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6 h-48">
                         <AnnouncementCard 
                             announcement={makeAnnouncementSerializable(item)} 
                             variant="carousel" 
@@ -134,14 +134,11 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
         <Carousel opts={{ align: "start", loop: true }} className="w-full mt-4">
             <CarouselContent className="-ml-4">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4">
-                        <div className="relative aspect-[4/1] sm:aspect-[5/1]">
-                            <BannerCarouselCard 
-                                banner={banner as Banner} 
-                                priority={index === 0} 
-                                className="absolute inset-0"
-                            />
-                        </div>
+                    <CarouselItem key={banner.id} className="basis-full sm:basis-1/2 pl-4 h-48">
+                        <BannerCarouselCard 
+                            banner={banner as Banner} 
+                            priority={index === 0} 
+                        />
                     </CarouselItem>
                 ))}
             </CarouselContent>
