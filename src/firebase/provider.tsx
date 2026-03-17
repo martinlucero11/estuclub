@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -77,8 +76,8 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
             const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
             
-            // Using Promise.allSettled to make role fetching resilient.
-            // This prevents a failure in one role check from stopping the other.
+            // Use Promise.allSettled to make role fetching resilient.
+            // This prevents a failure in one role check from stopping the other (e.g., due to security rules).
             const [adminResult, supplierResult] = await Promise.allSettled([
                 getDoc(adminRoleRef),
                 getDoc(supplierRoleRef)
@@ -87,30 +86,29 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
             if (adminResult.status === 'fulfilled' && adminResult.value.exists()) {
                 userRoles.push('admin');
             } else if (adminResult.status === 'rejected') {
-                console.warn("Could not check admin role:", adminResult.reason);
+                console.warn("Could not check admin role due to permissions or network error:", adminResult.reason);
             }
 
             if (supplierResult.status === 'fulfilled' && supplierResult.value.exists()) {
                 userRoles.push('supplier');
                 supplierData = supplierResult.value.data() as SupplierData;
             } else if (supplierResult.status === 'rejected') {
-                console.warn("Could not check supplier role:", supplierResult.reason);
+                console.warn("Could not check supplier role due to permissions or network error:", supplierResult.reason);
             }
 
             setUserAuthState({
                 user: firebaseUser,
-                roles: Array.from(new Set(userRoles)),
+                roles: Array.from(new Set(userRoles)), // Use Set to prevent duplicate roles
                 supplierData,
                 isUserLoading: false,
                 userError: null
             });
 
         } catch (error) {
-            console.error("Error fetching user state:", error);
-            // This catch is for critical errors like token refresh failure.
+            console.error("Critical error fetching user state:", error);
             setUserAuthState({
                 user: firebaseUser,
-                roles: ['user'],
+                roles: ['user'], // Fallback to basic user role
                 supplierData: null,
                 isUserLoading: false,
                 userError: error as Error
