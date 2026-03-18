@@ -1,9 +1,8 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore, doc, getDoc } from 'firebase/firestore';
+import { Firestore, getFirestore, doc, getDoc, DocumentReference, DocumentData } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/firebase/error-listener';
@@ -42,9 +41,41 @@ export interface UserHookResult extends UserAuthState {}
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
+// --- HELPERS ---
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function safeGetDocWithRetry(
+  ref: DocumentReference<DocumentData>,
+  retries = 2,
+  delay = 250
+) {
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await getDoc(ref);
+    } catch (error: any) {
+      lastError = error;
+
+      const isPermissionError =
+        error?.code === 'permission-denied' ||
+        String(error?.message || '').includes('Missing or insufficient permissions');
+
+      if (!isPermissionError || attempt === retries) {
+        throw error;
+      }
+
+      await sleep(delay);
+    }
+  }
+
+  throw lastError;
+}
+
 // --- MAIN PROVIDER COMPONENT ---
 
-export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) => {
+export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const services = useMemo(() => {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     return {
@@ -65,79 +96,80 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
-      setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
+      setUserAuthState(prev => ({ ...prev, isUserLoading: true }));
 
-      if (firebaseUser) {
+      if (!firebaseUser) {
+        setUserAuthState({
+          user: null,
+          roles: [],
+          supplierData: null,
+          isUserLoading: false,
+          userError: null,
+        });
+        return;
+      }
+
+      try {
         console.log('UID actual logueado:', firebaseUser.uid);
-      
+
+        const userRoles: string[] = ['user'];
+        let supplierData: SupplierData | null = null;
+
+        // Admin role check
         try {
-          await firebaseUser.getIdToken(true);
-            
-            const userRoles: string[] = ['user'];
-            let supplierData: SupplierData | null = null;
+          const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
+          const adminDoc = await safeGetDocWithRetry(adminRoleRef, 2, 250);
 
-            // --- Admin Role Check ---
-            try {
-                const adminRoleRef = doc(services.firestore, 'roles_admin', firebaseUser.uid);
-                const adminDoc = await getDoc(adminRoleRef);
-                if (adminDoc.exists()) {
-                    userRoles.push('admin');
-                }
-            } catch (error) {
-                 console.warn("Could not check admin role due to permissions or network error:", error);
-            }
-
-            // --- Supplier Role Check ---
-            try {
-                const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
-                const supplierDoc = await getDoc(supplierRoleRef);
-                if (supplierDoc.exists()) {
-                    userRoles.push('supplier');
-                    supplierData = supplierDoc.data() as SupplierData;
-                }
-            } catch (error) {
-                console.warn("Could not check supplier role due to permissions or network error:", error);
-            }
-
-            setUserAuthState({
-                user: firebaseUser,
-                roles: Array.from(new Set(userRoles)),
-                supplierData,
-                isUserLoading: false,
-                userError: null
-            });
-
+          if (adminDoc.exists()) {
+            userRoles.push('admin');
+          }
         } catch (error) {
-            console.error("Critical error fetching user state:", error);
-            setUserAuthState({
-                user: firebaseUser,
-                roles: ['user'], // Fallback to basic user role
-                supplierData: null,
-                isUserLoading: false,
-                userError: error as Error
-            });
+          console.warn('Could not check admin role after retry:', error);
         }
-      } else {
-        // User is signed out, clear all user-related state.
-        setUserAuthState({ 
-          user: null, 
-          roles: [], 
-          supplierData: null, 
-          isUserLoading: false, 
-          userError: null 
+
+        // Supplier role check
+        try {
+          const supplierRoleRef = doc(services.firestore, 'roles_supplier', firebaseUser.uid);
+          const supplierDoc = await safeGetDocWithRetry(supplierRoleRef, 2, 250);
+
+          if (supplierDoc.exists()) {
+            userRoles.push('supplier');
+            supplierData = supplierDoc.data() as SupplierData;
+          }
+        } catch (error) {
+          console.warn('Could not check supplier role after retry:', error);
+        }
+
+        setUserAuthState({
+          user: firebaseUser,
+          roles: Array.from(new Set(userRoles)),
+          supplierData,
+          isUserLoading: false,
+          userError: null,
+        });
+      } catch (error) {
+        console.error('Critical error fetching user state:', error);
+        setUserAuthState({
+          user: firebaseUser,
+          roles: ['user'],
+          supplierData: null,
+          isUserLoading: false,
+          userError: error as Error,
         });
       }
     });
 
-    // Cleanup subscription on component unmount
     return () => unsubscribe();
   }, [services.auth, services.firestore]);
 
-  const contextValue = useMemo((): FirebaseContextState => ({
-    areServicesAvailable: true,
-    ...services,
-    ...userAuthState,
-  }), [services, userAuthState]);
+  const contextValue = useMemo(
+    (): FirebaseContextState => ({
+      areServicesAvailable: true,
+      ...services,
+      ...userAuthState,
+    }),
+    [services, userAuthState]
+  );
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -146,7 +178,6 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
     </FirebaseContext.Provider>
   );
 };
-
 
 // --- HOOKS ---
 
@@ -157,7 +188,13 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     throw new Error('useFirebase must be used within a FirebaseProvider.');
   }
 
-  if (!context.areServicesAvailable || !context.firebaseApp || !context.firestore || !context.auth || !context.storage) {
+  if (
+    !context.areServicesAvailable ||
+    !context.firebaseApp ||
+    !context.firestore ||
+    !context.auth ||
+    !context.storage
+  ) {
     throw new Error('Firebase core services not available. Check FirebaseProvider props.');
   }
 
@@ -167,7 +204,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     auth: context.auth,
     storage: context.storage,
     user: context.user,
-    roles: context.roles, 
+    roles: context.roles,
     supplierData: context.supplierData,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
@@ -185,9 +222,9 @@ export const useFirestore = (): Firestore => {
 };
 
 export const useStorage = (): FirebaseStorage => {
-    const { storage } = useFirebase();
-    return storage;
-}
+  const { storage } = useFirebase();
+  return storage;
+};
 
 export const useFirebaseApp = (): FirebaseApp => {
   const { firebaseApp } = useFirebase();
@@ -197,4 +234,4 @@ export const useFirebaseApp = (): FirebaseApp => {
 export const useUser = (): UserHookResult => {
   const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
   return { user, roles, supplierData, isUserLoading, userError };
-};
+}
