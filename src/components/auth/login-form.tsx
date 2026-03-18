@@ -14,11 +14,19 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { auth } from '@/firebase/client-config'; 
-import { signInWithEmailAndPassword, signOut, sendEmailVerification } from 'firebase/auth';
+import { 
+  signInWithEmailAndPassword, 
+  signOut, 
+  sendEmailVerification, 
+  setPersistence, 
+  browserSessionPersistence, 
+  browserLocalPersistence 
+} from 'firebase/auth';
 import ResetPasswordDialog from './reset-password-dialog';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useState } from 'react';
@@ -26,6 +34,7 @@ import { useState } from 'react';
 const formSchema = z.object({
   email: z.string().email('Por favor, introduce un correo electrónico válido.'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
+  rememberMe: z.boolean().default(true),
 });
 
 export default function LoginForm() {
@@ -38,6 +47,7 @@ export default function LoginForm() {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: true,
     },
   });
 
@@ -64,17 +74,20 @@ export default function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setShowVerificationAlert(false);
     try {
+      const persistence = values.rememberMe 
+        ? browserLocalPersistence 
+        : browserSessionPersistence;
+        
+      await setPersistence(auth, persistence);
+
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       
       if (!userCredential.user.emailVerified) {
         setShowVerificationAlert(true);
-        // Sign out the user immediately so they can't navigate while unverified
         await signOut(auth);
         return;
       }
       
-      // The redirect is now handled by the useEffect in login/page.tsx,
-      // which waits for the useUser() hook to be fully updated.
       toast({
         title: 'Iniciando sesión...',
         description: 'Serás redirigido en un momento.',
@@ -151,6 +164,21 @@ export default function LoginForm() {
                       </FormControl>
                     </div>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="rememberMe"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel>Mantener sesión iniciada</FormLabel>
                   </FormItem>
                 )}
               />

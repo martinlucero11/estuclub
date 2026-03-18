@@ -18,8 +18,8 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp, writeBatch, query, collection, where, limit, getDocs } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
+import { doc, getDoc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, User } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -48,6 +48,8 @@ export default function SignupForm() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [createdUser, setCreatedUser] = useState<User | null>(null);
+  const [isResending, setIsResending] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,6 +66,29 @@ export default function SignupForm() {
     },
   });
 
+  async function handleResendVerification() {
+    if (!createdUser) return;
+    setIsResending(true);
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/login?email=${createdUser.email}`,
+      };
+      await sendEmailVerification(createdUser, actionCodeSettings);
+      toast({
+        title: "Correo reenviado",
+        description: "Hemos enviado un nuevo enlace de verificación a tu correo.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo reenviar el correo. Inténtalo más tarde.",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     form.clearErrors();
@@ -79,11 +104,25 @@ export default function SignupForm() {
 
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
+      setCreatedUser(user);
 
-      await sendEmailVerification(user);
+      try {
+        const actionCodeSettings = {
+            url: `${window.location.origin}/login?email=${user.email}`,
+        };
+        await sendEmailVerification(user, actionCodeSettings);
+      } catch (emailError) {
+        console.error("Error sending verification email:", emailError);
+        toast({
+            variant: "destructive",
+            title: "Error Crítico",
+            description: "No pudimos enviar el correo de verificación. Por favor, contacta a soporte."
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
       const batch = writeBatch(firestore);
-
       const userDocRef = doc(firestore, 'users', user.uid);
       batch.set(userDocRef, {
         id: user.uid,
@@ -138,12 +177,19 @@ export default function SignupForm() {
         <CardContent className="pt-6 text-center space-y-4">
             <Alert>
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>¡Revisa tu correo!</AlertTitle>
+                <AlertTitle>¡Último paso! Revisa tu correo</AlertTitle>
                 <AlertDescription>
-                    Te hemos enviado un enlace de verificación. Por favor, haz clic en él para activar tu cuenta antes de iniciar sesión.
+                    Te hemos enviado un enlace para verificar tu cuenta. Por favor, haz clic en él para poder iniciar sesión.
+                    <br />
+                    <span className="text-xs text-muted-foreground">¿No lo encuentras? Revisa tu carpeta de spam.</span>
                 </AlertDescription>
             </Alert>
-            <Button onClick={() => router.push('/login')}>Ir a Iniciar Sesión</Button>
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button onClick={() => router.push('/login')} className="w-full">Ir a Iniciar Sesión</Button>
+                <Button variant="outline" onClick={handleResendVerification} disabled={isResending} className="w-full">
+                    {isResending ? 'Reenviando...' : 'Reenviar correo'}
+                </Button>
+            </div>
         </CardContent>
       </Card>
     )
@@ -153,7 +199,7 @@ export default function SignupForm() {
     <Card>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 pt-6">
+           <CardContent className="space-y-4 pt-6">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

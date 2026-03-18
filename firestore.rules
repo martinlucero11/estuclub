@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -50,7 +49,7 @@ service cloud.firestore {
 
     // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if isOwner(userId) || isAdmin();
       allow write: if isOwner(userId) || isAdmin();
     }
 
@@ -120,7 +119,7 @@ service cloud.firestore {
     
     // --- Admin-Only Data ---
     match /roles_admin/{adminId} {
-      allow get: if isSignedIn();
+      allow get: if isSignedIn() && request.auth.uid == adminId;
       allow list, write: if isAdmin();
     }
   }

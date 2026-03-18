@@ -27,6 +27,7 @@ import { Button } from '@/components/ui/button';
 import { useAuthService, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
@@ -36,10 +37,25 @@ function UserMenu() {
   const { user, isUserLoading } = useUser(); 
   const auth = useAuthService();
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
+    console.log("Attempting to sign out...");
+    try {
+      await signOut(auth);
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente.",
+      });
+      window.location.href = '/login'; 
+    } catch (error) {
+      console.error("Error signing out: ", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo cerrar la sesión. Por favor, inténtalo de nuevo.",
+      });
+    }
   };
 
   if (isUserLoading) {

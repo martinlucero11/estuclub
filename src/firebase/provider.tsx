@@ -68,8 +68,10 @@ export const FirebaseProvider: React.FC<{children: ReactNode}> = ({ children }) 
       setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
       if (firebaseUser) {
+        console.log('UID actual logueado:', firebaseUser.uid);
+      
         try {
-            await firebaseUser.getIdToken(true);
+          await firebaseUser.getIdToken(true);
             
             const userRoles: string[] = ['user'];
             let supplierData: SupplierData | null = null;
