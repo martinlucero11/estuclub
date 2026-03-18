@@ -1,129 +1,185 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Helper Functions ---
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isAdmin() { 
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-    function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
 
-    // --- Public & Semi-Public Data ---
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function signedIn() {
+      return request.auth != null;
     }
 
-    match /home_sections/{sectionId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isMe(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
 
-    match /banners/{bannerId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isSupplierDocOwner() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    match /announcements/{announcementId} {
-      allow read: if resource.data.status == 'approved' || (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
-      allow list: if true;
-      allow create: if isSupplier();
-      allow update, delete: if (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
+    function isAdminDocOwner() {
+      return signedIn() &&
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    match /notifications/{notificationId} {
-        allow read: if true;
-        allow create: if isSignedIn();
-        allow update, delete: if isSupplier() || isAdmin();
-    }
+    /* ================= USERS ================= */
 
-    match /benefits/{benefitId} {
-      allow read: if true;
-      allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
-      allow update: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'featuredRank', 'isVisible'])) || isAdmin();
-      allow delete: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
-    }
-
-    // --- User-Specific Data & Roles ---
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow write: if isOwner(userId) || isAdmin();
+      allow get: if isMe(userId) || isAdminDocOwner();
+      allow list: if isAdminDocOwner();
+      allow create: if isMe(userId);
+      allow update, delete: if isMe(userId) || isAdminDocOwner();
+
+      match /redeemed_benefits/{id} {
+        allow get, list, create, update, delete: if isMe(userId) || isAdminDocOwner();
+      }
     }
 
     match /userTokens/{userId} {
-        allow read, write: if isOwner(userId);
+      allow get, list, create, update, delete: if isMe(userId) || isAdminDocOwner();
     }
 
-    match /users/{userId}/redeemed_benefits/{redemptionId} {
-      allow read, write: if isOwner(userId) || isAdmin();
-    }
+    /* ================= USERNAMES ================= */
 
-    match /benefitRedemptions/{redemptionId} {
-      allow read: if (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
-      allow create: if isSignedIn();
-      allow update: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
-      allow delete: if isAdmin();
-    }
-    
     match /usernames/{username} {
-      allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
+      allow get, list: if true;
+      allow create: if signedIn() && (
+        request.resource.data.uid == request.auth.uid ||
+        request.resource.data.userId == request.auth.uid
+      );
+      allow update, delete: if false;
     }
 
-    // --- New Appointments Collection ---
-    match /appointments/{appointmentId} {
-      allow create: if isSignedIn();
-      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) 
-                   || (isSupplier() && resource.data.supplierId == request.auth.uid) 
-                   || isAdmin();
-      allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) 
-                             || (isSupplier() && resource.data.supplierId == request.auth.uid) 
-                             || isAdmin();
+    /* ================= ROLES ================= */
+
+    match /roles_admin/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, create, update, delete: if isAdminDocOwner();
     }
 
-    // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
-      allow read: if true; // Publicly viewable profile
-      allow write: if isAdmin() || 
-                    (isOwner(supplierId) && 
-                     !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVisible', 'isFeatured', 'featuredRank']));
-    
-      // --- Nested Rules for Supplier's Features ---
+      allow get, list: if true;
+      allow create, delete: if false;
+      allow update: if isMe(supplierId) || isAdminDocOwner();
+
+      match /availability/{docId} {
+        allow get, list: if true;
+        allow create, update, delete: if isMe(supplierId) || isAdminDocOwner();
+      }
+
       match /services/{serviceId} {
-        allow read: if true;
-        allow write: if isOwner(supplierId) || isAdmin();
+        allow get, list: if true;
+        allow create, update, delete: if isMe(supplierId) || isAdminDocOwner();
       }
 
-      match /availability/{schedule} {
-        allow read: if true;
-        allow write: if isOwner(supplierId) || isAdmin();
-      }
-      
-      match /subscribers/{subscriberId} {
-        allow get: if isOwner(subscriberId) || isOwner(supplierId) || isAdmin();
-        allow list: if isOwner(supplierId) || isAdmin();
-        allow create: if isOwner(subscriberId);
-        allow update: if isOwner(subscriberId) || isAdmin();
-        allow delete: if isOwner(subscriberId) || isAdmin();
+      match /subscribers/{userId} {
+        allow get: if isMe(userId) || isMe(supplierId) || isAdminDocOwner();
+        allow list: if isMe(supplierId) || isAdminDocOwner();
+        allow create: if isMe(userId);
+        allow update: if isMe(userId);
+        allow delete: if isMe(userId) || isMe(supplierId) || isAdminDocOwner();
       }
 
-      // Legacy appointments subcollection
       match /appointments/{appointmentId} {
-        allow read, write: if isOwner(supplierId) || isAdmin();
+        allow get, list, create, update, delete: if isMe(supplierId) || isAdminDocOwner();
       }
     }
-    
-    // --- Admin-Only Data ---
-    match /roles_admin/{adminId} {
-        allow get: if isSignedIn() && request.auth.uid == adminId;
-        // An admin is someone who has an entry in roles_admin.
-        // This avoids the circular dependency of calling isAdmin() on itself.
-        allow list: if get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) != null;
-        allow write: if get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) != null;
+
+    /* ================= APPOINTMENTS ================= */
+
+    match /appointments/{appointmentId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.supplierId is string;
+
+      allow get: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      ) || isAdminDocOwner();
+
+      allow list: if signedIn();
+
+      allow update, delete: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      ) || isAdminDocOwner();
+    }
+
+    /* ================= BENEFIT REDEMPTIONS ================= */
+
+    match /benefitRedemptions/{id} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid;
+
+      allow get: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      ) || isAdminDocOwner();
+
+
+
+      allow list: if signedIn();
+
+      allow update: if signedIn() &&
+        resource.data.supplierId == request.auth.uid || isAdminDocOwner();
+
+      allow delete: if false;
+    }
+
+    /* ================= BENEFITS ================= */
+
+    match /benefits/{id} {
+      allow get, list: if true;
+
+      allow create: if isSupplierDocOwner() || isAdminDocOwner();
+
+      allow update, delete: if signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid
+      ) || isAdminDocOwner();
+    }
+
+    /* ================= ANNOUNCEMENTS ================= */
+
+    match /announcements/{id} {
+      allow get, list: if true;
+
+      allow create: if isSupplierDocOwner() || isAdminDocOwner();
+
+      allow update, delete: if signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.authorId == request.auth.uid
+      ) || isAdminDocOwner();
+    }
+
+    /* ================= PUBLIC CONTENT ================= */
+
+    match /banners/{id} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdminDocOwner();
+    }
+
+    match /categories/{id} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdminDocOwner();
+    }
+
+    match /home_sections/{id} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdminDocOwner();
+    }
+
+    /* ================= NOTIFICATIONS ================= */
+
+    match /notifications/{id} {
+      allow get, list: if true;
+      allow create: if signedIn();
+      allow update, delete: if signedIn();
+    }
+
+    /* ================= GLOBAL DENY ================= */
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
