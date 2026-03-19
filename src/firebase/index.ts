@@ -1,9 +1,8 @@
 'use client';
 
-// This file serves as a barrel file for easy imports.
-// NO LOGIC should be here.
 
 export * from './provider';
+export * from './hooks';
 export * from './firestore/use-collection';
 export * from './firestore/use-collection-once';
 export * from './firestore/use-doc';

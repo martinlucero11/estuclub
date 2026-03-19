@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { getMessaging, onMessage } from 'firebase/messaging';
-import { useFirebase } from './hooks'; // <-- CORRECTED IMPORT
+import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 const MessagingContext = createContext<undefined>(undefined);
