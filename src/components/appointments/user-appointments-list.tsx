@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore, useCollection, useDocOnce } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
@@ -12,7 +12,6 @@ import { EmptyState } from '../ui/empty-state';
 import { createConverter } from '@/lib/firestore-converter';
 import { Button } from '../ui/button';
 import Link from 'next/link';
-import { useDocOnce } from '@/firebase/firestore/use-doc-once';
 import { doc } from 'firebase/firestore';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
