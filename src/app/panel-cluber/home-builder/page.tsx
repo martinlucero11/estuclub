@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -65,20 +65,22 @@ export default function HomeBuilderPage() {
         }
     }, [remoteSections]);
 
-    const handleMove = (index: number, direction: 'up' | 'down') => {
-        const newSections = [...localSections];
-        const newIndex = direction === 'up' ? index - 1 : index + 1;
-
-        if (newIndex < 0 || newIndex >= newSections.length) return;
-
-        // Swap items
-        [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
-        
-        setLocalSections(newSections);
+    const handleMove = useCallback((index: number, direction: 'up' | 'down') => {
+        setLocalSections(currentSections => {
+            const newSections = [...currentSections];
+            const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+            if (newIndex < 0 || newIndex >= newSections.length) return newSections;
+    
+            // Swap items
+            [newSections[index], newSections[newIndex]] = [newSections[newIndex], newSections[index]];
+            
+            return newSections;
+        });
         setHasOrderChanged(true);
-    };
+    }, []);
 
-    const handleSaveChanges = async () => {
+    const handleSaveChanges = useCallback(async () => {
         if (!firestore) return;
         const batch = writeBatch(firestore);
         localSections.forEach((section, index) => {
@@ -93,19 +95,19 @@ export default function HomeBuilderPage() {
             console.error('Error saving order:', error);
             toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar el orden.' });
         }
-    };
+    }, [firestore, localSections, toast]);
     
-    const handleEdit = (section: HomeSection) => {
+    const handleEdit = useCallback((section: HomeSection) => {
         setSelectedSection(section);
         setIsDialogOpen(true);
-    };
+    }, []);
 
-    const handleDeleteRequest = (sectionId: string) => {
+    const handleDeleteRequest = useCallback((sectionId: string) => {
         setSectionIdToDelete(sectionId);
         setIsDeleteDialogOpen(true);
-    };
+    }, []);
     
-    const handleDeleteConfirm = async () => {
+    const handleDeleteConfirm = useCallback(async () => {
         if (!sectionIdToDelete || !firestore) return;
         const sectionRef = doc(firestore, 'home_sections', sectionIdToDelete);
         try {
@@ -118,7 +120,7 @@ export default function HomeBuilderPage() {
             setIsDeleteDialogOpen(false);
             setSectionIdToDelete(null);
         }
-    };
+    }, [sectionIdToDelete, firestore, toast]);
     
     const isLoading = isAdminLoading || isSectionsLoading;
 

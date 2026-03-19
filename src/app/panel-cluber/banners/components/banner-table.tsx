@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { getBannerColumns } from './banner-columns';
@@ -35,7 +35,7 @@ export function BannerTable() {
         return banners.map(makeBannerSerializable);
     }, [banners]);
 
-    const handleToggleActive = async (bannerId: string, isActive: boolean) => {
+    const handleToggleActive = useCallback(async (bannerId: string, isActive: boolean) => {
         const bannerRef = doc(firestore, 'banners', bannerId);
         try {
             await updateDoc(bannerRef, { isActive });
@@ -44,19 +44,19 @@ export function BannerTable() {
             console.error('Error updating banner status:', error);
             toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el estado del banner.' });
         }
-    };
+    }, [firestore, toast]);
     
-    const handleEdit = (banner: SerializableBanner) => {
+    const handleEdit = useCallback((banner: SerializableBanner) => {
         setSelectedBanner(banner);
         setIsEditDialogOpen(true);
-    };
+    }, []);
 
-    const handleDeleteRequest = (bannerId: string) => {
+    const handleDeleteRequest = useCallback((bannerId: string) => {
         setBannerIdToDelete(bannerId);
         setIsDeleteDialogOpen(true);
-    };
+    }, []);
     
-    const handleDeleteConfirm = async () => {
+    const handleDeleteConfirm = useCallback(async () => {
         if (!bannerIdToDelete) return;
         const bannerRef = doc(firestore, 'banners', bannerIdToDelete);
         try {
@@ -69,9 +69,9 @@ export function BannerTable() {
             setIsDeleteDialogOpen(false);
             setBannerIdToDelete(null);
         }
-    };
+    }, [bannerIdToDelete, firestore, toast]);
 
-    const columns = useMemo(() => getBannerColumns(handleToggleActive, handleEdit, handleDeleteRequest), []);
+    const columns = useMemo(() => getBannerColumns(handleToggleActive, handleEdit, handleDeleteRequest), [handleToggleActive, handleEdit, handleDeleteRequest]);
 
     return (
         <>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, doc, deleteDoc, Timestamp } from 'firebase/firestore';
 import type { Benefit, SerializableBenefit, UserRole } from '@/types/data';
@@ -57,17 +57,17 @@ export default function BenefitList({ user }: BenefitListProps) {
     return sortedBenefits.map(makeBenefitSerializable);
   }, [sortedBenefits]);
 
-  const handleEdit = (benefit: SerializableBenefit) => {
+  const handleEdit = useCallback((benefit: SerializableBenefit) => {
     setSelectedBenefit(benefit);
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteRequest = (benefitId: string) => {
+  const handleDeleteRequest = useCallback((benefitId: string) => {
     setBenefitIdToDelete(benefitId);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!benefitIdToDelete) return;
     const benefitRef = doc(firestore, 'benefits', benefitIdToDelete);
     try {
@@ -80,12 +80,12 @@ export default function BenefitList({ user }: BenefitListProps) {
       setIsDeleteDialogOpen(false);
       setBenefitIdToDelete(null);
     }
-  };
+  }, [benefitIdToDelete, firestore, toast]);
 
   // Memoize columns with the handlers
   const columns = useMemo(() => {
     return getBenefitColumns(handleEdit, handleDeleteRequest, isAdmin);
-  }, [isAdmin]);
+  }, [isAdmin, handleEdit, handleDeleteRequest]);
 
 
   if (error) {
