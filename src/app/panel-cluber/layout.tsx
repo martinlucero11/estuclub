@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -17,13 +18,13 @@ export default function PanelCluberLayout({
   const { user, roles, isUserLoading } = useUser();
   const router = useRouter();
 
-  const isAuthorized = roles.includes('admin') || roles.includes('supplier');
+  const isAuthorized = !isUserLoading && (roles.includes('admin') || roles.includes('supplier'));
 
   useEffect(() => {
-    if (!isUserLoading && !isAuthorized) {
+    if (!isUserLoading && !user) {
       router.push('/');
     }
-  }, [isUserLoading, isAuthorized, router]);
+  }, [isUserLoading, user, router]);
 
   if (isUserLoading || !isAuthorized) {
     return <SplashScreen />;
