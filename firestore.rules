@@ -171,9 +171,9 @@ service cloud.firestore {
     /* ================= NOTIFICATIONS ================= */
 
     match /notifications/{id} {
-      allow get, list: if true;
-      allow create: if signedIn();
-      allow update, delete: if signedIn();
+      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
+      allow create: if signedIn() && (request.resource.data.userId == request.auth.uid || isAdminDocOwner());
+      allow update, delete: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
     }
 
     /* ================= GLOBAL DENY ================= */

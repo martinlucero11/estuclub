@@ -20,7 +20,7 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
         />
     );
     
-    const containerClasses = "relative w-full h-56 overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full h-24 sm:h-32 md:h-36 overflow-hidden rounded-2xl";
 
     if (banner.link) {
         return (

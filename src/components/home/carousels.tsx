@@ -42,7 +42,7 @@ interface BannerCarouselCardProps {
 
 const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
     const bannerContent = (
-      <div className="relative w-full overflow-hidden rounded-2xl aspect-video">
+      <div className="relative w-full overflow-hidden rounded-2xl h-24 sm:h-32 md:h-36">
           <Image
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
@@ -68,7 +68,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
 
 // --- CAROUSEL COMPONENTS (ESTRUCTURA FINAL Y ROBUSTA) ---
 
-const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center bg-white/80 hover:bg-white text-foreground rounded-full shadow-md transition-all duration-300 hover:scale-110 disabled:opacity-50 disabled:scale-100 w-10 h-10";
+const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center bg-background/80 hover:bg-background text-foreground rounded-full shadow-xl border border-border transition-all duration-300 hover:scale-110 disabled:opacity-0 w-10 h-10 z-20 backdrop-blur-sm";
 
 export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
     if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
@@ -82,8 +82,8 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "-left-4")}/>
-            <CarouselNext className={cn(carouselArrowClasses, "-right-4")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")}/>
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     )
 }
@@ -100,8 +100,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "-left-4")} />
-            <CarouselNext className={cn(carouselArrowClasses, "-right-4")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")} />
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     )
 }
@@ -123,8 +123,8 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious className={cn(carouselArrowClasses, "-left-4")} />
-            <CarouselNext className={cn(carouselArrowClasses, "-right-4")} />
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")} />
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     )
 }
@@ -138,7 +138,7 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
         <Carousel opts={{ align: "start", loop: true }} className="w-full">
             <CarouselContent className="-ml-2">
                 {banners.map((banner, index) => (
-                    <CarouselItem key={banner.id ?? index} className="basis-full pl-2">
+                    <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
                             banner={banner as Banner} 
                             priority={index === 0}
