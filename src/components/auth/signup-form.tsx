@@ -23,6 +23,8 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerifi
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -39,6 +41,9 @@ const formSchema = z.object({
   }),
   university: z.string().min(3, 'El centro educativo debe tener al menos 3 caracteres.'),
   major: z.string().min(3, 'La carrera debe tener al menos 3 caracteres.'),
+  acceptPrivacy: z.boolean().refine(val => val === true, {
+    message: "Debes aceptar la política de privacidad.",
+  }),
 });
 
 export default function SignupForm() {
@@ -63,6 +68,7 @@ export default function SignupForm() {
       phone: '',
       university: '',
       major: '',
+      acceptPrivacy: false,
     },
   });
 
@@ -369,6 +375,29 @@ export default function SignupForm() {
                       </FormControl>
                     </div>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="acceptPrivacy"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm mt-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        He leído y acepto la{' '}
+                        <Link href="/politica-de-privacidad" className="text-primary hover:underline font-bold" target="_blank">
+                          Política de Privacidad
+                        </Link>
+                      </FormLabel>
+                      <FormMessage />
+                    </div>
                   </FormItem>
                 )}
               />

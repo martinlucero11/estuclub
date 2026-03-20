@@ -40,6 +40,7 @@ const formSchema = z.object({
 export default function LoginForm() {
   const { toast } = useToast();
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
+  const [unverifiedCredentials, setUnverifiedCredentials] = useState({ email: '', password: '' });
   const [isResending, setIsResending] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,13 +53,15 @@ export default function LoginForm() {
   });
 
   async function handleResendVerification() {
-    if (!auth.currentUser) return;
+    if (!unverifiedCredentials.email) return;
     setIsResending(true);
     try {
-      await sendEmailVerification(auth.currentUser);
+      const result = await signInWithEmailAndPassword(auth, unverifiedCredentials.email, unverifiedCredentials.password);
+      await sendEmailVerification(result.user);
+      await signOut(auth);
       toast({
         title: 'Correo de verificación reenviado',
-        description: 'Por favor, revisa tu bandeja de entrada.',
+        description: 'Por favor, revisa tu bandeja de entrada. Recuerda revisar la carpeta de Spam.',
       });
     } catch (error) {
       toast({
@@ -83,6 +86,7 @@ export default function LoginForm() {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       
       if (!userCredential.user.emailVerified) {
+        setUnverifiedCredentials({ email: values.email, password: values.password });
         setShowVerificationAlert(true);
         await signOut(auth);
         return;
