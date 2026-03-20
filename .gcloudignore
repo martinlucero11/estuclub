@@ -1,0 +1,4 @@
+android/
+capacitor.config.ts
+out/
+.git/
