@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc } from 'firebase/firestore';
 import { getCategoryColumns } from './category-columns';
@@ -26,17 +26,17 @@ export function CategoryTable() {
     const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('name', 'asc')), [firestore]);
     const { data: categories, isLoading } = useCollection(categoriesQuery);
     
-    const handleEdit = (category: Category) => {
+    const handleEdit = useCallback((category: Category) => {
         setSelectedCategory(category);
         setIsEditDialogOpen(true);
-    };
+    }, []);
 
-    const handleDeleteRequest = (categoryId: string) => {
+    const handleDeleteRequest = useCallback((categoryId: string) => {
         setCategoryIdToDelete(categoryId);
         setIsDeleteDialogOpen(true);
-    };
+    }, []);
     
-    const handleDeleteConfirm = async () => {
+    const handleDeleteConfirm = useCallback(async () => {
         if (!categoryIdToDelete) return;
         const categoryRef = doc(firestore, 'categories', categoryIdToDelete);
         try {
@@ -49,9 +49,9 @@ export function CategoryTable() {
             setIsDeleteDialogOpen(false);
             setCategoryIdToDelete(null);
         }
-    };
+    }, [categoryIdToDelete, firestore, toast]);
 
-    const columns = useMemo(() => getCategoryColumns(handleEdit, handleDeleteRequest), []);
+    const columns = useMemo(() => getCategoryColumns(handleEdit, handleDeleteRequest), [handleEdit, handleDeleteRequest]);
 
     return (
         <>

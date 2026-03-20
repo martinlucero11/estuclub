@@ -140,7 +140,7 @@ function AppSidebar() {
                         <SheetClose asChild>
                              <Link href="/" className="flex items-center justify-center">
                                 <div
-                                    className="h-8 w-[120px] bg-primary dark:bg-primary-foreground [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                                    className="h-8 w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
                                     aria-label="EstuClub Logo"
                                 />
                             </Link>
@@ -185,7 +185,7 @@ export default function Header() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" aria-label="Homepage">
                 <div
-                    className="h-8 w-[120px] bg-primary dark:bg-primary-foreground [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                    className="h-8 w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
                     aria-label="EstuClub Logo"
                 />
             </Link>

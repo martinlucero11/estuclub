@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { PageHeader } from '@/components/ui/page-header';
 import { getMessaging, getToken } from 'firebase/messaging';
-import { useFirebase } from '@/firebase/provider';
+import { useFirebase } from '@/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { BellRing } from 'lucide-react';
 

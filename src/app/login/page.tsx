@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -12,10 +13,10 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
+    if (!isUserLoading && user) {
       router.push('/');
     }
-  }, [user, router]);
+  }, [user, isUserLoading, router]);
 
   if (isUserLoading || user) {
     return <SplashScreen />;
@@ -27,7 +28,7 @@ export default function LoginPage() {
         <header className="mb-8 flex flex-col items-center">
             <Link href="/" className="mb-4">
                 <div
-                    className="h-[42px] w-[140px] bg-primary dark:bg-primary-foreground [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                    className="h-[42px] w-[140px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
                     aria-label="EstuClub Logo"
                 />
             </Link>

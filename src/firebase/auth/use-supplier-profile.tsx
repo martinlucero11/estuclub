@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 import type { SupplierProfile } from '@/types/data';
 import { useMemo } from 'react';
 

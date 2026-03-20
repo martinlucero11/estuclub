@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser } from '@/firebase/provider';
+import { useUser } from '@/firebase';
 
 /**
  * Hook to determine if the current user is a supplier.
