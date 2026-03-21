@@ -40,6 +40,19 @@ function AppointmentCard({ appointment }: { appointment: Appointment }) {
     
     const startTime = (appointment.startTime as Timestamp).toDate();
 
+    const handleAddToCalendar = () => {
+        const endTime = new Date(startTime.getTime() + 30 * 60000); // Default 30 min if not specified
+        const format = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+        
+        const url = new URL('https://www.google.com/calendar/render');
+        url.searchParams.append('action', 'TEMPLATE');
+        url.searchParams.append('text', `Turno: ${appointment.serviceName}`);
+        url.searchParams.append('dates', `${format(startTime)}/${format(endTime)}`);
+        url.searchParams.append('details', `Reserva en EstuClub para ${appointment.serviceName}. Por favor asistir 5 mins antes.`);
+        
+        window.open(url.toString(), '_blank');
+    };
+
     return (
         <Card key={appointment.id} className="p-4">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center w-full">
@@ -65,6 +78,16 @@ function AppointmentCard({ appointment }: { appointment: Appointment }) {
                     <Badge variant={appointment.status === 'cancelled' ? 'destructive' : 'secondary'}>
                         {appointment.status === 'confirmed' ? 'Confirmado' : 'Cancelado'}
                     </Badge>
+                    {appointment.status === 'confirmed' && (
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-muted-foreground hover:text-primary transition-colors"
+                            onClick={handleAddToCalendar}
+                        >
+                            Agendar
+                        </Button>
+                    )}
                      <Button asChild size="sm" variant="outline">
                         <Link href={`/mis-turnos/${appointment.id}`}>
                             Ver Comprobante

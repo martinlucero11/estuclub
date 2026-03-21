@@ -4,7 +4,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, History, CalendarClock, LayoutGrid, LogIn } from 'lucide-react';
+import { User, LogOut, History, CalendarClock, LayoutGrid, LogIn, Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +32,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
+import { SearchBar } from '@/components/layout/search-bar';
 
 function UserMenu() {
   const { user, isUserLoading } = useUser(); 
@@ -99,6 +100,10 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/favorites')}>
+          <Heart className="mr-2 h-4 w-4" />
+          <span>Mis Favoritos</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push('/profile')}>
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
@@ -184,7 +189,8 @@ export default function Header() {
         </div>
 
         {/* Right Slot: Actions */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-2">
+          <SearchBar />
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />
         </div>

@@ -2,26 +2,32 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, QrCode, CalendarDays, Building } from 'lucide-react';
+import { Home, Ticket, QrCode, CalendarDays, Building, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { roles } = useUser();
+  const { roles, supplierData } = useUser();
   const showScanner = roles.includes('admin') || roles.includes('supplier');
 
-  // Dynamically generate nav items based on scanner visibility
+  const turnosHref = (roles.includes('supplier') && supplierData?.appointmentsEnabled)
+    ? '/panel-cluber/appointments'
+    : '/turnos';
+
+  // Dynamically generate nav items based on roles
   const navItems = [
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/benefits', label: 'Beneficios', icon: Ticket },
-    ...(showScanner ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] : []),
+    ...(showScanner 
+      ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] 
+      : [{ href: '/leaderboard', label: 'Ranking', icon: Trophy, special: true }]
+    ),
     { href: '/proveedores', label: 'Clubers', icon: Building },
-    { href: '/turnos', label: 'Turnos', icon: CalendarDays },
+    { href: turnosHref, label: 'Turnos', icon: CalendarDays },
   ];
 
-  // Use a purge-safe method to set grid columns
-  const gridClass = showScanner ? 'grid-cols-5' : 'grid-cols-4';
+  const gridClass = 'grid-cols-5';
 
   return (
     <nav className={cn("fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border/50")}>

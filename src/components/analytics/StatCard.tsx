@@ -10,21 +10,29 @@ interface StatCardProps {
     value: string | number;
     icon: LucideIcon;
     href?: string;
+    description?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, href }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, href, description }: StatCardProps) {
     return (
         <Card className="flex flex-col">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 border-b/5 transition-colors">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     {title}
                 </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 rounded-xl bg-primary/10">
+                    <Icon className="h-4 w-4 text-primary" />
+                </div>
             </CardHeader>
-            <CardContent className="flex-grow">
-                <div className="text-2xl font-bold">
+            <CardContent className="flex-grow pt-4">
+                <div className="text-3xl font-black tracking-tight text-foreground">
                     {value}
                 </div>
+                {description && (
+                    <p className="text-xs text-muted-foreground mt-1 font-medium italic">
+                        {description}
+                    </p>
+                )}
             </CardContent>
             {href && (
                 <CardFooter>

@@ -27,6 +27,7 @@ import { useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useUserRank } from '@/hooks/use-user-rank';
 import { PageHeader } from '@/components/ui/page-header';
+import { LevelProgress } from '@/components/profile/level-progress';
 
 const UserQRCodeDialog = dynamic(() => import('@/components/profile/user-qr-code-dialog'), { ssr: false });
 
@@ -256,7 +257,10 @@ export default function ProfilePage() {
                     Gestiona la información de tu cuenta.
                 </p>
 
-                <UserStats points={userProfile.points} rank={rank} isLoading={isRankLoading} />
+                <div className="grid gap-6 md:grid-cols-2">
+                    <LevelProgress points={userProfile.points} />
+                    <UserStats points={userProfile.points} rank={rank} isLoading={isRankLoading} />
+                </div>
 
                 <Card>
                     <CardHeader>

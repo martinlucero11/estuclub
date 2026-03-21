@@ -6,6 +6,7 @@ import { Firestore, getFirestore, doc, getDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { firebaseConfig } from '@/firebase/config';
+import type { UserProfile } from '@/types/data';
 
 // --- TYPE DEFINITIONS ---
 
@@ -19,6 +20,7 @@ interface AuthState {
 
 interface ProfileState {
   roles: string[];
+  userData: UserProfile | null;
   supplierData: SupplierData | null;
   isProfileLoading: boolean;
   profileError: Error | null;
@@ -34,6 +36,7 @@ export interface FirebaseContextState {
   storage: FirebaseStorage | null;
   user: User | null;
   roles: string[];
+  userData: UserProfile | null;
   supplierData: SupplierData | null;
   isUserLoading: boolean;
   userError: Error | null;
@@ -64,6 +67,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const [profileState, setProfileState] = useState<ProfileState>({
     roles: [],
+    userData: null,
     supplierData: null,
     isProfileLoading: false,
     profileError: null,
@@ -78,7 +82,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     if (!authState.user) {
-      setProfileState({ roles: [], supplierData: null, isProfileLoading: false, profileError: null });
+      setProfileState({ roles: [], userData: null, supplierData: null, isProfileLoading: false, profileError: null });
       return;
     }
 
@@ -86,9 +90,16 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     const fetchUserRoles = async () => {
       const userRoles: string[] = ['user'];
+      let userData: UserProfile | null = null;
       let supplierData: SupplierData | null = null;
 
       try {
+        const userDocRef = doc(services.firestore, 'users', authState.user!.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          userData = userDoc.data() as any;
+        }
+
         const adminRoleRef = doc(services.firestore, 'roles_admin', authState.user!.uid);
         const adminDoc = await getDoc(adminRoleRef);
         if (adminDoc.exists()) {
@@ -104,6 +115,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         setProfileState({
           roles: Array.from(new Set(userRoles)),
+          userData,
           supplierData,
           isProfileLoading: false,
           profileError: null,
@@ -112,6 +124,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
         console.error("Error fetching user profile:", error);
         setProfileState({
           roles: ['user'],
+          userData: null,
           supplierData: null,
           isProfileLoading: false,
           profileError: error as Error,
@@ -128,6 +141,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       ...services,
       user: authState.user,
       roles: profileState.roles,
+      userData: profileState.userData,
       supplierData: profileState.supplierData,
       isUserLoading: authState.isAuthLoading || profileState.isProfileLoading,
       userError: authState.authError || profileState.profileError,

@@ -14,6 +14,7 @@ import { HomeSection } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import HomeSectionRenderer from '@/components/home/home-section-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PendingReviews } from '@/components/reviews/pending-reviews';
 
 function HomeSectionsSkeleton() {
     return (
@@ -84,6 +85,7 @@ export default function HomePage() {
         <MainLayout>
             <div className="mx-auto w-full px-4">
                 <WelcomeMessage />
+                <PendingReviews />
                 <Suspense fallback={<HomeSectionsSkeleton />}>
                     <HomeContent />
                 </Suspense>

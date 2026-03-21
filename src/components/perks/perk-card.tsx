@@ -6,6 +6,8 @@ import { Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import RedeemBenefitDialog from './redeem-perk-dialog';
+import { FavoriteButton } from '../layout/favorite-button';
+import { ShareButton } from '../layout/share-button';
 
 interface BenefitCardProps {
   benefit: SerializableBenefit & { supplierName?: string };
@@ -37,6 +39,18 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
         <Badge variant="secondary" className="absolute top-3 left-3 bg-pink-600 text-white border-0 z-20">
             {benefit.category}
         </Badge>
+
+        <FavoriteButton 
+            id={benefit.id} 
+            type="benefit" 
+            className="absolute top-3 right-3 z-30" 
+        />
+
+        <ShareButton 
+            title={benefit.title}
+            url={`${typeof window !== 'undefined' ? window.location.origin : ''}/search?q=${encodeURIComponent(benefit.title)}`}
+            className="absolute top-14 right-3 z-30"
+        />
 
         <div className="relative z-10 flex h-full flex-col justify-end p-4 text-left">
             <div className='space-y-1'>

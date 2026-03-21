@@ -1,9 +1,9 @@
 'use client';
 
-import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { useCollectionOnce, useFirestore, useDoc } from '@/firebase';
+import { collection, query, where, doc } from 'firebase/firestore';
 import { useMemo } from 'react';
-import { Gift, Ticket, Users, Calendar } from 'lucide-react';
+import { Gift, Ticket, Users, Calendar, Star, Heart } from 'lucide-react';
 import { StatCard } from './StatCard';
 import { TimeSeriesChart } from './TimeSeriesChart';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -56,18 +56,37 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
     );
     const { data: subscribers, isLoading: subscribersLoading } = useCollectionOnce(subscribersQuery);
 
-    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading || subscribersLoading;
+    const reviewsQuery = useMemo(() =>
+        query(collection(firestore, 'reviews').withConverter(createConverter<any>()), where('supplierId', '==', supplierId)),
+        [firestore, supplierId]
+    );
+    const { data: reviews, isLoading: reviewsLoading } = useCollectionOnce(reviewsQuery);
+
+    const supplierRef = useMemo(() => doc(firestore, 'roles_supplier', supplierId), [firestore, supplierId]);
+    const { data: supplierDoc, isLoading: supplierLoading } = useDoc<any>(supplierRef);
+
+    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading || subscribersLoading || reviewsLoading || supplierLoading;
 
     const stats = useMemo(() => {
-        if (!benefits || !redemptions || !appointments || !subscribers) return null;
+        if (!benefits || !redemptions || !appointments || !subscribers || !reviews || !supplierDoc) return null;
+
+        const totalBenefitFavorites = benefits.reduce((acc, b) => acc + (b.favoritesCount || 0), 0);
+        const totalSupplierFavorites = supplierDoc.favoritesCount || 0;
+        
+        const avgRating = reviews.length > 0 
+            ? reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / reviews.length 
+            : 0;
 
         return {
             totalBenefits: benefits.length,
             totalRedemptions: redemptions.length,
             totalAppointments: appointments.length,
             totalSubscribers: subscribers.length,
+            totalFavorites: totalBenefitFavorites + totalSupplierFavorites,
+            avgRating: avgRating,
+            reviewCount: reviews.length
         };
-    }, [benefits, redemptions, appointments, subscribers]);
+    }, [benefits, redemptions, appointments, subscribers, reviews, supplierDoc]);
 
     if (isLoading) {
         return <LoadingSkeleton />;
@@ -79,11 +98,13 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
 
     return (
         <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="Beneficios Activos" value={stats.totalBenefits} icon={Gift} href="/panel-cluber/benefits" />
                 <StatCard title="Canjes Totales" value={stats.totalRedemptions} icon={Ticket} href="/panel-cluber/redemptions" />
                 <StatCard title="Suscriptores" value={stats.totalSubscribers} icon={Users} href="/panel-cluber/subscribers" />
                 <StatCard title="Turnos Reservados" value={stats.totalAppointments} icon={Calendar} href="/panel-cluber/appointments" />
+                <StatCard title="Favoritos Totales" value={stats.totalFavorites} icon={Heart} />
+                <StatCard title="Calificación Media" value={`${stats.avgRating.toFixed(1)} / 5`} icon={Star} description={`${stats.reviewCount} reseñas`} />
             </div>
 
             <Card>

@@ -55,6 +55,15 @@ export default function RedemptionQRCodeDialog({
   useEffect(() => {
     if (!qrCodeValue) return;
 
+    // Offline caching logic
+    const cacheKey = `qr_cache_${redemptionId}`;
+    const cachedQr = localStorage.getItem(cacheKey);
+    
+    if (cachedQr) {
+      setQrCodeUrl(cachedQr);
+      return;
+    }
+
     // Detect theme for QR code colors
     const isDark = document.documentElement.classList.contains('dark');
     const qrDarkColor = isDark ? '#FFFFFF' : '#020817'; // text-foreground
@@ -71,11 +80,17 @@ export default function RedemptionQRCodeDialog({
     })
     .then(url => {
         setQrCodeUrl(url);
+        // Cache it for offline use
+        try {
+            localStorage.setItem(cacheKey, url);
+        } catch (e) {
+            console.error("Failed to cache QR code:", e);
+        }
     })
     .catch(err => {
         console.error("QR Code Generation Error:", err);
     });
-  }, [qrCodeValue]);
+  }, [qrCodeValue, redemptionId]);
 
   const handleShareToWhatsApp = () => {
     const message = `He canjeado el beneficio *${benefitTitle}* de *${supplierName}*. Mi número de comprobante es: *${redemptionId}*`;

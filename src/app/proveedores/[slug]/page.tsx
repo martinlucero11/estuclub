@@ -18,8 +18,11 @@ import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
 import { getInitials } from '@/lib/utils';
 import SubscribeButton from '@/components/supplier/subscribe-button';
+import { FavoriteButton } from '@/components/layout/favorite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ReviewList } from '@/components/reviews/review-list';
+import { StarRating } from '@/components/reviews/star-rating';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -48,6 +51,24 @@ function ProfileSkeleton() {
                     ))}
                 </div>
             </div>
+        </div>
+    );
+}
+
+function AverageRating({ supplierId }: { supplierId: string }) {
+    const firestore = useFirestore();
+    const reviewsQuery = useMemo(() => query(collection(firestore, 'reviews'), where('supplierId', '==', supplierId)), [firestore, supplierId]);
+    const { data: reviews } = useCollectionOnce(reviewsQuery);
+    
+    if (!reviews || reviews.length === 0) return null;
+    
+    const avg = reviews.reduce((acc, r: any) => acc + (r.rating || 0), 0) / reviews.length;
+    
+    return (
+        <div className="flex items-center gap-1.5 mt-1 bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 px-2.5 py-0.5 rounded-full border border-yellow-400/20 shadow-sm animate-in fade-in duration-500">
+            <StarRating rating={avg} readonly size="sm" />
+            <span className="text-xs font-black">{avg.toFixed(1)}</span>
+            <span className="text-[10px] text-muted-foreground font-bold">({reviews.length})</span>
         </div>
     );
 }
@@ -161,12 +182,16 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
                     {supplier.name}
                 </h1>
-                <div className="flex items-center gap-2 text-muted-foreground font-medium mt-1">
-                    <TypeIcon className="h-4 w-4" />
-                    <p className="capitalize">{supplier.type}</p>
+                <div className="flex flex-col items-center gap-1 mt-1">
+                    <div className="flex items-center gap-2 text-muted-foreground font-medium">
+                        <TypeIcon className="h-4 w-4" />
+                        <p className="capitalize">{supplier.type}</p>
+                    </div>
+                    <AverageRating supplierId={supplier.id} />
                 </div>
-                 <div className="mt-4">
+                 <div className="mt-4 flex items-center gap-2">
                     {!isOwnProfile && <SubscribeButton supplierId={supplier.id} />}
+                    {!isOwnProfile && <FavoriteButton id={supplier.id} type="supplier" />}
                 </div>
             </header>
             
@@ -176,25 +201,34 @@ function CluberProfileContent({ slug }: { slug: string }) {
                 )}
 
                 <Tabs defaultValue={defaultTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mx-auto max-w-md">
-                        <TabsTrigger value="benefits" disabled={!hasBenefits}>Beneficios</TabsTrigger>
-                        {hasServices && <TabsTrigger value="services">Turnos y Servicios</TabsTrigger>}
+                    <TabsList className="grid w-full grid-cols-3 mx-auto max-w-lg mb-8">
+                        <TabsTrigger value="benefits" className="font-bold">Beneficios</TabsTrigger>
+                        <TabsTrigger value="services" className="font-bold" disabled={!hasServices}>Turnos</TabsTrigger>
+                        <TabsTrigger value="reviews" className="font-bold">Reseñas</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="benefits" className="mt-6">
-                         {benefitsLoading ? <Skeleton className="h-48 w-full" /> : (
+                    
+                    <TabsContent value="benefits" className="animate-in fade-in-50 duration-500">
+                         {benefitsLoading ? <Skeleton className="h-48 w-full rounded-3xl" /> : (
                             hasBenefits ? <BenefitsGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
                          )}
                     </TabsContent>
-                    {hasServices && (
-                        <TabsContent value="services" className="mt-6">
+
+                    <TabsContent value="services" className="animate-in fade-in-50 duration-500">
+                        {hasServices ? (
                             <ServiceList 
                                 services={services || []} 
                                 availability={availability} 
                                 supplierId={supplier.id} 
                                 allowsBooking={!!supplier.appointmentsEnabled}
                             />
-                        </TabsContent>
-                    )}
+                        ) : (
+                            <EmptyState icon={Server} title="Sin Turnos" description="Este Cluber no ofrece turnos online por el momento."/>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="reviews" className="animate-in fade-in-50 duration-500 max-w-2xl mx-auto">
+                        <ReviewList supplierId={supplier.id} />
+                    </TabsContent>
                 </Tabs>
             </main>
         </div>

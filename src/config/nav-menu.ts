@@ -16,6 +16,7 @@ import {
     Building,
     BarChart,
     History as HistoryIcon,
+    Trophy,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -34,6 +35,11 @@ export const navConfig: NavConfig = {
       title: "Clubers",
       href: "/proveedores",
       icon: Building,
+    },
+    {
+      title: "Ranking",
+      href: "/leaderboard",
+      icon: Trophy,
     },
     {
       title: "Anuncios",

@@ -39,6 +39,10 @@ export interface UserProfile {
     points: number;
     photoURL?: string;
     role: UserRole;
+    favoriteBenefits?: string[];
+    favoriteSuppliers?: string[];
+    xp?: number;
+    level?: number;
     createdAt: Timestamp;
 }
 
