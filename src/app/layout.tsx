@@ -17,6 +17,10 @@ const fontSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "EstuClub",
   description: "La mejor app de beneficios para estudiantes",
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
