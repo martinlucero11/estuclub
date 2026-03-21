@@ -8,6 +8,7 @@ import AddServiceForm from '@/components/supplier/add-service-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
 import SupplierAgenda from '@/components/supplier/supplier-agenda';
+import ServiceManager from '@/components/supplier/service-manager';
 
 export default function PanelCluberAppointmentsPage() {
   return (
@@ -40,15 +41,27 @@ export default function PanelCluberAppointmentsPage() {
                  <SupplierAgenda />
             </TabsContent>
             <TabsContent value="services">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Añadir Nuevo Servicio</CardTitle>
-                        <CardDescription>Crea los servicios que ofreces para que los usuarios puedan reservarlos.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <AddServiceForm />
-                    </CardContent>
-                </Card>
+                <div className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Mis Servicios</CardTitle>
+                            <CardDescription>Visualiza y gestiona los servicios que ofreces.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ServiceManager />
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Añadir Nuevo Servicio</CardTitle>
+                            <CardDescription>Crea los servicios que ofreces para que los usuarios puedan reservarlos.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <AddServiceForm />
+                        </CardContent>
+                    </Card>
+                </div>
             </TabsContent>
             <TabsContent value="availability">
                 <Card>

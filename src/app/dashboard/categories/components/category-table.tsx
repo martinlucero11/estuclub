@@ -23,8 +23,12 @@ export function CategoryTable() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
 
-    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('order', 'asc')), [firestore]);
-    const { data: categories, isLoading } = useCollection(categoriesQuery);
+    const categoriesQuery = useMemo(() => collection(firestore, 'categories').withConverter(createConverter<Category>()), [firestore]);
+    const { data: rawCategories, isLoading } = useCollection(categoriesQuery);
+    const categories = useMemo(() => {
+        if (!rawCategories) return [];
+        return [...rawCategories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }, [rawCategories]);
     const [isReorderDialogOpen, setIsReorderDialogOpen] = useState(false);
     
     const handleEdit = (category: Category) => {

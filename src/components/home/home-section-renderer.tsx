@@ -45,12 +45,17 @@ function SectionContent({ section }: { section: HomeSection }) {
     if (block.kind === 'categories') {
         const categoriesQuery = useMemo(() => {
             if (!firestore) return null;
-            return query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('order', 'asc'));
+            return collection(firestore, 'categories').withConverter(createConverter<Category>());
         }, [firestore]);
         const { data: categories, isLoading } = useCollectionOnce(categoriesQuery);
 
+        const orderedCategories = useMemo(() => {
+            if (!categories) return [];
+            return [...categories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        }, [categories]);
+
         if (isLoading) return <SectionSkeleton />;
-        return <CategoryGrid categories={categories || []} />;
+        return <CategoryGrid categories={orderedCategories} />;
     }
 
     if (block.kind === 'banner') {
