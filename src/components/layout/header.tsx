@@ -103,14 +103,6 @@ function UserMenu() {
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/my-redemptions')}>
-          <History className="mr-2 h-4 w-4" />
-          <span>Mis Canjes</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/mis-turnos')}>
-          <CalendarClock className="mr-2 h-4 w-4" />
-          <span>Mis Turnos</span>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />

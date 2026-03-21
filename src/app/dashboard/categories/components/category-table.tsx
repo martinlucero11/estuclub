@@ -7,8 +7,9 @@ import { getCategoryColumns } from './category-columns';
 import type { Category } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Shapes } from 'lucide-react';
 import { CategoryDialog } from './category-dialog';
+import { ReorderCategoriesDialog } from './reorder-categories-dialog';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
@@ -22,8 +23,9 @@ export function CategoryTable() {
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
 
-    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('name', 'asc')), [firestore]);
+    const categoriesQuery = useMemo(() => query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('order', 'asc')), [firestore]);
     const { data: categories, isLoading } = useCollection(categoriesQuery);
+    const [isReorderDialogOpen, setIsReorderDialogOpen] = useState(false);
     
     const handleEdit = (category: Category) => {
         setSelectedCategory(category);
@@ -54,7 +56,11 @@ export function CategoryTable() {
 
     return (
         <>
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-2 mb-4">
+                <Button variant="outline" onClick={() => setIsReorderDialogOpen(true)}>
+                    <Shapes className="mr-2 h-4 w-4" />
+                    Reordenar
+                </Button>
                 <Button onClick={() => setIsCreateDialogOpen(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Nueva Categoría
@@ -85,6 +91,13 @@ export function CategoryTable() {
                 title="¿Eliminar esta categoría?"
                 description="Esta acción es permanente y no se puede deshacer."
             />
+            {categories && (
+                <ReorderCategoriesDialog 
+                    isOpen={isReorderDialogOpen}
+                    onOpenChange={setIsReorderDialogOpen}
+                    categories={categories}
+                />
+            )}
         </>
     );
 }

@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import AddServiceForm from '@/components/supplier/add-service-form';
 import AvailabilityManager from '@/components/supplier/availability-manager';
 import AppointmentList from '@/components/supplier/appointment-list';
+import SupplierAgenda from '@/components/supplier/supplier-agenda';
 
 export default function PanelCluberAppointmentsPage() {
   return (
@@ -18,8 +19,9 @@ export default function PanelCluberAppointmentsPage() {
         </p>
 
         <Tabs defaultValue="appointments" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="appointments">Mis Turnos</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="appointments">Próximos Turnos</TabsTrigger>
+                <TabsTrigger value="agenda">Mi Agenda</TabsTrigger>
                 <TabsTrigger value="services">Mis Servicios</TabsTrigger>
                 <TabsTrigger value="availability">Mi Disponibilidad</TabsTrigger>
             </TabsList>
@@ -27,12 +29,15 @@ export default function PanelCluberAppointmentsPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle>Próximos Turnos</CardTitle>
-                        <CardDescription>Estos son los turnos que tienes programados.</CardDescription>
+                        <CardDescription>Estos son los turnos que tienes programados próximamente.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <AppointmentList />
                     </CardContent>
                 </Card>
+            </TabsContent>
+            <TabsContent value="agenda">
+                 <SupplierAgenda />
             </TabsContent>
             <TabsContent value="services">
                 <Card>

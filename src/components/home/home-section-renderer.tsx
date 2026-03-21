@@ -45,7 +45,7 @@ function SectionContent({ section }: { section: HomeSection }) {
     if (block.kind === 'categories') {
         const categoriesQuery = useMemo(() => {
             if (!firestore) return null;
-            return query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('name', 'asc'));
+            return query(collection(firestore, 'categories').withConverter(createConverter<Category>()), orderBy('order', 'asc'));
         }, [firestore]);
         const { data: categories, isLoading } = useCollectionOnce(categoriesQuery);
 

@@ -57,6 +57,7 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
             } else {
                 await addDoc(collection(firestore, 'categories'), {
                     ...values,
+                    order: 0,
                     createdAt: serverTimestamp(),
                 });
                 toast({ title: 'Categoría creada', description: 'La nueva categoría ha sido añadida.' });

@@ -15,6 +15,7 @@ import {
     QrCode,
     Building,
     BarChart,
+    History as HistoryIcon,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -40,9 +41,16 @@ export const navConfig: NavConfig = {
       icon: Megaphone,
     },
     {
-      title: "Turnos",
-      href: "/turnos",
-      icon: CalendarDays,
+      title: "Mis Turnos",
+      href: "/mis-turnos",
+      icon: CalendarClock,
+      role: ["user", "admin", "supplier"],
+    },
+    {
+      title: "Mis Canjes",
+      href: "/my-redemptions",
+      icon: HistoryIcon,
+      role: ["user", "admin", "supplier"],
     },
     {
       title: "Panel Cluber",
