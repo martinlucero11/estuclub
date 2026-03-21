@@ -164,6 +164,20 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
             createdAt: serverTimestamp(),
           };
           await addDoc(collection(firestore, 'notifications'), notificationData);
+
+          // TRIGGER REAL PUSH NOTIFICATION (FCM)
+          const canSendPush = isAdmin || supplierData?.canSendNotifications;
+          if (canSendPush) {
+              fetch('/api/notifications/notify-benefit', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                      benefitTitle: values.title,
+                      supplierName: supplierName,
+                      benefitId: benefitDocRef.id
+                  }),
+                  headers: { 'Content-Type': 'application/json' }
+              }).catch(err => console.error('Error triggering push notification API:', err));
+          }
       }
 
 

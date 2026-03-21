@@ -1,10 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import NotificationBell from './notification-bell';
+import { requestNotificationPermission } from '@/lib/fcm';
 import Header from '@/components/layout/header';
 import BottomNav from '@/components/layout/bottom-nav';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
+    useEffect(() => {
+        // Request FCM permissions on load
+        requestNotificationPermission();
+    }, []);
+
     return (
         <div className="min-h-screen flex flex-col bg-background">
             <Header />

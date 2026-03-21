@@ -71,6 +71,7 @@ export interface SupplierProfile {
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;
   canCreatePerks?: boolean;
+  canSendNotifications?: boolean;
   announcementsEnabled?: boolean;
   [key: string]: any;
 }

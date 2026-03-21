@@ -5,7 +5,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, Building, Church, Scale, ShoppingBasket, User, CalendarCheck, Gift, Megaphone } from 'lucide-react';
+import { Briefcase, Building, Church, Scale, ShoppingBasket, User, CalendarCheck, Gift, Megaphone, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
@@ -142,6 +142,17 @@ export default function SupplierList() {
                                     id={`announcements-switch-${supplier.id}`}
                                     checked={!!supplier.canCreateAnnouncements}
                                     onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreateAnnouncements', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} crear anuncios.`)}
+                                />
+                            </div>
+                             <div className="flex items-center space-x-2">
+                                <Label htmlFor={`notifications-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                    <Bell className="h-4 w-4"/>
+                                    Notificaciones
+                                </Label>
+                                <Switch
+                                    id={`notifications-switch-${supplier.id}`}
+                                    checked={!!supplier.canSendNotifications}
+                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canSendNotifications', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} enviar notificaciones globales.`)}
                                 />
                             </div>
                         </div>
