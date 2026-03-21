@@ -4,7 +4,7 @@ import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { app } from '@/firebase/client-config';
 import { isSupported } from 'firebase/messaging';
 
-const VAPID_KEY = 'QDugYeYcJrw77Vggvg4BaBw_qAxCIg3vAugX5SMbgbY';
+const VAPID_KEY = 'BFp8_dzQcHkXTre2tT6YT85zBrFz0xoB7QCRXmfVbsTOOW9IMClQSueOt2yeLpSuWMWKABJVfredoC-cFM58ULE';
 
 export async function requestNotificationPermission() {
   if (typeof window === 'undefined') return null;
@@ -18,12 +18,15 @@ export async function requestNotificationPermission() {
   try {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
+      // Register service worker if not already
+      await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      const registration = await navigator.serviceWorker.ready;
       const messaging = getMessaging(app);
       
       // Get FCM token
       const token = await getToken(messaging, { 
         vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: await navigator.serviceWorker.register('/firebase-messaging-sw.js')
+        serviceWorkerRegistration: registration
       });
       
       if (token) {
