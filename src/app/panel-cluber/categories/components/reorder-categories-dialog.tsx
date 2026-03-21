@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -24,10 +24,15 @@ interface ReorderCategoriesDialogProps {
 }
 
 export function ReorderCategoriesDialog({ isOpen, onOpenChange, categories: initialCategories }: ReorderCategoriesDialogProps) {
-    const [categories, setCategories] = useState<Category[]>(
-        [...initialCategories].sort((a, b) => (a.order || 0) - (b.order || 0))
-    );
+    const [categories, setCategories] = useState<Category[]>([]);
     const [isSaving, setIsSaving] = useState(false);
+
+    // Sync categories when prop changes or dialog opens
+    useEffect(() => {
+        if (isOpen && initialCategories.length > 0) {
+            setCategories([...initialCategories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+        }
+    }, [initialCategories, isOpen]);
     const firestore = useFirestore();
     const { toast } = useToast();
 
