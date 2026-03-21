@@ -63,6 +63,82 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
     },
   },
   {
+    id: "appointmentsEnabled",
+    header: () => <div className="text-center">Turnos</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.appointmentsEnabled;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.appointmentsEnabled}
+            onCheckedChange={(value) => onToggle(supplier.id, 'appointmentsEnabled', value)}
+            disabled={isLoading}
+            aria-label="Toggle turnos"
+          />
+        </div>
+      );
+    },
+  },
+  {
+    id: "canCreatePerks",
+    header: () => <div className="text-center">Beneficios</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.canCreatePerks;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.canCreatePerks}
+            onCheckedChange={(value) => onToggle(supplier.id, 'canCreatePerks', value)}
+            disabled={isLoading}
+            aria-label="Toggle beneficios"
+          />
+        </div>
+      );
+    },
+  },
+  {
+    id: "announcementsEnabled",
+    header: () => <div className="text-center">Anuncios</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.announcementsEnabled;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.announcementsEnabled}
+            onCheckedChange={(value) => onToggle(supplier.id, 'announcementsEnabled', value)}
+            disabled={isLoading}
+            aria-label="Toggle anuncios"
+          />
+        </div>
+      );
+    },
+  },
+  {
+    id: "canSendNotifications",
+    header: () => <div className="text-center">Notificaciones</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.canSendNotifications;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.canSendNotifications}
+            onCheckedChange={(value) => onToggle(supplier.id, 'canSendNotifications', value)}
+            disabled={isLoading}
+            aria-label="Toggle notificaciones"
+          />
+        </div>
+      );
+    },
+  },
+  {
     id: "isFeatured",
     header: () => <div className="text-center">Destacado</div>,
     cell: ({ row }) => {
