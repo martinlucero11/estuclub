@@ -24,15 +24,12 @@ function serializeQuery(query: Query | null): string {
         filters: q.filters?.map?.((f: any) => `${f.field?.toString?.()}_${f.op}_${JSON.stringify(f.value)}`) || [],
         orderBy: q.explicitOrderBy?.map?.((o: any) => `${o.field?.toString?.()}_${o.dir}`) || [],
         limit: q.limit,
-        startAt: q.startAt?.position?.map?.((p: any) => JSON.stringify(p)) || [],
-        endAt: q.endAt?.position?.map?.((p: any) => JSON.stringify(p)) || [],
       });
     }
-    // Fallback: use the firestore path
-    return query.type + '_' + JSON.stringify(query);
+    // Fallback: use a stable string representation
+    return '__query_' + (query as any).type;
   } catch {
-    // If serialization fails, always return a unique key to force re-subscribe
-    return '__fallback_' + Math.random();
+    return '__query_fallback__';
   }
 }
 
@@ -48,7 +45,7 @@ export function useCollection<T extends DocumentData>(
   const queryKey = serializeQuery(query);
   const queryRef = useRef<Query<T> | null>(null);
   
-  // Only update the stored query when the key actually changes
+  // Only update the stored query ref when the key changes
   if (query !== null) {
     queryRef.current = query;
   }

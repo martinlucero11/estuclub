@@ -24,7 +24,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow get: if isMe(userId) || isAdminDocOwner();
-      allow list: if isAdminDocOwner();
+      allow list: if signedIn();
       allow create: if isMe(userId);
       allow update, delete: if isMe(userId) || isAdminDocOwner();
 

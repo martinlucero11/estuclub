@@ -22,9 +22,9 @@ function serializeQuery(query: Query | null): string {
         limit: q.limit,
       });
     }
-    return query.type + '_' + JSON.stringify(query);
+    return '__query_' + (query as any).type;
   } catch {
-    return '__fallback_' + Math.random();
+    return '__query_fallback__';
   }
 }
 
