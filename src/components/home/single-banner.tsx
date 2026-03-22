@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { Banner } from '@/types/data';
 import { cn } from '@/lib/utils';
@@ -9,18 +8,19 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
         return null;
     }
     
+    // We use a standard img tag instead of next/image here because banners 
+    // should have a dynamic aspect ratio based on the uploaded image file.
+    // Standard img with w-full h-auto is the most reliable way to achieve this.
     const bannerImage = (
-        <Image
+        <img
             src={banner.imageUrl}
             alt={banner.title || 'Banner promocional'}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
+            className="w-full h-auto block"
+            loading="eager"
         />
     );
     
-    const containerClasses = "relative w-full h-24 sm:h-32 md:h-36 overflow-hidden rounded-2xl";
+    const containerClasses = "relative w-full overflow-hidden rounded-3xl shadow-premium border border-primary/5 transition-all hover:scale-[1.01]";
 
     if (banner.link) {
         return (
@@ -28,7 +28,7 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
                 href={banner.link} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className={cn(containerClasses)}
+                className={cn("block", containerClasses)}
             >
                 {bannerImage}
             </Link>

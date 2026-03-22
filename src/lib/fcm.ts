@@ -30,18 +30,26 @@ export async function requestNotificationPermission() {
       });
       
       if (token) {
-        console.log('FCM Token:', token);
-        // We could send this token to our server to subscribe to topics
-        await fetch('/api/notifications/subscribe', {
-            method: 'POST',
-            body: JSON.stringify({ token, topic: 'all_benefits' }),
-            headers: { 'Content-Type': 'application/json' }
-        });
+        // Only subscribe to topic in production (firebase-admin needs service account)
+        if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+          try {
+            await fetch('/api/notifications/subscribe', {
+              method: 'POST',
+              body: JSON.stringify({ token, topic: 'all_benefits' }),
+              headers: { 'Content-Type': 'application/json' }
+            });
+          } catch {
+            // Non-critical
+          }
+        }
         return token;
       }
     }
   } catch (error) {
-    console.error('Error requesting notification permission:', error);
+    // Silent in dev, log in production
+    if (typeof window !== 'undefined' && !window.location.hostname.includes('localhost')) {
+      console.error('Error requesting notification permission:', error);
+    }
   }
   return null;
 }

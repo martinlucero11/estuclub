@@ -51,66 +51,58 @@ interface UserProfile {
 
 function ProfileSkeleton() {
     return (
-        <div className='space-y-8'>
-            <Card>
+        <div className='space-y-8 animate-fade-in'>
+            <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem]">
                 <CardHeader>
-                    <CardTitle>Perfil</CardTitle>
+                    <Skeleton className="h-8 w-32" />
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center space-x-4">
-                        <Skeleton className="h-24 w-24 rounded-full" />
-                        <div className="space-y-2">
-                            <Skeleton className="h-6 w-40" />
+                <CardContent className="space-y-8">
+                    <div className="flex items-center space-x-6">
+                        <Skeleton className="h-24 w-24 rounded-3xl" />
+                        <div className="space-y-3">
+                            <Skeleton className="h-7 w-40" />
                             <Skeleton className="h-4 w-60" />
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-10 w-full" />
-                        </div>
-                        <div className="space-y-2">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-10 w-full" />
-                        </div>
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="space-y-3">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-12 w-full rounded-xl" />
+                            </div>
+                        ))}
                     </div>
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader>
-                    <Skeleton className="h-6 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-10 w-full" />
-                </CardContent>
-            </Card>
         </div>
-
     )
 }
 
 function UserStats({ points, rank, isLoading }: { points: number; rank: number | null, isLoading: boolean }) {
   return (
-    <Card>
+    <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden relative group">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
       <CardHeader>
-        <CardTitle>Estadísticas</CardTitle>
-        <CardDescription>Tus puntos y posición en el ranking.</CardDescription>
+        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Estadísticas</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Award className="h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{points || 0}</p>
+      <CardContent className="grid grid-cols-2 gap-8 relative z-10">
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                <Award className="h-6 w-6 text-primary" />
+            </div>
+            <p className="text-3xl font-black tracking-tighter">{points || 0}</p>
           </div>
-          <p className="text-sm text-muted-foreground">Puntos Totales</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Puntos Totales</p>
         </div>
-        <div className="text-center">
-           <div className="flex items-center justify-center gap-2">
-            <Trophy className="h-6 w-6 text-yellow-500" />
-            {isLoading ? <Skeleton className="h-7 w-12" /> : <p className="text-2xl font-bold">{rank ? `#${rank}` : 'N/A'}</p>}
+        <div className="space-y-2">
+           <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                <Trophy className="h-6 w-6 text-yellow-500" />
+            </div>
+            {isLoading ? <Skeleton className="h-8 w-12" /> : <p className="text-3xl font-black tracking-tighter">{rank ? `#${rank}` : 'N/A'}</p>}
           </div>
-          <p className="text-sm text-muted-foreground">Ranking</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ranking</p>
         </div>
       </CardContent>
     </Card>
@@ -240,61 +232,72 @@ export default function ProfilePage() {
     }
     
     const userInitial = userProfile.username ? userProfile.username.charAt(0).toUpperCase() : 'U';
-    const photo = userProfile.photoURL || user?.photoURL;
-
+    const photo = userProfile.photoURL || user?.photoURL
     return (
         <MainLayout>
-            <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Mi Perfil">
-                     <UserQRCodeDialog userId={user.uid} username={userProfile.username}>
-                        <Button variant="outline">
-                            <QrCode className="mr-2 h-4 w-4" />
-                            Mi ID Card
-                        </Button>
-                    </UserQRCodeDialog>
-                </PageHeader>
-                <p className="text-muted-foreground -mt-8 mb-8">
-                    Gestiona la información de tu cuenta.
-                </p>
+            <div className="flex-1 space-y-12 p-4 md:p-12 mb-12 max-w-5xl mx-auto animate-fade-in">
+                <header className="space-y-4">
+                    <div className="flex items-center justify-between">
+                         <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
+                            Mi <span className="text-primary">Perfil</span>
+                        </h1>
+                        <UserQRCodeDialog userId={user.uid} username={userProfile.username}>
+                            <Button variant="outline" className="h-11 rounded-xl font-bold shadow-premium glass glass-dark border-primary/10">
+                                <QrCode className="mr-2 h-4 w-4" />
+                                Mi ID Card
+                            </Button>
+                        </UserQRCodeDialog>
+                    </div>
+                    <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed">
+                        Gestiona tu información personal y visualiza tu progreso en el Club.
+                    </p>
+                </header>
 
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-8 md:grid-cols-2">
                     <LevelProgress points={userProfile.points} />
                     <UserStats points={userProfile.points} rank={rank} isLoading={isRankLoading} />
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Información Personal</CardTitle>
+                <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Información Personal</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="flex items-center space-x-6">
-                            <Avatar className="h-24 w-24">
-                                <AvatarImage src={photo || undefined} alt={user.displayName || 'User'} />
-                                <AvatarFallback>{userInitial}</AvatarFallback>
-                            </Avatar>
-                            <div className='space-y-1'>
-                                <p className="text-2xl font-semibold">{userProfile.firstName} {userProfile.lastName}</p>
-                                <p className="text-muted-foreground">@{userProfile.username}</p>
-                                <p className="text-sm text-muted-foreground">{userProfile.email}</p>
+                    <CardContent className="space-y-10 pt-6">
+                        <div className="flex items-center space-x-8">
+                            <div className="relative group">
+                                <Avatar className="h-28 w-28 rounded-3xl shadow-xl transition-transform duration-500 group-hover:scale-105 border-4 border-background">
+                                    <AvatarImage src={photo || undefined} alt={user.displayName || 'User'} className="object-cover" />
+                                    <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">{userInitial}</AvatarFallback>
+                                </Avatar>
+                                <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg border-2 border-background">
+                                    <UserIcon className="h-4 w-4" />
+                                </div>
+                            </div>
+                            <div className='space-y-2'>
+                                <p className="text-3xl font-black tracking-tighter">{userProfile.firstName} {userProfile.lastName}</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-wider">@{userProfile.username}</span>
+                                    <span className="text-sm text-muted-foreground font-medium">{userProfile.email}</span>
+                                </div>
                             </div>
                         </div>
 
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <div className="grid gap-6 md:grid-cols-2">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+                                <div className="grid gap-8 md:grid-cols-2">
                                      <FormField
                                         control={form.control}
                                         name="firstName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Nombre</FormLabel>
+                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Nombre</FormLabel>
                                                 <div className="relative">
-                                                    <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                                     <FormControl>
-                                                        <Input {...field} className="pl-10" />
+                                                        <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                                     </FormControl>
                                                 </div>
-                                                <FormMessage />
+                                                <FormMessage className="text-xs font-bold" />
                                             </FormItem>
                                         )}
                                     />
@@ -303,14 +306,14 @@ export default function ProfilePage() {
                                         name="lastName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Apellido</FormLabel>
+                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Apellido</FormLabel>
                                                 <div className="relative">
-                                                    <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                                     <FormControl>
-                                                        <Input {...field} className="pl-10" />
+                                                        <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                                     </FormControl>
                                                 </div>
-                                                <FormMessage />
+                                                <FormMessage className="text-xs font-bold" />
                                             </FormItem>
                                         )}
                                     />
@@ -319,51 +322,52 @@ export default function ProfilePage() {
                                         name="username"
                                         render={({ field }) => (
                                           <FormItem className="md:col-span-2">
-                                            <FormLabel>Nombre de usuario</FormLabel>
+                                            <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Nombre de usuario</FormLabel>
                                             <div className="relative">
-                                              <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                              <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                               <FormControl>
-                                                <Input {...field} className="pl-10" />
+                                                <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                               </FormControl>
                                             </div>
-                                            <FormMessage />
+                                            <FormMessage className="text-xs font-bold" />
                                           </FormItem>
                                         )}
                                       />
-                                    <div className="space-y-2">
-                                        <Label htmlFor="dni">DNI</Label>
-                                        <Input id="dni" value={userProfile.dni} disabled />
+                                    <div className="space-y-3">
+                                        <Label htmlFor="dni" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">DNI</Label>
+                                        <Input id="dni" value={userProfile.dni} disabled className="h-12 rounded-xl bg-muted/30 border-transparent font-bold text-base opacity-70" />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="phone">Teléfono</Label>
-                                        <Input id="phone" value={userProfile.phone} disabled />
+                                    <div className="space-y-3">
+                                        <Label htmlFor="phone" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Teléfono</Label>
+                                        <Input id="phone" value={userProfile.phone} disabled className="h-12 rounded-xl bg-muted/30 border-transparent font-bold text-base opacity-70" />
                                     </div>
-                                    <div className="space-y-2 md:col-span-2">
-                                        <Label htmlFor="userId">ID de Usuario</Label>
+                                    <div className="space-y-3 md:col-span-2">
+                                        <Label htmlFor="userId" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">ID de Usuario</Label>
                                         <div className="relative">
-                                            <Input id="userId" value={user.uid} disabled className="pr-10" />
+                                            <Input id="userId" value={user.uid} disabled className="h-12 pr-12 rounded-xl bg-muted/30 border-transparent font-extrabold text-sm opacity-50 font-mono tracking-tighter" />
                                             <Button 
                                                 type="button"
                                                 variant="ghost" 
                                                 size="icon" 
-                                                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-background"
                                                 onClick={() => copyToClipboard(user.uid)}
                                             >
                                                 <Copy className="h-4 w-4" />
-                                                <span className="sr-only">Copiar ID de Usuario</span>
                                             </Button>
                                         </div>
-                                        <p className="text-xs text-muted-foreground">Este es tu identificador único en la aplicación.</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Tu identificador único en EstuClub</p>
                                     </div>
                                 </div>
-                                <Button type="submit" disabled={form.formState.isSubmitting}>
-                                     {form.formState.isSubmitting ? 'Guardando...' : (
-                                        <>
-                                            <Save className="mr-2 h-4 w-4" />
-                                            Guardar Cambios
-                                        </>
-                                     )}
-                                </Button>
+                                <div className="pt-2">
+                                    <Button type="submit" className="h-14 px-10 rounded-2xl font-black text-base shadow-lg hover:shadow-primary/20 transition-all active:scale-95" disabled={form.formState.isSubmitting}>
+                                        {form.formState.isSubmitting ? 'GUARDANDO...' : (
+                                            <>
+                                                <Save className="mr-2 h-5 w-5" />
+                                                GUARDAR CAMBIOS
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </form>
                         </Form>
                     </CardContent>

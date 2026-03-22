@@ -55,22 +55,24 @@ function HomeContent() {
     }
 
     return (
-        <div className="space-y-6 pb-8 pt-2">
+        <div className="space-y-10 pb-12 pt-2 animate-stagger">
             {sections.map((section) => (
-                <section key={section.id} className="space-y-2">
+                <section key={section.id} className="space-y-4">
                     {section.title && (
-                        <div className="flex items-baseline justify-between">
-                            <h2 className="text-base font-bold tracking-tight text-foreground">{section.title}</h2>
+                        <div className="flex items-center justify-between px-1">
+                            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
+                                {section.title}
+                            </h2>
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
-                                <Button variant="link" asChild className="text-sm font-semibold text-primary hover:text-primary/80">
+                                <Button variant="ghost" asChild className="h-auto p-0 text-xs font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
                                     <Link href={`/${section.block.contentType === 'suppliers' ? 'proveedores' : section.block.contentType}`}>
-                                        Ver todos <ArrowRight className="ml-2 h-4 w-4" />
+                                        VER TODOS <ArrowRight className="ml-1 h-3 w-3" />
                                     </Link>
                                 </Button>
                             )}
                         </div>
                     )}
-                    <div>
+                    <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
                         <HomeSectionRenderer section={section} />
                     </div>
                 </section>

@@ -24,7 +24,10 @@ import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { haptic } from '@/lib/haptics';
+import { motion } from 'framer-motion';
 
 const formSchema = z.object({
   firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -158,6 +161,7 @@ export default function SignupForm() {
         displayName: `${values.firstName} ${values.lastName}`,
       });
 
+      haptic.vibrateSuccess();
       setShowVerificationMessage(true);
 
     } catch (error: any) {
@@ -167,6 +171,7 @@ export default function SignupForm() {
         errorMessage = 'Este correo electrónico ya está en uso.';
         form.setError('email', { message: errorMessage });
       }
+      haptic.vibrateError();
       toast({
         variant: "destructive",
         title: "Error en el registro",
@@ -179,21 +184,34 @@ export default function SignupForm() {
 
   if (showVerificationMessage) {
     return (
-      <Card>
-        <CardContent className="pt-6 text-center space-y-4">
-            <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>¡Último paso! Revisa tu correo</AlertTitle>
-                <AlertDescription>
-                    Te hemos enviado un enlace para verificar tu cuenta. Por favor, haz clic en él para poder iniciar sesión.
-                    <br />
-                    <span className="text-xs text-muted-foreground">¿No lo encuentras? Revisa tu carpeta de spam.</span>
-                </AlertDescription>
-            </Alert>
-            <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                <Button onClick={() => router.push('/login')} className="w-full">Ir a Iniciar Sesión</Button>
-                <Button variant="outline" onClick={handleResendVerification} disabled={isResending} className="w-full">
-                    {isResending ? 'Reenviando...' : 'Reenviar correo'}
+      <Card className="rounded-[2rem] border-primary/5 glass glass-dark shadow-premium overflow-hidden">
+        <CardContent className="pt-10 pb-8 px-8 text-center space-y-6">
+            <div className="mx-auto w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-4 border border-primary/10 shadow-lg shadow-primary/5">
+                <Mail className="h-10 w-10 text-primary animate-bounce" />
+            </div>
+            <div className="space-y-2">
+                <h3 className="text-2xl font-black tracking-tighter uppercase text-foreground">¡Casi listo!</h3>
+                <p className="text-sm font-medium text-muted-foreground/80 leading-relaxed italic">
+                    Te hemos enviado un enlace para verificar tu cuenta. Revisa tu bandeja de entrada.
+                </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 text-xs font-bold text-muted-foreground/70">
+                ¿No lo encuentras? Revisa tu carpeta de spam o promociones.
+            </div>
+            <div className="flex flex-col gap-3 pt-4">
+                <Button 
+                    onClick={() => router.push('/login')} 
+                    className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
+                >
+                    Ir a Iniciar Sesión
+                </Button>
+                <Button 
+                    variant="ghost" 
+                    onClick={handleResendVerification} 
+                    disabled={isResending} 
+                    className="w-full font-black uppercase tracking-widest text-[10px] text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all"
+                >
+                    {isResending ? 'Reenviando...' : 'Reenviar enlace'}
                 </Button>
             </div>
         </CardContent>
@@ -201,25 +219,28 @@ export default function SignupForm() {
     )
   }
 
+  const inputClasses = "h-12 pl-12 rounded-xl bg-primary/5 border-primary/5 focus:border-primary/20 focus:ring-primary/10 transition-all font-medium";
+  const labelClasses = "font-black uppercase tracking-widest text-[10px] ml-1 opacity-70";
+
   return (
-    <Card>
+    <Card className="rounded-[2rem] border-primary/5 glass glass-dark shadow-premium overflow-hidden">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-           <CardContent className="space-y-4 pt-6">
+           <CardContent className="space-y-5 pt-10 px-8">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre</FormLabel>
-                    <div className="relative">
-                      <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel className={labelClasses}>Nombre</FormLabel>
+                    <div className="relative group/input">
+                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
-                        <Input placeholder="Juan" {...field} className="pl-10" />
+                        <Input placeholder="Juan" {...field} className={inputClasses} />
                       </FormControl>
                     </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -228,14 +249,14 @@ export default function SignupForm() {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Apellido</FormLabel>
-                     <div className="relative">
-                      <UserIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel className={labelClasses}>Apellido</FormLabel>
+                     <div className="relative group/input">
+                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
-                        <Input placeholder="Pérez" {...field} className="pl-10" />
+                        <Input placeholder="Pérez" {...field} className={inputClasses} />
                       </FormControl>
                     </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -245,14 +266,14 @@ export default function SignupForm() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre de usuario</FormLabel>
-                    <div className="relative">
-                      <AtSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel className={labelClasses}>Nombre de usuario</FormLabel>
+                    <div className="relative group/input">
+                      <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
-                        <Input placeholder="juanperez" {...field} className="pl-10" />
+                        <Input placeholder="juanperez" {...field} className={inputClasses} />
                       </FormControl>
                     </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -261,14 +282,14 @@ export default function SignupForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Correo Electrónico</FormLabel>
-                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormLabel className={labelClasses}>Correo Electrónico</FormLabel>
+                   <div className="relative group/input">
+                    <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                     <FormControl>
-                      <Input placeholder="tu@email.com" {...field} className="pl-10" />
+                      <Input placeholder="tu@email.com" {...field} className={inputClasses} />
                     </FormControl>
                   </div>
-                  <FormMessage />
+                  <FormMessage className="text-[10px] font-bold" />
                 </FormItem>
               )}
             />
@@ -277,14 +298,14 @@ export default function SignupForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
-                  <div className="relative">
-                    <KeyRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormLabel className={labelClasses}>Contraseña</FormLabel>
+                  <div className="relative group/input">
+                    <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="pl-10" />
+                      <Input type="password" placeholder="••••••••" {...field} className={inputClasses} />
                     </FormControl>
                   </div>
-                  <FormMessage />
+                  <FormMessage className="text-[10px] font-bold" />
                 </FormItem>
               )}
             />
@@ -293,24 +314,24 @@ export default function SignupForm() {
                 name="gender"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Género</FormLabel>
-                     <div className="relative">
-                       <VenetianMask className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                    <FormLabel className={labelClasses}>Género</FormLabel>
+                     <div className="relative group/input">
+                       <VenetianMask className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors z-10" />
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                                <SelectTrigger className="pl-10">
+                                <SelectTrigger className={cn(inputClasses, "pr-4")}>
                                     <SelectValue placeholder="Selecciona tu género" />
                                 </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                                <SelectItem value="Femenino">Femenino</SelectItem>
-                                <SelectItem value="Masculino">Masculino</SelectItem>
-                                <SelectItem value="Otro">Otro</SelectItem>
-                                <SelectItem value="Prefiero no decirlo">Prefiero no decirlo</SelectItem>
+                            <SelectContent className="rounded-2xl border-primary/10 glass glass-dark">
+                                <SelectItem value="Femenino" className="rounded-xl focus:bg-primary/10">Femenino</SelectItem>
+                                <SelectItem value="Masculino" className="rounded-xl focus:bg-primary/10">Masculino</SelectItem>
+                                <SelectItem value="Otro" className="rounded-xl focus:bg-primary/10">Otro</SelectItem>
+                                <SelectItem value="Prefiero no decirlo" className="rounded-xl focus:bg-primary/10">Prefiero no decirlo</SelectItem>
                             </SelectContent>
                         </Select>
                      </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -319,14 +340,14 @@ export default function SignupForm() {
               name="dni"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>DNI</FormLabel>
-                  <div className="relative">
-                    <Fingerprint className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormLabel className={labelClasses}>DNI</FormLabel>
+                  <div className="relative group/input">
+                    <Fingerprint className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                     <FormControl>
-                      <Input placeholder="12345678" {...field} className="pl-10" />
+                      <Input placeholder="12345678" {...field} className={inputClasses} />
                     </FormControl>
                   </div>
-                  <FormMessage />
+                  <FormMessage className="text-[10px] font-bold" />
                 </FormItem>
               )}
             />
@@ -335,14 +356,14 @@ export default function SignupForm() {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <FormLabel className={labelClasses}>Teléfono</FormLabel>
+                  <div className="relative group/input">
+                    <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                     <FormControl>
-                      <Input placeholder="1122334455" {...field} className="pl-10" />
+                      <Input placeholder="1122334455" {...field} className={inputClasses} />
                     </FormControl>
                   </div>
-                  <FormMessage />
+                  <FormMessage className="text-[10px] font-bold" />
                 </FormItem>
               )}
             />
@@ -351,14 +372,14 @@ export default function SignupForm() {
                 name="university"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Centro Educativo</FormLabel>
-                    <div className="relative">
-                      <University className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel className={labelClasses}>Centro Educativo</FormLabel>
+                    <div className="relative group/input">
+                      <University className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
-                        <Input placeholder="Ej: Universidad de Buenos Aires" {...field} className="pl-10" />
+                        <Input placeholder="Ej: Universidad de Buenos Aires" {...field} className={inputClasses} />
                       </FormControl>
                     </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -367,14 +388,14 @@ export default function SignupForm() {
                 name="major"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Carrera</FormLabel>
-                    <div className="relative">
-                      <Library className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <FormLabel className={labelClasses}>Carrera</FormLabel>
+                    <div className="relative group/input">
+                      <Library className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
-                        <Input placeholder="Ej: Ingeniería en Informática" {...field} className="pl-10" />
+                        <Input placeholder="Ej: Ingeniería en Informática" {...field} className={inputClasses} />
                       </FormControl>
                     </div>
-                    <FormMessage />
+                    <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -382,29 +403,35 @@ export default function SignupForm() {
                 control={form.control}
                 name="acceptPrivacy"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm mt-4">
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl bg-primary/5 p-4 border border-primary/5 mt-6 mb-2">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        className="mt-0.5 rounded-md border-primary/20 data-[state=checked]:bg-primary"
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>
+                      <FormLabel className="text-[11px] font-bold text-muted-foreground/80 cursor-pointer select-none">
                         He leído y acepto la{' '}
-                        <Link href="/politica-de-privacidad" className="text-primary hover:underline font-bold" target="_blank">
+                        <Link href="/politica-de-privacidad" className="text-primary hover:text-primary/80 transition-colors font-black uppercase tracking-widest text-[10px] underline-offset-4 hover:underline" target="_blank">
                           Política de Privacidad
                         </Link>
                       </FormLabel>
-                      <FormMessage />
+                      <FormMessage className="text-[10px] font-bold" />
                     </div>
                   </FormItem>
                 )}
               />
           </CardContent>
-          <CardFooter className="flex-col gap-4">
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Registrando...' : <><UserPlus className="mr-2" />Registrarse</>}
+          <CardFooter className="pb-10 pt-4 px-8">
+            <Button 
+                type="submit" 
+                onClick={() => haptic.vibrateImpact()}
+                className="w-full h-12 rounded-xl font-black uppercase tracking-[0.2em] text-xs shadow-lg shadow-primary/20 transition-all active:scale-[0.98]" 
+                disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Registrando...' : <><UserPlus className="mr-2 h-4 w-4" />Registrarse</>}
             </Button>
           </CardFooter>
         </form>

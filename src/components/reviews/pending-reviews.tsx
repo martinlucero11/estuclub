@@ -50,6 +50,7 @@ export function PendingReviews() {
         <span className="text-sm uppercase tracking-wider">¡Danos tu opinión!</span>
       </div>
       <ReviewForm 
+        key={pendingReview.id}
         redemptionId={pendingReview.id}
         benefitId={pendingReview.benefitId}
         supplierId={pendingReview.supplierId}

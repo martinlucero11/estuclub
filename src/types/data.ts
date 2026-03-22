@@ -79,6 +79,12 @@ export interface SupplierProfile {
   announcementsEnabled?: boolean;
   avgRating?: number;
   reviewCount?: number;
+  location?: {
+    lat: number;
+    lng: number;
+    address: string;
+    city?: string;
+  };
   [key: string]: any;
 }
 
@@ -117,6 +123,8 @@ export interface Benefit {
   supplierName?: string;
   status?: 'active' | 'inactive';
   stock?: number;
+  minLevel?: number;
+  isExclusive?: boolean;
   [key: string]: any;
 }
 

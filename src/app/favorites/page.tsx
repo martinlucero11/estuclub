@@ -8,11 +8,11 @@ import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
-import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Heart, Building, Ticket, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { getInitials } from '@/lib/utils';
+import { getInitials, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 function FavoritesContent() {
@@ -51,9 +51,9 @@ function FavoritesContent() {
 
   if (isUserLoading) {
     return (
-      <div className="container p-8 space-y-8">
-        <Skeleton className="h-10 w-48" />
-        <Skeleton className="h-64 w-full" />
+      <div className="container p-8 space-y-8 min-h-screen">
+        <BrandSkeleton className="h-10 w-48 rounded-xl" />
+        <BrandSkeleton className="h-64 w-full rounded-[2rem]" />
       </div>
     );
   }
@@ -74,62 +74,78 @@ function FavoritesContent() {
   const hasNoFavorites = favoriteBenefitIds.length === 0 && favoriteSupplierIds.length === 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="mb-8 flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400">
-            <Heart className="h-6 w-6 fill-current" />
+    <div className="container mx-auto px-4 py-8 max-w-6xl min-h-screen">
+      <div className="mb-10 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="p-4 rounded-[2rem] glass glass-dark shadow-premium border-primary/10">
+            <Heart className="h-8 w-8 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.4)] fill-current" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight">Mis Favoritos</h1>
+        <div>
+            <h1 className="text-3xl font-black tracking-tight uppercase text-foreground leading-tight">Mis Favoritos</h1>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Tu selección exclusiva</p>
+        </div>
       </div>
 
       {hasNoFavorites ? (
-        <div className="text-center py-24 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center space-y-4">
-          <Heart className="h-12 w-12 text-muted-foreground/30" />
-          <div>
-            <h3 className="text-lg font-semibold">Aún no tienes favoritos</h3>
-            <p className="text-muted-foreground mt-1 text-sm">Guarda los beneficios que más te gusten para verlos aquí.</p>
-          </div>
-          <Button asChild variant="outline" className="mt-2">
-            <Link href="/benefits" className="flex items-center gap-2">
-                Explorar Beneficios <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="py-20 animate-in fade-in scale-95 duration-700 fill-mode-both">
+            <div className={cn(
+                "flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-primary/20 p-16 text-center",
+                "glass glass-dark shadow-premium backdrop-blur-md"
+            )}>
+                <div className="mb-6 p-5 rounded-3xl bg-primary/5 text-primary border border-primary/10 shadow-inner">
+                    <Heart className="h-12 w-12 opacity-30" />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-foreground">Aún no tienes favoritos</h3>
+                <p className="mt-2 text-sm font-medium text-muted-foreground font-medium max-w-[280px] mx-auto opacity-70 italic mb-8">
+                    Guarda los beneficios que más te gusten para verlos aquí.
+                </p>
+                <Button asChild className="h-12 rounded-xl font-black uppercase tracking-widest text-xs px-8 shadow-lg shadow-primary/20 transition-all active:scale-95">
+                    <Link href="/benefits" className="flex items-center gap-2">
+                        Explorar Beneficios <ArrowRight className="h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
         </div>
       ) : (
-        <div className="space-y-12">
+        <div className="space-y-12 animate-in fade-in duration-1000">
           {favoriteSupplierIds.length > 0 && (
-            <section>
-              <div className="mb-6 flex items-center gap-2 border-b pb-2">
-                <Building className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Mis Clubers</h2>
+            <section className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
+                <Building className="h-4 w-4 text-primary" />
+                <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Mis Clubers</h2>
               </div>
               {suppliersLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Skeleton className="h-20 w-full rounded-2xl" />
-                  <Skeleton className="h-20 w-full rounded-2xl" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <BrandSkeleton className="h-24 w-full rounded-[2rem]" />
+                  <BrandSkeleton className="h-24 w-full rounded-[2rem]" />
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {suppliers?.map(supplier => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {suppliers?.map((supplier, idx) => (
                     <Link 
                       key={supplier.id} 
                       href={`/proveedores/${supplier.slug}`}
-                      className="flex items-center p-4 rounded-2xl border bg-card hover:bg-accent transition-all duration-200 group shadow-sm hover:shadow-md"
+                      className={cn(
+                        "flex items-center p-5 rounded-[2rem] border-primary/5 transition-all duration-500 group",
+                        "glass glass-dark shadow-premium hover:scale-[1.02] hover:border-primary/20",
+                        "animate-in fade-in slide-in-from-bottom-4 fill-mode-both"
+                      )}
+                      style={{ animationDelay: `${idx * 100}ms` }}
                     >
-                      <Avatar className="h-12 w-12 mr-4 overflow-hidden rounded-full border-2 border-background">
-                          <AvatarImage src={supplier.logoUrl || undefined} className="object-cover" />
-                          <AvatarFallback className="bg-muted text-lg font-bold">
+                      <Avatar className="h-14 w-14 mr-4 overflow-hidden rounded-2xl border-2 border-background shadow-md shadow-black/5">
+                          <AvatarImage src={supplier.logoUrl || undefined} className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                          <AvatarFallback className="bg-primary/10 text-primary font-black text-xl">
                               {getInitials(supplier.name)}
                           </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 overflow-hidden">
-                          <h3 className="font-bold truncate text-foreground group-hover:text-primary transition-colors">
+                          <h3 className="font-black text-base truncate text-foreground group-hover:text-primary transition-colors leading-tight">
                               {supplier.name}
                           </h3>
-                          <p className="text-xs text-muted-foreground capitalize">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
                               {supplier.type}
                           </p>
                       </div>
+                      <ArrowRight className="h-4 w-4 text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </Link>
                   ))}
                 </div>
@@ -137,15 +153,15 @@ function FavoritesContent() {
             </section>
           )}
 
-          <section>
-            <div className="mb-6 flex items-center gap-2 border-b pb-2">
-              <Ticket className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Mis Beneficios</h2>
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
+              <Ticket className="h-4 w-4 text-primary" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Mis Beneficios</h2>
             </div>
             {benefitsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <Skeleton className="h-64 w-full rounded-2xl" />
-                <Skeleton className="h-64 w-full rounded-2xl" />
+                <BrandSkeleton className="h-64 w-full rounded-[2rem]" />
+                <BrandSkeleton className="h-64 w-full rounded-[2rem]" />
               </div>
             ) : (
               <BenefitsGrid benefits={serializableBenefits} />

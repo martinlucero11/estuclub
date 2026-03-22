@@ -46,39 +46,45 @@ export default function AnnouncementCard({
 
   // Variant: Default (non-carousel)
   const cardContent = (
-    <Card className={cn('flex h-full flex-col overflow-hidden transition-all hover:shadow-lg', className)}>
-      <div className="relative h-48 w-full">
+    <Card className={cn('flex h-full flex-col overflow-hidden transition-all duration-500 hover:scale-[1.02] rounded-[2rem] border-primary/5 glass glass-dark shadow-premium group', className)}>
+      <div className="relative h-48 w-full overflow-hidden">
         <Image
           src={imageUrl}
           alt={announcement.title}
           fill
-          className="object-cover"
+          priority={priority}
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
-      <div className="flex flex-1 flex-col">
-        <CardHeader>
-          <CardTitle className="line-clamp-2">{announcement.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-grow">
-          <p className="text-sm text-muted-foreground line-clamp-3">{announcement.content}</p>
-        </CardContent>
-        <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3">
+          <h3 className="text-lg font-black tracking-tight line-clamp-2 group-hover:text-primary transition-colors leading-tight">
+            {announcement.title}
+          </h3>
+        </div>
+        <div className="flex-grow">
+          <p className="text-sm text-muted-foreground/80 line-clamp-3 font-medium leading-relaxed">
+            {announcement.content}
+          </p>
+        </div>
+        <div className="flex items-center justify-between mt-5 pt-4 border-t border-primary/5 text-xs">
           <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarFallback>{authorInitial}</AvatarFallback>
+            <Avatar className="h-7 w-7 rounded-xl border border-primary/10">
+              <AvatarFallback className="font-black bg-primary/10 text-primary text-[10px]">{authorInitial}</AvatarFallback>
             </Avatar>
-            <span className="truncate">@{announcement.authorUsername}</span>
+            <span className="font-bold tracking-tight text-muted-foreground">@{announcement.authorUsername}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {announcement.linkUrl && (
-              <Link href={announcement.linkUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                <Link2 className="h-4 w-4 hover:text-primary" />
+              <Link href={announcement.linkUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all">
+                <Link2 className="h-3.5 w-3.5" />
               </Link>
             )}
-            <span>{formatTime(announcement.createdAt)}</span>
+            <span className="font-bold text-muted-foreground/60">{formatTime(announcement.createdAt)}</span>
           </div>
-        </CardFooter>
+        </div>
       </div>
     </Card>
   );
@@ -86,23 +92,28 @@ export default function AnnouncementCard({
   // Variant: Carousel
   if (variant === 'carousel') {
     const carouselCardContent = (
-      <Card className={'relative h-full w-full overflow-hidden text-white transition-all hover:shadow-lg'}>
+      <Card className={'relative h-full w-full overflow-hidden text-white transition-all duration-500 hover:scale-[1.02] rounded-[2rem] border-0 shadow-premium group'}>
         <Image
           src={imageUrl}
           alt={announcement.title}
           fill
           priority={priority}
-          className="object-cover"
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
           sizes="(max-width: 768px) 100vw, 50vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-        <div className="relative z-10 flex h-full flex-col justify-end p-4">
-          <div>
-            <CardTitle className="text-xl line-clamp-2">{announcement.title}</CardTitle>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent transition-opacity duration-500 group-hover:from-primary/90" />
+        <div className="relative z-10 flex h-full flex-col justify-end p-6">
+          <div className="space-y-2">
+            <span className="inline-block px-2 py-0.5 rounded-lg bg-primary/20 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest text-primary-foreground">
+              Novedad
+            </span>
+            <h3 className="text-xl md:text-2xl font-black tracking-tighter line-clamp-2 leading-tight drop-shadow-md">
+              {announcement.title}
+            </h3>
           </div>
-          <div className="flex items-center gap-2 pt-2 text-sm">
-            <Avatar className="h-6 w-6 text-foreground">
-              <AvatarFallback>{authorInitial}</AvatarFallback>
+          <div className="flex items-center gap-2 pt-4 text-xs font-bold text-white/80">
+            <Avatar className="h-6 w-6 rounded-lg border border-white/20">
+              <AvatarFallback className="bg-white/10 backdrop-blur-sm text-white font-black text-[10px]">{authorInitial}</AvatarFallback>
             </Avatar>
             <span>{formatTime(announcement.createdAt)}</span>
           </div>
@@ -112,8 +123,7 @@ export default function AnnouncementCard({
 
     return (
       <AnnouncementDialog announcement={announcement}>
-        {/* The className is applied to this wrapper, which receives the absolute positioning */}
-        <div className={cn('cursor-pointer', className)}> 
+        <div className={cn('cursor-pointer h-full', className)}> 
             {carouselCardContent}
         </div>
       </AnnouncementDialog>

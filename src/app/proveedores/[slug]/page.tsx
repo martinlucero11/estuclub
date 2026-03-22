@@ -5,10 +5,10 @@ import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, limit, getDocs, doc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
-import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Search, Server } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Search, Server, ChevronLeft } from 'lucide-react';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
@@ -16,13 +16,24 @@ import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
-import { getInitials } from '@/lib/utils';
+import { getInitials, cn } from '@/lib/utils';
 import SubscribeButton from '@/components/supplier/subscribe-button';
 import { FavoriteButton } from '@/components/layout/favorite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReviewList } from '@/components/reviews/review-list';
 import { StarRating } from '@/components/reviews/star-rating';
+import Link from 'next/link';
+import { MagneticButton } from '@/components/ui/magnetic-button';
+import { motion } from 'framer-motion';
+import { haptic } from '@/lib/haptics';
+import { MapPin } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const LeafletMap = dynamic(() => import('@/components/maps/leaflet-map'), { 
+    ssr: false,
+    loading: () => <BrandSkeleton className="h-[300px] w-full rounded-[2rem]" />
+});
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
@@ -36,18 +47,17 @@ const categoryIcons: Record<CluberCategory, React.ElementType> = {
 
 function ProfileSkeleton() {
     return (
-        <div>
-            {/* Skeleton for the new minimalist header */}
-            <div className="flex flex-col items-center pt-12 pb-8 bg-gradient-to-b from-slate-50 to-background dark:from-slate-900 dark:to-background border-b">
-                <Skeleton className="w-32 h-32 rounded-full shadow-xl mb-4" />
-                <Skeleton className="h-8 w-48 mb-2" />
-                <Skeleton className="h-4 w-32" />
+        <div className="min-h-screen">
+            <div className="flex flex-col items-center pt-20 pb-12 bg-transparent">
+                <BrandSkeleton className="w-32 h-32 rounded-[2.5rem] mb-6" />
+                <BrandSkeleton className="h-10 w-64 mb-4 rounded-xl" />
+                <BrandSkeleton className="h-4 w-40 rounded-full" />
             </div>
-            <div className="px-6 py-8">
-                <Skeleton className="h-7 w-48 mb-4" />
+            <div className="px-6 py-8 max-w-5xl mx-auto">
+                <BrandSkeleton className="h-10 w-full rounded-2xl mb-8 max-w-lg mx-auto" />
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {[...Array(3)].map((_, i) => (
-                        <Skeleton key={i} className="h-48 w-full rounded-2xl" />
+                        <BrandSkeleton key={i} className="h-64 w-full rounded-[2rem]" />
                     ))}
                 </div>
             </div>
@@ -161,51 +171,82 @@ function CluberProfileContent({ slug }: { slug: string }) {
     const defaultTab = hasBenefits ? "benefits" : hasServices ? "services" : "benefits";
 
     return (
-        <div className="flex flex-col">
-            {/* UI/UX FIX: New premium, minimalist header without cover photo */}
-            <header className="flex flex-col items-center text-center pt-12 pb-8 bg-gradient-to-b from-slate-50 to-background dark:from-slate-900 dark:to-background border-b">
-                <div className="relative w-32 h-32 rounded-full border-4 border-background shadow-xl overflow-hidden mb-4">
+        <div className="flex flex-col min-h-screen">
+            {/* Premium Minimalist Header */}
+            <motion.header 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col items-center text-center pt-20 pb-12 bg-transparent relative overflow-hidden"
+            >
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                
+                <Link 
+                    href="/proveedores" 
+                    className="absolute top-8 left-8 hidden md:flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
+                >
+                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                    Clubers
+                </Link>
+
+                <motion.div 
+                    whileHover={{ scale: 1.05, rotate: -2 }}
+                    className="relative w-32 h-32 rounded-[2.5rem] bg-card glass glass-dark shadow-premium overflow-hidden mb-6 group transition-all duration-500 hover:shadow-2xl"
+                >
                     <Avatar className="h-full w-full rounded-none">
                         <AvatarImage
                             src={supplier.logoUrl || undefined}
                             alt={supplier.name}
-                            className="object-cover"
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <AvatarFallback className="rounded-none bg-transparent text-4xl font-bold text-muted-foreground">
+                        <AvatarFallback className="rounded-none bg-transparent text-4xl font-black text-muted-foreground">
                             {supplierInitials}
                         </AvatarFallback>
                     </Avatar>
-                </div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-                    {supplier.name}
-                </h1>
-                <div className="flex flex-col items-center gap-1 mt-1">
-                    <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                        <TypeIcon className="h-4 w-4" />
-                        <p className="capitalize">{supplier.type}</p>
+                </motion.div>
+                
+                <div className="relative z-10 px-4">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground mb-2 uppercase leading-[0.9]">
+                        {supplier.name}
+                    </h1>
+                    <div className="flex flex-col items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">
+                            <TypeIcon className="h-4 w-4" />
+                            <p>{supplier.type}</p>
+                        </div>
+                        <AverageRating supplier={supplier} />
                     </div>
-                    <AverageRating supplier={supplier} />
+                    <div className="mt-8 flex items-center justify-center gap-4">
+                        {!isOwnProfile && (
+                            <MagneticButton>
+                                <SubscribeButton supplierId={supplier.id} />
+                            </MagneticButton>
+                        )}
+                        {!isOwnProfile && (
+                            <MagneticButton>
+                                <FavoriteButton id={supplier.id} type="supplier" className="h-12 w-12 shadow-premium glass glass-dark" />
+                            </MagneticButton>
+                        )}
+                    </div>
                 </div>
-                 <div className="mt-4 flex items-center gap-2">
-                    {!isOwnProfile && <SubscribeButton supplierId={supplier.id} />}
-                    {!isOwnProfile && <FavoriteButton id={supplier.id} type="supplier" />}
-                </div>
-            </header>
+            </motion.header>
             
-            <main className="w-full max-w-5xl mx-auto px-4 py-8">
+            <main className="w-full max-w-5xl mx-auto px-4 py-12">
                 {supplier.description && (
-                     <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-8">{supplier.description}</p>
+                     <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-12 text-lg font-medium leading-relaxed">
+                        {supplier.description}
+                     </p>
                 )}
 
                 <Tabs defaultValue={defaultTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mx-auto max-w-lg mb-8">
-                        <TabsTrigger value="benefits" className="font-bold">Beneficios</TabsTrigger>
-                        <TabsTrigger value="services" className="font-bold" disabled={!hasServices}>Turnos</TabsTrigger>
-                        <TabsTrigger value="reviews" className="font-bold">Reseñas</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 mx-auto max-w-lg mb-12 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
+                        <TabsTrigger value="benefits" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Beneficios</TabsTrigger>
+                        <TabsTrigger value="services" className="font-extrabold rounded-xl data-[state=active]:shadow-lg" disabled={!hasServices}>Turnos</TabsTrigger>
+                        <TabsTrigger value="reviews" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Reseñas</TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="benefits" className="animate-in fade-in-50 duration-500">
-                         {benefitsLoading ? <Skeleton className="h-48 w-full rounded-3xl" /> : (
+                         {benefitsLoading ? <BrandSkeleton className="h-64 w-full rounded-[2rem]" /> : (
                             hasBenefits ? <BenefitsGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
                          )}
                     </TabsContent>
@@ -227,6 +268,35 @@ function CluberProfileContent({ slug }: { slug: string }) {
                         <ReviewList supplierId={supplier.id} />
                     </TabsContent>
                 </Tabs>
+
+                {supplier.location && supplier.location.lat && supplier.location.lng && (
+                    <motion.section 
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="mt-20 space-y-6"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
+                                <MapPin className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-black uppercase tracking-tighter">Ubicación</h2>
+                                <p className="text-xs font-bold text-muted-foreground">{supplier.location.address}</p>
+                            </div>
+                        </div>
+                        <LeafletMap 
+                            center={[supplier.location.lat, supplier.location.lng]} 
+                            zoom={15} 
+                            markers={[{
+                                id: supplier.id,
+                                position: [supplier.location.lat, supplier.location.lng],
+                                title: supplier.name
+                            }]}
+                            className="h-[300px] w-full"
+                        />
+                    </motion.section>
+                )}
             </main>
         </div>
     );

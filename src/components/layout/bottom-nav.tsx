@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation';
 import { Home, Ticket, QrCode, CalendarDays, Building, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
+import { motion } from 'framer-motion';
+import { haptic } from '@/lib/haptics';
 
 export function BottomNav() {
   const pathname = usePathname();
@@ -27,32 +29,54 @@ export function BottomNav() {
     { href: turnosHref, label: 'Turnos', icon: CalendarDays },
   ];
 
-  const gridClass = 'grid-cols-5';
-
   return (
-    <nav className={cn("fixed bottom-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-t border-border/50")}>
-      <div className={cn("grid h-16", gridClass)}>
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              'flex flex-col items-center justify-center text-muted-foreground transition-all duration-200 active:scale-95',
-              pathname === item.href && !item.special ? 'text-primary' : 'hover:text-primary'
-            )}
-          >
-            {item.special ? (
-                <div className="relative -top-4 flex h-16 w-16 flex-col items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background">
-                    <item.icon className="h-8 w-8" />
-                </div>
-            ) : (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass glass-dark shadow-premium ring-1 ring-primary/5 pb-safe">
+      <div className="grid h-16 grid-cols-5 border-t border-primary/5">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => haptic.vibrateSubtle()}
+              className={cn(
+                'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300',
+                isActive && !item.special ? 'text-primary' : 'hover:text-primary'
+              )}
+            >
+              {item.special ? (
+                <motion.div 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
+                >
+                  <item.icon className="h-7 w-7" />
+                </motion.div>
+              ) : (
                 <>
-                    <item.icon className="h-6 w-6" />
-                    <span className="text-xs mt-1">{item.label}</span>
+                  <motion.div
+                    animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+                    <span className={cn(
+                        "text-[9px] mt-1 font-black uppercase tracking-widest transition-opacity",
+                        isActive ? "opacity-100" : "opacity-60"
+                    )}>
+                        {item.label}
+                    </span>
+                  </motion.div>
+                  {isActive && (
+                    <motion.div 
+                      layoutId="nav-pill"
+                      className="absolute bottom-1 w-1 h-1 rounded-full bg-primary"
+                    />
+                  )}
                 </>
-            )}
-          </Link>
-        ))}
+              )}
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

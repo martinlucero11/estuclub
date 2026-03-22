@@ -18,10 +18,6 @@ export const metadata: Metadata = {
   title: "EstuClub",
   description: "La mejor app de beneficios para estudiantes",
   manifest: "/manifest.json",
-  icons: {
-    icon: "/logo.svg",
-    apple: "/logo.svg",
-  },
 };
 
 export default function RootLayout({
@@ -31,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased", fontSans.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

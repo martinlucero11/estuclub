@@ -3,9 +3,9 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import AnnouncementsList from '@/components/announcements/announcements-list';
-import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, orderBy, query } from 'firebase/firestore';
+import { collection, orderBy, query, limit } from 'firebase/firestore';
 import { Suspense, useMemo } from 'react';
 import type { Announcement } from '@/types/data';
 import { makeAnnouncementSerializable } from '@/lib/data';
@@ -18,10 +18,10 @@ function AnnouncementsListSkeleton() {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
                 <div key={i} className="space-y-4">
-                    <Skeleton className="h-48 w-full rounded-2xl" />
+                    <BrandSkeleton className="h-48 w-full rounded-2xl" />
                     <div className="space-y-2">
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
+                        <BrandSkeleton className="h-6 w-3/4" />
+                        <BrandSkeleton className="h-4 w-1/2" />
                     </div>
                 </div>
             ))}
@@ -34,7 +34,7 @@ function Announcements() {
     const announcementsQuery = useMemo(
         () => {
             if (!firestore) return null;
-            return query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc'))
+            return query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc'), limit(30))
         },
         [firestore]
     );

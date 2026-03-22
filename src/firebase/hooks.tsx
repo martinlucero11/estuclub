@@ -17,6 +17,8 @@ export interface FirebaseServicesAndUser extends Omit<FirebaseContextState, 'are
   auth: Auth;
   storage: FirebaseStorage;
   userData: UserProfile | null;
+  supplierData: SupplierData | null;
+  userLocation: { lat: number; lng: number } | null;
 }
 
 // Describes the simplified object for general use, returned by useUser
@@ -56,6 +58,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     supplierData: context.supplierData,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
+    userLocation: context.userLocation,
   };
 };
 
@@ -63,15 +66,16 @@ export const useFirebase = (): FirebaseServicesAndUser => {
  * A convenience hook to get only the user state (user object, roles, loading status).
  */
 export const useUser = (): UserHookResult => {
-  const { user, roles, userData, supplierData, isUserLoading, userError } = useFirebase();
+  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation } = useFirebase();
   return useMemo(() => ({ 
     user, 
     roles, 
     userData, 
     supplierData, 
     isUserLoading, 
-    userError 
-  }), [user, roles, userData, supplierData, isUserLoading, userError]);
+    userError,
+    userLocation
+  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation]);
 };
 
 /**

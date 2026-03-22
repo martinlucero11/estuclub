@@ -40,6 +40,7 @@ export interface FirebaseContextState {
   supplierData: SupplierData | null;
   isUserLoading: boolean;
   userError: Error | null;
+  userLocation: { lat: number; lng: number } | null;
 }
 
 // --- REACT CONTEXT ---
@@ -82,6 +83,18 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     isProfileLoading: false,
     profileError: null,
   });
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.log('Geolocation not allowed or failed', err),
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(services.auth, (firebaseUser) => {
@@ -155,6 +168,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       supplierData: profileState.supplierData,
       isUserLoading: authState.isAuthLoading || profileState.isProfileLoading,
       userError: authState.authError || profileState.profileError,
+      userLocation,
     }),
     [
       services,
@@ -166,6 +180,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       profileState.supplierData,
       profileState.isProfileLoading,
       profileState.profileError,
+      userLocation,
     ]
   );
 

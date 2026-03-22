@@ -2,7 +2,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -54,7 +54,7 @@ function CluberListPage() {
     const clubersQuery = useMemo(
         () => {
             if (!firestore) return null;
-            return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), orderBy('name'));
+            return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), orderBy('name'), limit(50));
         },
         [firestore]
     );
@@ -77,7 +77,7 @@ function CluberListPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4">
+            <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
                 <Button
                     variant={activeFilter === 'Todos' ? 'default' : 'outline'}
                     size="sm"
@@ -106,14 +106,14 @@ function CluberListPage() {
                     description={activeFilter === 'Todos' ? 'Aún no se han registrados Clubers.' : `No hay Clubers en la categoría '${activeFilter}'.`}
                 />
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 animate-stagger">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type] || Users;
                         const cluberInitials = getInitials(cluber.name);
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block">
-                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
                                     <Avatar className="h-24 w-24 border-2 border-border group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
                                         <AvatarFallback className="bg-muted text-3xl font-semibold text-muted-foreground">

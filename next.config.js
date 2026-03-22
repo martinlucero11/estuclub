@@ -16,5 +16,6 @@ const nextConfig = {
   devIndicators: {
     allowedDevOrigins: ["https://*.cloudworkstations.dev"],
   },
+  transpilePackages: ['react-leaflet', 'leaflet'],
 };
 module.exports = nextConfig;

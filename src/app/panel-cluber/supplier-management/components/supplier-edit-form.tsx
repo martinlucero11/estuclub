@@ -13,9 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { doc, setDoc, serverTimestamp, getDocs, collection, query, where, limit } from 'firebase/firestore';
 import { useState } from 'react';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, MapPin } from 'lucide-react';
 import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
+import LocationPicker from '@/components/maps/location-picker';
 import type { UserForList } from './user-management-columns';
 
 const formSchema = z.object({
@@ -29,6 +30,10 @@ const formSchema = z.object({
   canCreatePerks: z.boolean().default(false),
   announcementsEnabled: z.boolean().default(false),
   appointmentsEnabled: z.boolean().default(false),
+  location: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
 });
 
 interface SupplierEditFormProps {
@@ -73,6 +78,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
             canCreatePerks: supplierProfile?.canCreatePerks || false,
             announcementsEnabled: supplierProfile?.announcementsEnabled || false,
             appointmentsEnabled: supplierProfile?.appointmentsEnabled || false,
+            location: supplierProfile?.location ? { lat: supplierProfile.location.lat, lng: supplierProfile.location.lng } : undefined,
         },
     });
 
@@ -193,7 +199,32 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                     control={form.control}
                     name="address"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Dirección</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem>
+                            <FormLabel>Dirección</FormLabel>
+                            <FormControl><Input {...field} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-primary" />
+                                Ubicación en el Mapa
+                            </FormLabel>
+                            <FormControl>
+                                <LocationPicker 
+                                    initialLocation={field.value as { lat: number; lng: number } | undefined}
+                                    onLocationSelect={(loc) => field.onChange(loc)}
+                                />
+                            </FormControl>
+                            <FormDescription>Haz clic en el mapa para marcar la ubicación exacta de tu local.</FormDescription>
+                            <FormMessage />
+                        </FormItem>
                     )}
                 />
                 <FormField

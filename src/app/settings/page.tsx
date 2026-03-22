@@ -79,39 +79,48 @@ export default function SettingsPage() {
 
     return (
         <MainLayout>
-            <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Ajustes" />
-                <p className="text-muted-foreground -mt-8 mb-8">
-                    Personaliza tu experiencia en la aplicación.
-                </p>
-                <div className="grid gap-6">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Notificaciones</CardTitle>
-                            <CardDescription>
-                                Gestiona cómo recibes las notificaciones de la aplicación.
+            <div className="flex-1 space-y-12 p-4 md:p-12 mb-12 max-w-4xl mx-auto animate-fade-in">
+                <header className="space-y-4">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
+                        Configuración
+                    </h1>
+                    <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed">
+                        Personaliza tu experiencia y ajusta tus preferencias en EstuClub.
+                    </p>
+                </header>
+
+                <div className="grid gap-8">
+                     <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden group">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Notificaciones</CardTitle>
+                            <CardDescription className="text-sm font-medium">
+                                Gestiona cómo recibes las alertas y novedades del Club.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                           <Button onClick={handleNotificationRequest} disabled={isRequesting}>
-                                <BellRing className="mr-2 h-4 w-4" />
-                                {isRequesting ? 'Procesando...' : 'Activar Notificaciones'}
+                           <Button 
+                             onClick={handleNotificationRequest} 
+                             disabled={isRequesting}
+                             className="h-12 px-6 rounded-xl font-bold active:scale-95 transition-all shadow-md hover:shadow-primary/20"
+                           >
+                                <BellRing className="mr-2 h-5 w-5" />
+                                {isRequesting ? 'PROCESANDO...' : 'ACTIVAR NOTIFICACIONES'}
                            </Button>
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Tema</CardTitle>
-                            <CardDescription>
-                                Elige cómo se ve la aplicación.
+                    <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
+                        <CardHeader className="pb-4">
+                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Apariencia</CardTitle>
+                            <CardDescription className="text-sm font-medium">
+                                Elige el estilo visual que mejor se adapte a vos.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-3 gap-4">
-                                <Button variant="outline" onClick={() => setTheme('light')}>Claro</Button>
-                                <Button variant="outline" onClick={() => setTheme('dark')}>Oscuro</Button>
-                                <Button variant="outline" onClick={() => setTheme('system')}>Sistema</Button>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <Button variant="outline" className="h-14 rounded-xl font-bold border-primary/10 hover:bg-primary/5 active:scale-95 transition-all" onClick={() => setTheme('light')}>CLARO</Button>
+                                <Button variant="outline" className="h-14 rounded-xl font-bold border-primary/10 hover:bg-primary/5 active:scale-95 transition-all" onClick={() => setTheme('dark')}>OSCURO</Button>
+                                <Button variant="outline" className="h-14 rounded-xl font-bold border-primary/10 hover:bg-primary/5 active:scale-95 transition-all" onClick={() => setTheme('system')}>SISTEMA</Button>
                             </div>
                         </CardContent>
                     </Card>

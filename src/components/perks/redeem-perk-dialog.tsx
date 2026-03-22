@@ -17,8 +17,12 @@ import { collection, serverTimestamp, doc, writeBatch, increment, query, where, 
 import { useToast } from '@/hooks/use-toast';
 import type { SerializableBenefit } from '@/types/data';
 import { CheckCircle, CalendarDays, Award, Loader2 } from 'lucide-react';
-import { Skeleton } from '../ui/skeleton';
+import { BrandSkeleton } from '../ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptic } from '@/lib/haptics';
+import { triggerSuccessEffect } from '../ui/success-animation';
+import { MagneticButton } from '../ui/magnetic-button';
 
 interface RedeemBenefitDialogProps {
   benefit: SerializableBenefit;
@@ -39,6 +43,7 @@ interface UserProfile {
     university: string;
     major: string;
     points: number;
+    level?: number;
 }
 
 
@@ -106,6 +111,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
     }
 
     setIsRedeeming(true);
+    haptic.vibrateImpact();
     setError(null);
     setRedemptionId(null);
     setQrCodeUrl(null);
@@ -123,6 +129,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       
       if (benefit.validUntil && new Date(benefit.validUntil) < new Date()) {
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
+      }
+
+      const userLevel = userProfile.level || 1;
+      if (benefit.minLevel && userLevel < benefit.minLevel) {
+        throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
       const userRedemptionsRef = collection(firestore, 'users', user.uid, 'redeemed_benefits');
@@ -182,6 +193,8 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       await batch.commit();
 
       setRedemptionId(newRedemptionId);
+      haptic.vibrateSuccess();
+      triggerSuccessEffect();
       toast({
         title: '¡Beneficio Canjeado!',
         description: `Muestra el código QR al proveedor para validarlo. Se han sumado ${pointsToGrant} puntos a tu cuenta.`,
@@ -232,9 +245,9 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
           <p className='text-sm text-muted-foreground'>Muestra el siguiente código QR al proveedor para completar la validación.</p>
           <div className="my-4 flex justify-center">
             {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Código QR de canje" />
+                <img src={qrCodeUrl} alt="Código QR de canje" className="rounded-2xl border-4 border-background shadow-xl" />
             ) : (
-                <Skeleton className="h-64 w-64 rounded-lg" />
+                <BrandSkeleton className="h-64 w-64 rounded-2xl" />
             )}
           </div>
       </div>
@@ -291,19 +304,26 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button type="button" onClick={handleRedeem} disabled={isRedeeming || isLoading || !user}>
-                        {isRedeeming ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Procesando...
-                            </>
-                        ) : isLoading ? 'Cargando...' : (
-                            <span className="flex items-center">
-                                <Award className='mr-2 h-4 w-4' />
-                                Confirmar Canje
-                            </span>
-                        )}
-                    </Button>
+                    <MagneticButton disabled={isRedeeming || isLoading || !user || (benefit.minLevel ? (userProfile?.level || 1) < benefit.minLevel : false)}>
+                        <Button 
+                          type="button" 
+                          onClick={handleRedeem} 
+                          disabled={isRedeeming || isLoading || !user || (benefit.minLevel ? (userProfile?.level || 1) < benefit.minLevel : false)}
+                          className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
+                        >
+                            {isRedeeming ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Procesando...
+                                </>
+                            ) : isLoading ? 'Cargando...' : (
+                                <span className="flex items-center">
+                                    <Award className='mr-2 h-4 w-4' />
+                                    Confirmar Canje
+                                </span>
+                            )}
+                        </Button>
+                    </MagneticButton>
                 </DialogFooter>
             </>
         ) : (

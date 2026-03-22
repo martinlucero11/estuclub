@@ -28,11 +28,14 @@ import { useAuthService, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
+import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
+import { haptic } from '@/lib/haptics';
+import { motion } from 'framer-motion';
 import { navConfig } from '@/config/nav-menu';
 import { hasRequiredRole } from '@/lib/utils';
 import { SearchBar } from '@/components/layout/search-bar';
+import { MagneticButton } from '../ui/magnetic-button';
 
 function UserMenu() {
   const { user, isUserLoading } = useUser(); 
@@ -51,6 +54,7 @@ function UserMenu() {
       window.location.href = '/login'; 
     } catch (error) {
       console.error("Error signing out: ", error);
+      haptic.vibrateError();
       toast({
         variant: "destructive",
         title: "Error",
@@ -60,7 +64,7 @@ function UserMenu() {
   };
 
   if (isUserLoading) {
-    return <Skeleton className="h-9 w-9 rounded-full" />;
+    return <BrandSkeleton className="h-9 w-9 rounded-full" />;
   }
 
   if (!user) {
@@ -79,14 +83,16 @@ function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar className="h-9 w-9">
-                {user.photoURL && (
-                <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
-                )}
-                <AvatarFallback>{userInitial}</AvatarFallback>
-            </Avatar>
-        </Button>
+        <MagneticButton>
+            <Button variant="ghost" size="icon" className="rounded-full">
+                <Avatar className="h-9 w-9">
+                    {user.photoURL && (
+                    <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                    )}
+                    <AvatarFallback>{userInitial}</AvatarFallback>
+                </Avatar>
+            </Button>
+        </MagneticButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
@@ -100,16 +106,16 @@ function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/favorites')}>
+        <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/favorites'); }}>
           <Heart className="mr-2 h-4 w-4" />
           <span>Mis Favoritos</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push('/profile')}>
+        <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/profile'); }}>
           <User className="mr-2 h-4 w-4" />
           <span>Mi Perfil</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem onClick={() => { haptic.vibrateImpact(); handleSignOut(); }}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Cerrar sesión</span>
         </DropdownMenuItem>
@@ -126,12 +132,14 @@ function AppSidebar() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                    <LayoutGrid className="h-6 w-6" />
-                    <span className="sr-only">Abrir menú</span>
-                </Button>
+                <MagneticButton>
+                    <Button variant="ghost" size="icon" onClick={() => haptic.vibrateSubtle()}>
+                        <LayoutGrid className="h-6 w-6" />
+                        <span className="sr-only">Abrir menú</span>
+                    </Button>
+                </MagneticButton>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-72 sm:w-80">
+            <SheetContent side="left" className="flex flex-col p-0 w-72 sm:w-80 glass glass-dark border-r-0">
                 <SheetHeader className="p-6 border-b">
                     <SheetTitle>
                         <SheetClose asChild>
@@ -171,7 +179,7 @@ function AppSidebar() {
 export default function Header() {
   const { user, isUserLoading } = useUser();
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 w-full glass glass-dark shadow-premium">
       <div className="container relative flex h-16 items-center justify-between px-4">
         {/* Left Slot: Actions */}
         <div className="flex items-center">
@@ -182,14 +190,14 @@ export default function Header() {
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" aria-label="Homepage">
                 <div
-                    className="h-8 w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                    className="h-7 w-[100px] sm:h-8 sm:w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
                     aria-label="EstuClub Logo"
                 />
             </Link>
         </div>
 
         {/* Right Slot: Actions */}
-        <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center gap-0.5 sm:gap-2">
           <SearchBar />
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />

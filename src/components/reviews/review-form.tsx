@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc, runTransaction } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, runTransaction, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './star-rating';
@@ -32,14 +32,24 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
 
     setIsSubmitting(true);
     try {
-      const supplierRef = doc(firestore, 'roles_supplier', supplierId);
-      const reviewRef = doc(collection(firestore, 'reviews'));
-      const redemptionRef = doc(firestore, 'benefitRedemptions', redemptionId);
-      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionId);
+      // 1. Add review document (simple write, not in transaction)
+      await addDoc(collection(firestore, 'reviews'), {
+        benefitId,
+        supplierId,
+        redemptionId,
+        userId: user.uid,
+        userName: userData?.firstName ? `${userData.firstName} ${userData.lastName}` : (user.displayName || 'Estudiante'),
+        userPhoto: user.photoURL || '',
+        rating,
+        comment,
+        createdAt: serverTimestamp(),
+      });
 
+      // 2. Update supplier stats atomically (transaction for read-modify-write)
+      const supplierRef = doc(firestore, 'roles_supplier', supplierId);
       await runTransaction(firestore, async (transaction) => {
         const supplierDoc = await transaction.get(supplierRef);
-        if (!supplierDoc.exists()) throw new Error("Supplier does not exist");
+        if (!supplierDoc.exists()) return;
 
         const supplierData = supplierDoc.data();
         const oldCount = (supplierData.reviewCount as number) || 0;
@@ -47,35 +57,34 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
         const newCount = oldCount + 1;
         const newAvg = ((oldAvg * oldCount) + rating) / newCount;
 
-        // 1. Add review
-        transaction.set(reviewRef, {
-          benefitId,
-          supplierId,
-          redemptionId,
-          userId: user.uid,
-          userName: userData?.firstName ? `${userData.firstName} ${userData.lastName}` : (user.displayName || 'Estudiante'),
-          userPhoto: user.photoURL || '',
-          rating,
-          comment,
-          createdAt: serverTimestamp(),
-        });
-
-        // 2. Update supplier stats
         transaction.update(supplierRef, {
           avgRating: newAvg,
-          reviewCount: newCount
+          reviewCount: newCount,
         });
-
-        // 3. Mark redemption as reviewed
-        transaction.update(redemptionRef, { hasReview: true });
-        transaction.update(userRedemptionRef, { hasReview: true });
       });
+
+      // 3. Mark redemption as reviewed (non-critical, fire-and-forget)
+      try {
+        const redemptionRef = doc(firestore, 'benefitRedemptions', redemptionId);
+        await updateDoc(redemptionRef, { hasReview: true });
+      } catch (e) {
+        console.warn('Could not mark benefitRedemption as reviewed:', e);
+      }
+
+      try {
+        const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionId);
+        await setDoc(userRedemptionRef, { hasReview: true }, { merge: true });
+      } catch (e) {
+        console.warn('Could not mark user redemption as reviewed:', e);
+      }
 
       toast({
         title: '¡Gracias por tu reseña!',
         description: 'Tu opinión ayuda a otros estudiantes.',
       });
       onSuccess?.();
+      setRating(5);
+      setComment('');
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
@@ -96,27 +105,29 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
             ¿Qué te pareció {benefitTitle}?
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-4 space-y-4">
-        <div className="flex flex-col items-center gap-2">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tu calificación</p>
-            <StarRating rating={rating} onRatingChange={setRating} size="lg" />
-        </div>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="pt-4 space-y-4">
+          <div className="flex flex-col items-center gap-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tu calificación</p>
+              <StarRating rating={rating} onRatingChange={setRating} size="lg" />
+          </div>
 
-        <Textarea 
-            placeholder="Cuéntanos tu experiencia (opcional)..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            className="min-h-[80px] bg-background border-primary/10 focus-visible:ring-primary/20"
-        />
+          <Textarea 
+              placeholder="Cuéntanos tu experiencia (opcional)..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              className="min-h-[80px] bg-background border-primary/10 focus-visible:ring-primary/20"
+          />
 
-        <Button 
-            className="w-full font-bold" 
-            onClick={handleSubmit} 
-            disabled={isSubmitting}
-        >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar Reseña'}
-        </Button>
-      </CardContent>
+          <Button 
+              type="submit"
+              className="w-full font-bold" 
+              disabled={isSubmitting}
+          >
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar Reseña'}
+          </Button>
+        </CardContent>
+      </form>
     </Card>
   );
 }

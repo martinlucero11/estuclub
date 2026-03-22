@@ -3,7 +3,7 @@
 import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, limit } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
@@ -20,9 +20,15 @@ function SearchResults() {
   const q = searchParams.get('q')?.toLowerCase() || '';
   const firestore = useFirestore();
 
-  // Fetch all benefits and suppliers (client-side filtering for better experience in small app)
-  const benefitsQuery = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('isVisible', '==', true));
-  const suppliersQuery = query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()));
+  // Memoize queries and limit results for performance
+  const benefitsQuery = useMemo(() => 
+    query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('isVisible', '==', true), limit(50)),
+    [firestore]
+  );
+  const suppliersQuery = useMemo(() => 
+    query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), limit(50)),
+    [firestore]
+  );
 
   const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
   const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce(suppliersQuery);

@@ -4,6 +4,8 @@ import type { Banner, SupplierProfile, Announcement, SerializableBenefit, Serial
 import Image from "next/image";
 import { getInitials, cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { haptic } from "@/lib/haptics";
+import { motion } from "framer-motion";
 import BenefitCard from "../perks/perk-card";
 import {
   Carousel,
@@ -18,19 +20,27 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
     return (
-        <Link href={`/proveedores/${supplier.slug}`} className="block w-full group text-center">
+        <Link 
+            href={`/proveedores/${supplier.slug}`} 
+            onClick={() => haptic.vibrateSubtle()}
+            className="block w-full group text-center active:scale-95 transition-transform duration-200"
+        >
             <div className="flex flex-col items-center">
-                <div className="relative w-full aspect-square overflow-hidden rounded-2xl bg-card shadow-md border group-hover:border-primary transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative w-full aspect-square overflow-hidden rounded-[2rem] bg-card glass glass-dark shadow-premium border border-primary/5 group-hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl"
+                >
                     <Image
                         src={supplier.logoUrl || ''}
                         alt={supplier.name}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                         sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 15vw"
                         priority={priority}
                     />
-                </div>
-                <p className="mt-2 text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary">{supplier.name}</p>
+                </motion.div>
+                <p className="mt-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-foreground line-clamp-1 group-hover:text-primary transition-colors opacity-70 group-hover:opacity-100">{supplier.name}</p>
             </div>
         </Link>
     );
@@ -56,13 +66,30 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
         </div>
     );
 
-    if (banner.link) {
         return (
-            <Link href={banner.link} target="_blank" rel="noopener noreferrer" className="block">
-                {bannerContent}
+            <Link 
+                href={banner.link} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                onClick={() => haptic.vibrateImpact()}
+                className="block group"
+            >
+                <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="relative w-full overflow-hidden rounded-[2rem] h-24 sm:h-32 md:h-36 shadow-premium group-hover:shadow-2xl transition-all duration-500"
+                >
+                    <Image
+                        src={banner.imageUrl}
+                        alt={banner.title || "Banner"}
+                        fill
+                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                        priority={priority}
+                        sizes="100vw"
+                    />
+                </motion.div>
             </Link>
         )
-    }
 
     return bannerContent;
 };
@@ -98,7 +125,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselContent className="-ml-4">
                 {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
-                        <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
+                        <SupplierCard supplier={item as SupplierProfile} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -120,7 +147,6 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
                             announcement={makeAnnouncementSerializable(item)} 
                             variant="carousel" 
                             className="absolute inset-0 w-full h-full"
-                            priority={index < 2} // Prioritize the first two images
                         />
                     </CarouselItem>
                 ))}

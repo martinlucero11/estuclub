@@ -24,18 +24,18 @@ const SupplierGridCard = ({ supplier }: { supplier: SupplierProfile }) => {
     const initials = getInitials(supplier.name);
 
     return (
-        <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full">
-            <Card className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-800 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg h-full">
-                <div className="w-16 h-16 rounded-full border-2 border-border mb-3 overflow-hidden">
+        <Link key={supplier.id} href={`/proveedores/${supplier.slug}`} className="group block h-full active:scale-95 transition-transform duration-200">
+            <Card className="bg-card/40 backdrop-blur-sm rounded-3xl shadow-premium border border-border/40 p-4 flex flex-col items-center text-center transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20 group-hover:-translate-y-1 h-full">
+                <div className="w-16 h-16 rounded-full border-2 border-border/50 group-hover:border-primary/30 mb-3 overflow-hidden transition-colors duration-500 shadow-inner">
                     <Avatar className="h-full w-full">
-                        <AvatarImage src={supplier.logoUrl || undefined} alt={supplier.name} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-lg font-semibold text-muted-foreground">
+                        <AvatarImage src={supplier.logoUrl || undefined} alt={supplier.name} className="object-cover transition-transform duration-500 group-hover:scale-110" />
+                        <AvatarFallback className="bg-muted text-lg font-bold text-muted-foreground">
                             {initials}
                         </AvatarFallback>
                     </Avatar>
                 </div>
-                <h3 className="text-md font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{supplier.name}</h3>
-                <div className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
+                <h3 className="text-sm font-bold text-foreground mb-1 line-clamp-1">{supplier.name}</h3>
+                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wider">
                     <TypeIcon className="h-3 w-3 mr-1.5" />
                     {supplier.type}
                 </div>

@@ -18,12 +18,12 @@ const WelcomeMessage = () => {
     const displayName = user?.displayName?.split(' ')[0] || "Bienvenido";
 
     return (
-        <div className="py-4">
-            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Hola, {displayName} 👋
+        <div className="py-6 animate-fade-in">
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+                Hola, <span className="text-primary">{displayName}</span> 👋
             </h1>
-            <p className="text-muted-foreground font-semibold text-sm mt-1">
-                Descubre los mejores beneficios cerca de ti.
+            <p className="text-muted-foreground font-medium text-sm md:text-base mt-1">
+                Descubre los beneficios exclusivos que tenemos para vos.
             </p>
         </div>
     );

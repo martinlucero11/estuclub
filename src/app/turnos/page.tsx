@@ -3,7 +3,7 @@
 
 import MainLayout from '@/components/layout/main-layout';
 import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -51,7 +51,8 @@ function CluberList() {
             return query(
                 collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), 
                 where('appointmentsEnabled', '==', true), 
-                orderBy('name')
+                orderBy('name'),
+                limit(50)
             );
         },
         [firestore]
@@ -77,14 +78,14 @@ function CluberList() {
                     description="Ningún Cluber tiene habilitada la reserva de turnos en este momento."
                 />
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger">
                     {clubers?.map(cluber => {
                         const TypeIcon = categoryIcons[cluber.type] || Users;
                         const cluberInitials = cluber.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
                             <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
-                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
                                     <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
                                         <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
