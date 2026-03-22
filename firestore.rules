@@ -134,7 +134,13 @@ service cloud.firestore {
 
       allow create: if isSupplierDocOwner() || isAdminDocOwner();
 
-      allow update, delete: if signedIn() && (
+      allow update: if (signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid
+      )) || isAdminDocOwner() || 
+      (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritesCount']));
+
+      allow delete: if signedIn() && (
         resource.data.supplierId == request.auth.uid ||
         resource.data.ownerId == request.auth.uid
       ) || isAdminDocOwner();
@@ -174,9 +180,8 @@ service cloud.firestore {
     /* ================= NOTIFICATIONS ================= */
 
     match /notifications/{id} {
-      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
-      allow create: if signedIn() && (request.resource.data.userId == request.auth.uid || isAdminDocOwner());
-      allow update, delete: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
+      allow get, list: if signedIn();
+      allow create, update, delete: if isAdminDocOwner() || (signedIn() && (request.resource.data.supplierId == request.auth.uid));
     }
 
     /* ================= REVIEWS ================= */
