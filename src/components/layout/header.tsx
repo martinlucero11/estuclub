@@ -1,10 +1,9 @@
-
 'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, History, CalendarClock, LayoutGrid, LogIn, Heart } from 'lucide-react';
+import { User, LogOut, LayoutGrid, LogIn, Heart } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,14 +25,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuthService, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { cn, hasRequiredRole } from '@/lib/utils';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { haptic } from '@/lib/haptics';
 import { motion } from 'framer-motion';
 import { navConfig } from '@/config/nav-menu';
-import { hasRequiredRole } from '@/lib/utils';
 import { SearchBar } from '@/components/layout/search-bar';
 import { MagneticButton } from '../ui/magnetic-button';
 
@@ -44,7 +43,6 @@ function UserMenu() {
   const { toast } = useToast();
 
   const handleSignOut = async () => {
-    console.log("Attempting to sign out...");
     try {
       await signOut(auth);
       toast({
@@ -124,53 +122,88 @@ function UserMenu() {
   );
 }
 
-// Sidebar for all screen sizes
 function AppSidebar() {
     const { roles } = useUser();
     const allRoles = ['user', ...roles];
+    const pathname = usePathname();
 
     return (
         <Sheet>
             <SheetTrigger asChild>
                 <MagneticButton>
-                    <Button variant="ghost" size="icon" onClick={() => haptic.vibrateSubtle()}>
-                        <LayoutGrid className="h-6 w-6" />
+                    <Button variant="ghost" size="icon" className="group" onClick={() => haptic.vibrateSubtle()}>
+                        <LayoutGrid className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
                 </MagneticButton>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 w-72 sm:w-80 glass glass-dark border-r-0">
-                <SheetHeader className="p-6 border-b">
-                    <SheetTitle>
-                        <SheetClose asChild>
-                             <Link href="/" className="flex items-center justify-center">
-                                <div
-                                    className="h-8 w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
-                                    aria-label="EstuClub Logo"
-                                />
-                            </Link>
-                        </SheetClose>
+            <SheetContent side="left" className="flex flex-col p-0 w-[320px] glass-sidebar border-r-0 overflow-hidden">
+                <SheetHeader className="p-8 border-b border-white/5 relative bg-gradient-to-b from-white/5 to-transparent">
+                    <div className="flex justify-center mb-2">
+                        <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-glow-pink relative">
+                           <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-20" />
+                            <Image 
+                                src="/logo.svg" 
+                                alt="EstuClub Logo" 
+                                width={130} 
+                                height={35} 
+                                priority
+                                className="relative z-10 brightness-110"
+                            />
+                        </div>
+                    </div>
+                    <SheetTitle className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">
+                        Plataforma Estudiantil
                     </SheetTitle>
                     <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
-                <nav className="mt-6 flex-1 flex-col gap-1 px-4">
-                    {navConfig.mainNav.map((item) => {
-                        const isVisible = hasRequiredRole(allRoles, item.role);
-                        if (!isVisible) return null;
+                
+                <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-hide">
+                    <nav className="flex flex-col gap-1.5">
+                        {navConfig.mainNav.map((item) => {
+                            if (!hasRequiredRole(allRoles, item.role)) return null;
 
-                        const Icon = item.icon;
-                        return (
-                            <SheetClose asChild key={item.href}>
-                                <Link href={item.href}>
-                                    <Button variant="ghost" className="w-full justify-start text-base py-3 h-auto">
-                                        {Icon && <Icon className="mr-3 h-5 w-5" />}
-                                        {item.title}
-                                    </Button>
-                                </Link>
-                            </SheetClose>
-                        )
-                    })}
-                </nav>
+                            const Icon = item.icon;
+                            const isActive = pathname === item.href;
+                            
+                            return (
+                                <SheetClose asChild key={item.href}>
+                                    <Link href={item.href}>
+                                        <Button 
+                                            variant="ghost" 
+                                            className={cn(
+                                                "w-full justify-start text-base py-6 h-auto transition-all duration-300 group rounded-2xl relative",
+                                                isActive ? "bg-primary/10 text-primary" : "hover:bg-white/5 opacity-70 hover:opacity-100"
+                                            )}
+                                        >
+                                            <div className={cn(
+                                                "mr-4 p-2.5 rounded-xl transition-all duration-300",
+                                                isActive ? "bg-primary text-white shadow-lg shadow-primary/25" : "bg-white/5 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                            )}>
+                                                {Icon && <Icon className="h-5 w-5" />}
+                                            </div>
+                                            <span className="font-bold tracking-tight">{item.title}</span>
+                                            
+                                            {isActive && (
+                                                <motion.div 
+                                                    layoutId="active-pill"
+                                                    className="absolute right-4 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(236,72,153,0.8)]"
+                                                />
+                                            )}
+                                        </Button>
+                                    </Link>
+                                </SheetClose>
+                            )
+                        })}
+                    </nav>
+                </div>
+
+                <div className="p-8 border-t border-white/5 bg-black/20 mt-auto backdrop-blur-md">
+                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-20">
+                        <span>EstuClub v2.1</span>
+                        <span>© 2024</span>
+                    </div>
+                </div>
             </SheetContent>
         </Sheet>
     );
@@ -189,9 +222,13 @@ export default function Header() {
         {/* Center Slot: Absolutely Positioned Logo */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <Link href="/" aria-label="Homepage">
-                <div
-                    className="h-7 w-[100px] sm:h-8 sm:w-[120px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
-                    aria-label="EstuClub Logo"
+                <Image 
+                    src="/logo.svg" 
+                    alt="EstuClub Logo" 
+                    width={120} 
+                    height={32} 
+                    priority
+                    className="h-7 w-auto sm:h-8 brightness-110"
                 />
             </Link>
         </div>

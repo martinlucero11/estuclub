@@ -31,8 +31,11 @@ export const MagneticButton = React.forwardRef<HTMLDivElement, MagneticButtonPro
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (disabled) return;
+    const targetRef = (ref as any)?.current || innerRef.current;
+    if (!targetRef) return;
+
     const { clientX, clientY } = e;
-    const { height, width, left, top } = (ref as any)?.current?.getBoundingClientRect() || innerRef.current!.getBoundingClientRect();
+    const { height, width, left, top } = targetRef.getBoundingClientRect();
     const middleX = clientX - (left + width / 2);
     const middleY = clientY - (top + height / 2);
     x.set(middleX * (strength / 100));
