@@ -67,7 +67,7 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="icon">
+      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-white">
         <Link href="/login">
             <LogIn className="h-6 w-6" />
             <span className="sr-only">Iniciar Sesión</span>
@@ -80,18 +80,18 @@ function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
         <MagneticButton>
-            <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-9 w-9">
-                    {user.photoURL && (
-                    <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
-                    )}
-                    <AvatarFallback>{userInitial}</AvatarFallback>
-                </Avatar>
-            </Button>
+          <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20">
+                  <Avatar className="h-9 w-9">
+                      {user.photoURL && (
+                      <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                      )}
+                      <AvatarFallback>{userInitial}</AvatarFallback>
+                  </Avatar>
+              </Button>
+          </DropdownMenuTrigger>
         </MagneticButton>
-      </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
@@ -129,36 +129,32 @@ function AppSidebar() {
 
     return (
         <Sheet>
-            <SheetTrigger asChild>
-                <MagneticButton>
-                    <Button variant="ghost" size="icon" className="group" onClick={() => haptic.vibrateSubtle()}>
-                        <LayoutGrid className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
+            <MagneticButton>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()}>
+                        <LayoutGrid className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
-                </MagneticButton>
-            </SheetTrigger>
+                </SheetTrigger>
+            </MagneticButton>
             <SheetContent side="left" className="flex flex-col p-0 w-[320px] glass-sidebar border-r-0 overflow-hidden">
-                <SheetHeader className="p-8 border-b border-white/5 relative bg-gradient-to-b from-white/5 to-transparent">
-                    <div className="flex justify-center mb-2">
-                        <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-glow-pink relative">
-                           <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-20" />
-                            <Image 
-                                src="/logo.svg" 
-                                alt="EstuClub Logo" 
-                                width={130} 
-                                height={35} 
-                                priority
-                                className="relative z-10 brightness-110"
-                            />
+                <SheetHeader className="p-8 border-b border-border/20 relative">
+                    <div className="flex justify-center mb-4 mt-2">
+                        <div className="relative">
+                           <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-50" />
+                           <div
+                               className="relative z-10 h-10 w-[140px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                               aria-label="EstuClub Logo"
+                           />
                         </div>
                     </div>
-                    <SheetTitle className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">
+                    <SheetTitle className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">
                         Plataforma Estudiantil
                     </SheetTitle>
                     <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-hide">
+                <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-premium pr-2">
                     <nav className="flex flex-col gap-1.5">
                         {navConfig.mainNav.map((item) => {
                             if (!hasRequiredRole(allRoles, item.role)) return null;
@@ -198,10 +194,10 @@ function AppSidebar() {
                     </nav>
                 </div>
 
-                <div className="p-8 border-t border-white/5 bg-black/20 mt-auto backdrop-blur-md">
-                    <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest opacity-20">
-                        <span>EstuClub v2.1</span>
-                        <span>© 2024</span>
+                <div className="p-8 mt-auto pb-8">
+                    <div className="flex flex-col items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/40">
+                        <span>Con amor para Mela {"<3"}</span>
+                        <span>Estuclub - 2026</span>
                     </div>
                 </div>
             </SheetContent>
@@ -212,7 +208,7 @@ function AppSidebar() {
 export default function Header() {
   const { user, isUserLoading } = useUser();
   return (
-    <header className="sticky top-0 z-40 w-full glass glass-dark shadow-premium">
+    <header className="sticky top-0 z-40 w-full bg-primary shadow-premium">
       <div className="container relative flex h-16 items-center justify-between px-4">
         {/* Left Slot: Actions */}
         <div className="flex items-center">

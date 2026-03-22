@@ -116,7 +116,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     <a href="/seguridad-infantil" className="hover:text-primary transition-colors">Seguridad</a>
                 </div>
                 <p className="mt-4 opacity-40 font-bold tracking-tighter italic uppercase text-xs">
-                    © {new Date().getFullYear()} EstuClub. <span className="text-primary tracking-normal not-italic lowercase font-medium opacity-100">Premium Experience</span>
+                    © {new Date().getFullYear()} EstuClub. <span className="text-primary tracking-normal not-italic font-medium opacity-100">Mismo Boutique Creativa</span>
                 </p>
             </footer>
 

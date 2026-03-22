@@ -118,16 +118,30 @@ body {
 }
 
 .glass-sidebar {
-  @apply bg-white/80 dark:bg-[#050505]/90 backdrop-blur-3xl border-r border-white/10 shadow-2xl relative overflow-hidden;
+  @apply bg-white dark:bg-[#0A0A0A] border-r border-border shadow-2xl overflow-hidden;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
-    linear-gradient(to right, rgba(255,255,255,0.02) 0%, transparent 100%);
+    radial-gradient(at 0% 0%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
 }
 
 .dark .glass-sidebar {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(236, 72, 153, 0.08) 0px, transparent 50%),
-    linear-gradient(to right, rgba(255,255,255,0.03) 0%, transparent 100%);
+    radial-gradient(at 0% 0%, rgba(236, 72, 153, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+}
+
+/* Premium Scrollbar */
+.scrollbar-premium::-webkit-scrollbar {
+  width: 5px;
+}
+.scrollbar-premium::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-premium::-webkit-scrollbar-thumb {
+  @apply bg-primary/20 rounded-full transition-colors duration-300;
+}
+.scrollbar-premium:hover::-webkit-scrollbar-thumb {
+  @apply bg-primary/40;
 }
 
 .shadow-premium {

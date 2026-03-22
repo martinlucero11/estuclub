@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -12,7 +11,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Notification } from '@/types/data';
 
@@ -38,15 +37,7 @@ function formatTime(timestamp: Notification['createdAt']) {
 }
 
 
-function NotificationList() {
-    const firestore = useFirestore();
-    const notificationsQuery = useMemo(
-        () => query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10)),
-        [firestore]
-    );
-
-    const { data: notifications, isLoading } = useCollection(notificationsQuery);
-    
+function NotificationList({ notifications, isLoading }: { notifications: Notification[] | undefined, isLoading: boolean }) {
     if (isLoading) {
         return (
             <div className="space-y-2 p-4">
@@ -77,7 +68,7 @@ function NotificationList() {
                 const Icon = typeIcons[notification.type] || Bell;
                 return (
                     <div key={notification.id}>
-                        <div className="flex items-start gap-3 p-2 hover:bg-accent rounded-md">
+                        <div className="flex items-start gap-3 p-2 hover:bg-accent rounded-md cursor-pointer transition-colors">
                              <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
                                 <Icon className="h-4 w-4 text-secondary-foreground" />
                             </div>
@@ -96,24 +87,50 @@ function NotificationList() {
 }
 
 export default function NotificationBell() {
+    const firestore = useFirestore();
+    const notificationsQuery = useMemo(
+        () => query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10)),
+        [firestore]
+    );
+
+    const { data: notifications, isLoading } = useCollection(notificationsQuery);
+    
+    const [hasUnread, setHasUnread] = useState(false);
+    
+    useEffect(() => {
+        if (notifications && notifications.length > 0) {
+            const latestNotifTime = notifications[0].createdAt?.toDate().getTime() || 0;
+            const lastReadTime = parseInt(localStorage.getItem('estuclub_last_read_notifications') || '0', 10);
+            if (latestNotifTime > lastReadTime) {
+                setHasUnread(true);
+            }
+        }
+    }, [notifications]);
+
+    const handleOpenChange = (open: boolean) => {
+        if (open) {
+            setHasUnread(false);
+            localStorage.setItem('estuclub_last_read_notifications', Date.now().toString());
+        }
+    };
+
   return (
-    <Popover>
+    <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-          <Bell className="w-6 h-6 stroke-[1.5]" />
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#d83762] rounded-full border-2 border-white dark:border-slate-900"></span>
+        <Button variant="ghost" size="icon" className="relative p-2 rounded-full text-white hover:bg-white/20 hover:text-white transition-colors group">
+          <Bell className="w-5 h-5 stroke-[2] group-hover:scale-110 transition-transform" />
+          {hasUnread && (
+              <span className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full border border-primary/20 animate-pulse shadow-glow-pink"></span>
+          )}
           <span className="sr-only">Abrir notificaciones</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-4">
-            <h4 className="font-medium leading-none">Notificaciones</h4>
+        <div className="p-4 border-b">
+            <h4 className="font-semibold text-sm leading-none">Notificaciones</h4>
         </div>
-        <Separator />
-        <NotificationList />
+        <NotificationList notifications={notifications} isLoading={isLoading} />
       </PopoverContent>
     </Popover>
   );
 }
-
-    

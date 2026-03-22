@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -14,10 +14,40 @@ const fontSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
 });
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" }
+  ],
+};
+
 export const metadata: Metadata = {
-  title: "EstuClub",
-  description: "La mejor app de beneficios para estudiantes",
+  title: {
+    default: "EstuClub - Plataforma Estudiantil",
+    template: "%s | EstuClub"
+  },
+  description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Mismo Boutique Creativa!",
   manifest: "/manifest.json",
+  openGraph: {
+    type: "website",
+    locale: "es_AR",
+    url: "https://estuclub.com.ar",
+    title: "EstuClub - Mismo Boutique Creativa",
+    description: "La comunidad de beneficios exclusivos para estudiantes más grande. ¡Descubre increíbles descuentos en tu ciudad!",
+    siteName: "EstuClub",
+    images: [{
+      url: "https://estuclub.com.ar/og-image.jpg",
+      width: 1200,
+      height: 630,
+      alt: "EstuClub - Plataforma Estudiantil"
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EstuClub - Mismo Boutique Creativa",
+    description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Súmate a EstuClub!",
+    images: ["https://estuclub.com.ar/og-image.jpg"],
+  },
 };
 
 export default function RootLayout({
