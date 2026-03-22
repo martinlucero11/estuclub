@@ -28,6 +28,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
   useEffect(() => {
     import('leaflet').then((Leaflet) => {
       setL(Leaflet.default);
+      // @ts-ignore
       import('leaflet/dist/leaflet.css');
     });
   }, []);
