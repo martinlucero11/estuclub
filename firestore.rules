@@ -58,7 +58,8 @@ service cloud.firestore {
     match /roles_supplier/{supplierId} {
       allow get, list: if true;
       allow create, delete: if false;
-      allow update: if isMe(supplierId) || isAdminDocOwner();
+      allow update: if isMe(supplierId) || isAdminDocOwner()
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avgRating', 'reviewCount', 'favoritesCount']));
 
       match /availability/{docId} {
         allow get, list: if true;
@@ -119,7 +120,9 @@ service cloud.firestore {
       allow list: if signedIn();
 
       allow update: if signedIn() &&
-        resource.data.supplierId == request.auth.uid || isAdminDocOwner();
+        (resource.data.supplierId == request.auth.uid ||
+         resource.data.userId == request.auth.uid ||
+         isAdminDocOwner());
 
       allow delete: if false;
     }
@@ -174,6 +177,14 @@ service cloud.firestore {
       allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
       allow create: if signedIn() && (request.resource.data.userId == request.auth.uid || isAdminDocOwner());
       allow update, delete: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
+    }
+
+    /* ================= REVIEWS ================= */
+
+    match /reviews/{id} {
+      allow get, list: if true;
+      allow create: if signedIn();
+      allow update, delete: if isAdminDocOwner();
     }
 
     /* ================= GLOBAL DENY ================= */

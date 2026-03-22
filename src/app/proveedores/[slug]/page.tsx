@@ -55,20 +55,17 @@ function ProfileSkeleton() {
     );
 }
 
-function AverageRating({ supplierId }: { supplierId: string }) {
-    const firestore = useFirestore();
-    const reviewsQuery = useMemo(() => query(collection(firestore, 'reviews'), where('supplierId', '==', supplierId)), [firestore, supplierId]);
-    const { data: reviews } = useCollectionOnce(reviewsQuery);
+function AverageRating({ supplier }: { supplier: SupplierProfile }) {
+    const avg = supplier.avgRating || 0;
+    const count = supplier.reviewCount || 0;
     
-    if (!reviews || reviews.length === 0) return null;
-    
-    const avg = reviews.reduce((acc, r: any) => acc + (r.rating || 0), 0) / reviews.length;
+    if (count === 0) return null;
     
     return (
         <div className="flex items-center gap-1.5 mt-1 bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 px-2.5 py-0.5 rounded-full border border-yellow-400/20 shadow-sm animate-in fade-in duration-500">
             <StarRating rating={avg} readonly size="sm" />
             <span className="text-xs font-black">{avg.toFixed(1)}</span>
-            <span className="text-[10px] text-muted-foreground font-bold">({reviews.length})</span>
+            <span className="text-[10px] text-muted-foreground font-bold">({count})</span>
         </div>
     );
 }
@@ -187,7 +184,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                         <TypeIcon className="h-4 w-4" />
                         <p className="capitalize">{supplier.type}</p>
                     </div>
-                    <AverageRating supplierId={supplier.id} />
+                    <AverageRating supplier={supplier} />
                 </div>
                  <div className="mt-4 flex items-center gap-2">
                     {!isOwnProfile && <SubscribeButton supplierId={supplier.id} />}

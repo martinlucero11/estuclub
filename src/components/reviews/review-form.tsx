@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, updateDoc, runTransaction } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './star-rating';
@@ -32,25 +32,44 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
 
     setIsSubmitting(true);
     try {
-      // 1. Add review to global reviews collection
-      await addDoc(collection(firestore, 'reviews'), {
-        benefitId,
-        supplierId,
-        redemptionId,
-        userId: user.uid,
-        userName: userData?.firstName ? `${userData.firstName} ${userData.lastName}` : (user.displayName || 'Estudiante'),
-        userPhoto: user.photoURL || '',
-        rating,
-        comment,
-        createdAt: serverTimestamp(),
-      });
-
-      // 2. Mark redemption as reviewed
+      const supplierRef = doc(firestore, 'roles_supplier', supplierId);
+      const reviewRef = doc(collection(firestore, 'reviews'));
       const redemptionRef = doc(firestore, 'benefitRedemptions', redemptionId);
       const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionId);
-      
-      await updateDoc(redemptionRef, { hasReview: true });
-      await updateDoc(userRedemptionRef, { hasReview: true });
+
+      await runTransaction(firestore, async (transaction) => {
+        const supplierDoc = await transaction.get(supplierRef);
+        if (!supplierDoc.exists()) throw new Error("Supplier does not exist");
+
+        const supplierData = supplierDoc.data();
+        const oldCount = (supplierData.reviewCount as number) || 0;
+        const oldAvg = (supplierData.avgRating as number) || 0;
+        const newCount = oldCount + 1;
+        const newAvg = ((oldAvg * oldCount) + rating) / newCount;
+
+        // 1. Add review
+        transaction.set(reviewRef, {
+          benefitId,
+          supplierId,
+          redemptionId,
+          userId: user.uid,
+          userName: userData?.firstName ? `${userData.firstName} ${userData.lastName}` : (user.displayName || 'Estudiante'),
+          userPhoto: user.photoURL || '',
+          rating,
+          comment,
+          createdAt: serverTimestamp(),
+        });
+
+        // 2. Update supplier stats
+        transaction.update(supplierRef, {
+          avgRating: newAvg,
+          reviewCount: newCount
+        });
+
+        // 3. Mark redemption as reviewed
+        transaction.update(redemptionRef, { hasReview: true });
+        transaction.update(userRedemptionRef, { hasReview: true });
+      });
 
       toast({
         title: '¡Gracias por tu reseña!',

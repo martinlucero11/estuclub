@@ -1,11 +1,12 @@
 'use client';
 
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { Auth, User } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 import { FirebaseStorage } from 'firebase/storage';
 import { FirebaseApp } from 'firebase/app';
 import { FirebaseContext, FirebaseContextState, SupplierData } from '@/firebase/provider';
+import type { UserProfile } from '@/types/data';
 
 // --- TYPE DEFINITIONS FOR HOOKS ---
 
@@ -15,6 +16,7 @@ export interface FirebaseServicesAndUser extends Omit<FirebaseContextState, 'are
   firestore: Firestore;
   auth: Auth;
   storage: FirebaseStorage;
+  userData: UserProfile | null;
 }
 
 // Describes the simplified object for general use, returned by useUser
@@ -50,6 +52,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     storage: context.storage,
     user: context.user,
     roles: context.roles,
+    userData: context.userData,
     supplierData: context.supplierData,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
@@ -60,8 +63,15 @@ export const useFirebase = (): FirebaseServicesAndUser => {
  * A convenience hook to get only the user state (user object, roles, loading status).
  */
 export const useUser = (): UserHookResult => {
-  const { user, roles, supplierData, isUserLoading, userError } = useFirebase();
-  return { user, roles, supplierData, isUserLoading, userError };
+  const { user, roles, userData, supplierData, isUserLoading, userError } = useFirebase();
+  return useMemo(() => ({ 
+    user, 
+    roles, 
+    userData, 
+    supplierData, 
+    isUserLoading, 
+    userError 
+  }), [user, roles, userData, supplierData, isUserLoading, userError]);
 };
 
 /**

@@ -21,7 +21,7 @@ export default function ServiceManager() {
     const servicesQuery = useMemo(() => {
         if (!user) return null;
         return collection(firestore, 'roles_supplier', user.uid, 'services').withConverter(createConverter<Service>());
-    }, [user, firestore]);
+    }, [user?.uid, firestore]);
 
     const { data: services, isLoading, error } = useCollection(servicesQuery);
 

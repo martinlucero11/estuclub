@@ -2,7 +2,7 @@
 
 import React, { createContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
-import { Firestore, getFirestore, doc, getDoc } from 'firebase/firestore';
+import { Firestore, initializeFirestore, getFirestore, memoryLocalCache, doc, getDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { firebaseConfig } from '@/firebase/config';
@@ -51,9 +51,19 @@ export const FirebaseContext = createContext<FirebaseContextState | undefined>(u
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const services = useMemo(() => {
     const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    
+    // Use memory cache to prevent IndexedDB corruption that causes ca9 assertion error
+    // initializeFirestore throws if already initialized (hot reload), fallback to getFirestore
+    let firestore: Firestore;
+    try {
+      firestore = initializeFirestore(app, { localCache: memoryLocalCache() });
+    } catch {
+      firestore = getFirestore(app);
+    }
+    
     return {
       firebaseApp: app,
-      firestore: getFirestore(app),
+      firestore,
       auth: getAuth(app),
       storage: getStorage(app),
     };
@@ -146,7 +156,17 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       isUserLoading: authState.isAuthLoading || profileState.isProfileLoading,
       userError: authState.authError || profileState.profileError,
     }),
-    [services, authState, profileState]
+    [
+      services,
+      authState.user,
+      authState.isAuthLoading,
+      authState.authError,
+      profileState.roles,
+      profileState.userData,
+      profileState.supplierData,
+      profileState.isProfileLoading,
+      profileState.profileError,
+    ]
   );
 
   return (

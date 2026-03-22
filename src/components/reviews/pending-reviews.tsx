@@ -22,7 +22,7 @@ export function PendingReviews() {
       orderBy('usedAt', 'desc'),
       limit(5)
     );
-  }, [user, firestore]);
+  }, [user?.uid, firestore]);
 
   const { data: redemptions, isLoading } = useCollection(pendingQuery);
 

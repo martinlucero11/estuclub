@@ -111,7 +111,7 @@ export default function UserAppointmentsList() {
             collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
             where('userId', '==', user.uid)
         );
-    }, [user, firestore]);
+    }, [user?.uid, firestore]);
 
     const { data: appointments, isLoading, error } = useCollection(appointmentsQuery);
 

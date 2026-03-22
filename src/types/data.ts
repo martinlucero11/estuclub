@@ -77,6 +77,8 @@ export interface SupplierProfile {
   canCreatePerks?: boolean;
   canSendNotifications?: boolean;
   announcementsEnabled?: boolean;
+  avgRating?: number;
+  reviewCount?: number;
   [key: string]: any;
 }
 

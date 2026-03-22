@@ -13,9 +13,10 @@ interface BenefitCardProps {
   benefit: SerializableBenefit & { supplierName?: string };
   className?: string;
   variant?: 'grid' | 'carousel';
+  priority?: boolean;
 }
 
-export default function BenefitCard({ benefit, className, variant = 'grid' }: BenefitCardProps) {
+export default function BenefitCard({ benefit, className, variant = 'grid', priority = false }: BenefitCardProps) {
   const supplierName = benefit.supplierName || "Club de Beneficios";
 
   const primaryText = benefit.highlight || benefit.title;
@@ -32,7 +33,8 @@ export default function BenefitCard({ benefit, className, variant = 'grid' }: Be
             alt={benefit.title}
             fill
             className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
         

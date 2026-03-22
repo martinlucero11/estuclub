@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useCollectionOnce } from '@/firebase';
+import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Appointment } from '@/types/data';
@@ -17,29 +17,31 @@ export function useAppointmentReminders() {
     const appointmentsQuery = useMemo(() => {
         if (!user || !firestore) return null;
         
-        const now = new Date();
-        // Look ahead 24 hours
-        const tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-        
+        // Use a stable query that doesn't change every millisecond
         return query(
             collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
             where('userId', '==', user.uid),
             where('status', '==', 'confirmed'),
-            where('startTime', '>=', Timestamp.fromDate(now)),
-            where('startTime', '<=', Timestamp.fromDate(tomorrow))
+            orderBy('startTime', 'asc'),
+            limit(10)
         );
-    }, [user, firestore]);
+    }, [user?.uid, firestore]); // Only depend on UID to keep reference stable
 
-    const { data: appointments } = useCollection(appointmentsQuery);
+    const { data: appointments } = useCollectionOnce(appointmentsQuery);
 
     useEffect(() => {
         if (!appointments || appointments.length === 0) return;
 
         const checkReminders = () => {
             const now = new Date().getTime();
+            const oneHourFromNow = now + (60 * 60 * 1000);
+
             appointments.forEach(app => {
                 const startTime = (app.startTime as Timestamp).toMillis();
+                
+                // Only consider appointments in the next hour
+                if (startTime < now || startTime > oneHourFromNow) return;
+
                 const diffMinutes = (startTime - now) / (1000 * 60);
 
                 // Notify if starting in less than 60 minutes

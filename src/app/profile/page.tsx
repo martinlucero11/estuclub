@@ -126,7 +126,7 @@ export default function ProfilePage() {
     const userProfileRef = useMemo(() => {
         if (isUserLoading || !user) return null;
         return doc(firestore, 'users', user.uid);
-    }, [user, firestore, isUserLoading]);
+    }, [user?.uid, firestore, isUserLoading]);
     
     const { data: userProfile, isLoading: isProfileLoading, error } = useDocOnce<UserProfile>(userProfileRef);
 

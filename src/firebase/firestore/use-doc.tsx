@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -25,13 +25,17 @@ export interface UseDocResult<T> {
 }
 
 /**
+ * Serialize a DocumentReference to a stable string key.
+ * Prevents listener churn when the docRef object changes but points to the same path.
+ */
+function serializeDocRef(ref: DocumentReference | null | undefined): string {
+  if (!ref) return '__null__';
+  return ref.path;
+}
+
+/**
  * React hook to subscribe to a single Firestore document in real-time.
- * Handles nullable references.
- * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted docRef or BAD THINGS WILL HAPPEN
- * use useMemo to memoize it per React guidence.  Also make sure that it's dependencies are stable
- * references
- *
+ * Uses serialized path keys to prevent unnecessary listener re-creation.
  *
  * @template T Optional type for document data. Defaults to any.
  * @param {DocumentReference<DocumentData> | null | undefined} docRef -
@@ -46,6 +50,9 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+
+  // Use serialized path as stable key instead of object reference
+  const docKey = serializeDocRef(docRef);
 
   useEffect(() => {
     if (!docRef) {
@@ -67,7 +74,7 @@ export function useDoc<T = any>(
           // Document does not exist
           setData(null);
         }
-        setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
+        setError(null); // Clear any previous error on successful snapshot
         setIsLoading(false);
       },
       (error: FirestoreError) => {
@@ -86,7 +93,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [docRef]); // Re-run if the docRef changes.
+  }, [docKey]); // Use serialized path key, not object reference
 
   return { data, isLoading, error };
 }

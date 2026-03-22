@@ -38,6 +38,8 @@ export function useDocOnce<T = any>(
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | null>(null);
 
+  const docKey = docRef ? docRef.path : '__null__';
+
   useEffect(() => {
     if (!docRef) {
       setData(null);
@@ -64,7 +66,7 @@ export function useDocOnce<T = any>(
     };
 
     fetchData();
-  }, [docRef]); // Re-run only if the document reference itself changes.
+  }, [docKey]); // Use serialized path, not object reference
 
   return { data, isLoading, error };
 }

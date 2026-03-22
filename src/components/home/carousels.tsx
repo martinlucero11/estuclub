@@ -16,7 +16,7 @@ import AnnouncementCard from "../announcements/announcement-card";
 import { makeAnnouncementSerializable } from "@/lib/data";
 
 // --- SUPPLIER CARD ---
-const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
+const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
     return (
         <Link href={`/proveedores/${supplier.slug}`} className="block w-full group text-center">
             <div className="flex flex-col items-center">
@@ -26,6 +26,8 @@ const SupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
                         alt={supplier.name}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 15vw"
+                        priority={priority}
                     />
                 </div>
                 <p className="mt-2 text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary">{supplier.name}</p>
@@ -76,9 +78,9 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
     return (
        <Carousel opts={{ align: "start" }} className="w-full">
             <CarouselContent>
-                {benefits.map(item => (
+                {benefits.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
-                        <BenefitCard benefit={item} variant="carousel" />
+                        <BenefitCard benefit={item} variant="carousel" priority={index < 2} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -94,9 +96,9 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
     return (
         <Carousel opts={{ align: "start" }} className="w-full relative">
             <CarouselContent className="-ml-4">
-                {suppliers.map(item => (
+                {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
-                        <SupplierCard supplier={item as SupplierProfile} />
+                        <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
                     </CarouselItem>
                 ))}
             </CarouselContent>

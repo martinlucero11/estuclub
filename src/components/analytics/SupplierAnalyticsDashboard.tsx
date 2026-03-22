@@ -56,37 +56,27 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
     );
     const { data: subscribers, isLoading: subscribersLoading } = useCollectionOnce(subscribersQuery);
 
-    const reviewsQuery = useMemo(() =>
-        query(collection(firestore, 'reviews').withConverter(createConverter<any>()), where('supplierId', '==', supplierId)),
-        [firestore, supplierId]
-    );
-    const { data: reviews, isLoading: reviewsLoading } = useCollectionOnce(reviewsQuery);
-
-    const supplierRef = useMemo(() => doc(firestore, 'roles_supplier', supplierId), [firestore, supplierId]);
+    const supplierRef = useMemo(() => doc(firestore, 'roles_supplier', supplierId).withConverter(createConverter<any>()), [firestore, supplierId]);
     const { data: supplierDoc, isLoading: supplierLoading } = useDoc<any>(supplierRef);
 
-    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading || subscribersLoading || reviewsLoading || supplierLoading;
+    const isLoading = benefitsLoading || redemptionsLoading || appointmentsLoading || subscribersLoading || supplierLoading;
 
     const stats = useMemo(() => {
-        if (!benefits || !redemptions || !appointments || !subscribers || !reviews || !supplierDoc) return null;
+        if (!benefits || !redemptions || !appointments || !subscribers || !supplierDoc) return null;
 
         const totalBenefitFavorites = benefits.reduce((acc, b) => acc + (b.favoritesCount || 0), 0);
         const totalSupplierFavorites = supplierDoc.favoritesCount || 0;
         
-        const avgRating = reviews.length > 0 
-            ? reviews.reduce((acc: number, r: any) => acc + (r.rating || 0), 0) / reviews.length 
-            : 0;
-
         return {
             totalBenefits: benefits.length,
             totalRedemptions: redemptions.length,
             totalAppointments: appointments.length,
             totalSubscribers: subscribers.length,
             totalFavorites: totalBenefitFavorites + totalSupplierFavorites,
-            avgRating: avgRating,
-            reviewCount: reviews.length
+            avgRating: supplierDoc.avgRating || 0,
+            reviewCount: supplierDoc.reviewCount || 0
         };
-    }, [benefits, redemptions, appointments, subscribers, reviews, supplierDoc]);
+    }, [benefits, redemptions, appointments, subscribers, supplierDoc]);
 
     if (isLoading) {
         return <LoadingSkeleton />;

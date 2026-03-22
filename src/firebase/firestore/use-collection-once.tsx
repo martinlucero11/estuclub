@@ -7,6 +7,27 @@ export interface UseCollectionOnceOptions {
   // Future options
 }
 
+/**
+ * Serialize a Firestore Query to a stable string key.
+ */
+function serializeQuery(query: Query | null): string {
+  if (!query) return '__null__';
+  try {
+    const q = (query as any)._query;
+    if (q) {
+      return JSON.stringify({
+        path: q.path?.toString?.() || '',
+        filters: q.filters?.map?.((f: any) => `${f.field?.toString?.()}_${f.op}_${JSON.stringify(f.value)}`) || [],
+        orderBy: q.explicitOrderBy?.map?.((o: any) => `${o.field?.toString?.()}_${o.dir}`) || [],
+        limit: q.limit,
+      });
+    }
+    return query.type + '_' + JSON.stringify(query);
+  } catch {
+    return '__fallback_' + Math.random();
+  }
+}
+
 export function useCollectionOnce<T extends DocumentData>(
   query: Query<T> | null,
   options?: UseCollectionOnceOptions
@@ -14,6 +35,8 @@ export function useCollectionOnce<T extends DocumentData>(
   const [data, setData] = useState<T[] | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | undefined>(undefined);
+
+  const queryKey = serializeQuery(query);
 
   useEffect(() => {
     if (!query) {
@@ -47,7 +70,7 @@ export function useCollectionOnce<T extends DocumentData>(
     return () => {
       isCancelled = true;
     };
-  }, [query]);
+  }, [queryKey]);
 
   return { data, isLoading, error };
 }

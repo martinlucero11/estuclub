@@ -42,7 +42,7 @@ export default function BookingDialog({ service, availability, supplierId, child
       return doc(firestore, 'users', user.uid);
     }
     return null;
-  }, [user, firestore, isOpen]);
+  }, [user?.uid, firestore, isOpen]);
 
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
   
