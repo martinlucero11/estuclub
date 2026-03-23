@@ -67,7 +67,13 @@ function HomeContent() {
                             </h2>
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
                                 <Button variant="ghost" asChild className="h-auto p-0 text-xs font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
-                                    <Link href={`/${section.block.contentType === 'suppliers' ? 'proveedores' : section.block.contentType}`}>
+                                    <Link href={
+                                        section.block.contentType === 'suppliers' || section.block.contentType === 'suppliers_nearby' 
+                                            ? '/proveedores' 
+                                            : section.block.contentType === 'benefits_nearby'
+                                                ? '/benefits'
+                                                : `/${section.block.contentType}`
+                                    }>
                                         VER TODOS <ArrowRight className="ml-1 h-3 w-3" />
                                     </Link>
                                 </Button>
