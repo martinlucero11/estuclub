@@ -36,6 +36,7 @@ export function SearchBar({ className }: { className?: string }) {
         size="icon" 
         className="sm:hidden text-white hover:bg-white/20 hover:text-white"
         onClick={() => setIsExpanded(true)}
+        aria-label="Abrir buscador"
       >
         <Search className="h-5 w-5" />
       </Button>
@@ -59,6 +60,7 @@ export function SearchBar({ className }: { className?: string }) {
             size="icon" 
             className="shrink-0 text-white hover:bg-white/20"
             onClick={() => { setIsExpanded(false); setQuery(''); }}
+            aria-label="Cerrar buscador"
           >
             <X className="h-5 w-5" />
           </Button>

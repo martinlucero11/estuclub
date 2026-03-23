@@ -9,7 +9,7 @@ export function BackButton() {
   const router = useRouter();
 
   return (
-    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+    <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Volver atrás">
       <ChevronLeft className="h-6 w-6" />
       <span className="sr-only">Volver</span>
     </Button>

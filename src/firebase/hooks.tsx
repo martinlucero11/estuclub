@@ -59,6 +59,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     isUserLoading: context.isUserLoading,
     userError: context.userError,
     userLocation: context.userLocation,
+    requestLocation: context.requestLocation,
   };
 };
 
@@ -66,7 +67,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
  * A convenience hook to get only the user state (user object, roles, loading status).
  */
 export const useUser = (): UserHookResult => {
-  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation } = useFirebase();
+  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation } = useFirebase();
   return useMemo(() => ({ 
     user, 
     roles, 
@@ -74,8 +75,9 @@ export const useUser = (): UserHookResult => {
     supplierData, 
     isUserLoading, 
     userError,
-    userLocation
-  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation]);
+    userLocation,
+    requestLocation
+  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation]);
 };
 
 /**

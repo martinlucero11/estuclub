@@ -117,7 +117,7 @@ export default function NotificationBell() {
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative p-2 rounded-full text-white hover:bg-white/20 hover:text-white transition-colors group">
+        <Button variant="ghost" size="icon" className="relative p-2 rounded-full text-white hover:bg-white/20 hover:text-white transition-colors group" aria-label="Ver Notificaciones">
           <Bell className="w-5 h-5 stroke-[2] group-hover:scale-110 transition-transform" />
           {hasUnread && (
               <span className="absolute top-2 right-2 w-2 h-2 bg-white rounded-full border border-primary/20 animate-pulse shadow-glow-pink"></span>

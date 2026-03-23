@@ -10,9 +10,10 @@ import { BenefitsCarousel, SuppliersCarousel } from './carousels';
 import { calculateDistance } from '@/lib/geo-utils';
 import { MapPin } from 'lucide-react';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
+import { Button } from '../ui/button';
 
 export function NearbySuppliersCarousel() {
-  const { userLocation } = useUser();
+  const { userLocation, requestLocation } = useUser();
   const firestore = useFirestore();
 
   const suppliersQuery = useMemo(() => {
@@ -38,7 +39,26 @@ export function NearbySuppliersCarousel() {
       });
   }, [suppliers, userLocation]);
 
-  if (!userLocation || sortedSuppliers.length === 0) return null;
+  if (!userLocation) {
+      return (
+          <div className="space-y-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+              <div className="flex items-center gap-2 px-1 mb-2">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                  <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
+                      Clubers Cerca de ti
+                  </h2>
+              </div>
+              <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-[2rem] bg-card/30 backdrop-blur-md">
+                  <p className="text-sm text-center text-muted-foreground mb-4">Descubre los locales afiliados que están a tu alrededor.</p>
+                  <Button variant="outline" className="rounded-full rounded-tr-lg" onClick={requestLocation}>
+                      📍 Habilitar Ubicación
+                  </Button>
+              </div>
+          </div>
+      );
+  }
+
+  if (sortedSuppliers.length === 0) return null;
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
@@ -54,7 +74,7 @@ export function NearbySuppliersCarousel() {
 }
 
 export function NearbyBenefitsCarousel() {
-  const { userLocation } = useUser();
+  const { userLocation, requestLocation } = useUser();
   const firestore = useFirestore();
   const { isApproved: isCincoDos } = useCincoDosStatus();
 
@@ -103,7 +123,26 @@ export function NearbyBenefitsCarousel() {
       .slice(0, 10);
   }, [benefits, suppliers, userLocation]);
 
-  if (!userLocation || sortedBenefits.length === 0) return null;
+  if (!userLocation) {
+      return (
+          <div className="space-y-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">
+              <div className="flex items-center gap-2 px-1 mb-2">
+                  <MapPin className="h-3 w-3 text-muted-foreground" />
+                  <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
+                      Beneficios Cerca de ti
+                  </h2>
+              </div>
+              <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-[2rem] bg-card/30 backdrop-blur-md">
+                  <p className="text-sm text-center text-muted-foreground mb-4">Encuentra descuentos y beneficios a pocos pasos de tu ubicación actual.</p>
+                  <Button variant="outline" className="rounded-full rounded-bl-lg" onClick={requestLocation}>
+                      📍 Buscar Beneficios Cercanos
+                  </Button>
+              </div>
+          </div>
+      );
+  }
+
+  if (sortedBenefits.length === 0) return null;
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">

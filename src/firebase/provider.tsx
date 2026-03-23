@@ -41,6 +41,7 @@ export interface FirebaseContextState {
   isUserLoading: boolean;
   userError: Error | null;
   userLocation: { lat: number; lng: number } | null;
+  requestLocation: () => void;
 }
 
 // --- REACT CONTEXT ---
@@ -86,7 +87,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  useEffect(() => {
+  const requestLocation = React.useCallback(() => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
@@ -169,6 +170,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       isUserLoading: authState.isAuthLoading || profileState.isProfileLoading,
       userError: authState.authError || profileState.profileError,
       userLocation,
+      requestLocation,
     }),
     [
       services,
@@ -181,6 +183,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       profileState.isProfileLoading,
       profileState.profileError,
       userLocation,
+      requestLocation,
     ]
   );
 

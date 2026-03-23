@@ -9,12 +9,14 @@ import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { EmptyState } from '@/components/ui/empty-state';
-import WelcomeMessage from '@/components/home/welcome-message';
 import { HomeSection } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import HomeSectionRenderer from '@/components/home/home-section-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PendingReviews } from '@/components/reviews/pending-reviews';
+import dynamic from 'next/dynamic';
+
+const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
+const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
 
 function HomeSectionsSkeleton() {
     return (

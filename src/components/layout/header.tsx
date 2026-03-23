@@ -67,7 +67,7 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-white">
+      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-white" aria-label="Iniciar Sesión">
         <Link href="/login">
             <LogIn className="h-6 w-6" />
             <span className="sr-only">Iniciar Sesión</span>
@@ -82,10 +82,10 @@ function UserMenu() {
     <DropdownMenu>
         <MagneticButton>
           <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20" aria-label="Menú de usuario">
                   <Avatar className="h-9 w-9">
                       {user.photoURL && (
-                      <AvatarImage src={user.photoURL} alt={user.displayName || 'User'} />
+                      <AvatarImage src={user.photoURL} alt={user.displayName || 'Avatar de usuario'} />
                       )}
                       <AvatarFallback>{userInitial}</AvatarFallback>
                   </Avatar>
@@ -131,7 +131,7 @@ function AppSidebar() {
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()}>
+                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()} aria-label="Abrir menú principal">
                         <LayoutGrid className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
                         <span className="sr-only">Abrir menú</span>
                     </Button>
