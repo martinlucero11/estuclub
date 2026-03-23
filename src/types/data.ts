@@ -125,6 +125,7 @@ export interface Benefit {
   stock?: number;
   minLevel?: number;
   isExclusive?: boolean;
+  targetAudience?: 'all' | 'level_1' | 'level_2' | 'level_3' | 'cinco_dos';
   [key: string]: any;
 }
 
