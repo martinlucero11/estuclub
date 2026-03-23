@@ -1,5 +1,6 @@
 
 'use client';
+// Rebuild trigger
 
 import Link from 'next/link';
 import LoginForm from '@/components/auth/login-form';

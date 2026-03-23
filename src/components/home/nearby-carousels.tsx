@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
@@ -11,12 +11,20 @@ import { calculateDistance } from '@/lib/geo-utils';
 import { MapPin } from 'lucide-react';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { Button } from '../ui/button';
+import { Skeleton } from '../ui/skeleton';
 
 export function NearbySuppliersCarousel() {
   const { userLocation, requestLocation } = useUser();
   const firestore = useFirestore();
 
+  useEffect(() => {
+    if (!userLocation) {
+        requestLocation();
+    }
+  }, [userLocation, requestLocation]);
+
   const suppliersQuery = useMemo(() => {
+// ...
     if (!firestore) return null;
     return query(
       collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()),
@@ -25,7 +33,7 @@ export function NearbySuppliersCarousel() {
     );
   }, [firestore]);
 
-  const { data: suppliers, isLoading } = useCollection(suppliersQuery);
+  const { data: suppliers, isLoading: isSuppliersLoading } = useCollection(suppliersQuery);
 
   const sortedSuppliers = useMemo(() => {
     if (!suppliers || !userLocation) return [];
@@ -39,35 +47,23 @@ export function NearbySuppliersCarousel() {
       });
   }, [suppliers, userLocation]);
 
-  if (!userLocation) {
+  if (!userLocation || isSuppliersLoading) {
       return (
-          <div className="space-y-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
-              <div className="flex items-center gap-2 px-1 mb-2">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
-                      Clubers Cerca de ti
-                  </h2>
-              </div>
-              <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-[2rem] bg-card/30 backdrop-blur-md">
-                  <p className="text-sm text-center text-muted-foreground mb-4">Descubre los locales afiliados que están a tu alrededor.</p>
-                  <Button variant="outline" className="rounded-full rounded-tr-lg" onClick={requestLocation}>
-                      📍 Habilitar Ubicación
-                  </Button>
-              </div>
-          </div>
+        <div className="flex gap-4 overflow-hidden py-2">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="min-w-[140px] space-y-3">
+                    <Skeleton className="aspect-square rounded-[2.5rem]" />
+                    <Skeleton className="h-3 w-3/4 mx-auto" />
+                </div>
+            ))}
+        </div>
       );
   }
 
   if (sortedSuppliers.length === 0) return null;
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
-        <div className="flex items-center gap-2 px-1">
-            <MapPin className="h-3 w-3 text-primary animate-pulse" />
-            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
-                Clubers Cerca de ti
-            </h2>
-        </div>
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
         <SuppliersCarousel items={sortedSuppliers} />
     </div>
   );
@@ -77,6 +73,12 @@ export function NearbyBenefitsCarousel() {
   const { userLocation, requestLocation } = useUser();
   const firestore = useFirestore();
   const { isApproved: isCincoDos } = useCincoDosStatus();
+
+  useEffect(() => {
+    if (!userLocation) {
+        requestLocation();
+    }
+  }, [userLocation, requestLocation]);
 
   // Fetch benefits
   const benefitsQuery = useMemo(() => {
@@ -88,7 +90,7 @@ export function NearbyBenefitsCarousel() {
     );
   }, [firestore]);
 
-  const { data: benefits } = useCollection(benefitsQuery);
+  const { data: benefits, isLoading: isBenefitsLoading } = useCollection(benefitsQuery);
 
   // Fetch all suppliers to get their locations (small scale join)
   const suppliersQuery = useMemo(() => {
@@ -96,7 +98,7 @@ export function NearbyBenefitsCarousel() {
     return query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()));
   }, [firestore]);
 
-  const { data: suppliers } = useCollection(suppliersQuery);
+  const { data: suppliers, isLoading: isSuppliersLoading } = useCollection(suppliersQuery);
 
   const sortedBenefits = useMemo(() => {
     if (!benefits || !suppliers || !userLocation) return [];
@@ -123,35 +125,20 @@ export function NearbyBenefitsCarousel() {
       .slice(0, 10);
   }, [benefits, suppliers, userLocation]);
 
-  if (!userLocation) {
+  if (!userLocation || isBenefitsLoading || isSuppliersLoading) {
       return (
-          <div className="space-y-4 py-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">
-              <div className="flex items-center gap-2 px-1 mb-2">
-                  <MapPin className="h-3 w-3 text-muted-foreground" />
-                  <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
-                      Beneficios Cerca de ti
-                  </h2>
-              </div>
-              <div className="flex flex-col items-center justify-center p-6 border border-dashed rounded-[2rem] bg-card/30 backdrop-blur-md">
-                  <p className="text-sm text-center text-muted-foreground mb-4">Encuentra descuentos y beneficios a pocos pasos de tu ubicación actual.</p>
-                  <Button variant="outline" className="rounded-full rounded-bl-lg" onClick={requestLocation}>
-                      📍 Buscar Beneficios Cercanos
-                  </Button>
-              </div>
-          </div>
+        <div className="flex gap-4 overflow-hidden py-2">
+            {[...Array(2)].map((_, i) => (
+                <Skeleton key={i} className="h-48 min-w-[280px] rounded-[2.5rem]" />
+            ))}
+        </div>
       );
   }
 
   if (sortedBenefits.length === 0) return null;
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">
-        <div className="flex items-center gap-2 px-1">
-            <MapPin className="h-3 w-3 text-primary animate-pulse" />
-            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[10px] sm:text-xs text-muted-foreground/80 tracking-[0.2em]">
-                Beneficios Imperdibles cerca de ti
-            </h2>
-        </div>
+    <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">
         <BenefitsCarousel items={sortedBenefits} />
     </div>
   );

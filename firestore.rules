@@ -57,7 +57,7 @@ service cloud.firestore {
 
     match /roles_supplier/{supplierId} {
       allow get, list: if true;
-      allow create, delete: if false;
+      allow create, delete: if isAdminDocOwner();
       allow update: if isMe(supplierId) || isAdminDocOwner()
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avgRating', 'reviewCount', 'favoritesCount']));
 

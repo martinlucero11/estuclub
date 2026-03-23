@@ -31,7 +31,7 @@ service cloud.firestore {
     match /announcements/{announcementId} {
       allow read: if resource.data.status == 'approved' || (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
       allow list: if true;
-      allow create: if isSupplier();
+      allow create: if isSupplier() || isAdmin();
       allow update, delete: if (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
     }
 
@@ -88,10 +88,10 @@ service cloud.firestore {
 
     // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
-      allow read: if true; // Publicly viewable profile
-      allow write: if isAdmin() || 
-                    (isOwner(supplierId) && 
-                     !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isVisible', 'isFeatured', 'featuredRank']));
+      allow get, list: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isOwner(supplierId) || isAdmin()
+        || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avgRating', 'reviewCount', 'favoritesCount']));
     
       // --- Nested Rules for Supplier's Features ---
       match /services/{serviceId} {

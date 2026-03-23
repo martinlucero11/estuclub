@@ -16,31 +16,61 @@ import {
 } from '@/components/ui/carousel';
 import AnnouncementCard from "../announcements/announcement-card";
 import { makeAnnouncementSerializable } from "@/lib/data";
+import { MapPin } from "lucide-react";
+import { formatDistance, calculateDistance } from "@/lib/geo-utils";
+import { useUser } from "@/firebase";
+import { useMemo } from "react";
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
+    const { userLocation } = useUser();
+    
+    const distance = useMemo(() => {
+        if (userLocation && supplier.location) {
+            return calculateDistance(
+                userLocation.lat, userLocation.lng,
+                supplier.location.lat, supplier.location.lng
+            );
+        }
+        return null;
+    }, [userLocation, supplier.location]);
+
     return (
         <Link 
             href={`/proveedores/${supplier.slug}`} 
             onClick={() => haptic.vibrateSubtle()}
-            className="block w-full group text-center active:scale-95 transition-transform duration-200"
+            className="block w-full group text-center active:scale-95 transition-all duration-500"
         >
             <div className="flex flex-col items-center">
                 <motion.div 
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, y: -8 }}
                     whileTap={{ scale: 0.95 }}
-                    className="relative w-full aspect-square overflow-hidden rounded-[2rem] bg-card glass glass-dark shadow-premium border border-primary/5 group-hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl"
+                    className="relative w-full aspect-square overflow-hidden rounded-[2.5rem] bg-card glass glass-dark shadow-premium border border-primary/10 group-hover:border-primary/40 transition-all duration-700 group-hover:shadow-[0_20px_50px_rgba(236,72,153,0.15)] group-hover:glass-glow-pink"
                 >
                     <Image
                         src={optimizeImage(supplier.logoUrl || '', 400)}
                         alt={supplier.name}
                         fill
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                        className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
                         sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 15vw"
                         priority={priority}
                     />
+                    
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                    {distance !== null && (
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 animate-in fade-in zoom-in duration-500">
+                             <div className="glass glass-dark px-3 py-1 rounded-full border border-white/20 flex items-center gap-1.5 shadow-2xl backdrop-blur-2xl bg-black/60 scale-90 group-hover:scale-100 transition-transform duration-500">
+                                <MapPin className="h-2.5 w-2.5 text-primary animate-pulse" />
+                                <span className="text-[9px] font-black tracking-tight text-white/90">{formatDistance(distance)}</span>
+                            </div>
+                        </div>
+                    )}
                 </motion.div>
-                <p className="mt-3 text-[10px] sm:text-xs font-black uppercase tracking-widest text-foreground line-clamp-1 group-hover:text-primary transition-colors opacity-70 group-hover:opacity-100">{supplier.name}</p>
+                <div className="mt-4 space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/50 group-hover:text-primary transition-all duration-500 group-hover:tracking-[0.3em] line-clamp-1">{supplier.name}</p>
+                    <div className="h-0.5 w-0 bg-primary mx-auto group-hover:w-4 transition-all duration-500 rounded-full" />
+                </div>
             </div>
         </Link>
     );
@@ -53,51 +83,37 @@ interface BannerCarouselCardProps {
 }
 
 const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProps) => {
-    const bannerContent = (
-      <div className="relative w-full overflow-hidden rounded-2xl h-24 sm:h-32 md:h-36">
-          <Image
-            src={optimizeImage(banner.imageUrl, 1200)}
-            alt={banner.title || "Banner"}
-            fill
-            className="object-cover"
-            priority={priority}
-            sizes="100vw"
-          />
-        </div>
-    );
-
-        return (
-            <Link 
-                href={banner.link} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                onClick={() => haptic.vibrateImpact()}
-                className="block group"
+    return (
+        <Link 
+            href={banner.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            onClick={() => haptic.vibrateImpact()}
+            className="block group"
+        >
+            <motion.div 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative w-full overflow-hidden rounded-[2.5rem] h-28 sm:h-32 md:h-40 shadow-premium group-hover:shadow-2xl transition-all duration-500 border border-white/5 group-hover:border-primary/20"
             >
-                <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="relative w-full overflow-hidden rounded-[2rem] h-24 sm:h-32 md:h-36 shadow-premium group-hover:shadow-2xl transition-all duration-500"
-                >
-                    <Image
-                        src={optimizeImage(banner.imageUrl, 1200)}
-                        alt={banner.title || "Banner"}
-                        fill
-                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                        priority={priority}
-                        sizes="100vw"
-                    />
-                </motion.div>
-            </Link>
-        )
-
-    return bannerContent;
+                <Image
+                    src={optimizeImage(banner.imageUrl, 1200)}
+                    alt={banner.title || "Banner"}
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                    priority={priority}
+                    sizes="100vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
+            </motion.div>
+        </Link>
+    )
 };
 
 
 // --- CAROUSEL COMPONENTS (ESTRUCTURA FINAL Y ROBUSTA) ---
 
-const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center bg-background/80 hover:bg-background text-foreground rounded-full shadow-xl border border-border transition-all duration-300 hover:scale-110 disabled:opacity-0 w-10 h-10 z-20 backdrop-blur-sm";
+const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center glass glass-dark text-foreground rounded-full shadow-2xl border border-white/10 transition-all duration-300 hover:scale-110 active:scale-90 disabled:opacity-0 w-12 h-12 z-20 backdrop-blur-xl hover:bg-primary/10 hover:border-primary/30";
 
 export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
     if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;

@@ -60,6 +60,8 @@ const formSchema = z.object({
   availableDays: z.array(z.string()).optional(),
   active: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  minLevel: z.coerce.number().min(0).max(10).default(1),
+  targetAudience: z.enum(['all', 'level_1', 'level_2', 'level_3', 'cinco_dos']).default('all'),
   ownerId: z.string().min(1, 'Debes seleccionar un proveedor.'),
 });
 
@@ -100,6 +102,8 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
       availableDays: [],
       active: true,
       isFeatured: false,
+      minLevel: 1,
+      targetAudience: 'all',
       ownerId: '', // Default to empty, admin must select
     },
   });
@@ -332,6 +336,53 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         </FormItem>
                     )}
                 />
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-4">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        Sectorización y Nivel
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <FormField
+                            control={form.control}
+                            name="minLevel"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nivel Mínimo</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" {...field} min={1} max={10} />
+                                    </FormControl>
+                                    <FormDescription>Nivel requerido para canjear.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="targetAudience"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Público Objetivo</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Selecciona público" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="all">Todos los Niveles</SelectItem>
+                                            <SelectItem value="level_1">Nivel 1+</SelectItem>
+                                            <SelectItem value="level_2">Nivel 2+</SelectItem>
+                                            <SelectItem value="level_3">Nivel 3+</SelectItem>
+                                            <SelectItem value="cinco_dos">Cinco Dos (Exclusivo)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormDescription>Define a quién va dirigido.</FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+
                  <FormField
                     control={form.control}
                     name="points"

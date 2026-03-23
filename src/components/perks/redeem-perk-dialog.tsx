@@ -15,37 +15,21 @@ import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import type { SerializableBenefit } from '@/types/data';
-import { CheckCircle, CalendarDays, Award, Loader2 } from 'lucide-react';
+import type { SerializableBenefit, UserProfile } from '@/types/data';
+import { CheckCircle, CalendarDays, Award, Loader2, Lock } from 'lucide-react';
 import { BrandSkeleton } from '../ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { motion, AnimatePresence } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import { triggerSuccessEffect } from '../ui/success-animation';
 import { MagneticButton } from '../ui/magnetic-button';
+import { getLevelInfo } from '@/lib/gamification';
 
 interface RedeemBenefitDialogProps {
   benefit: SerializableBenefit;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
-
-interface UserProfile {
-    id: string;
-    username: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    dni: string;
-    phone: string;
-    gender: string;
-    dateOfBirth: string;
-    university: string;
-    major: string;
-    points: number;
-    level?: number;
-}
-
 
 const daysOrder = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 const dayAbbreviations: { [key: string]: string } = {
@@ -131,8 +115,10 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
 
-      const userLevel = userProfile.level || 1;
-      if (benefit.minLevel && userLevel < benefit.minLevel) {
+      const userLevel = getLevelInfo(userProfile.points || 0).level;
+      const isAdmin = userProfile.role === 'admin';
+
+      if (benefit.minLevel && userLevel < benefit.minLevel && !isAdmin) {
         throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
@@ -286,6 +272,16 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     </div>
                 )}
                 
+                {userProfile && benefit.minLevel && getLevelInfo(userProfile.points || 0).level < benefit.minLevel && userProfile.role !== 'admin' && (
+                    <Alert className="bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-500">
+                        <Lock className="h-4 w-4" />
+                        <AlertTitle className="font-black uppercase tracking-tighter">Nivel Insuficiente</AlertTitle>
+                        <AlertDescription className="text-xs">
+                            Este beneficio requiere **Nivel {benefit.minLevel}**. Sigue participando para subir de nivel y desbloquearlo.
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 {userProfile && (
                      <p className="text-sm text-center text-muted-foreground">
                         Tus puntos actuales: <span className="font-bold text-foreground">{userProfile.points || 0}</span>
@@ -304,11 +300,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <MagneticButton disabled={isRedeeming || isLoading || !user || (benefit.minLevel ? (userProfile?.level || 1) < benefit.minLevel : false)}>
+                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}>
                         <Button 
                           type="button" 
                           onClick={handleRedeem} 
-                          disabled={isRedeeming || isLoading || !user || (benefit.minLevel ? (userProfile?.level || 1) < benefit.minLevel : false)}
+                          disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}
                           className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
                         >
                             {isRedeeming ? (
@@ -316,7 +312,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Procesando...
                                 </>
-                            ) : isLoading ? 'Cargando...' : (
+                            ) : isProfileLoading ? 'Cargando...' : (
                                 <span className="flex items-center">
                                     <Award className='mr-2 h-4 w-4' />
                                     Confirmar Canje
