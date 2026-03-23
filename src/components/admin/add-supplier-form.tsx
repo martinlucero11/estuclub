@@ -222,7 +222,7 @@ export default function AddSupplierForm() {
               </div>
               <div className="h-64 sm:h-80 w-full relative">
                   <LocationPicker 
-                      initialLocation={field.value}
+                      initialLocation={field.value as {lat: number, lng: number} | undefined}
                       onLocationSelect={(loc) => field.onChange(loc)}
                   />
               </div>
