@@ -4,6 +4,7 @@ import MainLayout from '@/components/layout/main-layout';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import type { Benefit, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
 import { collection, query, where, Timestamp, limit } from 'firebase/firestore';
@@ -62,6 +63,7 @@ function BenefitsList() {
     }, [firestore, categoryFilter]);
 
     const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
+    const { isApproved: isCincoDos } = useCincoDosStatus();
 
     const sortedBenefits = useMemo(() => {
         if (!benefits) return [];
@@ -90,9 +92,15 @@ function BenefitsList() {
         if (!benefits || !suppliers) return [];
         const supplierMap = new Map(suppliers.map(s => [s.id, s]));
 
-        let result = benefits.map(b => {
-            const supplier = supplierMap.get(b.ownerId);
-            const distance = (userLocation && supplier?.location)
+        let result = benefits
+          .filter(b => {
+             // Filter out 'cinco_dos' benefits if the user does not have access
+             if (b.targetAudience === 'cinco_dos' && !isCincoDos) return false;
+             return true;
+          })
+          .map(b => {
+              const supplier = supplierMap.get(b.ownerId);
+              const distance = (userLocation && supplier?.location)
                 ? calculateDistance(userLocation.lat, userLocation.lng, supplier.location.lat, supplier.location.lng)
                 : Infinity;
             
@@ -115,7 +123,7 @@ function BenefitsList() {
         }
 
         return result;
-    }, [benefits, suppliers, sortOption, userLocation]);
+    }, [benefits, suppliers, sortOption, userLocation, isCincoDos]);
 
     const combinedIsLoading = isUserLoading || isLoading;
 

@@ -23,13 +23,20 @@ import { benefitCategories } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, PlusCircle, Award, CalendarIcon, Repeat, Clock } from 'lucide-react';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, serverTimestamp, Timestamp, addDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, Timestamp, addDoc, GeoPoint } from 'firebase/firestore';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Checkbox } from '../ui/checkbox';
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { Switch } from '../ui/switch';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '../ui/skeleton';
+
+const LocationPicker = dynamic(() => import('@/components/maps/location-picker'), { 
+  ssr: false, 
+  loading: () => <Skeleton className="w-full h-80 rounded-[2rem]" /> 
+});
 
 const daysOfWeek = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"] as const;
 const dayAbbreviations = ["L", "M", "M", "J", "V", "S", "D"];
@@ -49,6 +56,8 @@ const formSchema = z.object({
   availableDays: z.array(z.string()).optional(),
   active: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
+  locationCoords: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  targetAudience: z.enum(['all', 'level_1', 'level_2', 'level_3', 'cinco_dos']).default('all'),
 });
 
 export default function AddPerkForm() {
@@ -69,6 +78,7 @@ export default function AddPerkForm() {
       availableDays: [],
       active: true,
       isFeatured: false,
+      targetAudience: 'all',
     },
   });
 
@@ -87,6 +97,10 @@ export default function AddPerkForm() {
         createdAt: serverTimestamp(),
       };
       
+      if (values.locationCoords) {
+          dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);
+      }
+
       if (values.validUntil) {
           dataToSave.validUntil = Timestamp.fromDate(values.validUntil);
       } else {
@@ -174,6 +188,33 @@ export default function AddPerkForm() {
             </FormItem>
           )}
         />
+        {isAdmin && (
+            <FormField
+              control={form.control}
+              name="targetAudience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-primary font-bold">Público Objetivo (Exclusivo Admin)</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="border-primary/20 bg-primary/5">
+                        <SelectValue placeholder="Selecciona a quién va dirigido" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="all">Público General (Todos)</SelectItem>
+                      <SelectItem value="level_1">Solo Nivel 1</SelectItem>
+                      <SelectItem value="level_2">Solo Nivel 2</SelectItem>
+                      <SelectItem value="level_3">Solo Nivel 3</SelectItem>
+                      <SelectItem value="cinco_dos">Solo Inscriptos en menú Cinco.Dos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>Limita quiénes pueden ver este beneficio en la aplicación.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        )}
         <FormField
           control={form.control}
           name="description"
@@ -221,6 +262,25 @@ export default function AddPerkForm() {
                 <FormControl>
                   <Input placeholder="Ej: Av. Siempreviva 742" {...field} className="pl-10" />
                 </FormControl>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="locationCoords"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ubicación en el Mapa (Opcional)</FormLabel>
+              <div className="text-sm text-muted-foreground mb-4">
+                Fija con precisión dónde es válido este beneficio para que los alumnos lo descubran en los carrilles cercanos a su ubicación (GPS).
+              </div>
+              <div className="h-64 sm:h-80 w-full relative">
+                  <LocationPicker 
+                      initialLocation={field.value}
+                      onLocationSelect={(loc) => field.onChange(loc)}
+                  />
               </div>
               <FormMessage />
             </FormItem>

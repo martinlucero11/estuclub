@@ -17,6 +17,7 @@ import {
     BarChart,
     History as HistoryIcon,
     Trophy,
+    UtensilsCrossed,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -40,6 +41,11 @@ export const navConfig: NavConfig = {
       title: "Ranking",
       href: "/leaderboard",
       icon: Trophy,
+    },
+    {
+      title: "Cinco.Dos",
+      href: "/cinco-dos",
+      icon: UtensilsCrossed,
     },
     {
       title: "Anuncios",
@@ -140,6 +146,12 @@ export const navConfig: NavConfig = {
                 title: "Analíticas Globales",
                 href: "/panel-admin/analytics",
                 icon: BarChart,
+                role: ["admin"],
+            },
+            {
+                title: "Solicitudes Cinco.Dos",
+                href: "/panel-cluber/cinco-dos",
+                icon: UtensilsCrossed,
                 role: ["admin"],
             },
             {

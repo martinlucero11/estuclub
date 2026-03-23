@@ -8,11 +8,13 @@ import { HomeSection, Benefit, SupplierProfile, Announcement, Banner, Category }
 import { createConverter } from '@/lib/firestore-converter';
 import { makeBenefitSerializable } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 
 import { BenefitsCarousel, SuppliersCarousel, AnnouncementsCarousel, BannersCarousel } from '@/components/home/carousels';
 import { CategoryGrid } from '@/components/home/category-grid';
 import { SingleBanner } from '@/components/home/single-banner';
 import { BenefitsGrid, SuppliersGrid, AnnouncementsGrid } from '@/components/home/grids';
+import { NearbyBenefitsCarousel, NearbySuppliersCarousel } from '@/components/home/nearby-carousels';
 
 const SectionSkeleton = () => <Skeleton className="h-48 w-full" />;
 
@@ -41,6 +43,7 @@ function useDocumentsByIds<T extends { id: string }>(collectionName: string, ids
 function SectionContent({ section }: { section: HomeSection }) {
     const { block } = section;
     const firestore = useFirestore();
+    const { isApproved: isCincoDos } = useCincoDosStatus();
 
     if (block.kind === 'categories') {
         const categoriesQuery = useMemo(() => {
@@ -67,6 +70,11 @@ function SectionContent({ section }: { section: HomeSection }) {
 
         if (isLoading) return <SectionSkeleton />;
         return <SingleBanner banner={banner} />;
+    }
+
+    if ('contentType' in block) {
+        if (block.contentType === 'benefits_nearby') return <NearbyBenefitsCarousel />;
+        if (block.contentType === 'suppliers_nearby') return <NearbySuppliersCarousel />;
     }
 
     // Dynamic content (carousel/grid)
@@ -113,15 +121,21 @@ function SectionContent({ section }: { section: HomeSection }) {
     const props: any = { items: [] };
 
     if (block.kind === 'carousel') {
-        props.items = block.contentType === 'benefits' ? (items as Benefit[]).map(makeBenefitSerializable) : items;
-        if (block.contentType === 'benefits') Component = BenefitsCarousel;
-        if (block.contentType === 'suppliers') Component = SuppliersCarousel;
-        if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
-        if (block.contentType === 'banners') Component = BannersCarousel;
+        if (block.contentType === 'benefits') {
+             const safeItems = (items as Benefit[]).filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos);
+             props.items = safeItems.map(makeBenefitSerializable);
+             Component = BenefitsCarousel;
+        } else {
+             props.items = items;
+             if (block.contentType === 'suppliers') Component = SuppliersCarousel;
+             if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
+             if (block.contentType === 'banners') Component = BannersCarousel;
+        }
     } else if (block.kind === 'grid') {
         if (block.contentType === 'benefits') {
             Component = BenefitsGrid;
-            props.items = (items as Benefit[]).map(makeBenefitSerializable);
+            const safeItems = (items as Benefit[]).filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos);
+            props.items = safeItems.map(makeBenefitSerializable);
         } else {
             Component = block.contentType === 'suppliers' ? SuppliersGrid : AnnouncementsGrid;
             props.items = items;

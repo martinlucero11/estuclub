@@ -23,7 +23,7 @@ const formSchema = z.object({
   title: z.string().optional(),
   isActive: z.boolean().default(true),
   
-  contentType: z.enum(["benefits", "suppliers", "announcements", "banners", "categories", "banner"]),
+  contentType: z.enum(["benefits", "suppliers", "announcements", "banners", "categories", "banner", "benefits_nearby", "suppliers_nearby"]),
 
   layout_kind: z.enum(["carousel", "grid"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
@@ -195,6 +195,14 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         kind: 'categories',
                     };
                     break;
+                case 'benefits_nearby':
+                case 'suppliers_nearby':
+                    finalBlock = {
+                        kind: 'carousel',
+                        contentType: values.contentType,
+                        mode: 'auto',
+                    };
+                    break;
                 default: // Dynamic content
                     const query = {
                         filters: [] as WhereFilter[],
@@ -262,8 +270,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             setIsSubmitting(false);
         }
     }
-    
-    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'banner';
+    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'banner' || watchContentType === 'benefits_nearby' || watchContentType === 'suppliers_nearby';
 
     return (
         <Form {...form}>
@@ -279,6 +286,8 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                             <SelectContent>
                                 <SelectItem value="benefits">Beneficios</SelectItem>
                                 <SelectItem value="suppliers">Proveedores (Clubers)</SelectItem>
+                                <SelectItem value="benefits_nearby">Beneficios Cercanos (GPS)</SelectItem>
+                                <SelectItem value="suppliers_nearby">Clubers Cercanos (GPS)</SelectItem>
                                 <SelectItem value="announcements">Anuncios</SelectItem>
                                 <SelectItem value="banners">Carrusel de Banners</SelectItem>
                                 <Separator className="my-1" />

@@ -9,6 +9,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import { BenefitsCarousel, SuppliersCarousel } from './carousels';
 import { calculateDistance } from '@/lib/geo-utils';
 import { MapPin } from 'lucide-react';
+import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 
 export function NearbySuppliersCarousel() {
   const { userLocation } = useUser();
@@ -55,6 +56,7 @@ export function NearbySuppliersCarousel() {
 export function NearbyBenefitsCarousel() {
   const { userLocation } = useUser();
   const firestore = useFirestore();
+  const { isApproved: isCincoDos } = useCincoDosStatus();
 
   // Fetch benefits
   const benefitsQuery = useMemo(() => {
@@ -95,6 +97,7 @@ export function NearbyBenefitsCarousel() {
             distance
         };
       })
+      .filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos)
       .filter(b => b.distance !== Infinity)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 10);

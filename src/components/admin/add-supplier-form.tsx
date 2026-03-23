@@ -22,6 +22,13 @@ import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { cluberCategories } from '@/types/data';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '../ui/skeleton';
+
+const LocationPicker = dynamic(() => import('@/components/maps/location-picker'), { 
+  ssr: false, 
+  loading: () => <Skeleton className="w-full h-80 rounded-[2rem]" /> 
+});
 
 const formSchema = z.object({
   email: z.string().email('El correo electrónico no es válido.'),
@@ -29,6 +36,7 @@ const formSchema = z.object({
   type: z.enum(cluberCategories, { required_error: 'Debes seleccionar una categoría.' }),
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
+  locationCoords: z.object({ lat: z.number(), lng: z.number() }).optional(),
 });
 
 function slugify(text: string) {
@@ -86,8 +94,7 @@ export default function AddSupplierForm() {
       const slug = slugify(values.name);
 
       // 2. Add the user to the roles_supplier collection with data
-      const supplierRoleRef = doc(firestore, 'roles_supplier', userId);
-      await setDoc(supplierRoleRef, {
+      const dataToSave: any = {
         name: values.name,
         type: values.type,
         email: values.email,
@@ -99,7 +106,15 @@ export default function AddSupplierForm() {
         announcementsEnabled: false,
         isFeatured: false,
         createdAt: serverTimestamp(),
-      });
+      };
+
+      if (values.locationCoords) {
+          const { GeoPoint } = await import('firebase/firestore');
+          dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);
+      }
+
+      const supplierRoleRef = doc(firestore, 'roles_supplier', userId);
+      await setDoc(supplierRoleRef, dataToSave);
 
       toast({
         title: 'Cluber añadido',
@@ -192,6 +207,25 @@ export default function AddSupplierForm() {
               <FormControl>
                 <Input type="url" placeholder="https://ejemplo.com/logo.png" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="locationCoords"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ubicación en el Mapa (Opcional)</FormLabel>
+              <div className="text-sm text-muted-foreground mb-4">
+                Fija con precisión dónde se encuentra este proveedor para que los alumnos lo descubran en su área.
+              </div>
+              <div className="h-64 sm:h-80 w-full relative">
+                  <LocationPicker 
+                      initialLocation={field.value}
+                      onLocationSelect={(loc) => field.onChange(loc)}
+                  />
+              </div>
               <FormMessage />
             </FormItem>
           )}

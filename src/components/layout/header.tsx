@@ -224,7 +224,8 @@ export default function Header() {
                     width={120} 
                     height={32} 
                     priority
-                    className="h-7 w-auto sm:h-8 brightness-110"
+                    className="h-7 sm:h-8 brightness-110"
+                    style={{ width: 'auto' }}
                 />
             </Link>
         </div>

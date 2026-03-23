@@ -184,6 +184,24 @@ service cloud.firestore {
       allow create, update, delete: if isAdminDocOwner() || (signedIn() && (request.resource.data.supplierId == request.auth.uid));
     }
 
+    /* ================= SETTINGS ================= */
+
+    match /settings/{id} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdminDocOwner();
+    }
+
+    /* ================= COMEDOR APPLICATIONS ================= */
+
+    match /comedor_applications/{id} {
+      // Students can read their own application
+      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdminDocOwner());
+      // Students can create an application
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      // No updates or deletes allowed by students. Only admins.
+      allow update, delete: if isAdminDocOwner();
+    }
+
     /* ================= REVIEWS ================= */
 
     match /reviews/{id} {

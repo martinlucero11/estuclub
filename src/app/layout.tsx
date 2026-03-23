@@ -48,6 +48,11 @@ export const metadata: Metadata = {
     description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Súmate a EstuClub!",
     images: ["https://estuclub.com.ar/og-image.jpg"],
   },
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  },
 };
 
 export default function RootLayout({

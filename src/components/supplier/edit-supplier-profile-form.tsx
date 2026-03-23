@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, GeoPoint } from 'firebase/firestore';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Save, Loader2, Camera } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
@@ -26,6 +26,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const LocationPicker = dynamic(() => import('@/components/maps/location-picker'), { 
+  ssr: false, 
+  loading: () => <Skeleton className="w-full h-80 rounded-[2rem]" /> 
+});
 
 
 const formSchema = z.object({
@@ -35,6 +41,7 @@ const formSchema = z.object({
   address: z.string().optional(),
   whatsapp: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
+  locationCoords: z.object({ lat: z.number(), lng: z.number() }).optional(),
 });
 
 function slugify(text: string) {
@@ -91,6 +98,9 @@ export default function EditSupplierProfileForm() {
             address: supplierProfile.address || '',
             whatsapp: supplierProfile.whatsapp || '',
             logoUrl: supplierProfile.logoUrl || '',
+            locationCoords: supplierProfile.locationCoords 
+               ? { lat: supplierProfile.locationCoords.latitude, lng: supplierProfile.locationCoords.longitude } 
+               : undefined,
         });
     }
   }, [supplierProfile, form]);
@@ -148,8 +158,13 @@ export default function EditSupplierProfileForm() {
     try {
       const newSlug = slugify(values.name);
       
+      const dataToSave: any = { ...values };
+      if (values.locationCoords) {
+          dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);
+      }
+
       await updateDoc(supplierRef, {
-          ...values,
+          ...dataToSave,
           slug: newSlug,
       });
 
@@ -285,6 +300,25 @@ export default function EditSupplierProfileForm() {
               <FormControl>
                 <Input placeholder="Av. Siempreviva 742" {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="locationCoords"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ubicación en el Mapa</FormLabel>
+              <div className="text-sm text-muted-foreground mb-4">
+                Ubica el pin en el lugar exacto de tu local para atraer a los alumnos de la universidad y aparecer en el mapa geolocalizado.
+              </div>
+              <div className="h-64 sm:h-80 w-full relative">
+                  <LocationPicker 
+                      initialLocation={field.value as {lat: number, lng: number} | undefined}
+                      onLocationSelect={(loc) => field.onChange(loc)}
+                  />
+              </div>
               <FormMessage />
             </FormItem>
           )}
