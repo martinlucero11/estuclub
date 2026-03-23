@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { MessagingProvider } from "@/firebase/messaging";
 import { Suspense } from "react";
+import { StatusBarConfig } from "@/components/layout/status-bar-config";
 import Loading from "./loading";
 
 const fontSans = Plus_Jakarta_Sans({ 
@@ -69,6 +70,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <StatusBarConfig />
           <Suspense fallback={<Loading />}>
             <FirebaseProvider>
               <MessagingProvider>
