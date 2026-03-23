@@ -63,16 +63,6 @@ export function getInitials(name: string): string {
  * This acts as a bulletproof fallback when Next.js native optimization silently fails in cloud hosting.
  */
 export function optimizeImage(url: string | null | undefined, targetWidth: number = 800): string {
-  if (!url) return '';
-  // Skip relative assets or already optimized ones
-  if (url.startsWith('/') || url.includes('wsrv.nl') || url.includes('googleapis.com')) return url;
-  
-  try {
-    const parsed = new URL(url);
-    // wsrv.nl expects domain + path without protocol
-    const hostPath = parsed.host + parsed.pathname + parsed.search;
-    return `https://wsrv.nl/?url=${encodeURIComponent(hostPath)}&w=${targetWidth}&output=webp&q=80`;
-  } catch (e) {
-    return url;
-  }
+  // Pass-through: External CDNs were causing 403s on Imgur and other hostings.
+  return url || '';
 }
