@@ -97,7 +97,7 @@ export function NearbyBenefitsCarousel() {
             distance
         };
       })
-      .filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos)
+      .filter((b: any) => b.targetAudience !== 'cinco_dos' || isCincoDos)
       .filter(b => b.distance !== Infinity)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 10);
