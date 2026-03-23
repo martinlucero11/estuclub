@@ -2,7 +2,7 @@
 import Link from "next/link";
 import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
 import Image from "next/image";
-import { getInitials, cn } from "@/lib/utils";
+import { getInitials, cn, optimizeImage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
@@ -32,7 +32,7 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
                     className="relative w-full aspect-square overflow-hidden rounded-[2rem] bg-card glass glass-dark shadow-premium border border-primary/5 group-hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl"
                 >
                     <Image
-                        src={supplier.logoUrl || ''}
+                        src={optimizeImage(supplier.logoUrl || '', 400)}
                         alt={supplier.name}
                         fill
                         className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
@@ -56,7 +56,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
     const bannerContent = (
       <div className="relative w-full overflow-hidden rounded-2xl h-24 sm:h-32 md:h-36">
           <Image
-            src={banner.imageUrl}
+            src={optimizeImage(banner.imageUrl, 1200)}
             alt={banner.title || "Banner"}
             fill
             className="object-cover"
@@ -80,7 +80,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
                     className="relative w-full overflow-hidden rounded-[2rem] h-24 sm:h-32 md:h-36 shadow-premium group-hover:shadow-2xl transition-all duration-500"
                 >
                     <Image
-                        src={banner.imageUrl}
+                        src={optimizeImage(banner.imageUrl, 1200)}
                         alt={banner.title || "Banner"}
                         fill
                         className="object-cover transition-transform duration-1000 group-hover:scale-105"

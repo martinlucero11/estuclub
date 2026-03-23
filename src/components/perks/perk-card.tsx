@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import Image from 'next/image';
 import type { SerializableBenefit } from '@/types/data';
 import { Building, MapPin, Lock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, optimizeImage } from '@/lib/utils';
 import { Badge } from '../ui/badge';
 import RedeemBenefitDialog from './redeem-perk-dialog';
 import { FavoriteButton } from '../layout/favorite-button';
@@ -46,7 +46,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
       className
     )}>
         <Image
-            src={benefit.imageUrl}
+            src={optimizeImage(benefit.imageUrl, 800)}
             alt={benefit.title}
             fill
             className={cn(

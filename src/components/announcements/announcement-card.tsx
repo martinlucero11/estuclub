@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import AnnouncementDialog from './announcement-dialog';
-import { cn } from '@/lib/utils';
+import { cn, optimizeImage } from '@/lib/utils';
 import { Link2 } from 'lucide-react';
 import type { SerializableAnnouncement } from '@/types/data';
 
@@ -49,7 +49,7 @@ export default function AnnouncementCard({
     <Card className={cn('flex h-full flex-col overflow-hidden transition-all duration-500 hover:scale-[1.02] rounded-[2rem] border-primary/5 glass glass-dark shadow-premium group', className)}>
       <div className="relative h-48 w-full overflow-hidden">
         <Image
-          src={imageUrl}
+          src={optimizeImage(imageUrl, 800)}
           alt={announcement.title}
           fill
           priority={priority}
@@ -94,7 +94,7 @@ export default function AnnouncementCard({
     const carouselCardContent = (
       <Card className={'relative h-full w-full overflow-hidden text-white transition-all duration-500 hover:scale-[1.02] rounded-[2rem] border-0 shadow-premium group'}>
         <Image
-          src={imageUrl}
+          src={optimizeImage(imageUrl, 1000)}
           alt={announcement.title}
           fill
           priority={priority}
