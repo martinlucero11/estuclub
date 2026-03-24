@@ -3,35 +3,35 @@
 import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, Timestamp } from 'firebase/firestore';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/Calendar';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CalendarDays, Clock, Phone, User as UserIcon } from 'lucide-react';
+import { Calendar, Clock, Phone, User as UserIcon } from '@phosphor-icons/react';
 import type { Appointment } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { format, isSameDay, startOfMonth, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function SupplierAgenda() {
-    const { user } = useUser();
+    const { User } = useUser();
     const firestore = useFirestore();
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
     const [month, setMonth] = useState<Date>(new Date());
 
     // Fetch appointments for the current month (broadly for performance)
     const appointmentsQuery = useMemo(() => {
-        if (!user) return null;
+        if (!User) return null;
         return query(
             collection(firestore, 'appointments').withConverter(createConverter<Appointment>()),
-            where('supplierId', '==', user.uid)
+            where('supplierId', '==', User.uid)
         );
-    }, [user, firestore]);
+    }, [User, firestore]);
 
     const { data: appointments, isLoading } = useCollection(appointmentsQuery);
 
-    // Filter appointments for the selected date
+    // Funnel appointments for the selected date
     const selectedDayAppointments = useMemo(() => {
         if (!appointments || !selectedDate) return [];
         return appointments.filter(apt => {
@@ -40,7 +40,7 @@ export default function SupplierAgenda() {
         }).sort((a, b) => (a.startTime as Timestamp).toMillis() - (b.startTime as Timestamp).toMillis());
     }, [appointments, selectedDate]);
 
-    // Modifiers for the calendar to highlight days with bookings
+    // Modifiers for the Calendar to highlight days with bookings
     const bookedDays = useMemo(() => {
         if (!appointments) return [];
         return appointments.map(apt => (apt.startTime as Timestamp).toDate());
@@ -71,7 +71,7 @@ export default function SupplierAgenda() {
             <Card className="lg:col-span-5 h-fit">
                 <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
-                        <CalendarDays className="h-5 w-5 text-primary" />
+                        <Calendar className="h-5 w-5 text-primary" weight="duotone" />
                         Calendario de Reservas
                     </CardTitle>
                 </CardHeader>
@@ -85,8 +85,7 @@ export default function SupplierAgenda() {
                         modifiers={modifiers}
                         modifiersStyles={modifiersStyles}
                         className="rounded-md border-none"
-                        locale={es}
-                    />
+                        locale={es} weight="duotone" />
                 </CardContent>
             </Card>
 
@@ -120,18 +119,18 @@ export default function SupplierAgenda() {
                                                 <div className="flex items-center justify-between">
                                                     <p className="font-semibold text-base">{apt.userName}</p>
                                                     <Badge variant="outline" className="flex items-center gap-1">
-                                                        <Clock className="h-3 w-3" />
+                                                        <Clock className="h-3 w-3" weight="duotone" />
                                                         {format(startTime, 'HH:mm')} hs
                                                     </Badge>
                                                 </div>
                                                 <p className="text-sm text-muted-foreground font-medium">{apt.serviceName}</p>
-                                                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
+                                                <div className="flex flex-wrap gap-X-4 gap-y-1 pt-1 text-xs text-muted-foreground">
                                                     <div className="flex items-center gap-1">
                                                         <UserIcon className="h-3 w-3" />
                                                         DNI: {apt.userDni}
                                                     </div>
                                                     <div className="flex items-center gap-1">
-                                                        <Phone className="h-3 w-3" />
+                                                        <Phone className="h-3 w-3" weight="duotone" />
                                                         {apt.userPhone}
                                                     </div>
                                                 </div>
@@ -142,7 +141,7 @@ export default function SupplierAgenda() {
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-center py-12 opacity-50">
-                                <CalendarDays className="h-12 w-12 mb-4" />
+                                <Calendar className="h-12 w-12 mb-4" weight="duotone" />
                                 <p>No hay turnos para este día</p>
                             </div>
                         )}

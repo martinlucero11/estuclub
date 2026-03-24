@@ -3,7 +3,7 @@ import {
     Shirt, 
     Fuel, 
     Utensils, 
-    Building, 
+    Buildings, 
     Ticket, 
     Music, 
     GraduationCap, 
@@ -11,16 +11,16 @@ import {
     Plane,
     Palette,
     Smile,
-    LucideIcon,
+    Icon,
     Shapes
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 
-export const iconMap: { [key: string]: LucideIcon } = {
+export const iconMap: { [key: string]: Icon } = {
     ShoppingCart,
     Shirt,
     Fuel,
     Utensils,
-    Building,
+    Buildings,
     Ticket,
     Music,
     GraduationCap,
@@ -33,6 +33,6 @@ export const iconMap: { [key: string]: LucideIcon } = {
 
 export const iconList = Object.keys(iconMap);
 
-export const getIcon = (name: string): LucideIcon => {
+export const getIcon = (name: string): Icon => {
     return iconMap[name] || Smile; // Return a default icon if not found
 };

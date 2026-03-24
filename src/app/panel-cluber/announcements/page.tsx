@@ -6,7 +6,7 @@ import { useUser } from '@/firebase';
 import SplashScreen from '@/components/layout/splash-screen';
 import type { UserRole } from '@/types/data';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus } from '@phosphor-icons/react';
 import BackButton from '@/components/layout/back-button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import AnnouncementList from '@/components/dashboard/announcement-list';

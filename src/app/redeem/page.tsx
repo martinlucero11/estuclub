@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter }
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, ShieldX, Fingerprint, Award, University } from 'lucide-react';
+import { CheckCircle, ShieldX, Fingerprint, Award, University } from '@phosphor-icons/react';
 import { Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import type { BenefitRedemption } from '@/types/data';

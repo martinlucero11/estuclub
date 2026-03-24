@@ -4,7 +4,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import type { Category } from '@/types/data';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal, Square } from 'lucide-react';
+import { ArrowUpDown, DotsThreeOutlineHorizontal, Square } from '@phosphor-icons/react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // Define the shape of the actions props
@@ -19,7 +19,7 @@ const CategoryActions: React.FC<CategoryActionsProps> = ({ onEdit, onDelete }) =
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
         <span className="sr-only">Abrir menú</span>
-        <MoreHorizontal className="h-4 w-4" />
+        <DotsThreeOutlineHorizontal className="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">

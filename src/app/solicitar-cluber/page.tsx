@@ -7,7 +7,7 @@ import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { CheckCircle2, Building, ArrowRight, Loader2, Sparkles, LayoutDashboard } from 'lucide-react';
+import { CheckCircle2, Buildings, ArrowRight, CircleNotch, Sparkles, SquaresFour } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
@@ -90,7 +90,7 @@ export default function SolicitarCluberPage() {
         return (
             <MainLayout>
                 <div className="flex items-center justify-center min-h-[60vh]">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+                    <CircleNotch className="h-8 w-8 text-primary animate-spin" />
                 </div>
             </MainLayout>
         );
@@ -104,7 +104,7 @@ export default function SolicitarCluberPage() {
                 <Card className="rounded-[2rem] border-primary/10 glass glass-dark shadow-premium overflow-hidden">
                     <CardHeader className="pt-10 px-8 text-center">
                         <div className="mx-auto w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-4 border border-primary/20 shadow-xl shadow-primary/5">
-                            <Building className="h-10 w-10 text-primary" />
+                            <Buildings className="h-10 w-10 text-primary" />
                         </div>
                         <CardTitle className="text-3xl font-black tracking-tighter uppercase text-foreground">
                             {isSupplier ? 'Ya eres un Cluber' : 'Haz crecer tu comercio'}
@@ -150,7 +150,7 @@ export default function SolicitarCluberPage() {
                                 onClick={() => router.push('/panel-cluber')}
                                 className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20"
                             >
-                                <LayoutDashboard className="mr-2 h-4 w-4" />
+                                <SquaresFour className="mr-2 h-4 w-4" />
                                 Ir al Panel de Cluber
                             </Button>
                         ) : hasPendingRequest ? (
@@ -167,7 +167,7 @@ export default function SolicitarCluberPage() {
                                 className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 group hover:scale-[1.02] transition-all"
                             >
                                 {isSubmitting ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <CircleNotch className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <>
                                         Enviar Solicitud

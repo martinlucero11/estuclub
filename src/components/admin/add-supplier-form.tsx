@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useState } from 'react';
-import { UserPlus } from 'lucide-react';
+import { UserPlus } from '@phosphor-icons/react';
 import { Textarea } from '../ui/textarea';
 import { cluberCategories } from '@/types/data';
 import dynamic from 'next/dynamic';

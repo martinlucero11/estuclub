@@ -24,7 +24,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { FloppyDiskBack, Image as ImageIcon, Link as LinkIcon } from '@phosphor-icons/react';
 import { useFirestore } from '@/firebase';
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
@@ -168,7 +168,7 @@ export default function EditAnnouncementDialog({ announcement, isOpen, onOpenCha
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? 'Guardando...' : (
                             <>
-                                <Save className="mr-2 h-4 w-4" />
+                                <FloppyDiskBack className="mr-2 h-4 w-4" />
                                 Guardar Cambios
                             </>
                         )}

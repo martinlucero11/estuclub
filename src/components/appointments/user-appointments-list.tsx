@@ -4,7 +4,7 @@ import { useUser, useFirestore, useCollection, useDocOnce } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Card } from '@/components/ui/card';
-import { History, Tag, Calendar, Building, ArrowRight } from 'lucide-react';
+import { ClockCounterClockwise, Tag, Calendar, Buildings, ArrowRight } from '@phosphor-icons/react';
 import type { Appointment } from '@/types/data';
 import { useMemo } from 'react';
 import { Badge } from '../ui/badge';
@@ -88,7 +88,7 @@ function AppointmentCard({ appointment, index }: { appointment: Appointment, ind
                         </h3>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Building className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Buildings className="h-3.5 w-3.5 text-muted-foreground" />
                         {isLoading ? (
                             <BrandSkeleton className="h-3 w-24 rounded-md" />
                         ) : (
@@ -174,7 +174,7 @@ export default function UserAppointmentsList() {
     if (!sortedAppointments || sortedAppointments.length === 0) {
         return (
             <EmptyState 
-                icon={History}
+                icon={ClockCounterClockwise}
                 title="No tienes turnos"
                 description="Aún no has reservado ningún turno."
             />

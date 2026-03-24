@@ -9,7 +9,7 @@ import AppointmentReceiptCard from '@/components/appointments/appointment-receip
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ShieldAlert } from 'lucide-react'; // Import ShieldAlert
+import { MessageCircle, ShieldAlert } from '@phosphor-icons/react'; // Import ShieldAlert
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 

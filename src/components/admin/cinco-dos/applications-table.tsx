@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Check, X, Search, MoreHorizontal, Trash2, MessageCircle, Settings2 } from 'lucide-react';
+import { Check, X, MagnifyingGlass, DotsThreeOutlineHorizontal, Trash, MessageCircle, Settings2 } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -176,7 +176,7 @@ export function ApplicationsTable() {
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                         placeholder="Buscar por nombre, institución o email..." 
                         value={searchTerm}
@@ -286,7 +286,7 @@ export function ApplicationsTable() {
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" className="h-8 w-8 p-0">
                                                     <span className="sr-only">Abrir menú</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
+                                                    <DotsThreeOutlineHorizontal className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
@@ -307,7 +307,7 @@ export function ApplicationsTable() {
                                                 )}
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem onClick={() => confirmDelete(app.id!)} className="text-destructive">
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Eliminar Registro
+                                                    <Trash className="mr-2 h-4 w-4" /> Eliminar Registro
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Star, MessageSquare } from 'lucide-react';
+import { Star, MessageSquare } from '@phosphor-icons/react';
 import { cn } from "@/lib/utils";
 
 interface Review {

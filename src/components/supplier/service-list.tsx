@@ -2,7 +2,7 @@
 
 import type { Service, Availability } from '@/types/data';
 import { Button } from '../ui/button';
-import { Calendar, Clock, Search, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MagnifyingGlass, AlertTriangle, ArrowRight } from '@phosphor-icons/react';
 import { Card } from '../ui/card';
 import dynamic from 'next/dynamic';
 import { Alert, AlertTitle, AlertDescription } from '../ui/alert';
@@ -37,7 +37,7 @@ export default function ServiceList({ services, availability, supplierId, allows
   if (!services || services.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-primary/10 p-12 text-center bg-primary/5">
-        <Search className="mx-auto h-12 w-12 text-primary/40" />
+        <MagnifyingGlass className="mx-auto h-12 w-12 text-primary/40" />
         <h3 className="mt-4 text-xl font-black uppercase tracking-tighter">No hay servicios</h3>
         <p className="mt-2 text-sm font-medium text-muted-foreground opacity-70 italic">
           Parece que este local aún no ha configurado sus servicios.

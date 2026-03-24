@@ -8,7 +8,7 @@ import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data
 import { makeBenefitSerializable } from '@/lib/data';
 import { BenefitsCarousel, SuppliersCarousel } from './carousels';
 import { calculateDistance } from '@/lib/geo-utils';
-import { MapPin } from 'lucide-react';
+import { MapPin } from '@phosphor-icons/react';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import type { Banner } from '@/types/data';
 import { cn, optimizeImage } from '@/lib/utils';
-import Image from 'next/image';
+import Image from 'next/Image';
 
 export function SingleBanner({ banner }: { banner: Banner | null }) {
     if (!banner) {
@@ -19,7 +19,7 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
             style={{ width: '100%', height: 'auto' }}
             className="block"
             priority={true}
-        />
+         weight="duotone"/>
     );
     
     const containerClasses = "relative w-full overflow-hidden rounded-3xl shadow-premium border border-primary/5 transition-all hover:scale-[1.01]";

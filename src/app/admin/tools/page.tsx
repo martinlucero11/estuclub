@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser } from '@/firebase';
-import { AlertTriangle, RotateCcw, Shield, Loader2 } from 'lucide-react';
+import { AlertTriangle, RotateCcw, Shield, CircleNotch } from '@phosphor-icons/react';
 
 export default function AdminToolsPage() {
     const { roles, isUserLoading } = useUser();
@@ -19,7 +19,7 @@ export default function AdminToolsPage() {
         return (
             <MainLayout>
                 <div className="flex items-center justify-center h-64">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <CircleNotch className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             </MainLayout>
         );
@@ -94,7 +94,7 @@ export default function AdminToolsPage() {
                             disabled={isResetting}
                         >
                             {isResetting ? (
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                <CircleNotch className="h-4 w-4 animate-spin mr-2" />
                             ) : (
                                 <RotateCcw className="h-4 w-4 mr-2" />
                             )}

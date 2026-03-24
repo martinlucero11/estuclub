@@ -8,9 +8,9 @@ import { notFound } from 'next/navigation';
 import type { SerializableBenefit } from '@/types/data';
 import PerkDetailSkeleton from '@/components/perks/perk-detail-skeleton';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import Image from 'next/image';
+import Image from 'next/Image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, MapPin, Award, Flame, Star, ChevronLeft } from 'lucide-react';
+import { CaretRight, MapPin, Medal, Flame, Star, CaretLeft } from '@phosphor-icons/react';
 import dynamic from 'next/dynamic';
 import { makeBenefitSerializable } from '@/lib/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -28,7 +28,7 @@ const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk
 export default function BenefitDetailPage({ params }: { params: { id: string } }) {
     const { id } = params;
     const firestore = useFirestore();
-    const { user, isUserLoading } = useUser();
+    const { User, isUserLoading } = useUser();
 
     const benefitRef = useMemo(() => {
         if (!id) return null;
@@ -67,7 +67,7 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
                     href="/benefits" 
                     className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
                 >
-                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                    <CaretLeft className="h-4 w-4 transition-transform group-hover:-translate-X-1"  weight="duotone"/>
                     Volver a beneficios
                 </Link>
 
@@ -85,7 +85,7 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
                                 className="object-cover transition-transform duration-1000 hover:scale-105"
                                 priority
                                 sizes="(max-width: 768px) 100vw, 800px"
-                            />
+                             weight="duotone"/>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                             
                             <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
@@ -96,14 +96,14 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
                                     </div>
                                 )}
                                 <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
-                                    <Star className="h-3 w-3 fill-current" />
+                                    <Star className="h-3 w-3 fill-current"  weight="duotone"/>
                                     <span>{serializableBenefit.category}</span>
                                 </div>
                             </div>
 
                             <div className="absolute bottom-6 left-6 right-6">
                                 <div className="inline-flex items-center gap-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-sm font-black text-white shadow-2xl mb-4">
-                                    <Award className="h-5 w-5 text-primary" />
+                                    <Medal className="h-5 w-5 text-primary"  weight="duotone"/>
                                     <span className="tracking-tight">{serializableBenefit.points} PUNTOS XP</span>
                                 </div>
                                 <h1 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-white drop-shadow-lg leading-[0.9]">
@@ -124,7 +124,7 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
                                 {serializableBenefit.location && (
                                     <div className="flex items-center gap-4 p-4 rounded-3xl bg-primary/5 border border-primary/10">
                                         <div className="h-10 w-10 rounded-2xl bg-background flex items-center justify-center shadow-sm">
-                                            <MapPin className="h-5 w-5 text-primary" />
+                                            <MapPin className="h-5 w-5 text-primary"  weight="duotone"/>
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Ubicación</p>
@@ -139,11 +139,11 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
                                     <Button 
                                         className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
                                         onClick={() => haptic.vibrateImpact()}
-                                        disabled={isUserLoading || !user}
+                                        disabled={isUserLoading || !User}
                                     >
                                         {isUserLoading ? 'Procesando...' : (
                                             <span className="flex items-center justify-center gap-3">
-                                                Canjear ahora <ArrowRight className="h-5 w-5" />
+                                                Canjear ahora <CaretRight className="h-5 w-5"  weight="duotone"/>
                                             </span>
                                         )}
                                     </Button>

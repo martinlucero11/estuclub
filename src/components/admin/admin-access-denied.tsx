@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@phosphor-icons/react';
 
 interface AdminAccessDeniedProps {
     title?: string;

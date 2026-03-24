@@ -12,10 +12,10 @@ import { HeatmapChart } from './HeatmapChart';
 import { DataDetailDialog } from './DataDetailDialog';
 import { Button } from "@/components/ui/button";
 import { 
-    Gift, Ticket, Users, Star, Heart, TrendingUp, Users2, 
-    Award, GraduationCap, Activity, PieChart as PieIcon, ArrowUpRight, ChevronRight,
-    Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare
-} from 'lucide-react';
+    Gift, Ticket, Users, Star, Heart, TrendUp, Users2, 
+    Award, GraduationCap, ChartLineUp, PieChart as PieIcon, ArrowUpRight, CaretRight,
+    Zap, Clock, Calendar, MagnifyingGlass, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare
+} from '@phosphor-icons/react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -80,7 +80,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
     const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
 
     const usersQuery = useMemo(() => 
-        query(collection(firestore, 'users').withConverter(createConverter<UserProfile>())),
+        query(collection(firestore, 'Users').withConverter(createConverter<UserProfile>())),
         [firestore]
     );
     const { data: allUsers, isLoading: usersLoading } = useCollectionOnce<UserProfile>(usersQuery);
@@ -176,7 +176,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
             .sort((a, b) => b.value - a.value)
             .slice(0, 8);
 
-        // Activity Velocity
+        // ChartLineUp Velocity
         const today = new Date();
         const redemptionsToday = redemptions.filter(r => {
             const date = r.redeemedAt?.toDate();
@@ -379,7 +379,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
                             {[
                                 { id: "overview", label: "Dashboard", icon: LayoutDashboard },
                                 { id: "audience", label: "Audiencia", icon: GraduationCap },
-                                { id: "activity", label: "Actividad", icon: Activity },
+                                { id: "ChartLineUp", label: "Actividad", icon: ChartLineUp },
                                 { id: "fidelity", label: "Fidelidad", icon: Heart },
                                 { id: "strategy", label: "Estrategia", icon: Target }
                             ].map(t => (
@@ -431,7 +431,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
                                     <Card className="lg:col-span-4 border-black/10 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer" onClick={() => openDetail('redemptions')}>
                                         <CardHeader className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 py-6">
                                             <CardTitle className="flex items-center gap-3 text-xl font-black italic text-foreground dark:text-white">
-                                                <TrendingUp className="h-5 w-5 text-primary" />
+                                                <TrendUp className="h-5 w-5 text-primary" />
                                                 Trayectoria Operativa
                                             </CardTitle>
                                         </CardHeader>
@@ -544,7 +544,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
                                 </div>
                             </TabsContent>
 
-                            <TabsContent key="activity" value="activity" className="space-y-8 mt-0 outline-none">
+                            <TabsContent key="ChartLineUp" value="ChartLineUp" className="space-y-8 mt-0 outline-none">
                                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                                     <StatCard 
                                         title="Flujo de Hoy" 
@@ -582,7 +582,7 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
                                         </div>
                                         <div className="space-y-6 relative z-10">
                                             <div className="p-4 bg-primary/20 rounded-[2rem] w-fit border border-primary/30 shadow-[0_0_30px_rgba(var(--primary-rgb),0.2)]">
-                                                <TrendingUp className="h-8 w-8 text-primary" />
+                                                <TrendUp className="h-8 w-8 text-primary" />
                                             </div>
                                             <h3 className="text-3xl font-black text-foreground dark:text-white leading-tight">Optimiza tu <br/><span className="text-primary italic">Atención Local</span></h3>
                                             <p className="text-foreground/70 dark:text-white/50 font-bold leading-relaxed max-w-sm">

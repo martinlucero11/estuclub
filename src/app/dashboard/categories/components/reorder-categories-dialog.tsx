@@ -14,7 +14,7 @@ import { useFirestore } from '@/firebase';
 import { doc, writeBatch } from 'firebase/firestore';
 import type { Category } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowDown, ArrowUp, GripVertical } from 'lucide-react';
+import { ArrowDown, ArrowUp, GripVertical } from '@phosphor-icons/react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ReorderCategoriesDialogProps {

@@ -19,6 +19,8 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 import { MapPin } from "lucide-react";
 import { formatDistance, calculateDistance } from "@/lib/geo-utils";
 import { useUser } from "@/firebase";
+import { FavoriteButton } from "../layout/favorite-button";
+import { PremiumIcon } from "../ui/premium-icon";
 import { useMemo } from "react";
 
 // --- SUPPLIER CARD ---
@@ -61,11 +63,19 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
                     {distance !== null && (
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 animate-in fade-in zoom-in duration-500">
                              <div className="bg-primary px-4 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg scale-100 group-hover:scale-110 transition-all duration-500">
-                                <MapPin className="h-4 w-4 text-white fill-current/20" />
+                                <PremiumIcon icon={MapPin} size="sm" color="text-white" glow={false} className="drop-shadow-sm" />
                                 <span className="text-xs font-black tracking-tight text-white drop-shadow-md">{formatDistance(distance)}</span>
                             </div>
                         </div>
                     )}
+                    
+                    <div className="absolute top-4 right-4 z-40">
+                        <FavoriteButton 
+                            id={supplier.id} 
+                            type="supplier" 
+                            className="bg-black/40 backdrop-blur-md border-white/20 hover:bg-primary shadow-xl scale-90" 
+                        />
+                    </div>
                 </motion.div>
                 <div className="mt-4 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/50 group-hover:text-primary transition-all duration-500 group-hover:tracking-[0.3em] line-clamp-1">{supplier.name}</p>
@@ -120,7 +130,7 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
 
     return (
        <Carousel opts={{ align: "start" }} className="w-full">
-            <CarouselContent>
+            <CarouselContent className="py-4">
                 {benefits.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
                         <BenefitCard benefit={item} variant="carousel" priority={index < 2} />
@@ -138,7 +148,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full relative">
-            <CarouselContent className="-ml-4">
+            <CarouselContent className="-ml-4 py-4">
                 {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
                         <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
@@ -156,7 +166,7 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full">
-            <CarouselContent className="-ml-6">
+            <CarouselContent className="-ml-6 py-4">
                 {announcements.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[82%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-6 h-48">
                         <AnnouncementCard 

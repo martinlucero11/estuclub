@@ -8,7 +8,7 @@ import { getHomeSectionColumns } from './home-section-columns';
 import type { HomeSection } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Save } from 'lucide-react';
+import { PlusCircle, FloppyDiskBack } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { HomeSectionDialog } from './home-section-dialog';

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { Link2 } from 'lucide-react';
+import { Link2 } from '@phosphor-icons/react';
 import Link from 'next/link';
 import type { SerializableAnnouncement } from '@/types/data';
 

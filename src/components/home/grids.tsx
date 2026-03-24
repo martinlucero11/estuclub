@@ -7,12 +7,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
 import BenefitCard from '../perks/perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
-import { Building, Briefcase, Heart, ShoppingBag, Wrench, Users } from 'lucide-react';
+import { Buildings, Briefcase, Heart, ShoppingBag, Wrench, Users } from '@phosphor-icons/react';
 
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
     Profesional: Briefcase,
-    Empresa: Building,
+    Empresa: Buildings,
     Emprendimiento: Users,
     Salud: Heart,
     Estética: Briefcase,

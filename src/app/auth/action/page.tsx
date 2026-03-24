@@ -8,9 +8,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { CheckCircle2, XCircle, Loader2, KeyRound } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, KeyRound } from '@phosphor-icons/react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from 'next/Image';
 
 function AuthActionHandler() {
   const searchParams = useSearchParams();
@@ -182,7 +182,7 @@ export default function ActionPage() {
         
         <Link href="/" className="mb-8 z-10 hover:opacity-80 transition-opacity">
             <div
-                className="h-[48px] w-[160px] bg-primary dark:bg-primary-foreground [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
+                className="h-[48px] w-[160px] bg-primary dark:bg-primary-foreground [mask-Image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
                 aria-label="EstuClub Logo"
             />
         </Link>

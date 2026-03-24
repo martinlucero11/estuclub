@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { add, format, startOfDay, getDay, set } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, CircleNotch } from '@phosphor-icons/react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc, useCollection } from '@/firebase';
@@ -207,7 +207,7 @@ export default function BookingDialog({ service, availability, supplierId, child
                         disabled={isBooking || !user || !selectedDate || !selectedSlot}
                         className="w-full sm:w-auto"
                     >
-                        {isBooking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isBooking && <CircleNotch className="mr-2 h-4 w-4 animate-spin" />}
                         {user ? 'Confirmar Reserva' : 'Inicia sesión para reservar'}
                     </Button>
                 </div>

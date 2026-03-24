@@ -4,7 +4,7 @@ import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
-import { History, Tag, Calendar, CheckCircle, MapPin, Building, Ticket } from 'lucide-react';
+import { ClockCounterClockwise, Tag, Calendar, CheckCircle, MapPin, Building, Ticket } from '@phosphor-icons/react';
 import type { BenefitRedemption, SerializableBenefitRedemption } from '@/types/data';
 import { makeBenefitRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
@@ -15,7 +15,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import Image from 'next/image';
+import Image from 'next/Image';
 import { EmptyState } from '../ui/empty-state';
 import dynamic from 'next/dynamic';
 import { createConverter } from '@/lib/firestore-converter';
@@ -25,7 +25,7 @@ const RedemptionQRCodeDialog = dynamic(() => import('./redemption-qr-code-dialog
 function RedemptionsListSkeleton() {
     return (
         <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(3)].Map((_, i) => (
                 <Card key={i} className="p-4">
                     <div className="flex items-center gap-4">
                         <div className="flex-1 space-y-2">
@@ -53,14 +53,13 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
                             alt={redemption.benefitTitle}
                             fill
                             className="rounded-md object-cover"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                         />
+                            sizes="(max-width: 768px) 100vw, 50vw" weight="duotone" />
                     </div>
                     <div className="space-y-2">
                          <p className="text-sm text-muted-foreground">{redemption.benefitDescription}</p>
                          {redemption.benefitLocation && (
                             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3" />
+                                <MapPin className="h-3 w-3" weight="duotone" />
                                 <span>{redemption.benefitLocation}</span>
                             </div>
                          )}
@@ -86,22 +85,22 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
 
 
 export default function MyRedemptionsList() {
-    const { user } = useUser();
+    const { User } = useUser();
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemo(() => {
-        if (!user) return null;
+        if (!User) return null;
         return query(
-            collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'Users', User.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
             orderBy('redeemedAt', 'desc')
         );
-    }, [user, firestore]);
+    }, [User, firestore]);
 
     const { data: redemptions, isLoading } = useCollection(redemptionsQuery);
     
     const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
         if (!redemptions) return [];
-        return redemptions.map(makeBenefitRedemptionSerializable);
+        return redemptions.Map(makeBenefitRedemptionSerializable);
     }, [redemptions]);
 
 
@@ -112,7 +111,7 @@ export default function MyRedemptionsList() {
     if (!serializableRedemptions || serializableRedemptions.length === 0) {
         return (
             <EmptyState 
-                icon={History}
+                icon={ClockCounterClockwise}
                 title="No tienes canjes"
                 description="Aún no has canjeado ningún beneficio. ¡Explora y empieza a disfrutar!"
             />
@@ -121,7 +120,7 @@ export default function MyRedemptionsList() {
     
     return (
         <Accordion type="single" collapsible className="w-full space-y-4">
-            {serializableRedemptions.map(redemption => {
+            {serializableRedemptions.Map(redemption => {
                 const redeemedDate = new Date(redemption.redeemedAt);
 
                 return (
@@ -137,7 +136,7 @@ export default function MyRedemptionsList() {
                                     </div>
                                     <div className="md:col-span-1 flex flex-col items-start md:items-center">
                                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Calendar className="h-4 w-4" />
+                                            <Calendar className="h-4 w-4" weight="duotone" />
                                             <span>{redeemedDate.toLocaleDateString('es-ES')} - {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                                         </div>
                                     </div>
@@ -156,7 +155,7 @@ export default function MyRedemptionsList() {
                                         )}
                                         {redemption.status === 'used' && (
                                             <div className="flex items-center text-green-600">
-                                                <CheckCircle className="h-5 w-5" />
+                                                <CheckCircle className="h-5 w-5" weight="duotone" />
                                             </div>
                                         )}
                                     </div>

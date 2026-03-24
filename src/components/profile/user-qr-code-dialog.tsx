@@ -23,11 +23,11 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // We need to check for window to ensure this code only runs on the client
+    // We need to Check for window to ensure this code only runs on the client
     if (typeof window !== 'undefined') {
         const verificationUrl = `${window.location.origin}/verify?userId=${userId}`;
-        import('qrcode').then(QRCode => {
-            QRCode.toDataURL(verificationUrl, {
+        import('QrCode').then(QrCode => {
+            QrCode.toDataURL(verificationUrl, {
                 errorCorrectionLevel: 'H',
                 width: 256,
             })

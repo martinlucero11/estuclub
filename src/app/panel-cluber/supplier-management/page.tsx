@@ -6,7 +6,7 @@ import BackButton from '@/components/layout/back-button';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import { SupplierTable } from './components/supplier-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserManagementTable } from './components/user-management-table';
+import { UserManagementTable } from './components/User-management-table';
 import { SupplierRequestTable } from './components/supplier-request-table';
 import { ZombieCleanup } from './components/zombie-cleanup';
 import { useSearchParams } from 'next/navigation';
@@ -24,7 +24,7 @@ function SupplierManagementContent() {
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-6 w-64" />
             <div className="space-y-2 pt-4">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(5)].Map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                 ))}
             </div>
@@ -55,7 +55,7 @@ function SupplierManagementContent() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="manage-suppliers">Gestionar Clubers</TabsTrigger>
           <TabsTrigger value="requests">Solicitudes</TabsTrigger>
-          <TabsTrigger value="convert-user">Convertir Usuario</TabsTrigger>
+          <TabsTrigger value="convert-User">Convertir Usuario</TabsTrigger>
           <TabsTrigger value="maintenance">Mantenimiento</TabsTrigger>
         </TabsList>
         <TabsContent value="manage-suppliers" className="mt-4">
@@ -64,7 +64,7 @@ function SupplierManagementContent() {
           </p>
           <SupplierTable />
         </TabsContent>
-        <TabsContent value="convert-user" className="mt-4">
+        <TabsContent value="convert-User" className="mt-4">
            <p className="text-sm text-muted-foreground mb-4">
             Selecciona un usuario de la lista para asignarle un perfil de Cluber.
           </p>

@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { FloppyDiskBack, Image as ImageIcon, Link as LinkIcon } from '@phosphor-icons/react';
 import type { SerializableBanner } from '@/types/data';
 
 const formSchema = z.object({
@@ -144,7 +144,7 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                 />
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
-                        <Save className="mr-2 h-4 w-4" />
+                        <FloppyDiskBack className="mr-2 h-4 w-4" />
                         {isSubmitting ? 'Guardando...' : 'Guardar Banner'}
                     </Button>
                 </div>

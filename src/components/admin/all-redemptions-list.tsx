@@ -5,7 +5,7 @@ import { collection, query, orderBy, Timestamp, where } from 'firebase/firestore
 import { Skeleton } from '../ui/skeleton';
 import { Card } from '../ui/card';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { History, Calendar, Fingerprint, Tag, Building } from 'lucide-react';
+import { ClockCounterClockwise, Calendar, Fingerprint, Tag, Buildings } from '@phosphor-icons/react';
 import type { BenefitRedemption } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
@@ -55,7 +55,7 @@ export default function AllRedemptionsList() {
     if (!user) {
         return (
              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <History className="mx-auto h-12 w-12 text-muted-foreground" />
+                <ClockCounterClockwise className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-xl font-semibold">Inicia sesión</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                     Debes iniciar sesión para ver los canjes.
@@ -67,7 +67,7 @@ export default function AllRedemptionsList() {
     if (!redemptions || redemptions.length === 0) {
         return (
              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <History className="mx-auto h-12 w-12 text-muted-foreground" />
+                <ClockCounterClockwise className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-xl font-semibold">No hay canjes para mostrar</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                     No se encontraron canjes asociados a tu cuenta de proveedor.
@@ -105,7 +105,7 @@ export default function AllRedemptionsList() {
                             </div>
                             <div className="md:col-span-1 space-y-2 text-sm">
                                <div className='flex items-center gap-2 text-muted-foreground'>
-                                    <Building className='h-4 w-4'/>
+                                    <Buildings className='h-4 w-4'/>
                                     <span>{redemption.supplierName}</span>
                                </div>
                             </div>

@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Heart, Users2, Trophy } from 'lucide-react';
+import { Heart, Users2, Trophy } from '@phosphor-icons/react';
 
 interface LoyaltyMetricsProps {
     totalUsers: number;

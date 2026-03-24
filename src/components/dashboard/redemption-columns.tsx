@@ -2,7 +2,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import type { SerializableBenefitRedemption } from '@/types/data';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 

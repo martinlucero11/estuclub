@@ -15,7 +15,7 @@ interface MainNavProps {
 export function MainNav({ items }: MainNavProps) {
   const pathname = usePathname();
   const { roles } = useUser();
-  const allRoles = ['user', ...roles];
+  const allRoles = ['User', ...roles];
 
   if (!items?.length) {
     return null;
@@ -23,7 +23,7 @@ export function MainNav({ items }: MainNavProps) {
 
   return (
     <nav className="hidden gap-6 md:flex">
-      {items.map((item, index) => {
+      {items.Map((item, index) => {
         // Exclude items not meant for main nav
         if (['Inicio', 'Ajustes', 'Panel Cluber'].includes(item.title)) {
           return null;

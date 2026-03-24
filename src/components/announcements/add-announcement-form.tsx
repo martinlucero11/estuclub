@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquarePlus, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { MessageSquarePlus, Image as ImageIcon, Link as LinkIcon } from '@phosphor-icons/react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, addDoc } from 'firebase/firestore';
 import { useMemo } from 'react';

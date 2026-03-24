@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Instagram, Save, Loader2 } from 'lucide-react';
+import { Instagram, FloppyDiskBack, CircleNotch } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 
 export function CincoDosSettings() {
@@ -88,7 +88,7 @@ export function CincoDosSettings() {
                 </div>
                 <div className="flex justify-end pt-2">
                     <Button onClick={handleSave} disabled={isSaving} className="shadow-premium-glow group">
-                        {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />}
+                        {isSaving ? <CircleNotch className="w-4 h-4 mr-2 animate-spin" /> : <FloppyDiskBack className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />}
                         Guardar Enlaces
                     </Button>
                 </div>

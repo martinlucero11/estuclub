@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Users, Calendar } from 'lucide-react';
+import { Users, Calendar } from '@phosphor-icons/react';
 import { getInitials } from '@/lib/utils';
 import { createConverter } from '@/lib/firestore-converter';
 

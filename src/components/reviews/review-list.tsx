@@ -8,7 +8,7 @@ import { StarRating } from './star-rating';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Calendar } from 'lucide-react';
+import { MessageSquare, Calendar } from '@phosphor-icons/react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 

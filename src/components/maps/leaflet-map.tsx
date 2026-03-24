@@ -25,7 +25,7 @@ interface MapProps {
 export default function LeafletMap({ center, zoom = 14, markers = [], className }: MapProps) {
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<Map | null>(null);
+  const mapInstanceRef = useRef<Map | null weight="duotone">(null);
   const tileLayerRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const { theme, resolvedTheme } = useTheme();
@@ -44,7 +44,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
   useEffect(() => {
     if (!L || !mapContainerRef.current || mapInstanceRef.current) return;
 
-    const map = L.map(mapContainerRef.current, {
+    const Map = L.Map(mapContainerRef.current, {
       center,
       zoom,
       scrollWheelZoom: false,
@@ -53,22 +53,22 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
 
     const isDark = resolvedTheme === 'dark';
     const tileUrl = isDark 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{X}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{X}/{y}{r}.png';
 
     const tiles = L.tileLayer(tileUrl, {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&Copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &Copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
-    }).addTo(map);
+    }).addTo(Map);
 
     tileLayerRef.current = tiles;
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(Map);
 
-    mapInstanceRef.current = map;
+    mapInstanceRef.current = Map;
 
     return () => {
-      map.remove();
+      Map.remove();
       mapInstanceRef.current = null;
     };
   }, [L]);
@@ -78,8 +78,8 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
     if (mapInstanceRef.current && L && tileLayerRef.current) {
         const isDark = resolvedTheme === 'dark';
         const tileUrl = isDark 
-          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{X}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{X}/{y}{r}.png';
         
         tileLayerRef.current.setUrl(tileUrl);
     }
@@ -111,9 +111,9 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
                  <path d="M2 17L12 22L22 17" />
                  <path d="M2 12L12 17L22 12" />
                </svg>
-               <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary rotate-45 border-r-2 border-b-2 border-white/10 shadow-lg"></div>
+               <div class="absolute -bottom-1.5 left-1/2 -translate-X-1/2 w-3 h-3 bg-primary rotate-45 border-r-2 border-b-2 border-white/10 shadow-lg"></div>
             </div>
-            <div class="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
+            <div class="absolute -top-10 left-1/2 -translate-X-1/2 px-3 py-1 bg-black/80 backdrop-blur-md rounded-lg border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-50">
                <span class="text-[9px] font-black text-white uppercase tracking-widest">${title}</span>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
             }
             .estuclub-custom-popup .leaflet-popup-content-wrapper {
                 background: ${resolvedTheme === 'dark' ? 'rgba(15, 18, 25, 0.85)' : 'rgba(255, 255, 255, 0.85)'} !important;
-                backdrop-filter: blur(20px) saturate(180%);
+                backdrop-Funnel: blur(20px) saturate(180%);
                 color: ${resolvedTheme === 'dark' ? 'white' : 'black'} !important;
                 border: 1px solid ${resolvedTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
                 border-radius: 1.5rem !important;
@@ -195,7 +195,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
             }
             .estuclub-custom-popup .leaflet-popup-tip {
                 background: ${resolvedTheme === 'dark' ? 'rgba(15, 18, 25, 0.85)' : 'rgba(255, 255, 255, 0.85)'} !important;
-                backdrop-filter: blur(20px);
+                backdrop-Funnel: blur(20px);
             }
             .premium-popup-card {
                 padding: 1.25rem;
@@ -262,7 +262,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
             .leaflet-control-zoom-in, .leaflet-control-zoom-out {
                 background: ${resolvedTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'white'} !important;
                 color: ${resolvedTheme === 'dark' ? 'white' : 'black'} !important;
-                backdrop-filter: blur(8px);
+                backdrop-Funnel: blur(8px);
                 border: 1px solid ${resolvedTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} !important;
             }
         ` }} />

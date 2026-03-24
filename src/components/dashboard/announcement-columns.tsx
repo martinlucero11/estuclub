@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Announcement } from "@/types/data";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ArrowUpDown, DotsThreeOutlineHorizontal } from '@phosphor-icons/react';
 import { 
     DropdownMenu, 
     DropdownMenuContent, 
@@ -56,7 +56,7 @@ export const columns = ({ onEdit, onDelete }: CreateColumnsProps): ColumnDef<Ann
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                             <span className="sr-only">Abrir menú</span>
-                            <MoreHorizontal className="h-4 w-4" />
+                            <DotsThreeOutlineHorizontal className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">

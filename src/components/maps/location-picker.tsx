@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
 import type { Map, Marker as LeafletMarker } from 'leaflet';
 import { Button } from '../ui/button';
-import { MapPin, Navigation } from 'lucide-react';
+import { MapPin, Navigation } from '@phosphor-icons/react';
 
 interface LocationPickerProps {
   initialLocation?: { lat: number; lng: number };
@@ -15,7 +15,7 @@ interface LocationPickerProps {
 
 export default function LocationPicker({ initialLocation, onLocationSelect, className }: LocationPickerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<Map | null>(null);
+  const mapInstanceRef = useRef<Map | null weight="duotone" >(null);
   const tileLayerRef = useRef<any>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
   const { theme, resolvedTheme } = useTheme();
@@ -37,7 +37,7 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
 
     const defaultCenter: [number, number] = initialLocation ? [initialLocation.lat, initialLocation.lng] : [-34.6037, -58.3816];
     
-    const map = L.map(mapContainerRef.current, {
+    const Map = L.map(mapContainerRef.current, {
       center: defaultCenter,
       zoom: 13,
       zoomControl: false,
@@ -45,22 +45,22 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
 
     const isDark = resolvedTheme === 'dark';
     const tileUrl = isDark 
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{X}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{X}/{y}{r}.png';
 
     const tiles = L.tileLayer(tileUrl, {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&Copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &Copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
-    }).addTo(map);
+    }).addTo(Map);
 
     tileLayerRef.current = tiles;
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(Map);
 
-    mapInstanceRef.current = map;
+    mapInstanceRef.current = Map;
 
     // Handle Clicks
-    map.on('click', (e: any) => {
+    Map.on('click', (e: any) => {
         const { lat, lng } = e.latlng;
         updateMarker(lat, lng);
         onLocationSelect({ lat, lng });
@@ -72,7 +72,7 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
     }
 
     return () => {
-      map.remove();
+      Map.remove();
       mapInstanceRef.current = null;
     };
   }, [L]);
@@ -82,8 +82,8 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
     if (mapInstanceRef.current && L && tileLayerRef.current) {
         const isDark = resolvedTheme === 'dark';
         const tileUrl = isDark 
-          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{X}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{X}/{y}{r}.png';
         
         tileLayerRef.current.setUrl(tileUrl);
     }
@@ -130,7 +130,7 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
         <style dangerouslySetInnerHTML={{ __html: `
             .leaflet-container { background: ${resolvedTheme === 'dark' ? '#0b0e14' : '#f8f9fa'} !important; }
             .leaflet-control-attribution { display: none !important; }
-            .filter-pink { filter: hue-rotate(150deg) saturate(2) brightness(1.2); }
+            .filter-pink { Funnel: hue-rotate(150deg) saturate(2) brightness(1.2); }
         ` }} />
         
         <div ref={mapContainerRef} className="h-64 md:h-80 w-full" />
@@ -157,7 +157,7 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
         {selectedCoords && (
             <div className="absolute bottom-4 left-4 z-[1000] animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <div className="glass glass-dark px-3 py-1.5 rounded-lg border-white/10 flex items-center gap-2">
-                    <MapPin className="h-3 w-3 text-primary" />
+                    <MapPin className="h-3 w-3 text-primary" weight="duotone" />
                     <span className="text-[10px] font-mono opacity-60">
                         {selectedCoords.lat.toFixed(4)}, {selectedCoords.lng.toFixed(4)}
                     </span>

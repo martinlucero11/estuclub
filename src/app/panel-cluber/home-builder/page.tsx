@@ -7,7 +7,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, writeBatch } from 'firebase/firestore';
 import type { HomeSection } from '@/types/data';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Save, ArrowUp, ArrowDown, Edit, Trash2, LayoutTemplate } from 'lucide-react';
+import { PlusCircle, FloppyDiskBack, ArrowUp, ArrowDown, PencilSimple, Trash, Browsers } from '@phosphor-icons/react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -145,7 +145,7 @@ export default function HomeBuilderPage() {
                 <div className="flex gap-2">
                     {hasOrderChanged && (
                         <Button onClick={handleSaveChanges}>
-                            <Save className="mr-2 h-4 w-4" />
+                            <FloppyDiskBack className="mr-2 h-4 w-4" />
                             Guardar Orden
                         </Button>
                     )}
@@ -168,7 +168,7 @@ export default function HomeBuilderPage() {
                                     <CardDescription>La configuración para la sección "{section.title}" está incompleta. Por favor, elimínala y créala de nuevo.</CardDescription>
                                 </div>
                                 <Button variant="destructive" size="icon" onClick={() => handleDeleteRequest(section.id)}>
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash className="h-4 w-4" />
                                 </Button>
                             </Card>
                         )
@@ -198,17 +198,17 @@ export default function HomeBuilderPage() {
                             </Badge>
                             <div className="flex gap-2">
                                 <Button variant="outline" size="icon" onClick={() => handleEdit(section)}>
-                                    <Edit className="h-4 w-4" />
+                                    <PencilSimple className="h-4 w-4" />
                                 </Button>
                                 <Button variant="destructive" size="icon" onClick={() => handleDeleteRequest(section.id)}>
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash className="h-4 w-4" />
                                 </Button>
                             </div>
                         </Card>
                     )
                 }) : (
                      <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                        <LayoutTemplate className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <Browsers className="mx-auto h-12 w-12 text-muted-foreground" />
                         <h3 className="mt-4 text-xl font-semibold">Aún no hay secciones</h3>
                         <p className="mt-2 text-sm text-muted-foreground">
                            Empieza a construir tu página de inicio añadiendo un nuevo bloque.

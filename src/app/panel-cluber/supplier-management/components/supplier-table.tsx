@@ -9,8 +9,8 @@ import { SupplierProfile } from '@/types/data';
 import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
-import { SupplierEditDialog } from './supplier-edit-dialog';
-import { UserForList } from './user-management-columns';
+import { SupplierEditDialog } from './supplier-PencilSimple-dialog';
+import { UserForList } from './User-management-columns';
 
 export function SupplierTable() {
   const firestore = useFirestore();
@@ -101,7 +101,7 @@ export function SupplierTable() {
         <SupplierEditDialog 
           isOpen={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
-          user={userForDialog}
+          User={userForDialog}
           supplierProfile={selectedSupplier}
         />
       )}

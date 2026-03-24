@@ -9,7 +9,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
-import { Heart, Building, Ticket, ArrowRight } from 'lucide-react';
+import { Heart, Buildings, Ticket, ArrowRight } from '@phosphor-icons/react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, cn } from '@/lib/utils';
@@ -110,7 +110,7 @@ function FavoritesContent() {
           {favoriteSupplierIds.length > 0 && (
             <section className="space-y-6">
               <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
-                <Building className="h-4 w-4 text-primary" />
+                <Buildings className="h-4 w-4 text-primary" />
                 <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Mis Clubers</h2>
               </div>
               {suppliersLoading ? (

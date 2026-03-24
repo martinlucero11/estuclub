@@ -1,12 +1,12 @@
 'use client';
 
-import Image from 'next/image';
+import Image from 'next/Image';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import AnnouncementDialog from './announcement-dialog';
 import { cn, optimizeImage } from '@/lib/utils';
-import { Link2 } from 'lucide-react';
+import { Link2 } from '@phosphor-icons/react';
 import type { SerializableAnnouncement } from '@/types/data';
 
 interface AnnouncementCardProps {
@@ -33,7 +33,7 @@ function formatTime(isoString: string) {
 }
 
 const fallbackImageUrl =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==';
+  'data:Image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==';
 
 export default function AnnouncementCard({
   announcement,
@@ -54,8 +54,7 @@ export default function AnnouncementCard({
           fill
           priority={priority}
           className="object-cover transition-transform duration-1000 group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+          sizes="(max-width: 768px) 100vw, 50vw" weight="duotone" />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
       </div>
       <div className="flex flex-1 flex-col p-6">
@@ -99,8 +98,7 @@ export default function AnnouncementCard({
           fill
           priority={priority}
           className="object-cover transition-transform duration-1000 group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+          sizes="(max-width: 768px) 100vw, 50vw" weight="duotone" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-all duration-700 group-hover:from-primary/60 group-hover:via-black/20" />
         <div className="relative z-10 flex h-full flex-col justify-end p-7">
           <div className="space-y-3">

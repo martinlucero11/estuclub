@@ -6,7 +6,7 @@ import { SupplierProfile } from "@/types/data";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { ArrowUpDown, DotsThreeOutlineHorizontal, Trash, PencilSimple } from '@phosphor-icons/react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 
 type ToggleHandler = (
@@ -174,17 +174,17 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
                     <span className="sr-only">Abrir menú</span>
-                    <MoreHorizontal className="h-4 w-4" />
+                    <DotsThreeOutlineHorizontal className="h-4 w-4" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => onEdit(supplier)}>
-                    <Edit className="mr-2 h-4 w-4" />
+                    <PencilSimple className="mr-2 h-4 w-4" />
                     Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete(supplier.id)} className="text-destructive">
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash className="mr-2 h-4 w-4" />
                     Eliminar
                 </DropdownMenuItem>
             </DropdownMenuContent>

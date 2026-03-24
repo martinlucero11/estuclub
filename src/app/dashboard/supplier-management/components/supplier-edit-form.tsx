@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Save, Loader2 } from 'lucide-react';
+import { FloppyDiskBack, CircleNotch } from '@phosphor-icons/react';
 import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 
@@ -179,7 +179,7 @@ export function SupplierEditForm({ supplier, onSuccess }: SupplierEditFormProps)
 
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSubmitting ? <CircleNotch className="mr-2 h-4 w-4 animate-spin" /> : <FloppyDiskBack className="mr-2 h-4 w-4" />}
                         Guardar Cambios
                     </Button>
                 </div>

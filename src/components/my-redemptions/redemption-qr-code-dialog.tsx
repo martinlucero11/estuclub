@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import QRCode from 'qrcode';
-import Image from 'next/image';
+import QrCode from 'QrCode';
+import Image from 'next/Image';
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
-import { QrCode, Ticket, MessageCircle } from 'lucide-react';
+import { QrCode, Ticket, MessageCircle } from '@phosphor-icons/react';
 import { Skeleton } from '../ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -29,7 +29,7 @@ const TicketSeparator = () => (
 
 const Barcode = () => (
     <div className="flex h-8 w-full items-center justify-center gap-px overflow-hidden">
-        {[...Array(60)].map((_, i) => {
+        {[...Array(60)].Map((_, i) => {
             const height = Math.random() * 70 + 30; // Random height between 30% and 100%
             return <div key={i} className="w-px bg-muted-foreground/50" style={{ height: `${height}%` }} />
         })}
@@ -69,7 +69,7 @@ export default function RedemptionQRCodeDialog({
     const qrDarkColor = isDark ? '#FFFFFF' : '#020817'; // text-foreground
     const qrLightColor = isDark ? '#020817' : '#FFFFFF'; // background
 
-    QRCode.toDataURL(qrCodeValue, {
+    QrCode.toDataURL(qrCodeValue, {
         errorCorrectionLevel: 'H',
         width: 512, // Higher resolution for clarity
         margin: 2,
@@ -123,7 +123,7 @@ export default function RedemptionQRCodeDialog({
             <div className="z-10 w-full flex-1 flex flex-col items-center justify-center pt-6">
                 <div className="bg-white p-2 rounded-lg shadow-md">
                     {qrCodeUrl ? (
-                        <Image src={qrCodeUrl} alt={`Código QR para ${benefitTitle}`} width={180} height={180} />
+                        <Image src={qrCodeUrl} alt={`Código QR para ${benefitTitle}`} width={180} height={180} weight="duotone" />
                     ) : (
                         <Skeleton className="h-[180px] w-[180px] rounded-lg" />
                     )}

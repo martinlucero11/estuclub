@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import SupplierAnalyticsDashboard from '@/components/analytics/SupplierAnalyticsDashboard';
 import SplashScreen from '@/components/layout/splash-screen';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { BarChart } from 'lucide-react';
+import { ChartBar } from '@phosphor-icons/react';
 
 export default function SupplierAnalyticsPage() {
     const { user, isUserLoading, roles } = useUser();
@@ -20,7 +20,7 @@ export default function SupplierAnalyticsPage() {
         return <div className="p-8">
             <BackButton />
             <Alert variant="destructive">
-                <BarChart className="h-4 w-4" />
+                <ChartBar className="h-4 w-4" />
                 <AlertTitle>Acceso Denegado</AlertTitle>
                 <AlertDescription>Debes ser un proveedor para ver estas analíticas.</AlertDescription>
             </Alert>

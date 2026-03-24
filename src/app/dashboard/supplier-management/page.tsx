@@ -17,7 +17,7 @@ export default function SupplierManagementPage() {
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-6 w-64" />
             <div className="space-y-2 pt-4">
-                {[...Array(5)].map((_, i) => (
+                {[...Array(5)].Map((_, i) => (
                     <Skeleton key={i} className="h-16 w-full" />
                 ))}
             </div>

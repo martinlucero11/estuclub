@@ -3,7 +3,7 @@
 
 import type { ColumnDef } from '@tanstack/react-table';
 import type { SerializableBenefit } from '@/types/data';
-import { ArrowUpDown, Edit, MoreHorizontal, Trash2 } from 'lucide-react';
+import { ArrowUpDown, PencilSimple, DotsThreeOutlineHorizontal, Trash } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '../ui/badge';
@@ -56,16 +56,16 @@ export const getBenefitColumns = (
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <DotsThreeOutlineHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(benefit)}>
-                <Edit className="mr-2 h-4 w-4" />
+                <PencilSimple className="mr-2 h-4 w-4" />
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onDelete(benefit.id)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash className="mr-2 h-4 w-4" />
                 Eliminar
               </DropdownMenuItem>
             </DropdownMenuContent>

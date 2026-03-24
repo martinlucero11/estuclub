@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
+import { Buildings, Briefcase, Heart, ShoppingBag, Wrench, MagnifyingGlass, Users } from '@phosphor-icons/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import { getInitials } from '@/lib/utils';
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
     Profesional: Briefcase,
-    Empresa: Building,
+    Empresa: Buildings,
     Emprendimiento: Users,
     Salud: Heart,
     Estética: Briefcase, // using briefcase as a placeholder
@@ -101,7 +101,7 @@ function CluberListPage() {
 
             {clubers && clubers.length === 0 ? (
                 <EmptyState
-                    icon={Search}
+                    icon={MagnifyingGlass}
                     title="No se encontraron Clubers"
                     description={activeFilter === 'Todos' ? 'Aún no se han registrados Clubers.' : `No hay Clubers en la categoría '${activeFilter}'.`}
                 />

@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, serverTimestamp, addDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { Loader2, Send } from 'lucide-react';
+import { CircleNotch, Send } from '@phosphor-icons/react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const formSchema = z.object({
@@ -204,7 +204,7 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
                     <Button type="submit" disabled={isSubmitting} className="relative group w-full h-14 text-lg font-bold rounded-2xl overflow-hidden bg-white text-black hover:bg-zinc-200 transition-all duration-300">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 group-hover:translate-x-full transition-all duration-700 ease-in-out -translate-x-full" />
                         {isSubmitting ? (
-                            <span className="flex items-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Autorizando...</span>
+                            <span className="flex items-center"><CircleNotch className="mr-2 h-5 w-5 animate-spin" /> Autorizando...</span>
                         ) : (
                             <span className="flex items-center"><Send className="mr-2 h-5 w-5" /> Solicitar Acceso Reservado</span>
                         )}

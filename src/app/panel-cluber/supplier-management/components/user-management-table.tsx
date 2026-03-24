@@ -7,8 +7,8 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import type { SupplierProfile } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
-import { columns as createColumns, UserForList } from './user-management-columns';
-import { SupplierEditDialog } from './supplier-edit-dialog';
+import { columns as createColumns, UserForList } from './User-management-columns';
+import { SupplierEditDialog } from './supplier-PencilSimple-dialog';
 
 export function UserManagementTable() {
     const firestore = useFirestore();
@@ -19,9 +19,9 @@ export function UserManagementTable() {
 
     const usersQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'users').withConverter(createConverter<UserForList>()), orderBy('email', 'asc'));
+        return query(collection(firestore, 'Users').withConverter(createConverter<UserForList>()), orderBy('email', 'asc'));
     }, [firestore]);
-    const { data: users, isLoading: usersLoading } = useCollection(usersQuery);
+    const { data: Users, isLoading: usersLoading } = useCollection(usersQuery);
 
     const suppliersQuery = useMemo(() => {
         if (!firestore) return null;
@@ -32,13 +32,13 @@ export function UserManagementTable() {
     const isLoading = usersLoading || suppliersLoading;
 
     const suppliersMap = useMemo(() => {
-        const map = new Map<string, SupplierProfile>();
-        suppliers?.forEach(s => map.set(s.id, s));
-        return map;
+        const Map = new Map<string, SupplierProfile>();
+        suppliers?.forEach(s => Map.set(s.id, s));
+        return Map;
     }, [suppliers]);
 
-    const handleEdit = (user: UserForList, supplierProfile: SupplierProfile | null) => {
-        setSelectedUser(user);
+    const handleEdit = (User: UserForList, supplierProfile: SupplierProfile | null) => {
+        setSelectedUser(User);
         setSelectedSupplierProfile(supplierProfile);
         setIsDialogOpen(true);
     };
@@ -49,7 +49,7 @@ export function UserManagementTable() {
         <div>
             <DataTable
                 columns={columns}
-                data={users || []}
+                data={Users || []}
                 isLoading={isLoading}
                 filterColumn="email"
                 filterPlaceholder="Buscar por email..."
@@ -58,7 +58,7 @@ export function UserManagementTable() {
                 <SupplierEditDialog
                     isOpen={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
-                    user={selectedUser}
+                    User={selectedUser}
                     supplierProfile={selectedSupplierProfile}
                 />
             )}

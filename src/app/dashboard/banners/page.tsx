@@ -3,7 +3,7 @@
 
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@phosphor-icons/react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BannerTable } from './components/banner-table';
 import BackButton from '@/components/layout/back-button';

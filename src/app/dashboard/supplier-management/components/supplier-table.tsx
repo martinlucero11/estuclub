@@ -9,7 +9,7 @@ import { SupplierProfile } from '@/types/data';
 import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
-import { SupplierEditDialog } from './supplier-edit-dialog';
+import { SupplierEditDialog } from './supplier-PencilSimple-dialog';
 
 export function SupplierTable() {
   const firestore = useFirestore();

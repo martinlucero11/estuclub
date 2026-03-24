@@ -13,11 +13,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { doc, setDoc, serverTimestamp, getDocs, collection, query, where, limit } from 'firebase/firestore';
 import { useState } from 'react';
-import { Save, Loader2, MapPin } from 'lucide-react';
+import { FloppyDiskBack, Loader2, MapPin } from '@phosphor-icons/react';
 import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import LocationPicker from '@/components/maps/location-picker';
-import type { UserForList } from './user-management-columns';
+import type { UserForList } from './User-management-columns';
 
 const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -37,7 +37,7 @@ const formSchema = z.object({
 });
 
 interface SupplierEditFormProps {
-    user: UserForList;
+    User: UserForList;
     supplierProfile: SupplierProfile | null;
     onSuccess: () => void;
 }
@@ -59,7 +59,7 @@ function slugify(text: string): string {
 }
 
 
-export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierEditFormProps) {
+export function SupplierEditForm({ User, supplierProfile, onSuccess }: SupplierEditFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,8 +68,8 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            name: supplierProfile?.name || user.username || '',
-            slug: supplierProfile?.slug || slugify(supplierProfile?.name || user.username || ''),
+            name: supplierProfile?.name || User.username || '',
+            slug: supplierProfile?.slug || slugify(supplierProfile?.name || User.username || ''),
             type: supplierProfile?.type || 'Comercio',
             description: supplierProfile?.description || '',
             logoUrl: supplierProfile?.logoUrl || '',
@@ -96,17 +96,17 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
             const q = query(suppliersRef, where('slug', '==', values.slug), limit(1));
             const slugSnapshot = await getDocs(q);
 
-            if (!slugSnapshot.empty && slugSnapshot.docs[0].id !== user.id) {
+            if (!slugSnapshot.empty && slugSnapshot.docs[0].id !== User.id) {
                 form.setError('slug', { message: 'Este slug ya está en uso por otro Cluber.' });
                 setIsSubmitting(false);
                 return;
             }
 
-            const supplierDocRef = doc(firestore, 'roles_supplier', user.id);
+            const supplierDocRef = doc(firestore, 'roles_supplier', User.id);
             const dataToSave = {
                 ...values,
-                userId: user.id,
-                email: user.email,
+                userId: User.id,
+                email: User.email,
                 // For new suppliers, set visibility defaults. For existing, merge to keep current values.
                 ...(isEditMode ? {} : { 
                     createdAt: serverTimestamp(),
@@ -120,7 +120,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
 
             toast({
                 title: isEditMode ? 'Cluber Actualizado' : '¡Usuario ahora es un Cluber!',
-                description: `El perfil de ${user.email} ha sido ${isEditMode ? 'actualizado' : 'creado'}.`,
+                description: `El perfil de ${User.email} ha sido ${isEditMode ? 'actualizado' : 'creado'}.`,
             });
             setIsSubmitting(false);
             onSuccess();
@@ -174,7 +174,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un tipo" /></SelectTrigger></FormControl>
                             <SelectContent>
-                                {cluberCategories.map(category => (<SelectItem key={category} value={category}>{category}</SelectItem>))}
+                                {cluberCategories.Map(category => (<SelectItem key={category} value={category}>{category}</SelectItem>))}
                             </SelectContent>
                         </Select>
                         <FormMessage />
@@ -213,7 +213,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-primary" />
+                                <MapPin className="h-4 w-4 text-primary" weight="duotone" />
                                 Ubicación en el Mapa
                             </FormLabel>
                             <FormControl>
@@ -270,7 +270,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
 
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FloppyDiskBack className="mr-2 h-4 w-4" weight="duotone" />}
                         {isEditMode ? 'Guardar Cambios' : 'Convertir en Cluber'}
                     </Button>
                 </div>

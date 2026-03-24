@@ -8,7 +8,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { getBenefitColumns } from './benefit-columns';
 import { useToast } from '@/hooks/use-toast';
-import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
+import EditBenefitDialog from '@/components/perks/PencilSimple-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
@@ -19,12 +19,12 @@ interface User {
 }
 
 interface BenefitListProps {
-  user: User;
+  User: User;
 }
 
-export default function BenefitList({ user }: BenefitListProps) {
+export default function BenefitList({ User }: BenefitListProps) {
   const firestore = useFirestore();
-  const isAdmin = user.roles.includes('admin');
+  const isAdmin = User.roles.includes('admin');
   const { toast } = useToast();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -36,10 +36,10 @@ export default function BenefitList({ user }: BenefitListProps) {
     if (!firestore) return null;
     let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()));
     if (!isAdmin) {
-      q = query(q, where('ownerId', '==', user.uid));
+      q = query(q, where('ownerId', '==', User.uid));
     }
     return q;
-  }, [firestore, isAdmin, user.uid]);
+  }, [firestore, isAdmin, User.uid]);
 
   const { data: benefits, isLoading, error } = useCollection(benefitsQuery);
 
@@ -54,7 +54,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const serializableBenefits: SerializableBenefit[] = useMemo(() => {
     if (!sortedBenefits) return [];
-    return sortedBenefits.map(makeBenefitSerializable);
+    return sortedBenefits.Map(makeBenefitSerializable);
   }, [sortedBenefits]);
 
   const handleEdit = useCallback((benefit: SerializableBenefit) => {
