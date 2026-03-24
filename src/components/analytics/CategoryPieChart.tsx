@@ -38,7 +38,19 @@ export function CategoryPieChart({ data }: PieChartProps) {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Pie>
-                <Tooltip formatter={(value) => [value, 'Canjes']} />
+                <Tooltip 
+                    formatter={(value) => [value, 'Canjes']} 
+                    contentStyle={{ 
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(0,0,0,0.1)', 
+                        borderRadius: '16px',
+                        fontSize: '11px',
+                        fontWeight: '900',
+                        color: 'hsl(var(--foreground))',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+                    }}
+                />
                 <Legend />
             </PieChart>
         </ResponsiveContainer>

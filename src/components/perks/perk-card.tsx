@@ -85,18 +85,18 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
             </div>
         )}
 
-        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-30">
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-30 font-bold group">
             <div className="flex flex-col gap-2">
-                <Badge variant="secondary" className="bg-black/30 backdrop-blur-md text-white/90 border-white/10 py-1 px-3 glass shadow-inner text-[9px] font-black uppercase tracking-widest leading-none w-fit">
+                <div className="bg-primary text-white border border-white/30 py-1.5 px-4 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest leading-none w-fit shadow-lg">
                     {benefit.category}
-                </Badge>
+                </div>
                 
                 {benefit.minLevel && (
                     <Badge className={cn(
-                        "w-fit text-[8px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-lg border shadow-lg transition-all duration-500",
+                        "w-fit text-[9px] font-black uppercase tracking-tighter px-2.5 py-1 rounded-lg border shadow-lg transition-all duration-500",
                         !isLocked 
-                            ? "bg-green-500/80 text-white border-green-400/30" 
-                            : "bg-yellow-500/80 text-black border-yellow-400/30"
+                            ? "bg-green-500 text-white border-green-400/30" 
+                            : "bg-yellow-500 text-black border-yellow-400/30"
                     )}>
                         {isLocked ? `Nivel ${benefit.minLevel}+` : `Nivel ${benefit.minLevel} Desbloqueado`}
                     </Badge>
@@ -107,16 +107,16 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
                 <FavoriteButton 
                     id={benefit.id} 
                     type="benefit" 
-                    className="bg-black/30 backdrop-blur-md border-white/10 hover:bg-pink-600/50 shadow-xl" 
+                    className="bg-black/40 backdrop-blur-md border-white/20 hover:bg-primary shadow-xl" 
                 />
             </div>
         </div>
 
         {distance !== null && !isLocked && (
             <div className="absolute top-16 right-4 z-30 animate-in fade-in slide-in-from-right-4 duration-700">
-                <div className="glass glass-dark px-3 py-1.5 rounded-full border border-white/20 flex items-center gap-2 shadow-[0_10px_30px_rgba(0,0,0,0.5)] bg-black/60 backdrop-blur-2xl">
-                    <MapPin className="h-3 w-3 text-primary animate-pulse" />
-                    <span className="text-[10px] font-black tracking-tight text-white leading-none">{formatDistance(distance)}</span>
+                <div className="bg-primary px-3.5 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg hover:scale-110 transition-transform duration-500 cursor-default group/distance">
+                    <MapPin className="h-4 w-4 text-white fill-current/20" />
+                    <span className="text-xs font-black tracking-tight text-white leading-none drop-shadow-md">{formatDistance(distance)}</span>
                 </div>
             </div>
         )}
@@ -126,20 +126,16 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
                 <h3 className={cn(
                     "font-black uppercase tracking-tighter leading-[0.9] mb-1",
                     "text-xl md:text-2xl group-hover:text-primary transition-all duration-500 group-hover:scale-[1.02] origin-left",
-                    "drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+                    "drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
                 )}>
                     {primaryText}
                 </h3>
             </div>
             
-            <div className="pt-3 flex items-center justify-between border-t border-white/15 mt-3 transition-colors duration-500 group-hover:border-primary/30">
-                <div className="flex items-center gap-2 text-[9px] text-white/60 font-black uppercase tracking-[0.15em]">
-                    <Building className="h-3 w-3 opacity-50" />
-                    <span className="truncate max-w-[120px]">{supplierName}</span>
-                </div>
-                
-                <div className="h-7 w-7 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:bg-primary group-hover:border-primary group-hover:scale-110 transition-all duration-500 shadow-lg">
-                    <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+            <div className="pt-3 flex items-center justify-between border-t border-white/20 mt-3 transition-colors duration-500 group-hover:border-primary/40">
+                <div className="flex items-center gap-2 text-xs text-white font-black uppercase tracking-[0.15em] drop-shadow-md">
+                    <Building className="h-3.5 w-3.5 opacity-90" />
+                    <span className="truncate max-w-[150px]">{supplierName}</span>
                 </div>
             </div>
         </div>

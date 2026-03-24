@@ -112,28 +112,31 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       return;
     }
 
-    setProfileState(prev => ({ ...prev, isProfileLoading: true, profileError: null }));
-
     const fetchUserRoles = async () => {
-      const userRoles: string[] = ['user'];
-      let userData: UserProfile | null = null;
-      let supplierData: SupplierData | null = null;
-
+      const uid = authState.user!.uid;
+      
       try {
-        const userDocRef = doc(services.firestore, 'users', authState.user!.uid);
-        const userDoc = await getDoc(userDocRef);
+        setProfileState(prev => ({ ...prev, isProfileLoading: true, profileError: null }));
+
+        // Fetch user data, admin role, and supplier role in parallel
+        const [userDoc, adminDoc, supplierDoc] = await Promise.all([
+          getDoc(doc(services.firestore, 'users', uid)),
+          getDoc(doc(services.firestore, 'roles_admin', uid)),
+          getDoc(doc(services.firestore, 'roles_supplier', uid))
+        ]);
+
+        const userRoles: string[] = ['user'];
+        let userData: UserProfile | null = null;
+        let supplierData: SupplierData | null = null;
+
         if (userDoc.exists()) {
           userData = userDoc.data() as any;
         }
 
-        const adminRoleRef = doc(services.firestore, 'roles_admin', authState.user!.uid);
-        const adminDoc = await getDoc(adminRoleRef);
         if (adminDoc.exists()) {
           userRoles.push('admin');
         }
 
-        const supplierRoleRef = doc(services.firestore, 'roles_supplier', authState.user!.uid);
-        const supplierDoc = await getDoc(supplierRoleRef);
         if (supplierDoc.exists()) {
           userRoles.push('supplier');
           supplierData = supplierDoc.data() as SupplierData;

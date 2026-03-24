@@ -36,8 +36,12 @@ const formSchema = z.object({
   email: z.string().min(1, { message: "El correo electrónico es obligatorio." }).refine(email => /.+@.+\..+/.test(email), {
     message: "Por favor, introduce un correo electrónico válido.",
   }),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
-  dni: z.string().regex(/^\d{7,8}$/, 'El DNI debe tener entre 7 y 8 dígitos numéricos.'),
+  password: z.string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres.')
+    .regex(/[A-Z]/, 'Debe contener al menos una mayúscula.')
+    .regex(/[0-9]/, 'Debe contener al menos un número.')
+    .regex(/[^a-zA-Z0-9]/, 'Debe contener al menos un carácter especial (@, #, $, etc).'),
+  dni: z.string().regex(/^\d{7,10}$/, 'El DNI o documento debe ser válido.'),
   phone: z.string().min(6, 'El número de teléfono no es válido.'),
   gender: z.enum(['Masculino', 'Femenino', 'Otro', 'Prefiero no decirlo'], {
     errorMap: () => ({ message: 'Por favor, selecciona un género.' }),
@@ -111,26 +115,12 @@ export default function SignupForm() {
           return;
       }
 
+      // 1. Create User in Auth
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       setCreatedUser(user);
 
-      try {
-        const actionCodeSettings = {
-            url: `${window.location.origin}/login?email=${user.email}`,
-        };
-        await sendEmailVerification(user, actionCodeSettings);
-      } catch (emailError) {
-        console.error("Error sending verification email:", emailError);
-        toast({
-            variant: "destructive",
-            title: "Error Crítico",
-            description: "No pudimos enviar el correo de verificación. Por favor, contacta a soporte."
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
+      // 2. Prepare Firestore Profile (ensure it exists before verification)
       const batch = writeBatch(firestore);
       const userDocRef = doc(firestore, 'users', user.uid);
       batch.set(userDocRef, {
@@ -149,6 +139,7 @@ export default function SignupForm() {
         points: 0,
         photoURL: '',
         role: 'user',
+        isEmailVerified: false,
         createdAt: serverTimestamp(),
       });
       
@@ -156,13 +147,32 @@ export default function SignupForm() {
       batch.set(newUsernameRef, { userId: user.uid });
 
       await batch.commit();
-      
+
+      // 3. Update Auth Profile
       await updateProfile(user, {
         displayName: `${values.firstName} ${values.lastName}`,
       });
 
+      // 4. Send Email Verification (Last step)
+      try {
+        const actionCodeSettings = {
+            url: `${window.location.origin}/login?email=${user.email}`,
+        };
+        await sendEmailVerification(user, actionCodeSettings);
+      } catch (emailError) {
+        console.error("Error sending verification email:", emailError);
+        toast({
+            variant: "destructive",
+            title: "Correo no enviado",
+            description: "Tu cuenta se creó pero no pudimos enviar el correo. Podrás solicitarlo al iniciar sesión."
+        });
+        // We don't return here because the user is already created and Firestore is set.
+      }
+
       haptic.vibrateSuccess();
       setShowVerificationMessage(true);
+
+      return; // Success
 
     } catch (error: any) {
       console.error("Error en el registro:", error);
@@ -226,7 +236,29 @@ export default function SignupForm() {
     <Card className="rounded-[2rem] border-primary/5 glass glass-dark shadow-premium overflow-hidden">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-           <CardContent className="space-y-5 pt-10 px-8">
+           <CardContent className="space-y-6 pt-10 px-8">
+            {/* Requirements Card */}
+            <div className="p-5 rounded-[1.5rem] bg-primary/5 border border-primary/10 space-y-3 mb-2">
+                <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="h-4 w-4 text-primary" />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Requisitos de Inscripción</h4>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/70">
+                        <div className="w-1 h-1 bg-primary/40 rounded-full" />
+                        <span>Contraseña: 8+ caracteres, mayúscula y símbolo</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/70">
+                        <div className="w-1 h-1 bg-primary/40 rounded-full" />
+                        <span>DNI: Documento nacional de identidad válido</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground/70">
+                        <div className="w-1 h-1 bg-primary/40 rounded-full" />
+                        <span>Email: Requiere verificación posterior</span>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

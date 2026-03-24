@@ -9,6 +9,7 @@ import { MessagingProvider } from "@/firebase/messaging";
 import { Suspense } from "react";
 import { StatusBarConfig } from "@/components/layout/status-bar-config";
 import Loading from "./loading";
+import VerificationGate from "@/components/auth/verification-gate";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -73,9 +74,11 @@ export default function RootLayout({
           <StatusBarConfig />
           <Suspense fallback={<Loading />}>
             <FirebaseProvider>
-              <MessagingProvider>
-                {children}
-              </MessagingProvider>
+              <VerificationGate>
+                <MessagingProvider>
+                  {children}
+                </MessagingProvider>
+              </VerificationGate>
               <Toaster />
             </FirebaseProvider>
           </Suspense>

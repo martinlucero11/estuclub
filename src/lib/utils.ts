@@ -63,6 +63,21 @@ export function getInitials(name: string): string {
  * This acts as a bulletproof fallback when Next.js native optimization silently fails in cloud hosting.
  */
 export function optimizeImage(url: string | null | undefined, targetWidth: number = 800): string {
-  // Pass-through: External CDNs were causing 403s on Imgur and other hostings.
-  return url || '';
+  if (!url) return '';
+  
+  // Skip if it's already optimized, local, or data URL
+  if (url.includes('images.weserv.nl') || url.startsWith('/') || url.startsWith('data:')) {
+    return url;
+  }
+
+  // ONLY proxy domains that we know work well and are high-res
+  const safeDomains = ['unsplash.com', 'firebasestorage.googleapis.com', 'googleusercontent.com'];
+  const isSafe = safeDomains.some(domain => url.includes(domain));
+
+  if (!isSafe) {
+    return url;
+  }
+
+  // Use weserv.nl as an efficient CDN optimizer
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${targetWidth}&output=webp&q=80`;
 }

@@ -59,10 +59,10 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     {distance !== null && (
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 animate-in fade-in zoom-in duration-500">
-                             <div className="glass glass-dark px-3 py-1 rounded-full border border-white/20 flex items-center gap-1.5 shadow-2xl backdrop-blur-2xl bg-black/60 scale-90 group-hover:scale-100 transition-transform duration-500">
-                                <MapPin className="h-2.5 w-2.5 text-primary animate-pulse" />
-                                <span className="text-[9px] font-black tracking-tight text-white/90">{formatDistance(distance)}</span>
+                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 animate-in fade-in zoom-in duration-500">
+                             <div className="bg-primary px-4 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg scale-100 group-hover:scale-110 transition-all duration-500">
+                                <MapPin className="h-4 w-4 text-white fill-current/20" />
+                                <span className="text-xs font-black tracking-tight text-white drop-shadow-md">{formatDistance(distance)}</span>
                             </div>
                         </div>
                     )}
@@ -141,7 +141,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselContent className="-ml-4">
                 {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
-                        <SupplierCard supplier={item as SupplierProfile} />
+                        <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
                     </CarouselItem>
                 ))}
             </CarouselContent>

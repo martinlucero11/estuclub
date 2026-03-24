@@ -35,20 +35,17 @@ service cloud.firestore {
         .hasAny(['role', 'points', 'xp', 'level', 'email', 'uid', 'id', 'isCincoDos']);
     }
 
+    // Check if a field is incremented or decremented by a specific amount
+    function isIncrementedBy(field, amount) {
+      return request.resource.data[field] == resource.data[field] + amount;
+    }
+
     /* ================= USERS ================= */
 
     match /users/{userId} {
-      // Leaderboard requires listing, profiles require get
-      allow get, list: if signedIn();
-      
-      // Users can only create their own profile
+      allow read: if true;
       allow create: if isMe(userId);
-      
-      // Users can update their own profile, but NOT sensitive fields
-      // Admins can update anything (needed for points reset/management)
       allow update: if (isMe(userId) && !isUpdatingSensitiveUserFields()) || isAdmin();
-      
-      // Only admins can delete users
       allow delete: if isAdmin();
 
       match /redeemed_benefits/{id} {
@@ -65,7 +62,7 @@ service cloud.firestore {
 
     match /usernames/{username} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if signedIn();
       allow update: if false;
       allow delete: if isAdmin();
     }
@@ -73,16 +70,17 @@ service cloud.firestore {
     /* ================= ROLES ================= */
 
     match /roles_admin/{uid} {
-      allow get: if signedIn() && request.auth.uid == uid;
-      allow list, create, update, delete: if isAdmin();
+      allow get: if signedIn() && request.auth.uid == uid || isAdmin();
+      allow list: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /roles_supplier/{supplierId} {
       allow read: if true;
-      allow create, delete: if isAdmin();
+      allow write: if isAdmin();
       allow update: if isMe(supplierId) || isAdmin()
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['avgRating', 'reviewCount', 'favoritesCount']));
+            .hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
 
       match /availability/{docId} {
         allow read: if true;
@@ -131,13 +129,12 @@ service cloud.firestore {
         resource.data.supplierId == request.auth.uid
       ) || isAdmin();
 
-      // Students create redemptions
       allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
 
-      // Suppliers mark as used, Admins manage anything
       allow update: if (signedIn() && (
         resource.data.supplierId == request.auth.uid ||
-        resource.data.userId == request.auth.uid
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
       )) || isAdmin();
 
       allow delete: if isAdmin();
@@ -148,12 +145,11 @@ service cloud.firestore {
     match /benefits/{id} {
       allow read: if true;
       allow create: if isSupplier() || isAdmin();
-
       allow update: if (signedIn() && (
         resource.data.ownerId == request.auth.uid ||
         resource.data.supplierId == request.auth.uid
       )) || isAdmin() || 
-      (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritesCount']));
+      (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
 
       allow delete: if (signedIn() && (
         resource.data.ownerId == request.auth.uid ||
@@ -207,6 +203,14 @@ service cloud.firestore {
     match /reviews/{id} {
       allow read: if true;
       allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    /* ================= COMEDOR APPLICATIONS ================= */
+
+    match /comedor_applications/{id} {
+      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
 

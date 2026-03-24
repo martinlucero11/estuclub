@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 import type { Map, Marker as LeafletMarker } from 'leaflet';
 import { Button } from '../ui/button';
 import { MapPin, Navigation } from 'lucide-react';
@@ -15,7 +16,9 @@ interface LocationPickerProps {
 export default function LocationPicker({ initialLocation, onLocationSelect, className }: LocationPickerProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
+  const tileLayerRef = useRef<any>(null);
   const markerRef = useRef<LeafletMarker | null>(null);
+  const { theme, resolvedTheme } = useTheme();
   const [L, setL] = useState<any>(null);
   const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(initialLocation || null);
 
@@ -40,10 +43,18 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
       zoomControl: false,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap'
+    const isDark = resolvedTheme === 'dark';
+    const tileUrl = isDark 
+      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+    const tiles = L.tileLayer(tileUrl, {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(map);
 
+    tileLayerRef.current = tiles;
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     mapInstanceRef.current = map;
@@ -66,7 +77,19 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
     };
   }, [L]);
 
-  const updateMarker = (lat: number, lng: number) => {
+  // Update Theme Tiles
+  useEffect(() => {
+    if (mapInstanceRef.current && L && tileLayerRef.current) {
+        const isDark = resolvedTheme === 'dark';
+        const tileUrl = isDark 
+          ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+          : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        
+        tileLayerRef.current.setUrl(tileUrl);
+    }
+  }, [resolvedTheme, L]);
+
+  function updateMarker(lat: number, lng: number) {
     if (!L || !mapInstanceRef.current) return;
 
     setSelectedCoords({ lat, lng });
@@ -74,15 +97,22 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
     if (markerRef.current) {
         markerRef.current.setLatLng([lat, lng]);
     } else {
-        const icon = L.icon({
-          iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+        const icon = L.divIcon({
+          html: `
+            <div class="relative group">
+              <div class="absolute -inset-4 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+              <div class="relative flex items-center justify-center w-8 h-8 bg-primary rounded-xl shadow-xl border-2 border-white/20">
+                 <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5 text-white stroke-2 stroke-current"><path d="M12 2L2 7L12 12L22 7L12 2Z"/><path d="M2 17L12 22L22 17"/><path d="M2 12L12 17L22 12"/></svg>
+              </div>
+            </div>
+          `,
+          className: '',
           iconSize: [32, 32],
-          iconAnchor: [16, 32],
-          className: 'filter-pink drop-shadow-lg'
+          iconAnchor: [16, 16],
         });
         markerRef.current = L.marker([lat, lng], { icon }).addTo(mapInstanceRef.current);
     }
-  };
+  }
 
   const centerOnUser = () => {
     if (navigator.geolocation && mapInstanceRef.current) {
@@ -98,8 +128,8 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
   return (
     <div className={cn("relative rounded-[2rem] overflow-hidden border border-white/10 shadow-premium", className)}>
         <style dangerouslySetInnerHTML={{ __html: `
-            .leaflet-container { background: #0b0e14 !important; }
-            .leaflet-tile-pane { filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7); }
+            .leaflet-container { background: ${resolvedTheme === 'dark' ? '#0b0e14' : '#f8f9fa'} !important; }
+            .leaflet-control-attribution { display: none !important; }
             .filter-pink { filter: hue-rotate(150deg) saturate(2) brightness(1.2); }
         ` }} />
         

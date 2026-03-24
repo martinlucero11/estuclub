@@ -109,7 +109,7 @@ function SectionContent({ section }: { section: HomeSection }) {
             return q;
         }, [firestore, block, collectionName]);
 
-        const { data: autoItems, isLoading: autoLoading } = useCollectionOnce(autoQuery);
+        const { data: autoItems, isLoading: autoLoading } = useCollection(autoQuery);
         items = autoItems;
         isLoading = autoLoading;
     }
