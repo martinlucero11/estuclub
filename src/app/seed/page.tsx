@@ -5,7 +5,7 @@ import { useFirestore, useUser } from '@/firebase';
 import { doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { CheckCircle2, WarningCircle, CircleNotch, Trash } from '@phosphor-icons/react';
+import { CheckCircle2, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import MainLayout from '@/components/layout/main-layout';
 
 const DEMO_SUPPLIERS = [
@@ -282,7 +282,7 @@ export default function SeedPage() {
 
             {status === 'error' && (
               <div className="flex items-center gap-3 p-4 bg-red-500/10 text-red-500 rounded-2xl border border-red-500/20 animate-in zoom-in-95">
-                <WarningCircle className="h-5 w-5" />
+                <AlertCircle className="h-5 w-5" />
                 <p className="text-sm font-bold">{message}</p>
               </div>
             )}
@@ -297,7 +297,7 @@ export default function SeedPage() {
             >
               {loading ? (
                 <>
-                  <CircleNotch className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Sembrando datos...
                 </>
               ) : (
@@ -312,9 +312,9 @@ export default function SeedPage() {
                 disabled={loading}
             >
                 {loading ? (
-                    <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                    <Trash className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                 )}
                 Restablecer Rankings a Cero
             </Button>

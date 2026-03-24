@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Announcement } from "@/types/data";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import { CircleNotch } from '@phosphor-icons/react';
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(5, "El título debe tener al menos 5 caracteres."),
@@ -166,7 +166,7 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
                     <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>Cancelar</Button>
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting && <CircleNotch className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {announcement ? "Guardar Cambios" : "Enviar Anuncio"}
                 </Button>
             </DialogFooter>

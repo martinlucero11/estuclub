@@ -2,7 +2,7 @@
 'use client';
 import type { SerializableBenefit } from '@/types/data';
 import BenefitCard from './perk-card';
-import { Archive } from '@phosphor-icons/react';
+import { Archive } from 'lucide-react';
 import { EmptyState } from '../ui/empty-state';
 
 interface BenefitsGridProps {

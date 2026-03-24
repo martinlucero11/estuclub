@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { StarRating } from './star-rating';
 import { useToast } from '@/hooks/use-toast';
-import { CircleNotch, MessageSquare } from '@phosphor-icons/react';
+import { Loader2, MessageSquare } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface ReviewFormProps {
@@ -124,7 +124,7 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
               className="w-full font-bold" 
               disabled={isSubmitting}
           >
-              {isSubmitting ? <CircleNotch className="h-4 w-4 animate-spin" /> : 'Enviar Reseña'}
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enviar Reseña'}
           </Button>
         </CardContent>
       </form>

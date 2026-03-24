@@ -2,7 +2,7 @@
 'use client';
 
 import BackButton from '@/components/layout/back-button';
-import EditSupplierProfileForm from '@/components/supplier/PencilSimple-supplier-profile-form';
+import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function SupplierProfilePage() {

@@ -5,15 +5,15 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, Timestamp, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PencilSimple, Trash2 } from '@phosphor-icons/react';
-import EditAnnouncementDialog from '@/components/announcements/PencilSimple-announcement-dialog';
+import { Edit, Trash2 } from 'lucide-react';
+import EditAnnouncementDialog from '@/components/announcements/edit-announcement-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/Image';
+import Image from 'next/image';
 import { Announcement } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 
-const fallbackImageUrl = "data:Image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==";
+const fallbackImageUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMY2BgGwAFGwECEj4DKAAAAABJRU5ErkJggg==";
 
 function AnnouncementAdminListItem({ announcement }: { announcement: Announcement }) {
     const [isEditOpen, setIsEditOpen] = useState(false);
@@ -46,23 +46,24 @@ function AnnouncementAdminListItem({ announcement }: { announcement: Announcemen
 
     return (
         <>
-            <div className="flex items-center justify-between space-X-4 rounded-md border p-4">
-                <div className="flex flex-1 items-center space-X-4">
+            <div className="flex items-center justify-between space-x-4 rounded-md border p-4">
+                <div className="flex flex-1 items-center space-x-4">
                     <Image
                         src={announcement.imageUrl || fallbackImageUrl}
                         alt={announcement.title}
                         width={64}
                         height={64}
-                        className="h-16 w-16 rounded-md object-cover" weight="duotone" />
+                        className="h-16 w-16 rounded-md object-cover"
+                    />
                     <div className="flex-1">
                         <p className="font-medium">{announcement.title}</p>
                         <p className="text-sm text-muted-foreground line-clamp-1">{announcement.content}</p>
                         <p className="text-xs text-muted-foreground pt-1">Publicado: {formattedDate}</p>
                     </div>
                 </div>
-                <div className="flex items-center space-X-2">
+                <div className="flex items-center space-x-2">
                     <Button variant="outline" size="icon" onClick={() => setIsEditOpen(true)}>
-                        <PencilSimple className="h-4 w-4" weight="duotone" />
+                        <Edit className="h-4 w-4" />
                         <span className="sr-only">Editar</span>
                     </Button>
                     <Button variant="destructive" size="icon" onClick={() => setIsDeleteOpen(true)}>
@@ -106,8 +107,8 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
     if (isLoading) {
         return (
             <div className="space-y-4">
-                {[...Array(3)].Map((_, i) => (
-                    <div key={i} className="flex items-center space-X-4 rounded-md border p-4">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4 rounded-md border p-4">
                          <Skeleton className="h-16 w-16 rounded-md" />
                         <div className="flex-1 space-y-2">
                             <Skeleton className="h-4 w-3/4" />
@@ -131,7 +132,7 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
 
     return (
         <div className="space-y-4">
-            {announcements.Map((announcement) => (
+            {announcements.map((announcement) => (
                 <AnnouncementAdminListItem key={announcement.id} announcement={announcement} />
             ))}
         </div>

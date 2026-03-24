@@ -7,7 +7,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { createConverter } from '@/lib/firestore-converter';
-import { Check, X, ShieldCheck } from '@phosphor-icons/react';
+import { Check, X, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';

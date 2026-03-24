@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import NotificationBell from './notification-Bell';
+import NotificationBell from './notification-bell';
 import { requestNotificationPermission } from '@/lib/fcm';
 import Header from '@/components/layout/header';
 import BottomNav from '@/components/layout/bottom-nav';

@@ -3,10 +3,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { SupplierProfile } from "@/types/data";
-import { ArrowUpDown } from "@phosphor-icons/react";
+import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// The User data structure for the table
+// The user data structure for the table
 export interface UserForList {
     id: string;
     uid: string;
@@ -17,10 +17,10 @@ export interface UserForList {
     dni: string;
 }
 
-// Props for creating columns, including the suppliers Map and action handlers
+// Props for creating columns, including the suppliers map and action handlers
 interface CreateColumnsProps {
   suppliersMap: Map<string, SupplierProfile>;
-  onEdit: (User: UserForList, supplierProfile: SupplierProfile | null) => void;
+  onEdit: (user: UserForList, supplierProfile: SupplierProfile | null) => void;
 }
 
 export const columns = ({ suppliersMap, onEdit }: CreateColumnsProps): ColumnDef<UserForList>[] => [
@@ -61,8 +61,8 @@ export const columns = ({ suppliersMap, onEdit }: CreateColumnsProps): ColumnDef
     id: "actions",
     header: () => <div className="text-right">Acciones</div>,
     cell: ({ row }) => {
-      const User = row.original;
-      const supplierProfile = suppliersMap.get(User.id) || null;
+      const user = row.original;
+      const supplierProfile = suppliersMap.get(user.id) || null;
       const isSupplier = !!supplierProfile;
 
       return (
@@ -70,7 +70,7 @@ export const columns = ({ suppliersMap, onEdit }: CreateColumnsProps): ColumnDef
           <Button
             variant={isSupplier ? "outline" : "default"}
             size="sm"
-            onClick={() => onEdit(User, supplierProfile)}
+            onClick={() => onEdit(user, supplierProfile)}
           >
             {isSupplier ? "Editar Cluber" : "Hacer Cluber"}
           </Button>

@@ -3,7 +3,7 @@
 import { getLevelInfo, getProgressToNextLevel } from '@/lib/gamification';
 import { Progress } from '../ui/progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Award, Zap } from '@phosphor-icons/react';
+import { Award, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LevelProgressProps {

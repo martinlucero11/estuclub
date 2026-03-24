@@ -4,7 +4,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import type { HomeSection } from '@/types/data';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, DotsThreeOutlineHorizontal, Layers, GripVertical } from '@phosphor-icons/react';
+import { ArrowUpDown, MoreHorizontal, Layers, GripVertical } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,7 @@ const SectionActions: React.FC<SectionActionsProps> = ({ onEdit, onDelete }) => 
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
         <span className="sr-only">Abrir menú</span>
-        <DotsThreeOutlineHorizontal className="h-4 w-4" />
+        <MoreHorizontal className="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">

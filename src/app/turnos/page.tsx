@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Buildings, Briefcase, Heart, ShoppingBag, Wrench, MagnifyingGlass, Users, Calendar, CalendarCheck } from '@phosphor-icons/react';
+import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Comercio: ShoppingBag,
     Profesional: Briefcase,
-    Empresa: Buildings,
+    Empresa: Building,
     Emprendimiento: Users,
     Salud: Heart,
     Estética: Briefcase,
@@ -73,7 +73,7 @@ function CluberList() {
         <div className="space-y-6">
             {clubers && clubers.length === 0 ? (
                 <EmptyState
-                    icon={Calendar}
+                    icon={CalendarDays}
                     title="No hay turnos disponibles"
                     description="Ningún Cluber tiene habilitada la reserva de turnos en este momento."
                 />
@@ -115,7 +115,7 @@ export default function TurnosPage() {
                 <PageHeader title="Solicitar Turno" className="flex-col md:flex-row items-start md:items-center">
                      <Button asChild>
                         <Link href="/mis-turnos">
-                            <CalendarCheck className="mr-2 h-4 w-4" />
+                            <CalendarClock className="mr-2 h-4 w-4" />
                             Mis Turnos
                         </Link>
                     </Button>

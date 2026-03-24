@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
-import { Loader2, FloppyDiskBack } from '@phosphor-icons/react';
+import { Loader2, Save } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Card, CardContent } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
@@ -51,15 +51,15 @@ const defaultSchedule = [
 export default function AvailabilityManager() {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const { User } = useUser();
+  const { user } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availabilityRef = useMemo(() => User ? doc(firestore, `roles_supplier/${User.uid}/availability/schedule`) : null, [User, firestore]);
+  const availabilityRef = useMemo(() => user ? doc(firestore, `roles_supplier/${user.uid}/availability/schedule`) : null, [user, firestore]);
   const { data: availabilityData, isLoading: isDataLoading } = useDoc(availabilityRef);
   
   const form = useForm<z.infer<typeof availabilitySchema>>({
     resolver: zodResolver(availabilitySchema),
-    defaultValues: { schedule: defaultSchedule.Map(d => ({ active: d.active, startTime: d.startTime, endTime: d.endTime }))},
+    defaultValues: { schedule: defaultSchedule.map(d => ({ active: d.active, startTime: d.startTime, endTime: d.endTime }))},
   });
   
   const { fields } = useFieldArray({
@@ -69,17 +69,17 @@ export default function AvailabilityManager() {
 
   useEffect(() => {
     if (availabilityData?.schedule) {
-      const scheduleFromDb = defaultSchedule.Map(dayInfo => {
+      const scheduleFromDb = defaultSchedule.map(dayInfo => {
         const dbDay = availabilityData.schedule[dayInfo.day];
         return dbDay ? { ...dayInfo, ...dbDay } : dayInfo;
       });
-      const formValues = scheduleFromDb.Map(d => ({ active: d.active, startTime: d.startTime, endTime: d.endTime }));
+      const formValues = scheduleFromDb.map(d => ({ active: d.active, startTime: d.startTime, endTime: d.endTime }));
       form.reset({ schedule: formValues });
     }
   }, [availabilityData, form]);
 
   async function onSubmit(values: z.infer<typeof availabilitySchema>) {
-    if (!User || !availabilityRef) {
+    if (!user || !availabilityRef) {
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo guardar la disponibilidad.' });
       return;
     }
@@ -126,7 +126,7 @@ export default function AvailabilityManager() {
   if (isDataLoading) {
       return (
           <div className='space-y-4'>
-              {[...Array(7)].Map((_, i) => <Skeleton key={i} className='h-16 w-full' />)}
+              {[...Array(7)].map((_, i) => <Skeleton key={i} className='h-16 w-full' />)}
           </div>
       )
   }
@@ -134,7 +134,7 @@ export default function AvailabilityManager() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {fields.Map((field, index) => {
+        {fields.map((field, index) => {
             const dayName = defaultSchedule[index].day;
             const isActive = form.watch(`schedule.${index}.active`);
             return (
@@ -193,7 +193,7 @@ export default function AvailabilityManager() {
             <p className='text-sm font-medium text-destructive'>{form.formState.errors.schedule.root.message}</p>
         )}
         <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FloppyDiskBack className="mr-2 h-4 w-4" weight="duotone" />}
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Guardar Horarios
         </Button>
       </form>

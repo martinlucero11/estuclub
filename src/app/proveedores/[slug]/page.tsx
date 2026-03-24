@@ -8,11 +8,11 @@ import MainLayout from '@/components/layout/main-layout';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, MagnifyingGlass, Server, CaretLeft } from '@phosphor-icons/react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Search, Server, ChevronLeft } from 'lucide-react';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
-import Image from 'next/Image';
+import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
 import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
@@ -22,15 +22,15 @@ import { FavoriteButton } from '@/components/layout/favorite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReviewList } from '@/components/reviews/review-list';
-import { StarRating } from '@/components/reviews/Star-rating';
+import { StarRating } from '@/components/reviews/star-rating';
 import Link from 'next/link';
 import { MagneticButton } from '@/components/ui/magnetic-button';
 import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
-import { MapPin } from '@phosphor-icons/react';
+import { MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const LeafletMap = dynamic(() => import('@/components/maps/leaflet-Map'), { 
+const LeafletMap = dynamic(() => import('@/components/maps/leaflet-map'), { 
     ssr: false,
     loading: () => <BrandSkeleton className="h-[300px] w-full rounded-[2rem]" />
 });
@@ -56,7 +56,7 @@ function ProfileSkeleton() {
             <div className="px-6 py-8 max-w-5xl mx-auto">
                 <BrandSkeleton className="h-10 w-full rounded-2xl mb-8 max-w-lg mx-auto" />
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(3)].Map((_, i) => (
+                    {[...Array(3)].map((_, i) => (
                         <BrandSkeleton key={i} className="h-64 w-full rounded-[2rem]" />
                     ))}
                 </div>
@@ -82,7 +82,7 @@ function AverageRating({ supplier }: { supplier: SupplierProfile }) {
 
 function CluberProfileContent({ slug }: { slug: string }) {
     const firestore = useFirestore();
-    const { User } = useUser();
+    const { user } = useUser();
     const [supplier, setSupplier] = useState<SupplierProfile | null>(null);
     const [isLoadingSupplier, setIsLoadingSupplier] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -131,7 +131,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     const serializableBenefits: SerializableBenefit[] = useMemo(() => {
         if (!benefits) return [];
-        return benefits.Map(makeBenefitSerializable);
+        return benefits.map(makeBenefitSerializable);
     }, [benefits]);
 
     if (isLoadingSupplier) {
@@ -162,7 +162,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     const TypeIcon = categoryIcons[supplier.type] || Users;
     const supplierInitials = getInitials(supplier.name);
-    const isOwnProfile = User?.uid === supplier.id;
+    const isOwnProfile = user?.uid === supplier.id;
 
     const hasBenefits = benefits && benefits.length > 0;
     const hasServices = supplier.appointmentsEnabled && services && services.length > 0;
@@ -185,7 +185,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     href="/proveedores" 
                     className="absolute top-8 left-8 hidden md:flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
                 >
-                    <CaretLeft className="h-4 w-4 transition-transform group-hover:-translate-X-1"  weight="duotone"/>
+                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Clubers
                 </Link>
 
@@ -278,7 +278,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     >
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                                <MapPin className="h-5 w-5 text-primary"  weight="duotone"/>
+                                <MapPin className="h-5 w-5 text-primary" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-black uppercase tracking-tighter">Ubicación</h2>

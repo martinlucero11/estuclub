@@ -10,7 +10,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MagnifyingGlass, Buildings, Ticket } from '@phosphor-icons/react';
+import { Search, Building, Ticket } from 'lucide-react';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
@@ -59,7 +59,7 @@ function SearchResults() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8 flex items-center gap-3">
         <div className="p-2 rounded-xl bg-primary/10 text-primary">
-            <MagnifyingGlass className="h-6 w-6" />
+            <Search className="h-6 w-6" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight">
             {q ? `Resultados para "${q}"` : "Buscar en EstuClub"}
@@ -92,7 +92,7 @@ function SearchResults() {
           {filteredSuppliers.length > 0 && (
             <section>
               <div className="mb-6 flex items-center gap-2 text-muted-foreground border-b pb-2">
-                <Buildings className="h-5 w-5" />
+                <Building className="h-5 w-5" />
                 <h2 className="text-lg font-semibold text-foreground">Clubers ({filteredSuppliers.length})</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -133,7 +133,7 @@ function SearchResults() {
               <BenefitsGrid benefits={filteredBenefits} />
             ) : (
               <div className="text-center py-24 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center space-y-3">
-                <MagnifyingGlass className="h-10 w-10 text-muted-foreground/30" />
+                <Search className="h-10 w-10 text-muted-foreground/30" />
                 <p className="text-muted-foreground font-medium">No encontramos beneficios que coincidan.</p>
                 <Link href="/benefits" className="text-primary hover:underline text-sm font-semibold">
                     Ver todos los beneficios

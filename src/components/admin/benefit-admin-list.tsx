@@ -1,15 +1,15 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Image from 'next/Image';
+import Image from 'next/image';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, deleteDoc, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PencilSimple, Trash2, TrendingUp } from '@phosphor-icons/react';
+import { Edit, Trash2, TrendingUp } from 'lucide-react';
 import type { Benefit, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
-import EditBenefitDialog from '@/components/perks/PencilSimple-perk-dialog';
+import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -42,14 +42,15 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
   
   return (
     <>
-      <div className="flex items-center justify-between space-X-4 rounded-md border p-4">
-        <div className="flex items-center space-X-4 flex-1 min-w-0">
+      <div className="flex items-center justify-between space-x-4 rounded-md border p-4">
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
           <Image
             src={benefit.imageUrl}
             alt={benefit.title}
             width={64}
             height={64}
-            className="h-16 w-16 rounded-md object-cover" weight="duotone" />
+            className="h-16 w-16 rounded-md object-cover"
+          />
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{benefit.title}</p>
             <p className="text-sm text-muted-foreground">{benefit.category}</p>
@@ -59,9 +60,9 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
             </div>
           </div>
         </div>
-        <div className="flex items-center space-X-2">
+        <div className="flex items-center space-x-2">
           <Button variant="outline" size="icon" onClick={() => setIsEditOpen(true)}>
-            <PencilSimple className="h-4 w-4" weight="duotone" />
+            <Edit className="h-4 w-4" />
             <span className="sr-only">Editar</span>
           </Button>
           <Button variant="destructive" size="icon" onClick={() => setIsDeleteOpen(true)}>
@@ -105,15 +106,15 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   const serializableBenefits: SerializableBenefit[] = useMemo(() => {
     if (!benefits) return [];
-    return benefits.Map(makeBenefitSerializable);
+    return benefits.map(makeBenefitSerializable);
   }, [benefits]);
 
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].Map((_, i) => (
-          <div key={i} className="flex items-center space-X-4 rounded-md border p-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex items-center space-x-4 rounded-md border p-4">
             <Skeleton className="h-16 w-16 rounded-md" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-3/4" />
@@ -128,7 +129,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
   if (error) {
     // Proactive error handling for missing Firestore index.
     // Firestore often returns "permission-denied" when an index is missing for a complex query,
-    // so we Check for both `failed-precondition` and `permission-denied` (but only if we are filtering).
+    // so we check for both `failed-precondition` and `permission-denied` (but only if we are filtering).
     const isPreconditionFailed = 'code' in error && error.code === 'failed-precondition';
     const isMaskedPermissionError = 'message' in error && error.message.includes('firestore/permission-denied') && !!supplierId;
 
@@ -165,7 +166,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   return (
     <div className="space-y-4">
-      {serializableBenefits.Map((benefit) => (
+      {serializableBenefits.map((benefit) => (
         <BenefitAdminListItem key={benefit.id} benefit={benefit} />
       ))}
     </div>

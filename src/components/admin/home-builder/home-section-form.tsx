@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
-import { FloppyDiskBack, MagnifyingGlass } from '@phosphor-icons/react';
+import { Save, Search } from 'lucide-react';
 import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
@@ -375,7 +375,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         {watchDataSourceMode === 'manual' && (
                              <div className="space-y-4 pt-2">
                                 <div className="relative">
-                                    <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input placeholder="Buscar para añadir..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                                 </div>
                                 <ScrollArea className="h-64 rounded-md border">
@@ -411,7 +411,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     <h3 className="font-semibold text-lg">4. Estado</h3>
                      <FormField control={form.control} name="isActive" render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5"><FormLabel>Activo</FormLabel><FormDescription>Desmarcar para ocultar este bloque de la House.</FormDescription></div>
+                            <div className="space-y-0.5"><FormLabel>Activo</FormLabel><FormDescription>Desmarcar para ocultar este bloque de la Home.</FormDescription></div>
                             <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         </FormItem>
                     )} />
@@ -421,7 +421,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 <div className="flex justify-end items-center gap-4 pt-4">
                      <Button type="button" variant="ghost" onClick={onSuccess} disabled={isSubmitting}>Cancelar</Button>
                     <Button type="submit" disabled={isSubmitting}>
-                        <FloppyDiskBack className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-4 w-4" />
                         {isSubmitting ? 'Guardando...' : 'Guardar Bloque'}
                     </Button>
                 </div>

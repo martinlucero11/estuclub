@@ -6,14 +6,14 @@ import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import type { SupplierProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
-import { CircleNotch, Navigation, MapPin } from '@phosphor-icons/react';
+import { Loader2, Navigation, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { haptic } from '@/lib/haptics';
 
 // Dynamic import to avoid SSR issues with Leaflet
 const LeafletMap = dynamic(() => import('./leaflet-map'), { 
   ssr: false,
-  loading: () => <div className="h-full w-full bg-black/20 animate-pulse rounded-[2rem] flex items-center justify-center"><CircleNotch className="h-10 w-10 text-primary animate-spin" /></div>
+  loading: () => <div className="h-full w-full bg-black/20 animate-pulse rounded-[2rem] flex items-center justify-center"><Loader2 className="h-10 w-10 text-primary animate-spin" /></div>
 });
 
 export default function DiscoveryMap() {
@@ -74,7 +74,7 @@ export default function DiscoveryMap() {
                 className="rounded-full glass glass-dark shadow-premium border-white/20 active:scale-90 transition-all"
                 disabled={isLocating}
             >
-                {isLocating ? <CircleNotch className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
+                {isLocating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Navigation className="h-4 w-4" />}
             </Button>
        </div>
 

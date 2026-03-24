@@ -18,14 +18,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
 import { doc, updateDoc, GeoPoint } from 'firebase/firestore';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { FloppyDiskBack, Loader2, Camera } from '@phosphor-icons/react';
+import { Save, Loader2, Camera } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
 import { SupplierProfile, cluberCategories } from '@/types/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import Image from 'next/Image';
+import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/maps/location-picker'), { 
@@ -63,16 +63,16 @@ function slugify(text: string) {
 export default function EditSupplierProfileForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
-  const { User } = useUser();
+  const { user } = useUser();
   const storage = useStorage();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // States and refs for LOGO UploadSimple
+  // States and refs for LOGO upload
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
-  const supplierRef = useMemo(() => User ? doc(firestore, 'roles_supplier', User.uid) : null, [User, firestore]);
+  const supplierRef = useMemo(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -113,9 +113,9 @@ export default function EditSupplierProfileForm() {
     fieldName: 'logoUrl'
   ) => {
     const file = e.target.files?.[0];
-    if (!file || !User) return;
+    if (!file || !user) return;
 
-    if (!file.type.startsWith('Image/')) {
+    if (!file.type.startsWith('image/')) {
         toast({ variant: 'destructive', title: 'Archivo inválido', description: 'Por favor, selecciona una imagen.' });
         return;
     }
@@ -129,7 +129,7 @@ export default function EditSupplierProfileForm() {
     setUploading(true);
 
     try {
-        const imageStorageRef = storageRef(storage, `suppliers/${User.uid}/${path}-${Date.now()}`);
+        const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}-${Date.now()}`);
         await uploadBytes(imageStorageRef, file);
         const downloadURL = await getDownloadURL(imageStorageRef);
         
@@ -149,7 +149,7 @@ export default function EditSupplierProfileForm() {
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!User || !supplierRef) {
+    if (!user || !supplierRef) {
         toast({ variant: 'destructive', title: 'Error', description: 'No se pudo encontrar tu perfil de Cluber.' });
         return;
     }
@@ -190,7 +190,7 @@ export default function EditSupplierProfileForm() {
             <div className="flex justify-center">
                  <Skeleton className="h-32 w-32 rounded-full" />
             </div>
-            {[...Array(6)].Map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+            {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             <Skeleton className="h-10 w-32" />
         </div>
     )
@@ -220,11 +220,11 @@ export default function EditSupplierProfileForm() {
                 className="hidden"
                 ref={logoInputRef}
                 onChange={(e) => handleImageUpload(e, 'logo', setIsUploadingLogo, setLogoPreview, 'logoUrl')}
-                accept="Image/png, Image/jpeg, Image/webp"
+                accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingLogo}
             />
             <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={isUploadingLogo}>
-                <Camera className="mr-2 h-4 w-4" weight="duotone" />
+                <Camera className="mr-2 h-4 w-4" />
                 Subir Logo
             </Button>
         </FormItem>
@@ -269,7 +269,7 @@ export default function EditSupplierProfileForm() {
                     </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                    {cluberCategories.Map(category => (
+                    {cluberCategories.map(category => (
                         <SelectItem key={category} value={category}>{category}</SelectItem>
                     ))}
                     </SelectContent>
@@ -341,7 +341,7 @@ export default function EditSupplierProfileForm() {
           {isSubmitting ? (
               <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
           ) : (
-              <><FloppyDiskBack className="mr-2 h-4 w-4" weight="duotone" /> Guardar Cambios</>
+              <><Save className="mr-2 h-4 w-4" /> Guardar Cambios</>
           )}
         </Button>
       </form>

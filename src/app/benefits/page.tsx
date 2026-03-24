@@ -9,7 +9,7 @@ import type { Benefit, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
 import { collection, query, where, Timestamp, limit } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
-import { ArrowDownUp, Map as MapIcon, Grid, MapPin } from '@phosphor-icons/react';
+import { ArrowDownUp, Map as MapIcon, Grid, MapPin } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';

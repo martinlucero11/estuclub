@@ -2,13 +2,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/Image';
+import Image from 'next/image';
 import { Button } from '../ui/button';
 import { Skeleton } from '../ui/skeleton';
 import type { Appointment, SupplierProfile } from '@/types/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Timestamp } from 'firebase/firestore';
-import { Building, Tag } from '@phosphor-icons/react';
+import { Building, Tag } from 'lucide-react';
 
 interface AppointmentReceiptCardProps {
   appointment: Appointment;
@@ -23,8 +23,8 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
 
     const qrCodeValue = JSON.stringify({ appointmentId: appointment.id });
 
-    import('QrCode').then(QrCode => {
-        QrCode.toDataURL(qrCodeValue, {
+    import('qrcode').then(QRCode => {
+        QRCode.toDataURL(qrCodeValue, {
             errorCorrectionLevel: 'H',
             width: 512,
             margin: 2,
@@ -60,7 +60,7 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
         <CardContent className="flex flex-col items-center space-y-4">
             <div className="p-2 border rounded-lg">
                 {qrCodeUrl ? (
-                    <Image src={qrCodeUrl} alt={`Código QR para turno`} width={250} height={250} weight="duotone" />
+                    <Image src={qrCodeUrl} alt={`Código QR para turno`} width={250} height={250} />
                 ) : (
                     <Skeleton className="h-[250px] w-[250px] rounded-lg" />
                 )}

@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Envelope, WarningCircle, UserIcon } from '@phosphor-icons/react';
+import { KeyRound, Mail, AlertCircle, UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useAuthService } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -151,7 +151,7 @@ export default function LoginForm() {
     <>
     {showVerificationAlert && (
         <Alert variant="destructive" className="mb-4">
-          <WarningCircle className="h-4 w-4" />
+          <AlertCircle className="h-4 w-4" />
           <AlertTitle>Verifica tu correo electrónico</AlertTitle>
           <AlertDescription>
             Debes verificar tu correo para poder iniciar sesión.
@@ -177,7 +177,7 @@ export default function LoginForm() {
                   <FormItem>
                     <FormLabel className="font-black uppercase tracking-widest text-[10px] ml-1 opacity-70">Email o Usuario</FormLabel>
                     <div className="relative group/input">
-                      <Envelope className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                      <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
                         <Input 
                             placeholder="tu@email.com" 

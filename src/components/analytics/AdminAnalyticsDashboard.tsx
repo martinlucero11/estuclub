@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { 
-    SquaresFour, Users, BarChart3, ChartPie as PieIcon,
-    Funnel, X, Activity, GraduationCap, Star, Users as UsersIcon, Ticket, TrendingUp, Building, Trophy, Zap, Clock, Calendar,
-    CaretDown, MagnifyingGlass, Globe, ShieldCheck, Target, Sparkles, ChatCircle, Heart, ArrowUpRight, Storefront
-} from '@phosphor-icons/react';
+    LayoutDashboard, Users, BarChart3, PieChart as PieIcon,
+    Filter, X, Activity, GraduationCap, Star, Users as UsersIcon, Ticket, TrendingUp, Building, Trophy, Zap, Clock, Calendar,
+    ChevronDown, Search, Globe, ShieldCheck, Target, Sparkles, MessageSquare, Heart, ArrowUpRight, Store
+} from 'lucide-react';
 import { StatCard } from './StatCard';
 import { CategoryPieChart } from './CategoryPieChart';
 import { TimeSeriesChart } from './TimeSeriesChart';
@@ -74,10 +74,10 @@ export default function AdminAnalyticsDashboard() {
     });
 
     const usersQuery = useMemo(() => 
-        query(collection(firestore, 'Users').withConverter(createConverter<UserProfile>())),
+        query(collection(firestore, 'users').withConverter(createConverter<UserProfile>())),
         [firestore]
     );
-    const { data: Users, isLoading: usersLoading } = useCollectionOnce<UserProfile>(usersQuery);
+    const { data: users, isLoading: usersLoading } = useCollectionOnce<UserProfile>(usersQuery);
 
     const suppliersQuery = useMemo(() =>
         query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())),
@@ -101,18 +101,18 @@ export default function AdminAnalyticsDashboard() {
 
     // Derived Stats with Supplier Filtering
     const stats = useMemo(() => {
-        if (!Users || !suppliers || !benefits || !redemptions) return null;
+        if (!users || !suppliers || !benefits || !redemptions) return null;
         
         let filteredRedemptions = redemptions;
         let filteredBenefits = benefits;
-        let filteredUsers = Users;
+        let filteredUsers = users;
 
         if (selectedSupplierId !== "all") {
             filteredRedemptions = redemptions.filter(r => r.supplierId === selectedSupplierId);
             filteredBenefits = benefits.filter(b => b.ownerId === selectedSupplierId);
-            // For Users, we Funnel to those who have redeemed with THIS supplier
+            // For users, we filter to those who have redeemed with THIS supplier
             const userIdsWithRedemptions = new Set(filteredRedemptions.map(r => r.userId));
-            filteredUsers = Users.filter(u => userIdsWithRedemptions.has(u.id));
+            filteredUsers = users.filter(u => userIdsWithRedemptions.has(u.id));
         }
 
         const filteredSuppliers = selectedSupplierId === "all" ? suppliers : suppliers.filter(s => s.id === selectedSupplierId);
@@ -208,13 +208,13 @@ export default function AdminAnalyticsDashboard() {
         const pieChartData = Object.entries(redemptionsByCategory).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
 
         const allData = {
-            Users: filteredUsers,
+            users: filteredUsers,
             redemptions: filteredRedemptions,
             benefits: filteredBenefits
         };
 
         // Advanced Demographic Data
-        const allMajorCounts = allData.Users.reduce((acc, u) => {
+        const allMajorCounts = allData.users.reduce((acc, u) => {
             const major = u.major || 'No especificado';
             acc[major] = (acc[major] || 0) + 1;
             return acc;
@@ -229,7 +229,7 @@ export default function AdminAnalyticsDashboard() {
             .map(([name, value]) => ({ 
                 name, 
                 value,
-                engagement: ((value / (allData.Users.length || 1)) * 100).toFixed(1)
+                engagement: ((value / (allData.users.length || 1)) * 100).toFixed(1)
             }))
             .sort((a, b) => b.value - a.value)
             .slice(0, 8);
@@ -287,7 +287,7 @@ export default function AdminAnalyticsDashboard() {
             benefitStats,
             pieChartData,
             allData: {
-                Users: filteredUsers,
+                users: filteredUsers,
                 redemptions: filteredRedemptions,
                 benefits: filteredBenefits
             },
@@ -301,14 +301,14 @@ export default function AdminAnalyticsDashboard() {
             repeatUsersCount,
             oneTimeUsersCount
         };
-    }, [Users, suppliers, benefits, redemptions, selectedSupplierId]);
+    }, [users, suppliers, benefits, redemptions, selectedSupplierId]);
 
     const redemptionColumns = [
         { 
             accessorKey: 'userName', 
             header: 'Usuario',
             cell: ({ row }: any) => {
-                const u = Users?.find(u => u.id === row.original.userId);
+                const u = users?.find(u => u.id === row.original.userId);
                 return u ? `${u.firstName} ${u.lastName || ''}` : 'Desconocido';
             }
         },
@@ -358,13 +358,13 @@ export default function AdminAnalyticsDashboard() {
         { accessorKey: 'reviewCount', header: 'Reseñas' }
     ];
 
-    const openDetail = (type: 'Users' | 'redemptions' | 'benefits' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
+    const openDetail = (type: 'users' | 'redemptions' | 'benefits' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
         if (!stats) return;
         const config = {
-            Users: {
+            users: {
                 title: "Auditoría de Usuarios",
                 description: `Exploración profunda de ${stats.totalUsers} estudiantes registrados.`,
-                data: stats.allData.Users,
+                data: stats.allData.users,
                 columns: userColumns,
                 filterColumn: "firstName",
                 filterPlaceholder: "Buscar usuario..."
@@ -410,7 +410,7 @@ export default function AdminAnalyticsDashboard() {
                         return acc;
                     }, {} as Record<string, number>)
                 ).map(([id, count]) => {
-                    const u = Users?.find(u => u.id === id);
+                    const u = users?.find(u => u.id === id);
                     return {
                         name: u ? `${u.firstName} ${u.lastName || ''}` : 'Usuario',
                         count: count,
@@ -476,7 +476,7 @@ export default function AdminAnalyticsDashboard() {
                     <div className="flex flex-col lg:flex-row gap-4 p-4 rounded-[2.5rem] bg-white/60 dark:bg-black/40 backdrop-blur-3xl border-2 border-primary/20 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(var(--primary-rgb),0.1)] transition-all">
                         <div className="flex items-center gap-4 px-4 flex-1">
                             <div className="p-3 bg-primary rounded-2xl shadow-lg shadow-primary/30">
-                                <ShieldCheck className="h-5 w-5 text-white" weight="duotone" />
+                                <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-xl font-black italic tracking-tighter leading-none mb-1">
@@ -493,7 +493,7 @@ export default function AdminAnalyticsDashboard() {
 
                         <div className="flex gap-4 items-center">
                             <div className="relative min-w-[350px] group">
-                                <MagnifyingGlass className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" weight="duotone" />
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
                                 <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
                                     <SelectTrigger className={cn(
                                         "w-full bg-white dark:bg-white/5 border-2 border-black/10 dark:border-white/10 rounded-[2rem] h-16 pl-14 pr-6 text-xs font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-black/5 ring-0",
@@ -512,7 +512,7 @@ export default function AdminAnalyticsDashboard() {
                                         <SelectItem value="all" className="font-black uppercase text-[11px] py-4 rounded-2xl focus:bg-primary focus:text-white transition-colors">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-primary/10 rounded-xl group-focus:bg-white/20">
-                                                    <Globe className="h-4 w-4 text-primary group-focus:text-white" weight="duotone" />
+                                                    <Globe className="h-4 w-4 text-primary group-focus:text-white" />
                                                 </div>
                                                 Global (Toda la App)
                                             </div>
@@ -523,7 +523,7 @@ export default function AdminAnalyticsDashboard() {
                                             <SelectItem key={s.id} value={s.id} className="font-black uppercase text-[11px] py-4 rounded-2xl focus:bg-primary focus:text-white transition-colors">
                                                 <div className="flex items-center gap-3">
                                                     <div className="p-2 bg-black/5 dark:bg-white/10 rounded-xl group-focus:bg-white/20">
-                                                        <Storefront className="h-4 w-4" weight="duotone" />
+                                                        <Store className="h-4 w-4" />
                                                     </div>
                                                     {s.name}
                                                 </div>
@@ -538,7 +538,7 @@ export default function AdminAnalyticsDashboard() {
                                     onClick={() => setSelectedSupplierId("all")}
                                     className="h-16 px-8 rounded-[2rem] border-primary/40 hover:bg-primary hover:text-white text-primary font-black uppercase tracking-widest text-xs gap-3 shadow-xl transition-all active:scale-95"
                                 >
-                                    <X className="h-4 w-4" weight="duotone" />
+                                    <X className="h-4 w-4" />
                                     Cerrar Socio
                                 </Button>
                             )}
@@ -562,7 +562,7 @@ export default function AdminAnalyticsDashboard() {
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="relative z-10">
                         <TabsList className="bg-white/40 dark:bg-white/5 border border-black/10 dark:border-white/10 p-1.5 rounded-[2.2rem] h-16 backdrop-blur-4xl shadow-2xl">
                             {[
-                                { id: "overview", label: "Dashboard", icon: SquaresFour },
+                                { id: "overview", label: "Dashboard", icon: LayoutDashboard },
                                 { id: "demographics", label: "Audiencia", icon: GraduationCap },
                                 { id: "activity", label: "Actividad", icon: Activity },
                                 { id: "behavior", label: "Fidelidad", icon: Heart },
@@ -595,7 +595,7 @@ export default function AdminAnalyticsDashboard() {
                                     <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[2.3rem] px-10 py-8 flex flex-col md:flex-row items-center justify-between gap-8">
                                         <div className="flex items-center gap-6">
                                             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center border border-white/30 backdrop-blur-xl shadow-inner">
-                                                <Storefront className="h-8 w-8 text-white" weight="duotone" />
+                                                <Store className="h-8 w-8 text-white" />
                                             </div>
                                             <div className="space-y-1.5">
                                                 <h3 className="text-2xl font-black text-white italic tracking-tighter leading-none">
@@ -635,7 +635,7 @@ export default function AdminAnalyticsDashboard() {
                                         icon={Users} 
                                         trend={stats.usersGrowth}
                                         trendDirection={stats.usersGrowth.startsWith('+') ? 'up' : 'down'}
-                                        onClick={() => openDetail('Users')}
+                                        onClick={() => openDetail('users')}
                                     />
                                     <StatCard 
                                         title="Volumen de Canjes" 
@@ -671,7 +671,7 @@ export default function AdminAnalyticsDashboard() {
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-8">
-                                            <TimeSeriesChart data={Users || []} dataKey="createdAt" />
+                                            <TimeSeriesChart data={users || []} dataKey="createdAt" />
                                         </CardContent>
                                     </Card>
 
@@ -679,7 +679,7 @@ export default function AdminAnalyticsDashboard() {
                                         <CardHeader className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 py-6">
                                             <CardTitle className="flex items-center gap-3 text-xl font-black italic tracking-tight text-foreground dark:text-white">
                                                 <div className="p-2 bg-primary/20 rounded-xl">
-                                                    <Trophy className="h-5 w-5 text-primary" weight="duotone" />
+                                                    <Trophy className="h-5 w-5 text-primary" />
                                                 </div>
                                                 Ranking de Desempeño
                                             </CardTitle>
@@ -782,7 +782,7 @@ export default function AdminAnalyticsDashboard() {
                                     <Card className="border-black/10 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer" onClick={() => openDetail('demographics')}>
                                         <CardHeader className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 py-6">
                                             <CardTitle className="flex items-center gap-3 text-xl font-black italic text-foreground dark:text-white">
-                                                <Users className="h-5 w-5 text-primary" weight="duotone" />
+                                                <Users className="h-5 w-5 text-primary" />
                                                 Segmentación por Especialidad
                                             </CardTitle>
                                         </CardHeader>
@@ -884,7 +884,7 @@ export default function AdminAnalyticsDashboard() {
                                             <div className="pt-4">
                                                 <Button 
                                                     className="rounded-[1.5rem] h-16 px-10 font-black uppercase tracking-widest gap-4 shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 bg-primary text-white text-xs"
-                                                    onClick={() => openDetail('Users')}
+                                                    onClick={() => openDetail('users')}
                                                 >
                                                     Ver Detalle de Usuarios
                                                     <ArrowUpRight className="h-5 w-5" />
@@ -957,7 +957,7 @@ export default function AdminAnalyticsDashboard() {
 
                                         <Card className="bg-primary p-10 rounded-[2.5rem] shadow-2xl shadow-primary/20 overflow-hidden relative group">
                                             <div className="absolute top-0 right-0 p-8 opacity-20 rotate-12 transition-transform group-hover:scale-125">
-                                                <Trophy className="h-40 w-40 text-white" weight="duotone" />
+                                                <Trophy className="h-40 w-40 text-white" />
                                             </div>
                                             <div className="relative z-10 space-y-4">
                                                 <h4 className="text-2xl font-black text-white italic tracking-tighter">Estadísticas de Éxito</h4>

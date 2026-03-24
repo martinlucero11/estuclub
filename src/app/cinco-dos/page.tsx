@@ -5,7 +5,7 @@ import { collection, query, where, limit, doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { CincoDosForm } from '@/components/cinco-dos/registration-form';
 import { PremiumEmptyState } from '@/components/ui/premium-empty-state';
-import { Lock, CheckCircle2, Instagram } from '@phosphor-icons/react';
+import { Lock, CheckCircle2, Instagram } from 'lucide-react';
 import { CincoDosLogo } from '@/components/cinco-dos/cinco-dos-logo';
 import { Button } from '@/components/ui/button';
 import { useState, useMemo, useEffect } from 'react';

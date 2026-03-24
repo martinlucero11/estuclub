@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { FloppyDiskBack, Palette } from '@phosphor-icons/react';
+import { Save, Palette } from 'lucide-react';
 import type { Category } from '@/types/data';
 
 const formSchema = z.object({
@@ -116,7 +116,7 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
                 />
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
-                        <FloppyDiskBack className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-4 w-4" />
                         {isSubmitting ? 'Guardando...' : 'Guardar Categoría'}
                     </Button>
                 </div>

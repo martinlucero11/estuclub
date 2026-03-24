@@ -9,7 +9,7 @@ import type { Banner, SerializableBanner } from '@/types/data';
 import { makeBannerSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from '@phosphor-icons/react';
+import { PlusCircle } from 'lucide-react';
 import { BannerDialog } from './banner-dialog';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';

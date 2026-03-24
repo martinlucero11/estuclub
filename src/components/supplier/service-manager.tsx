@@ -5,7 +5,7 @@ import { collection, doc, deleteDoc } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Trash, CircleNotch, WarningCircle } from '@phosphor-icons/react';
+import { Clock, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Service } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -51,7 +51,7 @@ export default function ServiceManager() {
     if (isLoading) {
         return (
             <div className="flex justify-center p-8">
-                <CircleNotch className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -59,7 +59,7 @@ export default function ServiceManager() {
     if (error) {
         return (
             <div className="p-4 rounded-lg bg-destructive/10 text-destructive flex items-center gap-2">
-                <WarningCircle className="h-5 w-5" />
+                <AlertCircle className="h-5 w-5" />
                 <p>Error al cargar los servicios: {error.message}</p>
             </div>
         );
@@ -93,7 +93,7 @@ export default function ServiceManager() {
                                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                     onClick={() => setServiceToDelete(service)}
                                 >
-                                    <Trash className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4" />
                                 </Button>
                             </div>
                         </CardHeader>

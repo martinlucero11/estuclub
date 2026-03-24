@@ -21,7 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { benefitCategories } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
-import { Globe, Image as ImageIcon, PlusCircle, Award, CalendarIcon, Repeat, Clock } from '@phosphor-icons/react';
+import { Globe, Image as ImageIcon, PlusCircle, Award, CalendarIcon, Repeat, Clock } from 'lucide-react';
 import { useFirestore, useUser } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, addDoc, GeoPoint } from 'firebase/firestore';
 import { useState } from 'react';

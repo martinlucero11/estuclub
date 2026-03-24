@@ -5,7 +5,7 @@
 import AnnouncementCard from './announcement-card';
 import type { SerializableAnnouncement } from '@/types/data';
 import { EmptyState } from '../ui/empty-state';
-import { Megaphone } from '@phosphor-icons/react';
+import { Megaphone } from 'lucide-react';
 
 export default function AnnouncementsList({ announcements }: { announcements: SerializableAnnouncement[]}) {
 
@@ -21,7 +21,7 @@ export default function AnnouncementsList({ announcements }: { announcements: Se
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      {announcements.Map((announcement) => (
+      {announcements.map((announcement) => (
         <AnnouncementCard key={announcement.id} announcement={announcement} />
       ))}
     </div>

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Envelope, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, WarningCircle } from '@phosphor-icons/react';
+import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useAuthService } from '@/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
@@ -241,7 +241,7 @@ export default function SignupForm() {
       <Card className="rounded-[2rem] border-primary/5 glass glass-dark shadow-premium overflow-hidden">
         <CardContent className="pt-10 pb-8 px-8 text-center space-y-6">
             <div className="mx-auto w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-4 border border-primary/10 shadow-lg shadow-primary/5">
-                <Envelope className="h-10 w-10 text-primary animate-bounce" />
+                <Mail className="h-10 w-10 text-primary animate-bounce" />
             </div>
             <div className="space-y-2">
                 <h3 className="text-2xl font-black tracking-tighter uppercase text-foreground">¡Casi listo!</h3>
@@ -284,7 +284,7 @@ export default function SignupForm() {
             {/* Requirements Card */}
             <div className="p-5 rounded-[1.5rem] bg-primary/5 border border-primary/10 space-y-3 mb-2">
                 <div className="flex items-center gap-2 mb-1">
-                    <WarningCircle className="h-4 w-4 text-primary" />
+                    <AlertCircle className="h-4 w-4 text-primary" />
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Requisitos de Inscripción</h4>
                 </div>
                 <div className="grid grid-cols-1 gap-2">
@@ -360,7 +360,7 @@ export default function SignupForm() {
                 <FormItem>
                   <FormLabel className={labelClasses}>Correo Electrónico</FormLabel>
                    <div className="relative group/input">
-                    <Envelope className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                    <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                     <FormControl>
                       <Input placeholder="tu@email.com" {...field} className={inputClasses} />
                     </FormControl>

@@ -1,9 +1,9 @@
-import { type Icon } from '@phosphor-icons/react';
+import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 export interface PremiumEmptyStateProps {
-  icon: Icon;
+  icon: LucideIcon;
   title: string;
   description: string;
   actionLabel?: string;

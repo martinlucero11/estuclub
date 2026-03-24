@@ -5,7 +5,7 @@ import { useUser, useAuthService } from '@/firebase';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Envelope, RefreshCw, SignOut, CircleNotch, CheckCircle2 } from '@phosphor-icons/react';
+import { Mail, RefreshCw, LogOut, Loader2, CheckCircle2 } from 'lucide-react';
 import { signOut, sendEmailVerification } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -90,7 +90,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
         <div className="fixed inset-0 z-[9999] mesh-gradient animate-mesh flex flex-col items-center justify-center p-6 space-y-4">
              <div className="relative w-16 h-16">
                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
-                 <CircleNotch className="relative h-16 w-16 text-primary animate-spin" />
+                 <Loader2 className="relative h-16 w-16 text-primary animate-spin" />
              </div>
              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Verificando sesión...</p>
         </div>
@@ -110,7 +110,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
               <div className="relative mx-auto w-24 h-24">
                 <div className="absolute inset-0 bg-primary/20 rounded-[2rem] blur-2xl animate-pulse"></div>
                 <div className="relative w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center border border-primary/20 shadow-xl">
-                    <Envelope className="h-12 w-12 text-primary animate-bounce" />
+                    <Mail className="h-12 w-12 text-primary animate-bounce" />
                 </div>
               </div>
 
@@ -132,7 +132,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
                     disabled={isRefreshing}
                     className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
                  >
-                    {isRefreshing ? <CircleNotch className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                    {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
                     Ya verifiqué mi cuenta
                  </Button>
 
@@ -151,7 +151,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
                         onClick={handleLogout}
                         className="flex-1 h-12 rounded-xl font-bold uppercase tracking-widest text-[10px] text-muted-foreground hover:text-red-400 hover:bg-red-400/5 active:scale-95 transition-all"
                     >
-                         <SignOut className="h-3 w-3 mr-2" />
+                         <LogOut className="h-3 w-3 mr-2" />
                          Cerrar Sesión
                     </Button>
                  </div>

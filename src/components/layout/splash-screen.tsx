@@ -1,4 +1,4 @@
-import Image from 'next/Image';
+import Image from 'next/image';
 
 // This file has been repaired according to strict UI/UX brand guidelines.
 // The logo is now the official SVG logo on the exact brand color background.
@@ -15,7 +15,7 @@ export default function SplashScreen() {
         height={53} 
         className="object-contain mx-auto" 
         priority 
-       weight="duotone"/>
+      />
     </div>
   );
 }

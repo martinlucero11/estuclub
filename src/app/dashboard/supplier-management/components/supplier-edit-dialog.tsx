@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { SupplierEditForm } from './supplier-PencilSimple-form';
+import { SupplierEditForm } from './supplier-edit-form';
 import type { SupplierProfile } from '@/types/data';
 
 interface SupplierEditDialogProps {

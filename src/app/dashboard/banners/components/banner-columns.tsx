@@ -1,13 +1,13 @@
 
 'use client';
 
-import Image from 'next/Image';
+import Image from 'next/image';
 import { ColumnDef } from '@tanstack/react-table';
 import type { SerializableBanner } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown, Link as LinkIcon, DotsThree } from '@phosphor-icons/react';
+import { ArrowUpDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // Define the shape of the actions props
@@ -22,7 +22,7 @@ const BannerActions: React.FC<BannerActionsProps> = ({ onEdit, onDelete }) => (
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
         <span className="sr-only">Abrir menú</span>
-        <DotsThree className="h-4 w-4" weight="duotone" />
+        <MoreHorizontal className="h-4 w-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end">
@@ -48,7 +48,7 @@ export const getBannerColumns = (
     cell: ({ row }) => {
       const imageUrl = row.getValue('imageUrl') as string;
       const title = row.original.title;
-      return <Image src={imageUrl} alt={title} width={100} height={50} className="rounded-md object-cover" weight="duotone" />;
+      return <Image src={imageUrl} alt={title} width={100} height={50} className="rounded-md object-cover" />;
     },
   },
   {

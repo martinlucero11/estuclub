@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CircleNotch, Trash, AlertTriangle, CheckCircle2, MagnifyingGlass } from '@phosphor-icons/react';
+import { Loader2, Trash2, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
 import { useAuthService } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
@@ -80,7 +80,7 @@ export function ZombieCleanup() {
             variant="outline"
             className="flex-1 rounded-xl h-12 font-bold uppercase tracking-widest text-[10px]"
           >
-            {isScanning ? <CircleNotch className="mr-2 h-4 w-4 animate-spin" /> : <MagnifyingGlass className="mr-2 h-4 w-4" />}
+            {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             Escanear
           </Button>
           
@@ -94,7 +94,7 @@ export function ZombieCleanup() {
             variant="destructive"
             className="flex-1 rounded-xl h-12 font-bold uppercase tracking-widest text-[10px] shadow-lg shadow-red-500/20"
           >
-            {isDeleting ? <CircleNotch className="mr-2 h-4 w-4 animate-spin" /> : <Trash className="mr-2 h-4 w-4" />}
+            {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
             Eliminar Zombies
           </Button>
         </div>

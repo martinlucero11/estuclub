@@ -1,6 +1,6 @@
 'use client';
 
-import { Star } from '@phosphor-icons/react';
+import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StarRatingProps {

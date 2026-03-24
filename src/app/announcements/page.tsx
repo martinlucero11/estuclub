@@ -16,7 +16,7 @@ import { createConverter } from '@/lib/firestore-converter';
 function AnnouncementsListSkeleton() {
     return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {[...Array(8)].Map((_, i) => (
+            {[...Array(8)].map((_, i) => (
                 <div key={i} className="space-y-4">
                     <BrandSkeleton className="h-48 w-full rounded-2xl" />
                     <div className="space-y-2">
@@ -43,7 +43,7 @@ function Announcements() {
 
     const announcements = useMemo(() => {
         if (!data) return [];
-        return data.Map(makeAnnouncementSerializable);
+        return data.map(makeAnnouncementSerializable);
     }, [data]);
 
     if (isLoading) {

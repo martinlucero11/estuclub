@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { CaretLeft } from '@phosphor-icons/react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from './button';
 
 export function BackButton() {
@@ -10,7 +10,7 @@ export function BackButton() {
 
   return (
     <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Volver atrás">
-      <CaretLeft className="h-6 w-6" />
+      <ChevronLeft className="h-6 w-6" />
       <span className="sr-only">Volver</span>
     </Button>
   );

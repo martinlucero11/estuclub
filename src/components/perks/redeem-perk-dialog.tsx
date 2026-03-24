@@ -16,7 +16,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializableBenefit, UserProfile } from '@/types/data';
-import { CheckCircle, Calendar, Medal, Loader2, Lock } from '@phosphor-icons/react';
+import { CheckCircle, CalendarDays, Award, Loader2, Lock } from 'lucide-react';
 import { BrandSkeleton } from '../ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,7 +43,7 @@ const dayAbbreviations: { [key: string]: string } = {
 };
 
 export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigger = false }: RedeemBenefitDialogProps) {
-  const { User, isUserLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
@@ -53,13 +53,13 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const userProfileRef = useMemo(() => {
-    // Only create the User profile document reference if the User is logged in AND the dialog is open.
+    // Only create the user profile document reference if the user is logged in AND the dialog is open.
     // This prevents the useDoc hook from running on page load for every benefit card.
-    if (User && isOpen) {
-      return doc(firestore, 'Users', User.uid);
+    if (user && isOpen) {
+      return doc(firestore, 'users', user.uid);
     }
     return null;
-  }, [User, firestore, isOpen]);
+  }, [user, firestore, isOpen]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
@@ -68,8 +68,8 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
     
     const qrCodeValue = JSON.stringify({ redemptionId: redemptionId });
 
-    import('QrCode').then(QrCode => {
-        QrCode.toDataURL(qrCodeValue, {
+    import('qrcode').then(QRCode => {
+        QRCode.toDataURL(qrCodeValue, {
             errorCorrectionLevel: 'H',
             width: 256,
         })
@@ -85,7 +85,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
 
 
   const handleRedeem = async () => {
-    if (!User || !userProfile || !firestore || !benefit.ownerId) {
+    if (!user || !userProfile || !firestore || !benefit.ownerId) {
       toast({ 
           variant: 'destructive', 
           title: 'Error de datos',
@@ -122,7 +122,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
-      const userRedemptionsRef = collection(firestore, 'Users', User.uid, 'redeemed_benefits');
+      const userRedemptionsRef = collection(firestore, 'users', user.uid, 'redeemed_benefits');
       
       if (benefit.redemptionLimit && benefit.redemptionLimit > 0) {
         const q = query(
@@ -146,7 +146,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       
       const newRedemptionId = doc(collection(firestore, 'benefitRedemptions')).id;
       const rootRedemptionRef = doc(firestore, "benefitRedemptions", newRedemptionId);
-      const userRedemptionRef = doc(firestore, 'Users', User.uid, 'redeemed_benefits', newRedemptionId);
+      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', newRedemptionId);
       
       const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionId });
       
@@ -157,7 +157,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         benefitDescription: benefit.description,
         benefitImageUrl: benefit.imageUrl,
         benefitLocation: benefit.location || '',
-        userId: User.uid,
+        userId: user.uid,
         userName: `${userProfile.firstName} ${userProfile.lastName}`,
         userDni: userProfile.dni,
         supplierId: benefit.ownerId,
@@ -172,7 +172,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       batch.set(userRedemptionRef, redemptionData);
       
       if (pointsToGrant > 0) {
-        const userRefToUpdate = doc(firestore, 'Users', User.uid);
+        const userRefToUpdate = doc(firestore, 'users', user.uid);
         batch.set(userRefToUpdate, { points: increment(pointsToGrant) }, { merge: true });
       }
 
@@ -209,7 +209,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
     }
   }
 
-  const isLoading = isUserLoading || (!!User && isProfileLoading);
+  const isLoading = isUserLoading || (!!user && isProfileLoading);
 
   const TriggerWrapper = ({ children }: { children: React.ReactNode }) => (
     isCarouselTrigger ? (
@@ -226,7 +226,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
   
   const RedemptionSuccessView = () => (
       <div className='text-center space-y-4 flex flex-col items-center'>
-          <CheckCircle className="h-16 w-16 text-green-500" weight="duotone" />
+          <CheckCircle className="h-16 w-16 text-green-500" />
           <h3 className="text-lg font-semibold">¡Beneficio Pre-canjeado!</h3>
           <p className='text-sm text-muted-foreground'>Muestra el siguiente código QR al proveedor para completar la validación.</p>
           <div className="my-4 flex justify-center">
@@ -258,11 +258,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
 
                 {benefit.availableDays && benefit.availableDays.length > 0 && (
                     <div className="flex items-center gap-3 rounded-lg border p-3">
-                        <Calendar className="h-5 w-5 text-primary flex-shrink-0" weight="duotone" />
+                        <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
                         <div className='flex-1'>
                             <p className="text-sm font-medium">Días disponibles</p>
-                            <div className="flex flex-wrap gap-X-2 pt-1 font-mono text-sm text-muted-foreground">
-                                {daysOrder.Map(day => (
+                            <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
+                                {daysOrder.map(day => (
                                     <span key={day} className={benefit.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
                                         {dayAbbreviations[day]}
                                     </span>
@@ -274,7 +274,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                 
                 {userProfile && benefit.minLevel && getLevelInfo(userProfile.points || 0).level < benefit.minLevel && userProfile.role !== 'admin' && (
                     <Alert className="bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-500">
-                        <Lock className="h-4 w-4" weight="duotone" />
+                        <Lock className="h-4 w-4" />
                         <AlertTitle className="font-black uppercase tracking-tighter">Nivel Insuficiente</AlertTitle>
                         <AlertDescription className="text-xs">
                             Este beneficio requiere **Nivel {benefit.minLevel}**. Sigue participando para subir de nivel y desbloquearlo.
@@ -300,11 +300,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <MagneticButton disabled={isRedeeming || isProfileLoading || !User || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}>
+                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}>
                         <Button 
                           type="button" 
                           onClick={handleRedeem} 
-                          disabled={isRedeeming || isProfileLoading || !User || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}
+                          disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}
                           className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
                         >
                             {isRedeeming ? (
@@ -314,7 +314,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                                 </>
                             ) : isProfileLoading ? 'Cargando...' : (
                                 <span className="flex items-center">
-                                    <Medal className='mr-2 h-4 w-4' weight="duotone" />
+                                    <Award className='mr-2 h-4 w-4' />
                                     Confirmar Canje
                                 </span>
                             )}

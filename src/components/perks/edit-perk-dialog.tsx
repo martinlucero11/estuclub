@@ -30,7 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { benefitCategories, type SerializableBenefit, WhereFilter } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
-import { Globe, Image as ImageIcon, FloppyDiskBack, Award, CalendarIcon, Repeat } from '@phosphor-icons/react';
+import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat } from 'lucide-react';
 import { useFirestore } from '@/firebase';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
@@ -447,7 +447,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                     <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? 'Guardando...' : (
                             <>
-                                <FloppyDiskBack className="mr-2 h-4 w-4" />
+                                <Save className="mr-2 h-4 w-4" />
                                 Guardar Cambios
                             </>
                         )}

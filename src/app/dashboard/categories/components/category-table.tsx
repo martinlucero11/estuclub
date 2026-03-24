@@ -7,7 +7,7 @@ import { getCategoryColumns } from './category-columns';
 import type { Category } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Shapes } from '@phosphor-icons/react';
+import { PlusCircle, Shapes } from 'lucide-react';
 import { CategoryDialog } from './category-dialog';
 import { ReorderCategoriesDialog } from './reorder-categories-dialog';
 import { useToast } from '@/hooks/use-toast';

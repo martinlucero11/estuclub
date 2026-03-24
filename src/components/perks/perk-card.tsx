@@ -12,7 +12,6 @@ import { useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { calculateDistance, formatDistance } from '@/lib/geo-utils';
 import { getLevelInfo } from '@/lib/gamification';
-import { PremiumIcon } from '../ui/premium-icon';
 
 interface BenefitCardProps {
   benefit: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
@@ -78,7 +77,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
         {isLocked && (
             <div className="absolute inset-0 z-20 flex flex-col items-center justify-center space-y-3">
                 <div className="bg-black/40 backdrop-blur-2xl p-4 rounded-3xl border border-white/10 shadow-2xl">
-                    <PremiumIcon icon={Lock} size="lg" color="text-yellow-500" />
+                    <Lock className="h-6 w-6 text-yellow-500 animate-pulse" />
                 </div>
                 <Badge className="bg-yellow-500/90 backdrop-blur-md text-black font-black uppercase tracking-tighter border-0 shadow-lg text-[10px] px-3 py-1">
                     Nivel {benefit.minLevel}+
@@ -116,7 +115,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
         {distance !== null && !isLocked && (
             <div className="absolute top-16 right-4 z-30 animate-in fade-in slide-in-from-right-4 duration-700">
                 <div className="bg-primary px-3.5 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg hover:scale-110 transition-transform duration-500 cursor-default group/distance">
-                    <PremiumIcon icon={MapPin} size="sm" color="text-white" glow={false} />
+                    <MapPin className="h-4 w-4 text-white fill-current/20" />
                     <span className="text-xs font-black tracking-tight text-white leading-none drop-shadow-md">{formatDistance(distance)}</span>
                 </div>
             </div>
@@ -135,7 +134,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
             
             <div className="pt-3 flex items-center justify-between border-t border-white/20 mt-3 transition-colors duration-500 group-hover:border-primary/40">
                 <div className="flex items-center gap-2 text-xs text-white font-black uppercase tracking-[0.15em] drop-shadow-md">
-                    <PremiumIcon icon={Building} size="sm" color="text-white/90" glow={false} />
+                    <Building className="h-3.5 w-3.5 opacity-90" />
                     <span className="truncate max-w-[150px]">{supplierName}</span>
                 </div>
             </div>

@@ -5,7 +5,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Briefcase, Buildings, Church, Scale, ShoppingBasket, User, CalendarCheck, Gift, Megaphone, Bell } from '@phosphor-icons/react';
+import { Briefcase, Building, Church, Scale, ShoppingBasket, User, CalendarCheck, Gift, Megaphone, Bell } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '../ui/button';
 import { Switch } from '../ui/switch';
@@ -16,7 +16,7 @@ import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 
 const typeIcons = {
-    Institucion: Buildings,
+    Institucion: Building,
     Club: Briefcase,
     Iglesia: Church,
     Comercio: ShoppingBasket,

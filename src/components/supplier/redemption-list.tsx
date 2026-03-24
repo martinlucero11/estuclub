@@ -6,7 +6,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Badge } from '../ui/badge';
-import { ClockCounterClockwise, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from '@phosphor-icons/react';
+import { History, Calendar, User as UserIcon, Tag, CheckCircle, Clock } from 'lucide-react';
 import type { BenefitRedemption } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
@@ -42,7 +42,7 @@ function ScanHistorySkeleton() {
     );
 }
 
-// Main Component: Supplier's Scan ClockCounterClockwise
+// Main Component: Supplier's Scan History
 export default function SupplierScanHistory() {
     const { user } = useUser();
     const firestore = useFirestore();
@@ -92,7 +92,7 @@ export default function SupplierScanHistory() {
     if (!scans || scans.length === 0) {
         return (
              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <ClockCounterClockwise className="mx-auto h-12 w-12 text-muted-foreground" />
+                <History className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-xl font-semibold">Sin Escaneos Registrados</h3>
                 <p className="mt-2 text-sm text-muted-foreground">
                     Aún no has escaneado ningún código QR de canje.

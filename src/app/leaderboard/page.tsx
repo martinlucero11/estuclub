@@ -7,7 +7,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { createConverter } from '@/lib/firestore-converter';
 import type { UserProfile } from '@/types/data';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
-import { Trophy, Medal, User as UserIcon, Star } from '@phosphor-icons/react';
+import { Trophy, Medal, User as UserIcon, Star } from 'lucide-react';
 import { getInitials } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';

@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { Html5Qrcode, Html5QrcodeResult } from 'html5-QrCode';
+import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
 import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { CheckCircle, Fingerprint, Loader2, University, XCircle, Medal, Building, Tag, Warning } from '@phosphor-icons/react';
+import { CheckCircle, Fingerprint, Loader2, University, XCircle, Award, Building, Tag, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/button';
 import type { BenefitRedemption } from '@/types/data';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -60,11 +60,11 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
             <CardHeader className="text-center pb-4">
                 {alreadyUsed ? (
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50 mb-4">
-                        <Warning className="h-6 w-6 text-yellow-600 dark:text-yellow-400" weight="duotone" />
+                        <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                     </div>
                 ) : (
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 mb-4">
-                        <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" weight="duotone" />
+                        <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
                     </div>
                 )}
                 <CardTitle>{alreadyUsed ? 'Canje Ya Utilizado' : 'Canje Validado'}</CardTitle>
@@ -82,9 +82,9 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
                     </Avatar>
                     <div className="space-y-3 text-left w-full">
                         <p className="text-lg font-semibold text-foreground">{`${profile.firstName || ''} ${profile.lastName || ''}`.trim()}</p>
-                        <div className="flex items-center gap-3"><Fingerprint className="h-5 w-5 text-muted-foreground" weight="duotone" /><p className="text-md text-muted-foreground">{redemption.userDni || 'N/A'}</p></div>
+                        <div className="flex items-center gap-3"><Fingerprint className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{redemption.userDni || 'N/A'}</p></div>
                         <div className="flex items-center gap-3"><University className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{profile.university || 'No especificada'}</p></div>
-                        <div className="flex items-center gap-3"><Medal className="h-5 w-5 text-muted-foreground" weight="duotone" /><p className="text-md text-muted-foreground">{`${profile.points || 0} Puntos`}</p></div>
+                        <div className="flex items-center gap-3"><Award className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{`${profile.points || 0} Puntos`}</p></div>
                     </div>
                 </div>
                 <div className='w-full border-t pt-4 space-y-2'>
@@ -99,7 +99,7 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
 
 // Main QrScanner Component
 export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boolean }) {
-    const { User } = useUser();
+    const { user } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
     const scannerRef = useRef<Html5Qrcode | null>(null);
@@ -129,7 +129,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 throw new Error("El formato del código QR o ID es incorrecto.");
             }
 
-            if (!User) throw new Error("Debes iniciar sesión para validar un canje.");
+            if (!user) throw new Error("Debes iniciar sesión para validar un canje.");
 
             const redemptionRef = doc(firestore, "benefitRedemptions", redemptionId);
             const redemptionSnap = await getDoc(redemptionRef);
@@ -138,9 +138,9 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             const redemptionData = redemptionSnap.data() as BenefitRedemption;
             if (!redemptionData) throw new Error("No se pudieron leer los datos del canje.");
 
-            if (redemptionData.supplierId !== User.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este canje.");
+            if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este canje.");
             
-            const userProfileRef = doc(firestore, "Users", redemptionData.userId);
+            const userProfileRef = doc(firestore, "users", redemptionData.userId);
             const userProfileSnap = await getDoc(userProfileRef);
             if (!userProfileSnap.exists()) throw new Error("El perfil del estudiante no fue encontrado.");
 
@@ -156,7 +156,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             if (redemptionData.status === "pending") {
                 try {
                     const batch = writeBatch(firestore);
-                    const userRedemptionRef = doc(firestore, 'Users', redemptionData.userId, 'redeemed_benefits', redemptionId);
+                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
                     const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
                     
                     batch.set(redemptionRef, updateData, { merge: true });
@@ -304,7 +304,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                     <CardDescription>Si el escáner no funciona, ingresa el ID del comprobante aquí.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex w-full items-center space-X-2">
+                    <div className="flex w-full items-center space-x-2">
                         <Input
                             id="manual-id"
                             value={manualId}

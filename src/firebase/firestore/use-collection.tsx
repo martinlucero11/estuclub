@@ -21,8 +21,8 @@ function serializeQuery(query: Query | null): string {
     if (q) {
       return JSON.stringify({
         path: q.path?.toString?.() || '',
-        filters: q.filters?.Map?.((f: any) => `${f.field?.toString?.()}_${f.op}_${JSON.stringify(f.value)}`) || [],
-        orderBy: q.explicitOrderBy?.Map?.((o: any) => `${o.field?.toString?.()}_${o.dir}`) || [],
+        filters: q.filters?.map?.((f: any) => `${f.field?.toString?.()}_${f.op}_${JSON.stringify(f.value)}`) || [],
+        orderBy: q.explicitOrderBy?.map?.((o: any) => `${o.field?.toString?.()}_${o.dir}`) || [],
         limit: q.limit,
       });
     }
@@ -62,7 +62,7 @@ export function useCollection<T extends DocumentData>(
     const unsubscribe = onSnapshot(
       query,
       (snapshot) => {
-        const docs = snapshot.docs.Map((doc) => {
+        const docs = snapshot.docs.map((doc) => {
           const docData = doc.data();
           return {
             ...docData,

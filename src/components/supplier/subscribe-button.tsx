@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { BellPlus, BellOff, CircleNotch } from '@phosphor-icons/react';
+import { BellPlus, BellOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface SubscribeButtonProps {
@@ -66,7 +66,7 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
     if (isLoading || isProcessing) {
          return (
             <Button disabled>
-                <CircleNotch className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Cargando...
             </Button>
         );

@@ -1,16 +1,16 @@
 'use client';
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import type { Icon } from '@phosphor-icons/react';
+import type { LucideIcon } from 'lucide-react';
 import Link from "next/link";
-import { ArrowUpRight, ArrowDownRight, TrendingUp } from "@phosphor-icons/react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface StatCardProps {
     title: string;
     value: string | number;
-    icon: Icon;
+    icon: LucideIcon;
     href?: string;
     description?: string;
     trend?: string | number;
@@ -55,7 +55,7 @@ export function StatCard({ title, value, icon: Icon, href, description, trend, t
                         {title}
                     </CardTitle>
                     <div className="p-3.5 rounded-[1.5rem] bg-black/[0.03] dark:bg-white/5 border border-black/10 dark:border-white/10 group-hover:bg-primary group-hover:border-primary/50 group-hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
-                        <Icon className="h-4.5 w-4.5 text-foreground/60 dark:text-white group-hover:text-white transition-colors duration-500" weight="duotone" />
+                        <Icon className="h-4.5 w-4.5 text-foreground/60 dark:text-white group-hover:text-white transition-colors duration-500" />
                     </div>
                 </CardHeader>
 
@@ -98,7 +98,7 @@ export function StatCard({ title, value, icon: Icon, href, description, trend, t
                 </CardContent>
 
                 {href && (
-                    <div className="absolute bottom-4 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-X-2 group-hover:translate-X-0">
+                    <div className="absolute bottom-4 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
                         <ArrowUpRight className="h-5 w-5 text-primary" />
                     </div>
                 )}
