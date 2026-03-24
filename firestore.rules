@@ -140,6 +140,15 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    /* ================= SUPPLIER REQUESTS ================= */
+
+    match /supplier_requests/{id} {
+      allow get: if signedIn() && (isAdmin() || request.auth.uid == resource.data.userId);
+      allow list: if isAdmin() || (signedIn() && request.query.limit <= 100); 
+      allow create: if signedIn(); 
+      allow update, delete: if isAdmin();
+    }
+
     /* ================= BENEFITS ================= */
 
     match /benefits/{id} {

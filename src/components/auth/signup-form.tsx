@@ -19,7 +19,7 @@ import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign,
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, User } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser, User } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -194,11 +194,26 @@ export default function SignupForm() {
 
     } catch (error: any) {
       console.error("Error en el registro:", error);
+      
+      // ROLLBACK: If Auth was created but Firestore failed, delete Auth user
+      const auth = getAuth();
+      if (auth.currentUser) {
+          try {
+              await deleteUser(auth.currentUser);
+              console.log("Auth user rolled back due to Firestore/Registration failure.");
+          } catch (deleteError) {
+              console.error("Failed to rollback Auth user:", deleteError);
+          }
+      }
+
       let errorMessage = 'No se pudo crear la cuenta. Inténtalo de nuevo.';
       if (error.code === 'auth/email-already-in-use') {
         errorMessage = 'Este correo electrónico ya está en uso.';
         form.setError('email', { message: errorMessage });
+      } else if (error.code === 'permission-denied' || error.message?.includes('permission')) {
+        errorMessage = 'Error de permisos al crear el perfil. Por favor, contacta a soporte.';
       }
+
       haptic.vibrateError();
       toast({
         variant: "destructive",

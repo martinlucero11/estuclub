@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Bell, Gift, Megaphone } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
@@ -98,10 +98,14 @@ function NotificationList({
 export default function NotificationBell() {
     const firestore = useFirestore();
     const router = useRouter();
+    const { user } = useUser();
     const [open, setOpen] = useState(false);
     const notificationsQuery = useMemo(
-        () => query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10)),
-        [firestore]
+        () => {
+            if (!user) return null;
+            return query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10));
+        },
+        [firestore, user]
     );
 
     const { data: notifications, isLoading } = useCollection(notificationsQuery);

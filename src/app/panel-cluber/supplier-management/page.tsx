@@ -8,9 +8,14 @@ import { SupplierTable } from './components/supplier-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserManagementTable } from './components/user-management-table';
 import { SupplierRequestTable } from './components/supplier-request-table';
+import { ZombieCleanup } from './components/zombie-cleanup';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function SupplierManagementPage() {
+function SupplierManagementContent() {
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'manage-suppliers';
 
   if (isAdminLoading) {
       return (
@@ -46,11 +51,12 @@ export default function SupplierManagementPage() {
         Gestiona los perfiles de los Clubers existentes o convierte usuarios en nuevos Clubers.
       </p>
       
-      <Tabs defaultValue="manage-suppliers">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue={defaultTab}>
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="manage-suppliers">Gestionar Clubers</TabsTrigger>
           <TabsTrigger value="requests">Solicitudes</TabsTrigger>
           <TabsTrigger value="convert-user">Convertir Usuario</TabsTrigger>
+          <TabsTrigger value="maintenance">Mantenimiento</TabsTrigger>
         </TabsList>
         <TabsContent value="manage-suppliers" className="mt-4">
           <p className="text-sm text-muted-foreground mb-4">
@@ -70,7 +76,21 @@ export default function SupplierManagementPage() {
           </p>
           <SupplierRequestTable />
         </TabsContent>
+        <TabsContent value="maintenance" className="mt-4">
+           <p className="text-sm text-muted-foreground mb-4">
+            Herramientas de limpieza y mantenimiento del sistema.
+          </p>
+          <ZombieCleanup />
+        </TabsContent>
       </Tabs>
     </div>
   );
+}
+
+export default function SupplierManagementPage() {
+    return (
+        <Suspense fallback={<Skeleton className="h-[600px] w-full rounded-2xl" />}>
+            <SupplierManagementContent />
+        </Suspense>
+    );
 }

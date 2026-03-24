@@ -19,6 +19,7 @@ import {
     Trophy,
     UtensilsCrossed,
     HelpCircle,
+    AlertCircle,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -151,7 +152,7 @@ export const navConfig: NavConfig = {
         items: [
             {
                 title: "Analíticas Globales",
-                href: "/panel-admin/analytics",
+                href: "/panel-cluber/analytics", // Changed from /panel-admin/analytics
                 icon: BarChart,
                 role: ["admin"],
             },
@@ -189,6 +190,12 @@ export const navConfig: NavConfig = {
                 title: "Gestión de Categorías",
                 href: "/panel-cluber/categories",
                 icon: Shapes,
+                role: ["admin"],
+            },
+            {
+                title: "Mantenimiento Usuarios",
+                href: "/panel-cluber/supplier-management?tab=maintenance",
+                icon: AlertCircle,
                 role: ["admin"],
             },
         ]

@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VerificationGate({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useUser();
+  const { user, userData, isUserLoading } = useUser();
   const { toast } = useToast();
   const pathname = usePathname();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -20,19 +20,34 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   const publicPaths = ['/login', '/register', '/signup', '/verify', '/forgot-password', '/reset-password'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
 
-  // If user is logged in but NOT verified, block the UI (unless it's a public path)
-  const needsVerification = user && !user.emailVerified && !isPublicPath;
+  // If user is logged in but NOT verified OR doesn't have a Firestore profile, block the UI (unless it's a public path)
+  const isUnverified = user && !user.emailVerified;
+  const isProfileMissing = user && !isUserLoading && !userData;
+  const needsVerification = (isUnverified || isProfileMissing) && !isPublicPath;
 
   const handleRefresh = async () => {
     if (!user) return;
     setIsRefreshing(true);
     try {
+      // Reload the auth user to get fresh emailVerified status
       await user.reload();
-      if (user.emailVerified) {
-        toast({
-          title: "¡Cuenta verificada!",
-          description: "Ya puedes disfrutar de todos los beneficios de Estuclub.",
-        });
+      const auth = getAuth();
+      const freshUser = auth.currentUser;
+      
+      if (freshUser?.emailVerified) {
+          // If verified, we might still need to wait for userData to sync if it was missing
+          if (!userData) {
+              toast({
+                  title: "Email verificado",
+                  description: "Preparando tu perfil...",
+              });
+              // The hook should eventually pick up the new userData if it exists
+          } else {
+              toast({
+                  title: "¡Cuenta verificada!",
+                  description: "Bienvenido a Estuclub.",
+              });
+          }
       } else {
         toast({
           title: "Aún no verificada",
@@ -102,11 +117,13 @@ export default function VerificationGate({ children }: { children: React.ReactNo
 
               <div className="space-y-3">
                 <h2 className="text-3xl font-black tracking-tighter uppercase text-foreground leading-none">
-                  Verifica tu cuenta
+                  {isProfileMissing ? "Completando perfil" : "Verifica tu cuenta"}
                 </h2>
                 <p className="text-sm font-medium text-muted-foreground/70 leading-relaxed italic">
-                  Te hemos enviado un correo a <span className="text-primary font-bold not-italic">{user.email}</span>.
-                  Verifícalo para activar tu perfil de Estuclub.
+                  {isProfileMissing 
+                    ? "Estamos terminando de configurar tu cuenta. Esto puede tardar unos segundos."
+                    : <>Te hemos enviado un correo a <span className="text-primary font-bold not-italic">{user.email}</span>. Verifícalo para activar tu perfil de Estuclub.</>
+                  }
                 </p>
               </div>
 
