@@ -18,9 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, AlertCircle, UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useAuthService } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
-import { auth } from '@/firebase/client-config'; 
 import { 
   signInWithEmailAndPassword, 
   signOut, 
@@ -43,6 +42,7 @@ const formSchema = z.object({
 export default function LoginForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const auth = useAuthService();
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [unverifiedCredentials, setUnverifiedCredentials] = useState({ email: '', password: '' });
   const [isResending, setIsResending] = useState(false);

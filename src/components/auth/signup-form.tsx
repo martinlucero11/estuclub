@@ -17,9 +17,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser, User } from 'firebase/auth';
+import { useFirestore, useAuthService } from '@/firebase';
+import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser, User } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -57,8 +57,8 @@ const formSchema = z.object({
 
 export default function SignupForm() {
   const router = useRouter();
-  const auth = getAuth();
   const firestore = useFirestore();
+  const auth = useAuthService();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -124,6 +124,11 @@ export default function SignupForm() {
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       setCreatedUser(user);
+      console.log("Auth user created successfully:", user.uid);
+
+      // ADDED: Small delay to ensure Auth state propagates to Security Rules
+      console.log("Waiting for auth state to propagate...");
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // 2. Prepare Firestore Profile (ensure it exists before verification)
       const batch = writeBatch(firestore);
@@ -203,7 +208,6 @@ export default function SignupForm() {
       console.error("Error en el registro:", error);
       
       // ROLLBACK: If Auth was created but Firestore failed, delete Auth user
-      const auth = getAuth();
       if (auth.currentUser) {
           try {
               await deleteUser(auth.currentUser);

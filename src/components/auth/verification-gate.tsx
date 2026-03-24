@@ -1,17 +1,18 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useUser } from '@/firebase/hooks';
+import { useUser, useAuthService } from '@/firebase';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, RefreshCw, LogOut, Loader2, CheckCircle2 } from 'lucide-react';
-import { getAuth, signOut, sendEmailVerification } from 'firebase/auth';
+import { signOut, sendEmailVerification } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function VerificationGate({ children }: { children: React.ReactNode }) {
   const { user, userData, isUserLoading } = useUser();
+  const auth = useAuthService();
   const { toast } = useToast();
   const pathname = usePathname();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -31,7 +32,6 @@ export default function VerificationGate({ children }: { children: React.ReactNo
     try {
       // Reload the auth user to get fresh emailVerified status
       await user.reload();
-      const auth = getAuth();
       const freshUser = auth.currentUser;
       
       if (freshUser?.emailVerified) {
@@ -82,7 +82,6 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   };
 
   const handleLogout = async () => {
-    const auth = getAuth();
     await signOut(auth);
   };
 

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Trash2, AlertTriangle, CheckCircle2, Search } from 'lucide-react';
-import { getAuth } from 'firebase/auth';
+import { useAuthService } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 export function ZombieCleanup() {
@@ -14,8 +14,8 @@ export function ZombieCleanup() {
   const [report, setReport] = useState<any>(null);
   const { toast } = useToast();
 
+  const auth = useAuthService();
   const runCleanup = async (confirm: boolean = false) => {
-    const auth = getAuth();
     const user = auth.currentUser;
     if (!user) return;
 
