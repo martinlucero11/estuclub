@@ -7,6 +7,7 @@ import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import { SupplierTable } from './components/supplier-table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserManagementTable } from './components/user-management-table';
+import { SupplierRequestTable } from './components/supplier-request-table';
 
 export default function SupplierManagementPage() {
   const { isAdmin, isLoading: isAdminLoading } = useAdmin();
@@ -46,9 +47,10 @@ export default function SupplierManagementPage() {
       </p>
       
       <Tabs defaultValue="manage-suppliers">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="manage-suppliers">Gestionar Clubers</TabsTrigger>
-          <TabsTrigger value="convert-user">Convertir Usuario a Cluber</TabsTrigger>
+          <TabsTrigger value="requests">Solicitudes</TabsTrigger>
+          <TabsTrigger value="convert-user">Convertir Usuario</TabsTrigger>
         </TabsList>
         <TabsContent value="manage-suppliers" className="mt-4">
           <p className="text-sm text-muted-foreground mb-4">
@@ -61,6 +63,12 @@ export default function SupplierManagementPage() {
             Selecciona un usuario de la lista para asignarle un perfil de Cluber.
           </p>
           <UserManagementTable />
+        </TabsContent>
+        <TabsContent value="requests" className="mt-4">
+           <p className="text-sm text-muted-foreground mb-4">
+            Gestiona las solicitudes de usuarios que desean unirse como Clubers.
+          </p>
+          <SupplierRequestTable />
         </TabsContent>
       </Tabs>
     </div>

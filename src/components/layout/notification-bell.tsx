@@ -12,6 +12,7 @@ import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Separator } from '../ui/separator';
 import { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Notification } from '@/types/data';
 
@@ -37,7 +38,15 @@ function formatTime(timestamp: Notification['createdAt']) {
 }
 
 
-function NotificationList({ notifications, isLoading }: { notifications: Notification[] | undefined, isLoading: boolean }) {
+function NotificationList({ 
+    notifications, 
+    isLoading, 
+    onItemClick 
+}: { 
+    notifications: Notification[] | undefined, 
+    isLoading: boolean,
+    onItemClick: (n: Notification) => void
+}) {
     if (isLoading) {
         return (
             <div className="space-y-2 p-4">
@@ -67,10 +76,10 @@ function NotificationList({ notifications, isLoading }: { notifications: Notific
             {notifications.map((notification, index) => {
                 const Icon = typeIcons[notification.type] || Bell;
                 return (
-                    <div key={notification.id}>
-                        <div className="flex items-start gap-3 p-2 hover:bg-accent rounded-md cursor-pointer transition-colors">
-                             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-secondary">
-                                <Icon className="h-4 w-4 text-secondary-foreground" />
+                    <div key={notification.id} onClick={() => onItemClick(notification)}>
+                        <div className="flex items-start gap-3 p-3 hover:bg-accent/50 rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+                             <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/10">
+                                <Icon className="h-5 w-5 text-primary" />
                             </div>
                             <div className='flex-1'>
                                 <p className="text-sm font-medium">{notification.title}</p>
@@ -88,6 +97,8 @@ function NotificationList({ notifications, isLoading }: { notifications: Notific
 
 export default function NotificationBell() {
     const firestore = useFirestore();
+    const router = useRouter();
+    const [open, setOpen] = useState(false);
     const notificationsQuery = useMemo(
         () => query(collection(firestore, 'notifications').withConverter(createConverter<Notification>()), orderBy('createdAt', 'desc'), limit(10)),
         [firestore]
@@ -107,15 +118,27 @@ export default function NotificationBell() {
         }
     }, [notifications]);
 
-    const handleOpenChange = (open: boolean) => {
-        if (open) {
+    const handleOpenChange = (newOpen: boolean) => {
+        setOpen(newOpen);
+        if (newOpen) {
             setHasUnread(false);
             localStorage.setItem('estuclub_last_read_notifications', Date.now().toString());
         }
     };
 
+    const handleNotificationClick = (n: Notification) => {
+        setOpen(false);
+        if (n.type === 'benefit') {
+            router.push(`/benefits/${n.referenceId}`);
+        } else if (n.type === 'announcement') {
+            router.push(`/announcements`);
+        } else if (n.type === 'appointment') {
+            router.push(`/mis-turnos/${n.referenceId}`);
+        }
+    };
+
   return (
-    <Popover onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative p-2 rounded-full text-white hover:bg-white/20 hover:text-white transition-colors group" aria-label="Ver Notificaciones">
           <Bell className="w-5 h-5 stroke-[2] group-hover:scale-110 transition-transform" />
@@ -127,9 +150,13 @@ export default function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="p-4 border-b">
-            <h4 className="font-semibold text-sm leading-none">Notificaciones</h4>
+            <h4 className="font-bold text-xs uppercase tracking-widest text-primary">Notificaciones</h4>
         </div>
-        <NotificationList notifications={notifications} isLoading={isLoading} />
+        <NotificationList 
+            notifications={notifications} 
+            isLoading={isLoading} 
+            onItemClick={handleNotificationClick}
+        />
       </PopoverContent>
     </Popover>
   );

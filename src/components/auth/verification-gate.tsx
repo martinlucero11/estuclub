@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/firebase/hooks';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Mail, RefreshCw, LogOut, Loader2, CheckCircle2 } from 'lucide-react';
@@ -12,11 +13,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function VerificationGate({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const pathname = usePathname();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
-  // If user is logged in but NOT verified, block the UI
-  const needsVerification = user && !user.emailVerified;
+  const publicPaths = ['/login', '/register', '/signup', '/verify', '/forgot-password', '/reset-password'];
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+
+  // If user is logged in but NOT verified, block the UI (unless it's a public path)
+  const needsVerification = user && !user.emailVerified && !isPublicPath;
 
   const handleRefresh = async () => {
     if (!user) return;
@@ -66,8 +71,16 @@ export default function VerificationGate({ children }: { children: React.ReactNo
     await signOut(auth);
   };
 
-  if (isUserLoading) {
-     return children; // Let the main loading states handle it, or we could show a splash
+  if (isUserLoading && !isPublicPath) {
+    return (
+        <div className="fixed inset-0 z-[9999] mesh-gradient animate-mesh flex flex-col items-center justify-center p-6 space-y-4">
+             <div className="relative w-16 h-16">
+                 <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
+                 <Loader2 className="relative h-16 w-16 text-primary animate-spin" />
+             </div>
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary/60">Verificando sesión...</p>
+        </div>
+    );
   }
 
   if (needsVerification) {

@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
+
 // Important: Only import Leaflet on the client
 import type { Map, Icon } from 'leaflet';
 
@@ -11,6 +13,7 @@ interface MapProps {
   zoom?: number;
   markers?: {
     id: string;
+    slug?: string;
     position: [number, number];
     title: string;
     description?: string;
@@ -20,6 +23,7 @@ interface MapProps {
 }
 
 export default function LeafletMap({ center, zoom = 14, markers = [], className }: MapProps) {
+  const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<Map | null>(null);
   const tileLayerRef = useRef<any>(null);
@@ -128,13 +132,13 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
          marker.bindPopup(`
             <div class="premium-popup-card">
                 <div class="popup-header">
-                    <div class="status-badge">Estuclub Partner</div>
+                    <div class="status-badge">Estuclub Cluber</div>
                     <h3 class="popup-title">${m.title}</h3>
                     ${m.description ? `<p class="popup-description">${m.description}</p>` : ''}
                 </div>
                 <div class="popup-footer">
-                    <button class="popup-action-btn">
-                        Ver Beneficios
+                    <button class="popup-action-btn" id="popup-btn-${m.id}">
+                        Ver Perfil
                         <svg viewBox="0 0 24 24" class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
                 </div>
@@ -148,6 +152,19 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
        if (m.onClick) {
          marker.on('click', m.onClick);
        }
+
+        marker.on('popupopen', () => {
+             const btn = document.getElementById(`popup-btn-${m.id}`);
+             if (btn) {
+                 btn.onclick = () => {
+                     if (m.slug) {
+                         router.push(`/proveedores/${m.slug}`);
+                     } else {
+                         router.push(`/proveedores`);
+                     }
+                 };
+             }
+        });
 
        markersRef.current.push(marker);
     });

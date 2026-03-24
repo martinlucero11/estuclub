@@ -32,6 +32,7 @@ export default function DiscoveryMap() {
       .filter(s => s.location && s.location.lat && s.location.lng)
       .map(s => ({
         id: s.id,
+        slug: s.slug,
         position: [s.location.lat, s.location.lng] as [number, number],
         title: s.name,
         description: s.type,

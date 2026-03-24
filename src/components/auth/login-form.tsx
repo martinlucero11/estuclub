@@ -16,8 +16,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Mail, AlertCircle } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, UserIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth } from '@/firebase/client-config'; 
 import { 
   signInWithEmailAndPassword, 
@@ -33,13 +35,14 @@ import { useState } from 'react';
 import { haptic } from '@/lib/haptics';
 
 const formSchema = z.object({
-  email: z.string().email('Por favor, introduce un correo electrónico válido.'),
+  identifier: z.string().min(3, 'Por favor, introduce tu email o nombre de usuario.'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
   rememberMe: z.boolean().default(true),
 });
 
 export default function LoginForm() {
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [unverifiedCredentials, setUnverifiedCredentials] = useState({ email: '', password: '' });
   const [isResending, setIsResending] = useState(false);
@@ -47,7 +50,7 @@ export default function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      identifier: '',
       password: '',
       rememberMe: true,
     },
@@ -78,16 +81,48 @@ export default function LoginForm() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setShowVerificationAlert(false);
     try {
+      let loginEmail = values.identifier;
+
+      // 1. Resolve Username if needed
+      if (!values.identifier.includes('@')) {
+          const usernameDocRef = doc(firestore, 'usernames', values.identifier.toLowerCase());
+          const usernameDoc = await getDoc(usernameDocRef);
+          
+          if (!usernameDoc.exists()) {
+              toast({
+                  variant: "destructive",
+                  title: "Usuario no encontrado",
+                  description: "El nombre de usuario ingresado no existe."
+              });
+              return;
+          }
+          
+          const userId = usernameDoc.data().userId;
+          const userDocRef = doc(firestore, 'users', userId);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists() && userDoc.data().email) {
+              loginEmail = userDoc.data().email;
+          } else {
+              toast({
+                  variant: "destructive",
+                  title: "Error de perfil",
+                  description: "No se pudo recuperar el correo asociado a este usuario."
+              });
+              return;
+          }
+      }
+
       const persistence = values.rememberMe 
         ? browserLocalPersistence 
         : browserSessionPersistence;
         
       await setPersistence(auth, persistence);
 
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, values.password);
       
       if (!userCredential.user.emailVerified) {
-        setUnverifiedCredentials({ email: values.email, password: values.password });
+        setUnverifiedCredentials({ email: loginEmail, password: values.password });
         setShowVerificationAlert(true);
         await signOut(auth);
         return;
@@ -137,10 +172,10 @@ export default function LoginForm() {
             <CardContent className="space-y-6 pt-10 px-8">
               <FormField
                 control={form.control}
-                name="email"
+                name="identifier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-black uppercase tracking-widest text-[10px] ml-1 opacity-70">Correo Electrónico</FormLabel>
+                    <FormLabel className="font-black uppercase tracking-widest text-[10px] ml-1 opacity-70">Email o Usuario</FormLabel>
                     <div className="relative group/input">
                       <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>

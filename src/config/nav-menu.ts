@@ -18,6 +18,7 @@ import {
     History as HistoryIcon,
     Trophy,
     UtensilsCrossed,
+    HelpCircle,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -57,6 +58,12 @@ export const navConfig: NavConfig = {
       href: "/mis-turnos",
       icon: CalendarClock,
       role: ["user", "admin", "supplier"],
+    },
+    {
+      title: "Solicitar ser Cluber",
+      href: "/solicitar-cluber",
+      icon: Building,
+      role: ["user"], // Only for regular users
     },
     {
       title: "Mis Canjes",
@@ -152,6 +159,12 @@ export const navConfig: NavConfig = {
                 title: "Solicitudes Cinco.Dos",
                 href: "/panel-cluber/cinco-dos",
                 icon: UtensilsCrossed,
+                role: ["admin"],
+            },
+            {
+                title: "Solicitudes de Clubers",
+                href: "/panel-cluber/supplier-requests",
+                icon: HelpCircle,
                 role: ["admin"],
             },
             {

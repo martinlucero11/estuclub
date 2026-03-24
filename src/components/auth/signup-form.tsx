@@ -18,7 +18,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, User } from 'firebase/auth';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -51,6 +51,8 @@ const formSchema = z.object({
   acceptPrivacy: z.boolean().refine(val => val === true, {
     message: "Debes aceptar la política de privacidad.",
   }),
+  birthDate: z.string().min(10, 'La fecha de nacimiento es obligatoria.'),
+  requestCluber: z.boolean().default(false),
 });
 
 export default function SignupForm() {
@@ -76,6 +78,8 @@ export default function SignupForm() {
       university: '',
       major: '',
       acceptPrivacy: false,
+      birthDate: '',
+      requestCluber: false,
     },
   });
 
@@ -135,16 +139,30 @@ export default function SignupForm() {
         gender: values.gender,
         university: values.university,
         major: values.major,
-        dateOfBirth: '',
+        dateOfBirth: values.birthDate,
         points: 0,
         photoURL: '',
         role: 'user',
         isEmailVerified: false,
+        wantsToBeCluber: values.requestCluber,
         createdAt: serverTimestamp(),
       });
       
       const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
       batch.set(newUsernameRef, { userId: user.uid });
+
+      // If they want to be a Cluber, create a request record
+      if (values.requestCluber) {
+          const requestRef = doc(collection(firestore, 'supplier_requests'));
+          batch.set(requestRef, {
+              userId: user.uid,
+              userEmail: values.email,
+              userName: `${values.firstName} ${values.lastName}`,
+              status: 'pending',
+              createdAt: serverTimestamp(),
+              requestedAt: serverTimestamp(),
+          });
+      }
 
       await batch.commit();
 
@@ -363,7 +381,7 @@ export default function SignupForm() {
                             </SelectContent>
                         </Select>
                      </div>
-                    <FormMessage className="text-[10px] font-bold" />
+                     <FormMessage className="text-[10px] font-bold" />
                   </FormItem>
                 )}
               />
@@ -383,22 +401,37 @@ export default function SignupForm() {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={labelClasses}>Teléfono</FormLabel>
-                  <div className="relative group/input">
-                    <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
-                    <FormControl>
-                      <Input placeholder="1122334455" {...field} className={inputClasses} />
-                    </FormControl>
-                  </div>
-                  <FormMessage className="text-[10px] font-bold" />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+               <FormField
+                  control={form.control}
+                  name="birthDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClasses}>Fecha de Nacimiento</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} className={cn(inputClasses, "pl-4 block w-full text-xs")} />
+                      </FormControl>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClasses}>Teléfono</FormLabel>
+                      <div className="relative group/input">
+                        <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                        <FormControl>
+                          <Input placeholder="1122334455" {...field} className={inputClasses} />
+                        </FormControl>
+                      </div>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+            </div>
              <FormField
                 control={form.control}
                 name="university"
@@ -451,6 +484,29 @@ export default function SignupForm() {
                         </Link>
                       </FormLabel>
                       <FormMessage className="text-[10px] font-bold" />
+                    </div>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="requestCluber"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-2xl bg-primary/10 p-4 border border-primary/20 mt-4 mb-2 shadow-lg shadow-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="rounded-md border-primary/40 data-[state=checked]:bg-primary"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-[11px] font-black uppercase tracking-widest text-primary cursor-pointer select-none">
+                        Solicitar ser Cluber
+                      </FormLabel>
+                      <p className="text-[9px] font-bold text-muted-foreground/60 leading-none">
+                        Si tienes un comercio, únete a nuestra red.
+                      </p>
                     </div>
                   </FormItem>
                 )}
