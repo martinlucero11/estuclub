@@ -79,6 +79,7 @@ export default function SignupForm() {
       major: '',
       acceptPrivacy: false,
       birthDate: '',
+      gender: 'Masculino',
       requestCluber: false,
     },
   });
@@ -133,18 +134,18 @@ export default function SignupForm() {
         email: values.email,
         username: values.username.toLowerCase(),
         dni: values.dni,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        phone: values.phone,
-        gender: values.gender,
-        university: values.university,
-        major: values.major,
-        dateOfBirth: values.birthDate,
+        firstName: values.firstName || '',
+        lastName: values.lastName || '',
+        phone: values.phone || '',
+        gender: values.gender || 'Masculino',
+        university: values.university || '',
+        major: values.major || '',
+        dateOfBirth: values.birthDate || '',
         points: 0,
         photoURL: '',
         role: 'user',
         isEmailVerified: false,
-        wantsToBeCluber: values.requestCluber,
+        wantsToBeCluber: !!values.requestCluber,
         createdAt: serverTimestamp(),
       });
       
@@ -162,16 +163,22 @@ export default function SignupForm() {
               createdAt: serverTimestamp(),
               requestedAt: serverTimestamp(),
           });
+          console.log("Cluber request added to batch.");
       }
 
+      console.log("Committing Firestore batch...");
       await batch.commit();
+      console.log("Firestore batch committed successfully.");
 
       // 3. Update Auth Profile
+      console.log("Updating Auth profile...");
       await updateProfile(user, {
         displayName: `${values.firstName} ${values.lastName}`,
       });
+      console.log("Auth profile updated.");
 
       // 4. Send Email Verification (Last step)
+      console.log("Attempting to send email verification...");
       try {
         const actionCodeSettings = {
             url: `${window.location.origin}/login?email=${user.email}`,

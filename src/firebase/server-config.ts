@@ -5,20 +5,21 @@ import * as path from 'path';
 
 // We check if the app is already initialized to prevent re-initialization errors.
 if (!admin.apps.length) {
-  const serviceAccountPath = path.join(process.cwd(), 'service-account.json');
   let config: any = {
     projectId: firebaseConfig.projectId,
     storageBucket: firebaseConfig.storageBucket,
   };
 
-  if (fs.existsSync(serviceAccountPath)) {
-    try {
+  try {
+    const serviceAccountPath = path.join(process.cwd(), 'service-account.json');
+    if (fs.existsSync && fs.existsSync(serviceAccountPath)) {
       const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
       config.credential = admin.credential.cert(serviceAccount);
       console.log('Firebase Admin initialized with local service account.');
-    } catch (e) {
-      console.error('Error loading service account JSON:', e);
     }
+  } catch (e) {
+    // We ignore errors here as it might be a serverless environment with no FS access
+    console.log('Note: Local service account not loaded (normal in cloud environment)');
   }
 
   admin.initializeApp(config);
