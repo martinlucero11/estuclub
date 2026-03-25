@@ -218,14 +218,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
                     </div>
                     <div className="mt-8 flex items-center justify-center gap-4">
                         {!isOwnProfile && (
-                            <MagneticButton>
-                                <SubscribeButton supplierId={supplier.id} />
-                            </MagneticButton>
+                            <SubscribeButton supplierId={supplier.id} />
                         )}
                         {!isOwnProfile && (
-                            <MagneticButton>
-                                <FavoriteButton id={supplier.id} type="supplier" className="h-12 w-12 shadow-premium glass glass-dark" />
-                            </MagneticButton>
+                            <FavoriteButton id={supplier.id} type="supplier" />
                         )}
                     </div>
                 </div>

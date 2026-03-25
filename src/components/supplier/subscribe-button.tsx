@@ -5,6 +5,8 @@ import { doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { BellPlus, BellOff, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 interface SubscribeButtonProps {
     supplierId: string;
@@ -56,17 +58,17 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
 
     if (!user) {
         return (
-            <Button disabled>
-                <BellPlus className="mr-2 h-4 w-4" />
-                Inicia sesión para suscribirte
+            <Button disabled className="h-14 px-6 rounded-2xl font-black uppercase tracking-widest bg-muted/20 opacity-50 border-2 border-dashed">
+                <BellPlus className="mr-2 h-5 w-5" />
+                Login para suscribirte
             </Button>
         );
     }
     
     if (isLoading || isProcessing) {
          return (
-            <Button disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Button disabled className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest bg-muted/20 border-2 border-primary/20">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Cargando...
             </Button>
         );
@@ -74,17 +76,28 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
 
     if (isSubscribed) {
         return (
-            <Button variant="outline" onClick={handleUnsubscribe}>
-                <BellOff className="mr-2 h-4 w-4" />
-                Suscrito
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="h-14">
+                <Button 
+                    variant="outline" 
+                    onClick={handleUnsubscribe}
+                    className="h-full px-8 rounded-2xl font-extrabold uppercase tracking-widest bg-primary/10 border-2 border-primary/40 text-primary shadow-xl hover:bg-primary/20 transition-all duration-300"
+                >
+                    <BellOff className="mr-2 h-5 w-5" />
+                    Suscrito
+                </Button>
+            </motion.div>
         );
     }
 
     return (
-        <Button onClick={handleSubscribe}>
-            <BellPlus className="mr-2 h-4 w-4" />
-            Suscribirse
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="h-14">
+            <Button 
+                onClick={handleSubscribe}
+                className="h-full px-8 rounded-2xl font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-primary-foreground shadow-premium-pink border-2 border-white/20 transition-all duration-300"
+            >
+                <BellPlus className="mr-2 h-5 w-5" />
+                Suscribirse
+            </Button>
+        </motion.div>
     );
 }

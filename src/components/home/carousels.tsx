@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/carousel';
 import AnnouncementCard from "../announcements/announcement-card";
 import { makeAnnouncementSerializable } from "@/lib/data";
-import { MapPin } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import { formatDistance, calculateDistance } from "@/lib/geo-utils";
 import { useUser } from "@/firebase";
 import { useMemo } from "react";
@@ -69,6 +69,14 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
                 </motion.div>
                 <div className="mt-4 space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/50 group-hover:text-primary transition-all duration-500 group-hover:tracking-[0.3em] line-clamp-1">{supplier.name}</p>
+                    
+                    {supplier.avgRating && supplier.avgRating > 0 && (
+                        <div className="flex items-center justify-center gap-1.5 mt-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                            <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                            <span className="text-[10px] font-black tracking-tight">{supplier.avgRating.toFixed(1)}</span>
+                        </div>
+                    )}
+
                     <div className="h-0.5 w-0 bg-primary mx-auto group-hover:w-4 transition-all duration-500 rounded-full" />
                 </div>
             </div>
@@ -119,8 +127,8 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
     if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
-       <Carousel opts={{ align: "start" }} className="w-full">
-            <CarouselContent>
+       <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
+            <CarouselContent className="py-10 -my-10">
                 {benefits.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
                         <BenefitCard benefit={item} variant="carousel" priority={index < 2} />
@@ -137,8 +145,8 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
     if (!suppliers || suppliers.length === 0) return <p className="text-muted-foreground italic text-sm">No hay proveedores para mostrar.</p>;
 
     return (
-        <Carousel opts={{ align: "start" }} className="w-full relative">
-            <CarouselContent className="-ml-4">
+        <Carousel opts={{ align: "start" }} className="w-full relative py-10 -my-10">
+            <CarouselContent className="-ml-4 py-10 -my-10">
                 {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
                         <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
@@ -179,8 +187,8 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
     }
     
     return (
-        <Carousel opts={{ align: "start", loop: true }} className="w-full">
-            <CarouselContent className="-ml-2">
+        <Carousel opts={{ align: "start", loop: true }} className="w-full py-8 -my-8">
+            <CarouselContent className="-ml-2 py-8 -my-8">
                 {banners.map((banner, index) => (
                     <CarouselItem key={banner.id ?? index} className="basis-full md:basis-1/2 pl-2">
                         <BannerCarouselCard 
