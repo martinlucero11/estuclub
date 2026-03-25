@@ -37,6 +37,7 @@ import { SearchBar } from '@/components/layout/search-bar';
 import { MagneticButton } from '../ui/magnetic-button';
 import { getAvatarUrl } from '@/lib/utils';
 import { AvatarFallbackFachero } from '@/components/profile/avatar-selector';
+import { usePlatform } from '@/hooks/use-platform';
 
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
@@ -218,12 +219,17 @@ function AppSidebar() {
 
 export default function Header() {
   const { user, isUserLoading } = useUser();
+  const { isMobile, isWeb } = usePlatform();
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-primary shadow-premium">
-      <div className="container relative flex h-16 items-center justify-between px-4">
+    <header className={cn(
+        "sticky top-0 z-40 w-full bg-primary shadow-premium transition-all duration-300",
+        isMobile ? "h-14" : "h-16"
+    )}>
+      <div className="container relative flex h-full items-center justify-between px-4">
         {/* Left Slot: Actions */}
         <div className="flex items-center">
-          <AppSidebar />
+          {isWeb && <AppSidebar />}
         </div>
 
         {/* Center Slot: Absolutely Positioned Logo */}
@@ -243,7 +249,7 @@ export default function Header() {
 
         {/* Right Slot: Actions */}
         <div className="flex items-center gap-0.5 sm:gap-2">
-          <SearchBar />
+          {isWeb && <SearchBar />}
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />
         </div>

@@ -30,6 +30,14 @@ export const metadata: Metadata = {
   },
   description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Mismo Boutique Creativa!",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "EstuClub",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "es_AR",

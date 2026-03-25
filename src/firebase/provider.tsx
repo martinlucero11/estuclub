@@ -59,7 +59,9 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     let firestore: Firestore;
     try {
       firestore = initializeFirestore(app, { 
-        localCache: persistentLocalCache({}) 
+        localCache: persistentLocalCache({
+          tabManager: { type: 'multi-tab' }
+        }) 
       });
     } catch {
       firestore = getFirestore(app);
