@@ -59,10 +59,10 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     {distance !== null && (
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 animate-in fade-in zoom-in duration-500">
-                             <div className="bg-primary px-4 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg scale-100 group-hover:scale-110 transition-all duration-500">
-                                <MapPin className="h-4 w-4 text-white fill-current/20" />
-                                <span className="text-xs font-black tracking-tight text-white drop-shadow-md">{formatDistance(distance)}</span>
+                        <div className="absolute top-3 right-3 z-30 animate-in fade-in zoom-in duration-500">
+                             <div className="bg-primary/90 backdrop-blur-md px-2.5 py-1.5 rounded-2xl border border-white/20 flex items-center gap-1.5 shadow-xl scale-100 group-hover:scale-110 transition-all duration-500">
+                                <MapPin className="h-3 w-3 text-white fill-current/20" />
+                                <span className="text-[10px] font-black tracking-tighter text-white drop-shadow-md">{formatDistance(distance)}</span>
                             </div>
                         </div>
                     )}

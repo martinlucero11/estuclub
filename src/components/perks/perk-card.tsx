@@ -101,6 +101,15 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
                         {isLocked ? `Nivel ${benefit.minLevel}+` : `Nivel ${benefit.minLevel} Desbloqueado`}
                     </Badge>
                 )}
+
+                {distance !== null && !isLocked && (
+                    <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                        <div className="bg-primary/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 flex items-center gap-1.5 shadow-lg scale-100 group-hover:scale-110 transition-all duration-500 cursor-default w-fit">
+                            <MapPin className="h-3 w-3 text-white fill-current/20" />
+                            <span className="text-[10px] font-black tracking-tight text-white leading-none drop-shadow-md">{formatDistance(distance)}</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -112,14 +121,6 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
             </div>
         </div>
 
-        {distance !== null && !isLocked && (
-            <div className="absolute top-16 right-4 z-30 animate-in fade-in slide-in-from-right-4 duration-700">
-                <div className="bg-primary px-3.5 py-2 rounded-full border border-white/20 flex items-center gap-2 shadow-lg hover:scale-110 transition-transform duration-500 cursor-default group/distance">
-                    <MapPin className="h-4 w-4 text-white fill-current/20" />
-                    <span className="text-xs font-black tracking-tight text-white leading-none drop-shadow-md">{formatDistance(distance)}</span>
-                </div>
-            </div>
-        )}
 
         <div className="relative z-10 flex h-full flex-col justify-end p-6 text-left">
             <div className='space-y-1.5'>
