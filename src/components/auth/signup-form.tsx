@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle } from 'lucide-react';
+import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useAuthService } from '@/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
