@@ -2,7 +2,7 @@
 
 import React, { createContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
-import { Firestore, initializeFirestore, getFirestore, persistentLocalCache, doc, getDoc } from 'firebase/firestore';
+import { Firestore, initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
 import { FirebaseStorage, getStorage } from 'firebase/storage';
 import { firebaseConfig } from '@/firebase/config';
@@ -60,7 +60,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       firestore = initializeFirestore(app, { 
         localCache: persistentLocalCache({
-          tabManager: { type: 'multi-tab' }
+          tabManager: persistentMultipleTabManager()
         }) 
       });
     } catch {
