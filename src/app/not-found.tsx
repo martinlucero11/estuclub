@@ -17,14 +17,14 @@ export default function NotFound() {
             <h1 className="text-8xl font-black italic tracking-tighter text-primary/20 leading-none">404</h1>
             <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">Página Perdida en el Espacio</h2>
             <p className="text-sm font-medium text-muted-foreground italic max-w-sm mx-auto">
-                No pudimos encontrar lo que buscabas. Pero no te vayas, ¡tenemos a un gatito que necesita ayuda!
+                No pudimos encontrar lo que buscabas. Pero no te vayas, ¡tenemos el desafío de Mismuki esperándote!
             </p>
         </div>
 
         <PremiumEmptyState 
             icon={Ghost}
             title="¡Perdidos!"
-            description="Mientras buscas el camino de regreso, ¿por qué no intentas superar tu récord?"
+            description="Mientras buscas el camino de regreso, ¿por qué no intentas superar tu récord en Mismuki The Game?"
             actionLabel="Volver al Inicio"
             onAction={() => router.push('/')}
             showGame={true}
