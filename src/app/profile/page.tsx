@@ -55,6 +55,7 @@ interface UserProfile {
     username: string;
     photoURL?: string;
     avatarSeed?: string;
+    useAvatar?: boolean;
     points: number;
     id: string;
 }

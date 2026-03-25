@@ -16,6 +16,8 @@ interface UserProfile {
     id: string;
     username: string;
     photoURL?: string;
+    avatarSeed?: string;
+    useAvatar?: boolean;
     firstName: string;
     lastName: string;
     dni: string;

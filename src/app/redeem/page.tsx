@@ -18,6 +18,8 @@ interface UserProfile {
     id: string;
     username: string;
     photoURL?: string;
+    avatarSeed?: string;
+    useAvatar?: boolean;
     university: string;
     points: number;
 }
