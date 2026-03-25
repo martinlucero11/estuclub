@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin, firestore } from '@/firebase/server-config';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * API Route to clean up Auth users that do not have a corresponding Firestore profile.
  * Restricted to Admins only.

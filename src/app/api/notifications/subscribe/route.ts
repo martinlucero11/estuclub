@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { admin } from '@/firebase/server-config';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
     try {
         const { token, topic } = await request.json();

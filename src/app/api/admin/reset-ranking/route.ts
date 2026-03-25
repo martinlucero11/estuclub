@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { firestore } from '@/firebase/server-config';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
   try {
     const usersSnapshot = await firestore.collection('users').get();
