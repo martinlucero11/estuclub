@@ -17,6 +17,7 @@ import dynamic from 'next/dynamic';
 
 const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
 const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
+const AvatarOnboarding = dynamic(() => import('@/components/profile/avatar-onboarding').then(m => m.AvatarOnboarding), { ssr: false });
 
 function HomeSectionsSkeleton() {
     return (
@@ -99,6 +100,7 @@ export default function HomePage() {
                 <Suspense fallback={<HomeSectionsSkeleton />}>
                     <HomeContent />
                 </Suspense>
+                <AvatarOnboarding />
             </div>
         </MainLayout>
     );

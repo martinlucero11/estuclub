@@ -104,7 +104,7 @@ export default function SupplierList() {
                         </Avatar>
                         <div className="flex-1">
                             <Button variant="link" asChild className="p-0 h-auto">
-                                <Link href={`/proveedores/${supplier.slug}`}>
+                                <Link href={`/proveedores/view?slug=${supplier.slug}`}>
                                     <p className="font-semibold text-base">{supplier.name}</p>
                                 </Link>
                             </Button>

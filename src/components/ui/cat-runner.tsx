@@ -166,10 +166,10 @@ export function CatRunner() {
       // Drawing a little trail if jumping
       if (cat.isJumping) {
           ctx.globalAlpha = 0.3;
-          ctx.fillText('🐱', cat.x - 10, cat.y + 25);
+          ctx.fillText('🐈', cat.x - 10, cat.y + 25);
           ctx.globalAlpha = 1.0;
       }
-      ctx.fillText('🐱', cat.x, cat.y + 35);
+      ctx.fillText('🐈', cat.x, cat.y + 35);
       
       // Obstacles (Cyberpunk Spikes/Crates)
       obstacles.forEach(obs => {
@@ -250,7 +250,7 @@ export function CatRunner() {
                         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                         className="text-6xl drop-shadow-[0_0_20px_rgba(236,72,153,0.5)]"
                     >
-                        🐱
+                        🐈
                     </motion.div>
                     
                     <div className="text-center px-4">

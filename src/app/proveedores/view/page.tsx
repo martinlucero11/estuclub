@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
@@ -8,15 +7,13 @@ import MainLayout from '@/components/layout/main-layout';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Search, Server, ChevronLeft } from 'lucide-react';
+import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Server, ChevronLeft } from 'lucide-react';
 import BenefitsGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
-import Image from 'next/image';
 import ServiceList from '@/components/supplier/service-list';
-import { Separator } from '@/components/ui/separator';
 import { createConverter } from '@/lib/firestore-converter';
-import { getInitials, cn } from '@/lib/utils';
+import { getInitials } from '@/lib/utils';
 import SubscribeButton from '@/components/supplier/subscribe-button';
 import { FavoriteButton } from '@/components/layout/favorite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,11 +21,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ReviewList } from '@/components/reviews/review-list';
 import { StarRating } from '@/components/reviews/star-rating';
 import Link from 'next/link';
-import { MagneticButton } from '@/components/ui/magnetic-button';
 import { motion } from 'framer-motion';
-import { haptic } from '@/lib/haptics';
 import { MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 
 const LeafletMap = dynamic(() => import('@/components/maps/leaflet-map'), { 
     ssr: false,
@@ -80,7 +76,10 @@ function AverageRating({ supplier }: { supplier: SupplierProfile }) {
     );
 }
 
-function CluberProfileContent({ slug }: { slug: string }) {
+function CluberProfileContent() {
+    const searchParams = useSearchParams();
+    const slug = searchParams.get('slug');
+    
     const firestore = useFirestore();
     const { user } = useUser();
     const [supplier, setSupplier] = useState<SupplierProfile | null>(null);
@@ -89,7 +88,13 @@ function CluberProfileContent({ slug }: { slug: string }) {
 
     useEffect(() => {
         const fetchSupplier = async () => {
-            if (!slug || !firestore) return;
+            if (!slug || !firestore) {
+                if (!slug) {
+                   setIsLoadingSupplier(false);
+                   setError('SLUG no proporcionado');
+                }
+                return;
+            }
             setIsLoadingSupplier(true);
             try {
                 const q = query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), where('slug', '==', slug), limit(1));
@@ -138,12 +143,12 @@ function CluberProfileContent({ slug }: { slug: string }) {
         return <ProfileSkeleton />;
     }
     
-    if (error) {
+    if (error || !slug) {
          return (
             <div className="flex items-center justify-center pt-16">
                  <Alert variant="destructive" className="max-w-lg">
                     <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>{error || 'Falta parámetro slug'}</AlertDescription>
                 </Alert>
             </div>
         );
@@ -167,12 +172,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
     const hasBenefits = benefits && benefits.length > 0;
     const hasServices = supplier.appointmentsEnabled && services && services.length > 0;
     
-    // Determine default tab
     const defaultTab = hasBenefits ? "benefits" : hasServices ? "services" : "benefits";
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* Premium Minimalist Header */}
             <motion.header 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -230,7 +233,7 @@ function CluberProfileContent({ slug }: { slug: string }) {
             <main className="w-full max-w-5xl mx-auto px-4 py-12">
                 {supplier.description && (
                      <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-12 text-lg font-medium leading-relaxed">
-                        {supplier.description}
+                        "{supplier.description}"
                      </p>
                 )}
 
@@ -298,10 +301,10 @@ function CluberProfileContent({ slug }: { slug: string }) {
     );
 }
 
-export default function CluberProfilePage({ params }: { params: { slug: string } }) {
+export default function CluberProfilePage() {
     return (
         <MainLayout>
-            <CluberProfileContent slug={params.slug} />
+            <CluberProfileContent />
         </MainLayout>
     );
 }

@@ -51,9 +51,9 @@ export const metadata: Metadata = {
     images: ["https://estuclub.com.ar/og-image.jpg"],
   },
   icons: {
-    icon: '/logo.svg',
-    shortcut: '/logo.svg',
-    apple: '/logo.svg',
+    icon: '/favicon.png',          // El icono pequeño (48x48 o similar)
+    shortcut: '/icon-192.png',     // El de 192px
+    apple: '/icon-192.png',        // Apple se ve mejor con un PNG cuadrado
   },
 };
 

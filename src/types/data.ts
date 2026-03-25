@@ -38,6 +38,8 @@ export interface UserProfile {
     major: string;
     points: number;
     photoURL?: string;
+    avatarSeed?: string;
+    useAvatar?: boolean;  // suppliers: true = show DiceBear avatar, false/undefined = show logo
     role: UserRole;
     favoriteBenefits?: string[];
     favoriteSuppliers?: string[];

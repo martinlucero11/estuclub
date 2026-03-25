@@ -158,7 +158,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
              if (btn) {
                  btn.onclick = () => {
                      if (m.slug) {
-                         router.push(`/proveedores/${m.slug}`);
+                         router.push(`/proveedores/view?slug=${m.slug}`);
                      } else {
                          router.push(`/proveedores`);
                      }

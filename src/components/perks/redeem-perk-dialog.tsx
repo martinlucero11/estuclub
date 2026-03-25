@@ -85,6 +85,16 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
 
 
   const handleRedeem = async () => {
+    if (typeof window !== 'undefined' && !navigator.onLine) {
+      toast({
+        variant: 'destructive',
+        title: 'Sin conexión',
+        description: 'Se requiere una conexión a internet activa para realizar el canje. Por favor, intenta de nuevo cuando tengas señal.'
+      });
+      setIsRedeeming(false);
+      return;
+    }
+
     if (!user || !userProfile || !firestore || !benefit.ownerId) {
       toast({ 
           variant: 'destructive', 

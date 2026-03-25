@@ -52,7 +52,7 @@ export function useAppointmentReminders() {
                         duration: 10000,
                         action: {
                             label: 'Ver Turno',
-                            onClick: () => window.location.href = `/mis-turnos/${app.id}`
+                            onClick: () => window.location.href = `/mis-turnos/view?id=${app.id}`
                         }
                     });
                     // Mark as notified for this session

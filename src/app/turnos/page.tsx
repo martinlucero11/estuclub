@@ -84,7 +84,7 @@ function CluberList() {
                         const cluberInitials = cluber.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
 
                         return (
-                            <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block h-full">
+                            <Link key={cluber.id} href={`/proveedores/view?slug=${cluber.slug}`} className="group block h-full">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
                                     <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />

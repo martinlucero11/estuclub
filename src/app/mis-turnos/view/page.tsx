@@ -1,7 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useDoc, useFirestore, useDocOnce, useUser } from '@/firebase'; // Import useUser
+import { useDoc, useFirestore, useDocOnce, useUser } from '@/firebase';
 import { doc, Timestamp } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Appointment, SupplierProfile } from '@/types/data';
@@ -9,8 +9,8 @@ import AppointmentReceiptCard from '@/components/appointments/appointment-receip
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ShieldAlert } from 'lucide-react'; // Import ShieldAlert
-import Link from 'next/link';
+import { MessageCircle, ShieldAlert } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function ReceiptSkeleton() {
@@ -25,29 +25,25 @@ function ReceiptSkeleton() {
 function AppointmentDetails({ appointment }: { appointment: Appointment }) {
     const firestore = useFirestore();
     const supplierRef = useMemo(
-        () => doc(firestore, 'roles_supplier', appointment.supplierId),
-        [firestore, appointment.supplierId]
+        () => (appointment?.supplierId ? doc(firestore, 'roles_supplier', appointment.supplierId) : null),
+        [firestore, appointment?.supplierId]
     );
     const { data: supplier, isLoading: isLoadingSupplier } = useDocOnce<SupplierProfile>(supplierRef);
 
     const handleShareToWhatsApp = () => {
-        if (!supplier?.whatsapp) return;
+        if (!supplier?.whatsapp || !appointment) return;
 
         let startDate: Date;
-        // The data from Firestore is a Timestamp object
         if (appointment.startTime instanceof Timestamp) {
             startDate = appointment.startTime.toDate();
         } 
-        // If it's already a JS Date object
         else if (appointment.startTime instanceof Date) {
             startDate = appointment.startTime;
         } 
-        // Fallback for serialized object form (less likely with direct Firestore hook)
         else if (typeof appointment.startTime === 'object' && 'seconds' in appointment.startTime && typeof (appointment.startTime as any).seconds === 'number') {
              startDate = new Date((appointment.startTime as any).seconds * 1000);
         }
         else {
-            // Final fallback if the format is unexpected
             startDate = new Date(); 
         }
 
@@ -69,21 +65,19 @@ function AppointmentDetails({ appointment }: { appointment: Appointment }) {
     )
 }
 
-
-export default function AppointmentReceiptPage({ params }: { params: { id: string } }) {
-    const { id: appointmentId } = params;
+export default function AppointmentReceiptPage() {
+    const searchParams = useSearchParams();
+    const appointmentId = searchParams.get('id');
+    
     const firestore = useFirestore();
-    const { user, isUserLoading } = useUser(); // <-- Add useUser
+    const { user, isUserLoading } = useUser();
 
     const appointmentRef = useMemo(
-        // Only create ref if user is logged in
         () => user && appointmentId ? doc(firestore, 'appointments', appointmentId) : null,
         [appointmentId, firestore, user]
     );
 
     const { data: appointment, isLoading, error } = useDoc<Appointment>(appointmentRef);
-    
-    // Combine loading states
     const combinedIsLoading = isUserLoading || isLoading;
 
     return (
@@ -107,11 +101,11 @@ export default function AppointmentReceiptPage({ params }: { params: { id: strin
                         </Alert>
                     )}
                     
-                    {!combinedIsLoading && user && error && (
+                    {!combinedIsLoading && user && (error || !appointmentId) && (
                         <Alert variant="destructive" className="max-w-md">
                             <AlertTitle>Error</AlertTitle>
                             <AlertDescription>
-                                No se pudo cargar el turno. Es posible que no tengas permiso para verlo o que el ID sea incorrecto.
+                                {error?.message || 'ID de turno no proporcionado o inválido.'}
                             </AlertDescription>
                         </Alert>
                     )}
@@ -120,7 +114,7 @@ export default function AppointmentReceiptPage({ params }: { params: { id: strin
                         <AppointmentDetails appointment={appointment} />
                     )}
 
-                    {!combinedIsLoading && user && !appointment && !error && (
+                    {!combinedIsLoading && user && !appointment && !error && appointmentId && (
                          <Alert className="max-w-md">
                             <AlertTitle>Turno no encontrado</AlertTitle>
                             <AlertDescription>

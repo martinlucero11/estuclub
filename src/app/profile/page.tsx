@@ -1,4 +1,3 @@
-
 'use client';
 import { useUser, useFirestore, useDocOnce, useStorage } from '@/firebase';
 import MainLayout from '@/components/layout/main-layout';
@@ -10,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, getDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { AtSign, Copy, Save, User as UserIcon, Award, Trophy, QrCode } from 'lucide-react';
+import { AtSign, Copy, Save, User as UserIcon, Award, Trophy, QrCode, Paintbrush, Scissors } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -23,11 +22,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { useUserRank } from '@/hooks/use-user-rank';
 import { PageHeader } from '@/components/ui/page-header';
 import { LevelProgress } from '@/components/profile/level-progress';
+import { AvatarSelector, AvatarFallbackFachero } from '@/components/profile/avatar-selector';
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import { getAvatarUrl, cn } from '@/lib/utils';
 
 const UserQRCodeDialog = dynamic(() => import('@/components/profile/user-qr-code-dialog'), { ssr: false });
 
@@ -35,6 +43,7 @@ const profileFormSchema = z.object({
     firstName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
     lastName: z.string().min(2, 'El apellido debe tener al menos 2 caracteres.'),
     username: z.string().min(3, 'El nombre de usuario debe tener al menos 3 caracteres.').regex(/^[a-zA-Z0-9_]+$/, 'Solo letras, números y guiones bajos.'),
+    avatarSeed: z.string().optional(),
 });
 
 interface UserProfile {
@@ -45,6 +54,7 @@ interface UserProfile {
     phone: string;
     username: string;
     photoURL?: string;
+    avatarSeed?: string;
     points: number;
     id: string;
 }
@@ -111,9 +121,12 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
 
 
 export default function ProfilePage() {
-    const { user, isUserLoading } = useUser();
+    const { user, isUserLoading, roles } = useUser();
+    const isSupplier = roles.includes('supplier');
     const firestore = useFirestore();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const shouldOpenCustomizer = searchParams?.get('customize') === 'true';
 
     const userProfileRef = useMemo(() => {
         if (isUserLoading || !user) return null;
@@ -131,6 +144,7 @@ export default function ProfilePage() {
             firstName: '',
             lastName: '',
             username: '',
+            avatarSeed: '',
         },
     });
     
@@ -140,6 +154,7 @@ export default function ProfilePage() {
                 firstName: userProfile.firstName,
                 lastName: userProfile.lastName,
                 username: userProfile.username,
+                avatarSeed: userProfile.avatarSeed || '',
             });
         }
     }, [userProfile, form]);
@@ -158,6 +173,7 @@ export default function ProfilePage() {
             const updates: { [key: string]: any } = {
                 firstName: values.firstName,
                 lastName: values.lastName,
+                avatarSeed: values.avatarSeed || '',
             };
 
             const newUsername = values.username.toLowerCase();
@@ -209,6 +225,15 @@ export default function ProfilePage() {
             description: 'Tu ID de usuario ha sido copiado.',
         });
     }
+    
+    // Determine the photo URL:
+    // - Non-suppliers: always DiceBear avatar
+    // - Suppliers: respect `useAvatar` preference (logo by default)
+    const photo = useMemo(() => {
+        if (!isSupplier) return getAvatarUrl(userProfile?.avatarSeed);
+        if (userProfile?.useAvatar) return getAvatarUrl(userProfile?.avatarSeed);
+        return userProfile?.photoURL || user?.photoURL;
+    }, [userProfile?.avatarSeed, userProfile?.photoURL, user?.photoURL, isSupplier, userProfile?.useAvatar]);
 
     if (isUserLoading || (user && isProfileLoading)) {
         return (
@@ -231,8 +256,6 @@ export default function ProfilePage() {
         )
     }
     
-    const userInitial = userProfile.username ? userProfile.username.charAt(0).toUpperCase() : 'U';
-    const photo = userProfile.photoURL || user?.photoURL
     return (
         <MainLayout>
             <div className="flex-1 space-y-12 p-4 md:p-12 mb-12 max-w-5xl mx-auto animate-fade-in">
@@ -265,22 +288,121 @@ export default function ProfilePage() {
                     <CardContent className="space-y-10 pt-6">
                         <div className="flex items-center space-x-8">
                             <div className="relative group">
-                                <Avatar className="h-28 w-28 rounded-3xl shadow-xl transition-transform duration-500 group-hover:scale-105 border-4 border-background">
-                                    <AvatarImage src={photo || undefined} alt={user.displayName || 'User'} className="object-cover" />
-                                    <AvatarFallback className="text-3xl font-black bg-primary/10 text-primary">{userInitial}</AvatarFallback>
+                                <Avatar className="h-28 w-28 rounded-3xl shadow-xl transition-transform duration-500 group-hover:scale-105 border-4 border-background overflow-hidden bg-background">
+                                    {photo ? (
+                                        <AvatarImage src={photo} alt={user.displayName || 'User'} className="object-cover" />
+                                    ) : (
+                                        <AvatarFallbackFachero className="w-full h-full text-4xl" />
+                                    )}
                                 </Avatar>
                                 <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg border-2 border-background">
                                     <UserIcon className="h-4 w-4" />
                                 </div>
                             </div>
-                            <div className='space-y-2'>
+                            <div className='space-y-3'>
                                 <p className="text-3xl font-black tracking-tighter">{userProfile.firstName} {userProfile.lastName}</p>
                                 <div className="flex items-center gap-2">
                                     <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-wider">@{userProfile.username}</span>
                                     <span className="text-sm text-muted-foreground font-medium">{userProfile.email}</span>
                                 </div>
+                                <div className="pt-1">
+                                    <Button 
+                                        variant="secondary" 
+                                        size="sm" 
+                                        className="h-8 rounded-lg font-black uppercase tracking-widest text-[10px] bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm"
+                                        onClick={() => {
+                                            const element = document.getElementById('avatar-accordion-trigger');
+                                            if (element) {
+                                                element.click();
+                                                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            }
+                                        }}
+                                    >
+                                        <Paintbrush className="mr-2 h-3 w-3" />
+                                        Personalizar mi Avatar
+                                    </Button>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Avatar Customizer — available for ALL users */}
+                        <Accordion 
+                            type="single" 
+                            collapsible 
+                            className="w-full"
+                            defaultValue={shouldOpenCustomizer ? 'avatar-customizer' : undefined}
+                        >
+                            <AccordionItem value="avatar-customizer" className="border-0 bg-primary/5 rounded-[2rem] px-6">
+                                <AccordionTrigger id="avatar-accordion-trigger" className="hover:no-underline py-6">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-primary/20 rounded-xl">
+                                            <UserIcon className="h-5 w-5 text-primary" />
+                                        </div>
+                                        <span className="text-lg font-black tracking-tight uppercase">Personalizar mi Avatar</span>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent className="pb-8 space-y-6">
+                                    {/* Supplier-only toggle: logo vs avatar */}
+                                    {isSupplier && (
+                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-background/60 border border-border/40">
+                                            <div>
+                                                <p className="font-black text-sm">Mostrar en mi perfil</p>
+                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                    {userProfile?.useAvatar ? 'Usando tu avatar Micah' : 'Usando tu logo de empresa'}
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        if (!userProfileRef) return;
+                                                        await updateDoc(userProfileRef, { useAvatar: false });
+                                                        toast({ title: 'Usando Logo de empresa' });
+                                                        window.location.reload();
+                                                    }}
+                                                    className={cn(
+                                                        'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all',
+                                                        !userProfile?.useAvatar
+                                                            ? 'bg-background text-foreground shadow-sm'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                    )}
+                                                >
+                                                    🏢 Logo
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={async () => {
+                                                        if (!userProfileRef) return;
+                                                        await updateDoc(userProfileRef, { useAvatar: true });
+                                                        toast({ title: 'Usando Avatar' });
+                                                        window.location.reload();
+                                                    }}
+                                                    className={cn(
+                                                        'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all',
+                                                        userProfile?.useAvatar
+                                                            ? 'bg-background text-foreground shadow-sm'
+                                                            : 'text-muted-foreground hover:text-foreground'
+                                                    )}
+                                                >
+                                                    👤 Avatar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <AvatarSelector 
+                                        selectedSeed={form.watch('avatarSeed')} 
+                                        onSelect={(seed) => form.setValue('avatarSeed', seed)}
+                                        onSave={async (seed) => {
+                                            if (!userProfileRef) return;
+                                            form.setValue('avatarSeed', seed);
+                                            await updateDoc(userProfileRef, { avatarSeed: seed });
+                                            toast({ title: '¡Avatar guardado!', description: 'Tu Estu fue actualizado.' });
+                                            window.location.reload();
+                                        }}
+                                    />
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
 
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">

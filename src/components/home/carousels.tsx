@@ -37,7 +37,7 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
 
     return (
         <Link 
-            href={`/proveedores/${supplier.slug}`} 
+            href={`/proveedores/view?slug=${supplier.slug}`} 
             onClick={() => haptic.vibrateSubtle()}
             className="block w-full group text-center active:scale-95 transition-all duration-500"
         >

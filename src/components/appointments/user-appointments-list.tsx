@@ -126,7 +126,7 @@ function AppointmentCard({ appointment, index }: { appointment: Appointment, ind
                             </Button>
                         )}
                         <Button asChild variant="outline" size="sm" className="h-10 rounded-xl font-black uppercase tracking-widest text-[10px] px-4 shadow-sm border-primary/10 hover:bg-primary/5 group/btn">
-                            <Link href={`/mis-turnos/${appointment.id}`}>
+                            <Link href={`/mis-turnos/view?id=${appointment.id}`}>
                                 Ver 
                                 <ArrowRight className="h-3.5 w-3.5 ml-2 group-hover/btn:translate-x-1 transition-transform"/>
                             </Link>

@@ -99,7 +99,7 @@ function SearchResults() {
                 {filteredSuppliers.map(supplier => (
                   <Link 
                     key={supplier.id} 
-                    href={`/proveedores/${supplier.slug}`}
+                    href={`/proveedores/view?slug=${supplier.slug}`}
                     className="flex items-center p-4 rounded-2xl border bg-card hover:bg-accent hover:border-primary/30 transition-all duration-200 group shadow-sm hover:shadow-md"
                   >
                     <Avatar className="h-12 w-12 mr-4 overflow-hidden rounded-full border-2 border-background group-hover:border-primary/20 transition-colors">

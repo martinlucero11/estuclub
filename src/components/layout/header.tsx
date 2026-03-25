@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { User, LogOut, LayoutGrid, LogIn, Heart } from 'lucide-react';
@@ -35,9 +35,12 @@ import { motion } from 'framer-motion';
 import { navConfig } from '@/config/nav-menu';
 import { SearchBar } from '@/components/layout/search-bar';
 import { MagneticButton } from '../ui/magnetic-button';
+import { getAvatarUrl } from '@/lib/utils';
+import { AvatarFallbackFachero } from '@/components/profile/avatar-selector';
 
 function UserMenu() {
-  const { user, isUserLoading } = useUser(); 
+  const { user, userData, roles, isUserLoading } = useUser(); 
+  const isSupplier = roles.includes('supplier');
   const auth = useAuthService();
   const router = useRouter();
   const { toast } = useToast();
@@ -76,18 +79,26 @@ function UserMenu() {
     );
   }
 
-  const userInitial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
+  const avatarUrl = useMemo(() => {
+    if (isSupplier) {
+      // Supplier respects useAvatar preference
+      if (userData?.useAvatar) return getAvatarUrl(userData?.avatarSeed);
+      return user?.photoURL || userData?.photoURL;
+    }
+    return getAvatarUrl(userData?.avatarSeed);
+  }, [user?.photoURL, userData?.avatarSeed, userData?.photoURL, userData?.useAvatar, isSupplier]);
 
   return (
     <DropdownMenu>
         <MagneticButton>
           <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20" aria-label="Menú de usuario">
-                  <Avatar className="h-9 w-9">
-                      {user.photoURL && (
-                      <AvatarImage src={user.photoURL} alt={user.displayName || 'Avatar de usuario'} />
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="Menú de usuario">
+                  <Avatar className="h-9 w-9 bg-background">
+                      {avatarUrl ? (
+                        <AvatarImage src={avatarUrl} alt={user.displayName || 'Avatar de usuario'} className="object-cover" />
+                      ) : (
+                        <AvatarFallbackFachero className="w-full h-full text-lg" />
                       )}
-                      <AvatarFallback>{userInitial}</AvatarFallback>
                   </Avatar>
               </Button>
           </DropdownMenuTrigger>

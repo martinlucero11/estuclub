@@ -115,7 +115,7 @@ function CluberListPage() {
                         const cluberInitials = getInitials(cluber.name);
 
                         return (
-                            <Link key={cluber.id} href={`/proveedores/${cluber.slug}`} className="group block">
+                            <Link key={cluber.id} href={`/proveedores/view?slug=${cluber.slug}`} className="group block">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
                                     <Avatar className="h-24 w-24 border-2 border-border group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />

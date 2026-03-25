@@ -4,10 +4,10 @@ import { useDocOnce, useFirestore, useUser } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
-import { notFound } from 'next/navigation';
+import { notFound, useSearchParams } from 'next/navigation';
 import type { SerializableBenefit } from '@/types/data';
 import PerkDetailSkeleton from '@/components/perks/perk-detail-skeleton';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, MapPin, Award, Flame, Star, ChevronLeft } from 'lucide-react';
@@ -18,15 +18,16 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
 
 const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), {
   ssr: false,
   loading: () => <Button className="w-full h-12 rounded-xl" disabled>Cargando...</Button>
 });
 
-export default function BenefitDetailPage({ params }: { params: { id: string } }) {
-    const { id } = params;
+export default function BenefitDetailPage() {
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id');
+    
     const firestore = useFirestore();
     const { user, isUserLoading } = useUser();
 
@@ -41,13 +42,13 @@ export default function BenefitDetailPage({ params }: { params: { id: string } }
         return <PerkDetailSkeleton />;
     }
 
-    if (error) {
+    if (!id || error) {
         return (
             <MainLayout>
                 <div className="p-8">
                      <Alert variant="destructive" className="rounded-2xl border-destructive/20 bg-destructive/5">
                         <AlertTitle className="font-black uppercase tracking-tight">Error al cargar el beneficio</AlertTitle>
-                        <AlertDescription>{error.message}</AlertDescription>
+                        <AlertDescription>{error?.message || 'ID de beneficio no proporcionado'}</AlertDescription>
                     </Alert>
                 </div>
             </MainLayout>

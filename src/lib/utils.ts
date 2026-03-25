@@ -81,3 +81,29 @@ export function optimizeImage(url: string | null | undefined, targetWidth: numbe
   // Use weserv.nl as an efficient CDN optimizer
   return `https://images.weserv.nl/?url=${encodeURIComponent(url)}&w=${targetWidth}&output=webp&q=80`;
 }
+
+/**
+ * Generates DiceBear Micah URL from config string
+ */
+export function getAvatarUrl(avatarSeed: string | null | undefined): string | null {
+  if (!avatarSeed || !avatarSeed.includes(':')) return null;
+  
+  const MICAH_BASE_URL = 'https://api.dicebear.com/9.x/micah/svg';
+  const parts = avatarSeed.split('|');
+  const config: any = { 
+      skin: 'ffd1b1', 
+      hair: 'dannyPhantom', // ✅ Corregido para Micah 9.x
+      hcolor: '000000', 
+      bcolor: '000000',
+      beard: 'none', 
+      mouth: 'smile',
+      bg: 'transparent'
+  };
+  
+  parts.forEach(part => {
+    const [key, value] = part.split(':');
+    if (key && value) config[key] = value;
+  });
+  
+  return `${MICAH_BASE_URL}?baseColor=${config.skin}&hair=${config.hair}&hairColor=${config.hcolor}&facialHair=${config.beard === 'none' ? '' : config.beard}&facialHairProbability=${config.beard === 'none' ? 0 : 100}&facialHairColor=${config.bcolor}&mouth=${config.mouth}&backgroundColor=${config.bg === 'transparent' ? '' : config.bg}&hatProbability=0`;
+}

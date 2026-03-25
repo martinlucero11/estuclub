@@ -114,7 +114,7 @@ function FavoritesContent() {
                   {suppliers?.map((supplier, idx) => (
                     <Link 
                       key={supplier.id} 
-                      href={`/proveedores/${supplier.slug}`}
+                      href={`/proveedores/view?slug=${supplier.slug}`}
                       className={cn(
                         "flex items-center p-5 rounded-[2rem] border-primary/5 transition-all duration-500 group",
                         "glass glass-dark shadow-premium hover:scale-[1.02] hover:border-primary/20",
