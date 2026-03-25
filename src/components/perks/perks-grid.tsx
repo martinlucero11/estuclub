@@ -3,7 +3,7 @@
 import type { SerializableBenefit } from '@/types/data';
 import BenefitCard from './perk-card';
 import { Archive } from 'lucide-react';
-import { EmptyState } from '../ui/empty-state';
+import { PremiumEmptyState } from '../ui/premium-empty-state';
 
 interface BenefitsGridProps {
   benefits: SerializableBenefit[];
@@ -12,11 +12,14 @@ interface BenefitsGridProps {
 export default function BenefitsGrid({ benefits }: BenefitsGridProps) {
   if (!benefits || benefits.length === 0) {
     return (
-      <EmptyState 
-        icon={Archive}
-        title="Nada por aquí..."
-        description="Parece que no hay beneficios que coincidan con tu búsqueda. ¡Vuelve en un rato!"
-      />
+      <div className="py-10 max-w-4xl mx-auto w-full">
+        <PremiumEmptyState 
+          icon={Archive}
+          title="Nada por aquí todavía"
+          description="Lo sentimos, pero no encontramos beneficios en esta categoría o búsqueda. Mientras tanto, ¡ayuda a nuestro gatito!"
+          showGame={true}
+        />
+      </div>
     );
   }
 

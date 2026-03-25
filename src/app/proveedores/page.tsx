@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
-import { EmptyState } from '@/components/ui/empty-state';
+import { PremiumEmptyState } from '@/components/ui/premium-empty-state';
 import { CluberCategory, cluberCategories, SupplierProfile } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import { createConverter } from '@/lib/firestore-converter';
@@ -100,11 +100,14 @@ function CluberListPage() {
             </div>
 
             {clubers && clubers.length === 0 ? (
-                <EmptyState
-                    icon={Search}
-                    title="No se encontraron Clubers"
-                    description={activeFilter === 'Todos' ? 'Aún no se han registrados Clubers.' : `No hay Clubers en la categoría '${activeFilter}'.`}
-                />
+                <div className="py-10 max-w-4xl mx-auto">
+                    <PremiumEmptyState
+                        icon={Search}
+                        title="No encontramos Clubers"
+                        description={activeFilter === 'Todos' ? 'Aún no se han registrado Clubers.' : `No hay Clubers en esta categoría. Mientras tanto, ¡ayuda a nuestro gatito!`}
+                        showGame={true}
+                    />
+                </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 animate-stagger">
                     {clubers?.map(cluber => {

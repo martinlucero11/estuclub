@@ -52,6 +52,10 @@ const formSchema = z.object({
     message: "Debes aceptar la política de privacidad.",
   }),
   birthDate: z.string().min(10, 'La fecha de nacimiento es obligatoria.'),
+  educationLevel: z.enum(['Secundario', 'Superior', 'Terciario', 'Universitario', 'Academia', 'Cursos', 'Talleres'], {
+    errorMap: () => ({ message: 'Por favor, selecciona tu nivel educativo.' }),
+  }),
+  educationYear: z.string().optional(),
   requestCluber: z.boolean().default(false),
 });
 
@@ -80,6 +84,8 @@ export default function SignupForm() {
       acceptPrivacy: false,
       birthDate: '',
       gender: 'Masculino',
+      educationLevel: 'Universitario' as any,
+      educationYear: '1',
       requestCluber: false,
     },
   });
@@ -143,6 +149,8 @@ export default function SignupForm() {
         lastName: values.lastName || '',
         phone: values.phone || '',
         gender: values.gender || 'Masculino',
+        educationLevel: values.educationLevel,
+        educationYear: values.educationYear || '',
         university: values.university || '',
         major: values.major || '',
         dateOfBirth: values.birthDate || '',
@@ -458,12 +466,67 @@ export default function SignupForm() {
                   )}
                 />
             </div>
-             <FormField
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="educationLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={labelClasses}>Nivel Educativo</FormLabel>
+                      <div className="relative group/input">
+                        <Library className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors z-10" />
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className={cn(inputClasses, "pr-4")}>
+                              <SelectValue placeholder="Selecciona nivel" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="rounded-2xl border-primary/10 glass glass-dark">
+                            {['Secundario', 'Superior', 'Terciario', 'Universitario', 'Academia', 'Cursos', 'Talleres'].map((level) => (
+                              <SelectItem key={level} value={level} className="rounded-xl focus:bg-primary/10">{level}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <FormMessage className="text-[10px] font-bold" />
+                    </FormItem>
+                  )}
+                />
+
+                {(form.watch('educationLevel') === 'Secundario' || form.watch('educationLevel') === 'Universitario') && (
+                  <FormField
+                    control={form.control}
+                    name="educationYear"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={labelClasses}>Año de cursada</FormLabel>
+                        <div className="relative group/input">
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger className={cn(inputClasses, "pl-4 pr-4")}>
+                                <SelectValue placeholder="Selecciona año" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="rounded-2xl border-primary/10 glass glass-dark">
+                              {['1', '2', '3', '4', '5', '6'].map((year) => (
+                                <SelectItem key={year} value={year} className="rounded-xl focus:bg-primary/10">{year}° Año</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <FormMessage className="text-[10px] font-bold" />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+
+              <FormField
                 control={form.control}
                 name="university"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={labelClasses}>Centro Educativo</FormLabel>
+                    <FormLabel className={labelClasses}>Institución / Centro</FormLabel>
                     <div className="relative group/input">
                       <University className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
@@ -479,9 +542,9 @@ export default function SignupForm() {
                 name="major"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className={labelClasses}>Carrera</FormLabel>
+                    <FormLabel className={labelClasses}>Carrera / Especialidad</FormLabel>
                     <div className="relative group/input">
-                      <Library className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                      <Briefcase className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
                         <Input placeholder="Ej: Ingeniería en Informática" {...field} className={inputClasses} />
                       </FormControl>

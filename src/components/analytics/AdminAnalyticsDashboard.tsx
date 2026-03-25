@@ -150,7 +150,6 @@ export default function AdminAnalyticsDashboard() {
         }, {} as Record<string, number>);
         const univData = Object.entries(univCounts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 5);
 
-        // Major Distribution
         const majorCounts = filteredUsers.reduce((acc, u) => {
             if (u.major) {
                 const name = u.major.trim();
@@ -159,6 +158,18 @@ export default function AdminAnalyticsDashboard() {
             return acc;
         }, {} as Record<string, number>);
         const majorData = Object.entries(majorCounts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value).slice(0, 5);
+
+        // Education Level Distribution
+        const eduCounts = filteredUsers.reduce((acc, u) => {
+            if ((u as any).educationLevel) {
+                const name = (u as any).educationLevel;
+                acc[name] = (acc[name] || 0) + 1;
+            } else {
+                acc['No especificado'] = (acc['No especificado'] || 0) + 1;
+            }
+            return acc;
+        }, {} as Record<string, number>);
+        const eduData = Object.entries(eduCounts).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
 
         // Gender Distribution
         const genderCounts = filteredUsers.reduce((acc, u) => {
@@ -281,6 +292,7 @@ export default function AdminAnalyticsDashboard() {
             activeUsersCount,
             univData,
             majorData: topMajors.slice(0, 5), 
+            eduData,
             genderData,
             heatmapFormatted,
             supplierStats,
@@ -741,7 +753,14 @@ export default function AdminAnalyticsDashboard() {
                                             title="Identidad de Usuario" 
                                             data={stats.genderData} 
                                             type="pie"
-                                            colors={['#ec4899', '#3b82f6', '#10b981']}
+                                            colors={['#ec4899', '#3b82f6', '#10b981', '#8b5cf6']}
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2 lg:col-span-3 cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => openDetail('demographics')}>
+                                        <DemographicChart 
+                                            title="Nivel Educativo de la Comunidad" 
+                                            data={stats.eduData} 
+                                            type="bar"
                                         />
                                     </div>
                                 </div>

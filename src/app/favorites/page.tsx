@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollectionOnce } from '@/firebase';
 import { collection, query, where, documentId } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
@@ -14,19 +15,18 @@ import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { PremiumEmptyState } from '@/components/ui/premium-empty-state';
 
 function FavoritesContent() {
   const { user, userData, isUserLoading } = useUser();
+  const router = useRouter();
   const firestore = useFirestore();
 
   const favoriteBenefitIds = userData?.favoriteBenefits || [];
   const favoriteSupplierIds = userData?.favoriteSuppliers || [];
 
-  // Firestore "in" query limits to 10-30 items depending on version. 
-  // For simplicity, we fetch them if IDs are present.
   const benefitsQuery = useMemo(() => {
     if (favoriteBenefitIds.length === 0) return null;
-    // Limit to 30 for safety with Firestore "in" query
     return query(
       collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), 
       where(documentId(), 'in', favoriteBenefitIds.slice(0, 30))
@@ -64,8 +64,8 @@ function FavoritesContent() {
         <Heart className="h-16 w-16 text-muted-foreground/30 mb-4" />
         <h2 className="text-2xl font-bold">Inicia sesión</h2>
         <p className="text-muted-foreground mt-2">Debes estar registrado para guardar tus favoritos.</p>
-        <Button asChild className="mt-6">
-          <Link href="/login">Iniciar Sesión</Link>
+        <Button onClick={() => router.push('/login')} className="mt-6">
+          Iniciar Sesión
         </Button>
       </div>
     );
@@ -86,24 +86,15 @@ function FavoritesContent() {
       </div>
 
       {hasNoFavorites ? (
-        <div className="py-20 animate-in fade-in scale-95 duration-700 fill-mode-both">
-            <div className={cn(
-                "flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-primary/20 p-16 text-center",
-                "glass glass-dark shadow-premium backdrop-blur-md"
-            )}>
-                <div className="mb-6 p-5 rounded-3xl bg-primary/5 text-primary border border-primary/10 shadow-inner">
-                    <Heart className="h-12 w-12 opacity-30" />
-                </div>
-                <h3 className="text-xl font-black uppercase tracking-tight text-foreground">Aún no tienes favoritos</h3>
-                <p className="mt-2 text-sm font-medium text-muted-foreground font-medium max-w-[280px] mx-auto opacity-70 italic mb-8">
-                    Guarda los beneficios que más te gusten para verlos aquí.
-                </p>
-                <Button asChild className="h-12 rounded-xl font-black uppercase tracking-widest text-xs px-8 shadow-lg shadow-primary/20 transition-all active:scale-95">
-                    <Link href="/benefits" className="flex items-center gap-2">
-                        Explorar Beneficios <ArrowRight className="h-4 w-4" />
-                    </Link>
-                </Button>
-            </div>
+        <div className="py-10 animate-in fade-in scale-95 duration-700 fill-mode-both">
+            <PremiumEmptyState 
+                icon={Heart}
+                title="Aún no tienes favoritos"
+                description="Guarda los beneficios que más te gusten para verlos aquí. Mientras tanto, ¡diviértete un poco!"
+                actionLabel="Explorar Beneficios"
+                onAction={() => router.push('/benefits')}
+                showGame={true}
+            />
         </div>
       ) : (
         <div className="space-y-12 animate-in fade-in duration-1000">
