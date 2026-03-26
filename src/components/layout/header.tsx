@@ -229,7 +229,7 @@ export default function Header() {
       <div className="container relative flex h-full items-center justify-between px-4">
         {/* Left Slot: Actions */}
         <div className="flex items-center">
-          {isWeb && <AppSidebar />}
+          <AppSidebar />
         </div>
 
         {/* Center Slot: Absolutely Positioned Logo */}

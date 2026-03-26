@@ -22,6 +22,8 @@ export interface UseDocResult<T> {
   data: WithId<T> | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
+  isFromCache: boolean;
+  hasPendingWrites: boolean;
 }
 
 /**
@@ -50,6 +52,8 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [isFromCache, setIsFromCache] = useState<boolean>(false);
+  const [hasPendingWrites, setHasPendingWrites] = useState<boolean>(false);
 
   // Use serialized path as stable key instead of object reference
   const docKey = serializeDocRef(docRef);
@@ -59,6 +63,8 @@ export function useDoc<T = any>(
       setData(null);
       setIsLoading(false);
       setError(null);
+      setIsFromCache(false);
+      setHasPendingWrites(false);
       return;
     }
 
@@ -67,6 +73,7 @@ export function useDoc<T = any>(
 
     const unsubscribe = onSnapshot(
       docRef,
+      { includeMetadataChanges: true },
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
@@ -74,6 +81,9 @@ export function useDoc<T = any>(
           // Document does not exist
           setData(null);
         }
+        
+        setIsFromCache(snapshot.metadata.fromCache);
+        setHasPendingWrites(snapshot.metadata.hasPendingWrites);
         setError(null); // Clear any previous error on successful snapshot
         setIsLoading(false);
       },
@@ -95,5 +105,5 @@ export function useDoc<T = any>(
     return () => unsubscribe();
   }, [docKey]); // Use serialized path key, not object reference
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, isFromCache, hasPendingWrites };
 }

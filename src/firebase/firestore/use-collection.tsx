@@ -40,6 +40,8 @@ export function useCollection<T extends DocumentData>(
   const [data, setData] = useState<T[] | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | undefined>(undefined);
+  const [isFromCache, setIsFromCache] = useState<boolean>(false);
+  const [hasPendingWrites, setHasPendingWrites] = useState<boolean>(false);
   
   // Track the serialized query key to avoid unnecessary re-subscriptions
   const queryKey = serializeQuery(query);
@@ -61,6 +63,7 @@ export function useCollection<T extends DocumentData>(
 
     const unsubscribe = onSnapshot(
       query,
+      { includeMetadataChanges: true }, // Important for offline/online state detection
       (snapshot) => {
         const docs = snapshot.docs.map((doc) => {
           const docData = doc.data();
@@ -69,7 +72,10 @@ export function useCollection<T extends DocumentData>(
             id: doc.id,
           } as T;
         });
+        
         setData(docs);
+        setIsFromCache(snapshot.metadata.fromCache);
+        setHasPendingWrites(snapshot.metadata.hasPendingWrites);
         setIsLoading(false);
       },
       (err) => {
@@ -82,5 +88,5 @@ export function useCollection<T extends DocumentData>(
     return () => unsubscribe();
   }, [queryKey]); // Use the serialized key, not the object reference
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, isFromCache, hasPendingWrites };
 }

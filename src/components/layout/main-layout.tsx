@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { usePlatform } from '@/hooks/use-platform';
+import OfflineWarmer from '@/firebase/firestore/offline-warmer';
 
 const MeshBackground = dynamic(() => import('@/components/layout/mesh-background'), { ssr: false });
 
@@ -32,7 +33,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     if (!isMounted) return null;
 
     return (
-        <div className="min-h-screen flex flex-col relative">
+        <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+            <OfflineWarmer />
             <MeshBackground />
             
             <Header />

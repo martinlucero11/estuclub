@@ -2,8 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
   font-family: 'PT Sans', sans-serif;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 @layer base {

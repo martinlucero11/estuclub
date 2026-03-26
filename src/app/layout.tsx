@@ -72,7 +72,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased", fontSans.variable)}>
+      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased overflow-x-hidden", fontSans.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

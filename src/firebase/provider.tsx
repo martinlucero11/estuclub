@@ -60,7 +60,8 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       firestore = initializeFirestore(app, { 
         localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager()
+          tabManager: persistentMultipleTabManager(),
+          cacheSizeBytes: 100 * 1024 * 1024 // Increase cache to 100MB for better offline experience
         }) 
       });
     } catch {
