@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Html5Qrcode, Html5QrcodeResult } from 'html5-qrcode';
 import { useFirestore, useUser } from '@/firebase';
-import { doc, getDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../ui/card';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -161,6 +161,12 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                     
                     batch.set(redemptionRef, updateData, { merge: true });
                     batch.set(userRedemptionRef, updateData, { merge: true });
+
+                    // GRANT POINTS UPON VALIDATION
+                    if (redemptionData.pointsGranted && redemptionData.pointsGranted > 0) {
+                        const userRef = doc(firestore, 'users', redemptionData.userId);
+                        batch.set(userRef, { points: increment(redemptionData.pointsGranted) }, { merge: true });
+                    }
 
                     await batch.commit();
                     toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });

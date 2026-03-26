@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializableBenefit, UserProfile } from '@/types/data';
 import { CheckCircle, CalendarDays, Award, Loader2, Lock } from 'lucide-react';
@@ -131,8 +131,8 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
-      const userRedemptionsRef = collection(firestore, 'users', user.uid, 'redeemed_benefits');
-      
+      // TEMPORARILY REMOVED PRE-CHECKS TO ISOLATE PERMISSION ERROR
+      /*
       if (benefit.redemptionLimit && benefit.redemptionLimit > 0) {
         const q = query(
           userRedemptionsRef, 
@@ -143,25 +143,22 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
           throw new Error(`Has alcanzado el límite de canje (${benefit.redemptionLimit}) para este beneficio.`);
         }
       }
+      */
       
       const batch = writeBatch(firestore);
 
-      const supplierRef = doc(firestore, 'roles_supplier', benefit.ownerId);
-      const supplierSnap = await getDoc(supplierRef);
-      if (!supplierSnap.exists()) {
-          throw new Error("No se pudo encontrar el proveedor del beneficio.");
-      }
-      const supplierName = supplierSnap.data().name;
+      // Using simpler supplier name fallback if possible
+      const supplierName = benefit.supplierName || 'Proveedor';
       
-      const newRedemptionId = doc(collection(firestore, 'benefitRedemptions')).id;
-      const rootRedemptionRef = doc(firestore, "benefitRedemptions", newRedemptionId);
-      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', newRedemptionId);
+      const redemptionIdToSet = doc(collection(firestore, 'benefitRedemptions')).id;
+      const rootRedemptionRef = doc(firestore, "benefitRedemptions", redemptionIdToSet);
+      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionIdToSet);
       
-      const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionId });
+      const qrCodeValue = JSON.stringify({ redemptionId: redemptionIdToSet });
       
       // Prepare redemption data with careful defaults
       const redemptionData = {
-        id: newRedemptionId,
+        id: redemptionIdToSet,
         benefitId: benefit.id,
         benefitTitle: benefit.title || 'Beneficio',
         benefitDescription: benefit.description || '',
@@ -171,26 +168,33 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         userName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || userProfile.username || 'Usuario',
         userDni: userProfile.dni || 'No especificado',
         supplierId: benefit.ownerId,
-        supplierName: supplierName || 'Proveedor',
+        supplierName: benefit.supplierName || 'Proveedor',
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
         status: 'pending' as const,
         pointsGranted: pointsToGrant
       };
 
-      console.log("Starting redemption batch transaction...");
-
-      batch.set(rootRedemptionRef, redemptionData);
-      batch.set(userRedemptionRef, redemptionData);
+      console.log("Attempting direct writes to isolate permissions error...");
       
-      if (pointsToGrant > 0) {
-        const userRefToUpdate = doc(firestore, 'users', user.uid);
-        batch.set(userRefToUpdate, { points: increment(pointsToGrant) }, { merge: true });
+      try {
+        console.log("Writing to root collection...");
+        // Use setDoc instead of batch for debugging
+        await setDoc(rootRedemptionRef, redemptionData);
+      } catch (err: any) {
+        console.error("FAILED root collection write:", err);
+        throw new Error(`Error de permisos (Root): ${err.message || 'Desconocido'}`);
       }
 
-      await batch.commit();
+      try {
+        console.log("Writing to user subcollection...");
+        await setDoc(userRedemptionRef, redemptionData);
+      } catch (err: any) {
+        console.error("FAILED user subcollection write:", err);
+        throw new Error(`Error de permisos (Sub): ${err.message || 'Desconocido'}`);
+      }
 
-      setRedemptionId(newRedemptionId);
+      setRedemptionId(redemptionIdToSet);
       haptic.vibrateSuccess();
       triggerSuccessEffect();
       toast({

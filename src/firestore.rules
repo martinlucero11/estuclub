@@ -1,127 +1,234 @@
 
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- Helper Functions ---
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isAdmin() { 
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-    function isSupplier() { return isSignedIn() && exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid)); }
 
-    // --- Public & Semi-Public Data ---
-    match /categories/{categoryId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    // --- HELPER FUNCTIONS ---
+
+    function signedIn() {
+      return request.auth != null;
     }
 
-    match /home_sections/{sectionId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isMe(userId) {
+      return signedIn() && request.auth.uid == userId;
     }
 
-    match /banners/{bannerId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    // Check if the current user is an admin
+    function isAdmin() {
+      return signedIn() && 
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    match /announcements/{announcementId} {
-      allow read: if resource.data.status == 'approved' || (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
-      allow list: if true;
-      allow create: if isSupplier() || isAdmin();
-      allow update, delete: if (isSignedIn() && (resource.data.authorId == request.auth.uid || resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
+    // Check if the current user is a supplier
+    function isSupplier() {
+      return signedIn() && 
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
 
-    match /notifications/{notificationId} {
-        allow read: if true;
-        allow create: if isSignedIn();
-        allow update, delete: if isSupplier() || isAdmin();
+    // Helper to check if a specific field is being modified
+    function isFieldModified(field) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([field]);
     }
 
-    match /benefits/{benefitId} {
-      allow read: if true;
-      allow create: if (isSupplier() && request.resource.data.ownerId == request.auth.uid && (request.resource.data.isFeatured == false || !('isFeatured' in request.resource.data))) || isAdmin();
-      allow update: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'featuredRank', 'isVisible'])) || isAdmin();
-      allow delete: if (isSupplier() && (resource.data.ownerId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
+    // Helper to check for sensitive user fields
+    function isUpdatingSensitiveUserFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['role', 'points', 'xp', 'level', 'email', 'uid', 'id', 'isCincoDos']);
     }
 
-    // --- User-Specific Data & Roles ---
+    // Check if a field is incremented or decremented by a specific amount
+    function isIncrementedBy(field, amount) {
+      return request.resource.data[field] == resource.data[field] + amount;
+    }
+
+    /* ================= USERS ================= */
+
     match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isOwner(userId) || isAdmin();
+      allow read: if true;
+      allow create: if isMe(userId);
+      allow update: if (isMe(userId) && (!isUpdatingSensitiveUserFields() || resource.data.id == null)) 
+                    || isAdmin()
+                    || (isSupplier() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points']));
+      allow delete: if isAdmin();
+
+      match /redeemed_benefits/{id} {
+        allow read, write: if signedIn() && (request.auth.uid == userId || isAdmin());
+      }
     }
 
     match /userTokens/{userId} {
-        allow read, write: if isOwner(userId);
+      allow read, write: if isMe(userId) || isAdmin();
     }
 
-    match /users/{userId}/redeemed_benefits/{redemptionId} {
-      allow read, write: if isOwner(userId) || isAdmin();
-    }
+    /* ================= USERNAMES ================= */
 
-    match /benefitRedemptions/{redemptionId} {
-      allow read: if (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.supplierId == request.auth.uid)) || isAdmin();
-      allow create: if isSignedIn();
-      allow update: if isAdmin() || (isSupplier() && resource.data.supplierId == request.auth.uid);
-      allow delete: if isAdmin();
-    }
-    
     match /usernames/{username} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isOwner(resource.data.userId) || isAdmin();
+      allow create: if signedIn();
+      allow update: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
     }
 
-    // --- New Appointments Collection ---
-    match /appointments/{appointmentId} {
-      allow create: if isSignedIn();
-      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) 
-                   || (isSupplier() && resource.data.supplierId == request.auth.uid) 
-                   || isAdmin();
-      allow update, delete: if (isSignedIn() && resource.data.userId == request.auth.uid) 
-                             || (isSupplier() && resource.data.supplierId == request.auth.uid) 
-                             || isAdmin();
+    /* ================= ROLES ================= */
+
+    match /roles_admin/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid || isAdmin();
+      allow list: if isAdmin();
+      allow write: if isAdmin();
     }
 
-    // --- Supplier (Cluber) Specific Rules ---
     match /roles_supplier/{supplierId} {
-      allow get, list: if true;
-      allow create, delete: if isAdmin();
-      allow update: if isOwner(supplierId) || isAdmin()
-        || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avgRating', 'reviewCount', 'favoritesCount']));
-    
-      // --- Nested Rules for Supplier's Features ---
+      allow read: if true;
+      allow write: if isAdmin();
+      allow update: if isMe(supplierId) || isAdmin()
+        || (signedIn() && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
+
+      match /availability/{docId} {
+        allow read: if true;
+        allow write: if isMe(supplierId) || isAdmin();
+      }
+
       match /services/{serviceId} {
         allow read: if true;
-        allow write: if isOwner(supplierId) || isAdmin();
+        allow write: if isMe(supplierId) || isAdmin();
       }
 
-      match /availability/{schedule} {
-        allow read: if true;
-        allow write: if isOwner(supplierId) || isAdmin();
-      }
-      
-      match /subscribers/{subscriberId} {
-        allow get: if isOwner(subscriberId) || isOwner(supplierId) || isAdmin();
-        allow list: if isOwner(supplierId) || isAdmin();
-        allow create: if isOwner(subscriberId);
-        allow update: if isOwner(subscriberId) || isAdmin();
-        allow delete: if isOwner(subscriberId) || isAdmin();
-      }
-
-      // Legacy appointments subcollection
-      match /appointments/{appointmentId} {
-        allow read, write: if isOwner(supplierId) || isAdmin();
+      match /subscribers/{userId} {
+        allow get: if isMe(userId) || isMe(supplierId) || isAdmin();
+        allow list: if isMe(supplierId) || isAdmin();
+        allow create: if isMe(userId);
+        allow update: if isMe(userId);
+        allow delete: if isMe(userId) || isMe(supplierId) || isAdmin();
       }
     }
-    
-    // --- Admin-Only Data ---
-    match /roles_admin/{adminId} {
-      allow get: if isSignedIn();
-      allow list, write: if isAdmin();
+
+    /* ================= APPOINTMENTS ================= */
+
+    match /appointments/{appointmentId} {
+      allow list: if signedIn();
+      allow get: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      ) || isAdmin();
+
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+
+      allow update: if (signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      )) || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    /* ================= BENEFIT REDEMPTIONS ================= */
+
+    match /benefitRedemptions/{id} {
+      allow list: if signedIn();
+      allow get: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      ) || isAdmin();
+
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+
+      allow update: if (signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      )) || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    /* ================= SUPPLIER REQUESTS ================= */
+
+    match /supplier_requests/{id} {
+      allow get: if signedIn() && (isAdmin() || request.auth.uid == resource.data.userId);
+      allow list: if isAdmin() || (signedIn() && request.query.limit <= 100); 
+      allow create: if signedIn(); 
+      allow update, delete: if isAdmin();
+    }
+
+    /* ================= BENEFITS ================= */
+
+    match /benefits/{id} {
+      allow read: if true;
+      allow create: if isSupplier() || isAdmin();
+      allow update: if (signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      )) || isAdmin() || 
+      (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
+
+      allow delete: if (signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid
+      )) || isAdmin();
+    }
+
+    /* ================= ANNOUNCEMENTS ================= */
+
+    match /announcements/{id} {
+      allow read: if true;
+      allow create: if isSupplier() || isAdmin();
+      allow update, delete: if (signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        resource.data.ownerId == request.auth.uid ||
+        resource.data.authorId == request.auth.uid
+      )) || isAdmin();
+    }
+
+    /* ================= PUBLIC CONTENT ================= */
+
+    match /banners/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /home_sections/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    /* ================= NOTIFICATIONS ================= */
+
+    match /notifications/{id} {
+      allow list, get: if signedIn();
+      allow create, update, delete: if isAdmin() || (isSupplier() && request.resource.data.supplierId == request.auth.uid);
+    }
+
+    /* ================= REVIEWS ================= */
+
+    match /reviews/{id} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    /* ================= COMEDOR APPLICATIONS ================= */
+
+    match /comedor_applications/{id} {
+      allow get, list: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    /* ================= GLOBAL DENY ================= */
+
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
