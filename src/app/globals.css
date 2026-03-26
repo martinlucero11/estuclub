@@ -10,6 +10,12 @@ body {
   width: 100%;
 }
 
+@media (max-width: 768px) {
+  html {
+    font-size: 108%;
+  }
+}
+
 @layer base {
   :root {
     --background: 353 33% 97%;
@@ -214,4 +220,22 @@ body {
 .animate-mesh {
   background-size: 200% 200%;
   animation: mesh 20s ease-in-out infinite;
+}
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .header-mesh {
+    background: linear-gradient(135deg, hsla(345, 75%, 55%, 1) 0%, hsla(350, 80%, 65%, 1) 50%, hsla(340, 70%, 50%, 1) 100%);
+    background-size: 200% 200%;
+    animation: mesh 12s ease infinite;
+  }
+  .glass-header {
+    background: hsla(345, 75%, 55%, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
 }

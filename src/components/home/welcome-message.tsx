@@ -19,10 +19,10 @@ const WelcomeMessage = () => {
 
     return (
         <div className="py-6 animate-fade-in">
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                 Hola, <span className="text-primary">{displayName}</span> 👋
             </h1>
-            <p className="text-muted-foreground font-medium text-sm md:text-base mt-1">
+            <p className="text-muted-foreground font-medium text-base md:text-lg mt-1">
                 Descubre los beneficios exclusivos que tenemos para vos.
             </p>
         </div>

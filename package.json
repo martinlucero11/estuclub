@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:android": "powershell -Command \"$env:CAPACITOR_BUILD='true'; if (Test-Path src/app/api) { Rename-Item src/app/api _api }; next build; npx cap sync android; if (Test-Path src/app/_api) { Rename-Item src/app/_api api }\"",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"

@@ -114,10 +114,9 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
 
     try {
       const today = new Date();
-      const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' });
-      const capitalizedDay = todayDayString.charAt(0).toUpperCase() + todayDayString.slice(1);
+      const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
 
-      if (benefit.availableDays && benefit.availableDays.length > 0 && !benefit.availableDays.includes(capitalizedDay)) {
+      if (benefit.availableDays && benefit.availableDays.length > 0 && !benefit.availableDays.some(d => d.toLowerCase() === todayDayString)) {
         throw new Error(`Este beneficio solo está disponible los días: ${benefit.availableDays.join(', ')}.`);
       }
       
@@ -126,9 +125,9 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       }
 
       const userLevel = getLevelInfo(userProfile.points || 0).level;
-      const isAdmin = userProfile.role === 'admin';
+      const isPrivileged = userProfile.role === 'admin' || userProfile.role === 'supplier';
 
-      if (benefit.minLevel && userLevel < benefit.minLevel && !isAdmin) {
+      if (benefit.minLevel && userLevel < benefit.minLevel && !isPrivileged) {
         throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
@@ -168,8 +167,8 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         benefitImageUrl: benefit.imageUrl,
         benefitLocation: benefit.location || '',
         userId: user.uid,
-        userName: `${userProfile.firstName} ${userProfile.lastName}`,
-        userDni: userProfile.dni,
+        userName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || userProfile.username || 'Usuario',
+        userDni: userProfile.dni || 'No especificado',
         supplierId: benefit.ownerId,
         supplierName: supplierName,
         redeemedAt: serverTimestamp(),
@@ -282,7 +281,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     </div>
                 )}
                 
-                {userProfile && benefit.minLevel && getLevelInfo(userProfile.points || 0).level < benefit.minLevel && userProfile.role !== 'admin' && (
+                {userProfile && benefit.minLevel && getLevelInfo(userProfile.points || 0).level < benefit.minLevel && userProfile.role !== 'admin' && userProfile.role !== 'supplier' && (
                     <Alert className="bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-500">
                         <Lock className="h-4 w-4" />
                         <AlertTitle className="font-black uppercase tracking-tighter">Nivel Insuficiente</AlertTitle>
@@ -310,11 +309,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}>
+                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}>
                         <Button 
                           type="button" 
                           onClick={handleRedeem} 
-                          disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin') : false)}
+                          disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}
                           className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
                         >
                             {isRedeeming ? (

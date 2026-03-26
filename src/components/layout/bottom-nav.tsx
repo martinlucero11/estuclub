@@ -60,7 +60,7 @@ export function BottomNav() {
                   >
                     <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
                     <span className={cn(
-                        "text-[9px] mt-1 font-black uppercase tracking-widest transition-opacity",
+                        "text-[11px] mt-1 font-black uppercase tracking-widest transition-opacity",
                         isActive ? "opacity-100" : "opacity-60"
                     )}>
                         {item.label}

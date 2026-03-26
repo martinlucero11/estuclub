@@ -1,6 +1,6 @@
 const withPWA = require('next-pwa')({
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: process.env.NODE_ENV === 'development' || process.env.CAPACITOR_BUILD === 'true',
   register: true,
   skipWaiting: true,
 });
@@ -8,8 +8,9 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  output: process.env.CAPACITOR_BUILD === 'true' ? 'export' : undefined,
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -33,6 +34,7 @@ const nextConfig = {
     allowedDevOrigins: ["https://*.cloudworkstations.dev"],
   },
   transpilePackages: ['react-leaflet', 'leaflet'],
+  trailingSlash: true,
 };
 
 module.exports = withPWA(nextConfig);

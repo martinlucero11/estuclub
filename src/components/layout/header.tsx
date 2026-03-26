@@ -223,25 +223,29 @@ export default function Header() {
 
   return (
     <header className={cn(
-        "sticky top-0 z-40 w-full bg-primary shadow-premium transition-all duration-300",
-        isMobile ? "h-14" : "h-16"
+        "sticky top-0 z-40 w-full shadow-premium transition-all duration-300 pt-safe header-mesh",
+        isMobile ? "h-24" : "h-16"
     )}>
-      <div className="container relative flex h-full items-center justify-between px-4">
+      <div className="absolute inset-0 glass-header z-[-1]" />
+      <div className={cn(
+        "container relative flex h-full justify-between px-4 pb-4",
+        isMobile ? "items-end" : "items-center"
+      )}>
         {/* Left Slot: Actions */}
         <div className="flex items-center">
           <AppSidebar />
         </div>
 
-        {/* Center Slot: Absolutely Positioned Logo */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        {/* Center Slot: Positioned Logo */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-5 mb-0.5">
             <Link href="/" aria-label="Homepage">
                 <Image 
                     src="/logo.svg" 
                     alt="EstuClub Logo" 
-                    width={120} 
-                    height={32} 
+                    width={110} 
+                    height={28} 
                     priority
-                    className="h-7 sm:h-8 brightness-110"
+                    className="h-7 sm:h-8 brightness-110 drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]"
                     style={{ width: 'auto' }}
                 />
             </Link>
@@ -254,6 +258,9 @@ export default function Header() {
           <UserMenu />
         </div>
       </div>
+      
+      {/* Subtle bottom glow */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
     </header>
   );
 }
