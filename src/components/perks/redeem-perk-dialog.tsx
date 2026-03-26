@@ -159,23 +159,26 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       
       const qrCodeValue = JSON.stringify({ redemptionId: newRedemptionId });
       
+      // Prepare redemption data with careful defaults
       const redemptionData = {
         id: newRedemptionId,
         benefitId: benefit.id,
-        benefitTitle: benefit.title,
-        benefitDescription: benefit.description,
-        benefitImageUrl: benefit.imageUrl,
+        benefitTitle: benefit.title || 'Beneficio',
+        benefitDescription: benefit.description || '',
+        benefitImageUrl: benefit.imageUrl || benefit.image || '',
         benefitLocation: benefit.location || '',
         userId: user.uid,
         userName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || userProfile.username || 'Usuario',
         userDni: userProfile.dni || 'No especificado',
         supplierId: benefit.ownerId,
-        supplierName: supplierName,
+        supplierName: supplierName || 'Proveedor',
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
         status: 'pending' as const,
         pointsGranted: pointsToGrant
       };
+
+      console.log("Starting redemption batch transaction...");
 
       batch.set(rootRedemptionRef, redemptionData);
       batch.set(userRedemptionRef, redemptionData);
