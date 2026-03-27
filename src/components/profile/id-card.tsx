@@ -42,124 +42,134 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
       className="relative w-full max-w-[340px] mx-auto group perspective-1000"
     >
-      {/* Glow Effect */}
+      {/* Premium Glow Effect */}
       <div className={cn(
-        "absolute -inset-2 rounded-[2.5rem] blur-2xl opacity-20 transition-opacity duration-500",
+        "absolute -inset-4 rounded-[3rem] blur-3xl opacity-30 transition-all duration-700 group-hover:opacity-50",
         roleColor
       )} />
       
       {/* Card Body */}
-      <div className="relative aspect-[1/1.58] w-full rounded-[2.2rem] overflow-hidden glass glass-dark border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/10">
+      <div className="relative aspect-[1/1.58] w-full rounded-[2.5rem] overflow-hidden bg-[#121212] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
         
-        {/* Header/Banner */}
-        <div className={cn("h-32 w-full relative overflow-hidden", roleColor)}>
-           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_20%,_var(--tw-gradient-stops))] from-white via-transparent to-transparent" />
-           <div className="absolute inset-0 bg-black/10" />
-           {/* Decorative elements */}
-           <div className="absolute top-6 right-8 flex items-center gap-2">
-             <div className="h-1.5 w-1.5 rounded-full bg-white/40 animate-pulse" />
-             <span className="text-[10px] font-black tracking-[0.3em] text-white uppercase italic">EstuClub</span>
-           </div>
+        {/* Header/Banner with Pattern */}
+        <div className={cn("h-36 w-full relative overflow-hidden", roleColor)}>
+          <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_30%_20%,_rgba(255,255,255,0.8),_transparent_70%)]" />
+          <div className="absolute inset-0 bg-black/5" />
+          
+          {/* Brand Logo and Minimal Indicator */}
+          <div className="absolute top-8 left-0 right-0 px-8 flex justify-between items-center">
+            <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase italic drop-shadow-md">EstuClub</span>
+            <div className="flex gap-1">
+              <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              <div className="h-1.5 w-1.5 rounded-full bg-white/40" />
+            </div>
+          </div>
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 flex flex-col items-center -mt-16 px-6 pb-6 text-center z-10">
-            {/* Avatar Cluster */}
-            <div className="relative mb-4 group/avatar">
-                <div className={cn(
-                    "absolute -inset-1 blur-lg opacity-40 group-hover/avatar:opacity-70 transition-opacity",
-                    roleColor
-                )} />
-                <Avatar className="h-32 w-32 rounded-[2rem] border-4 border-background shadow-2xl bg-background relative z-10 transition-transform duration-500 group-hover/avatar:rotate-2">
-                    {photo ? (
-                        <AvatarImage src={photo} alt={fullName} className="object-cover" />
-                    ) : (
-                        <AvatarFallbackFachero className="w-full h-full text-4xl" />
-                    )}
-                </Avatar>
-                <div className={cn(
-                    "absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl flex items-center justify-center text-white border-4 border-background shadow-xl z-20",
+        <div className="flex-1 flex flex-col items-center -mt-20 px-8 pb-8 text-center z-10">
+          {/* Avatar Cluster */}
+          <div className="relative mb-6 group/avatar">
+            <div className={cn(
+              "absolute -inset-1.5 blur-xl opacity-50 group-hover/avatar:opacity-80 transition-all duration-500",
+              roleColor
+            )} />
+            <div className="relative p-1.5 bg-[#1a1a1a] rounded-[2.2rem] border border-white/10 shadow-3xl">
+              <Avatar className="h-32 w-32 rounded-[1.8rem] border border-white/5 bg-[#222]">
+                {photo ? (
+                  <AvatarImage src={photo} alt={fullName} className="object-cover" />
+                ) : (
+                  <AvatarFallbackFachero className="w-full h-full text-4xl" />
+                )}
+              </Avatar>
+            </div>
+            
+            <motion.div 
+              whileHover={{ rotate: 15, scale: 1.1 }}
+              className={cn(
+                "absolute -bottom-1 -right-1 h-11 w-11 rounded-2xl flex items-center justify-center text-white border-4 border-[#121212] shadow-2xl z-20 transition-transform",
+                roleColor
+              )}
+            >
+              {isAdmin ? <ShieldCheck className="h-6 w-6" /> : isSupplier ? <Building className="h-6 w-6" /> : <Award className="h-6 w-6" />}
+            </motion.div>
+          </div>
+
+          {/* User Identity */}
+          <div className="space-y-1.5 mb-8">
+            <h3 className="text-3xl font-black tracking-tighter text-white leading-tight drop-shadow-sm">
+                {fullName}
+            </h3>
+            <div className="flex items-center justify-center gap-2">
+                <span className="text-[10px] font-bold text-white/50 tracking-wide uppercase">@{userProfile.username}</span>
+                <div className="h-1 w-1 rounded-full bg-white/20" />
+                <span className={cn(
+                    "px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white shadow-lg",
                     roleColor
                 )}>
-                    {isAdmin ? <ShieldCheck className="h-5 w-5" /> : isSupplier ? <Building className="h-5 w-5" /> : <Award className="h-5 w-5" />}
-                </div>
+                    {roleLabel}
+                </span>
             </div>
+          </div>
 
-            {/* User Identity */}
-            <div className="space-y-1 mb-6">
-                <h3 className="text-2xl font-black tracking-tighter text-foreground leading-tight">
-                    {fullName}
-                </h3>
-                <div className="flex items-center justify-center gap-2">
-                    <span className="text-xs font-bold text-muted-foreground/80 lowercase">@{userProfile.username}</span>
-                    <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                    <span className={cn(
-                        "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider text-white",
-                        roleColor
-                    )}>
-                        {roleLabel}
-                    </span>
-                </div>
-            </div>
-
-            {/* Info Grid - Designed to match Profile Page styles */}
-            <div className="w-full space-y-4 mb-6">
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-white/5 rounded-2xl border border-white/5 text-left">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Identidad</p>
-                        <div className="flex items-center gap-2 text-foreground/90 font-bold overflow-hidden">
-                            <Fingerprint className="h-3 w-3 text-primary/60 shrink-0" />
-                            <span className="text-xs truncate">{userProfile.dni}</span>
-                        </div>
-                    </div>
-                    <div className="p-3 bg-white/5 rounded-2xl border border-white/5 text-left">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">
-                            {isSupplier ? 'Categoría' : 'Institución'}
-                        </p>
-                        <div className="flex items-center gap-2 text-foreground/90 font-bold overflow-hidden">
-                            {isSupplier ? <Building className="h-3 w-3 text-primary/60 shrink-0" /> : <University className="h-3 w-3 text-primary/60 shrink-0" />}
-                            <span className="text-xs truncate">{userProfile.university || 'EstuClub'}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* QR Section - The Scannable part */}
-            <div className="mt-auto w-full pt-4 border-t border-white/5">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-left">
-                    <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40 leading-none">Miembro Oficial</p>
-                    <p className="text-[10px] font-bold text-muted-foreground/60">Verificado via EstuQR</p>
+          {/* Info Grid - Premium Aesthetic */}
+          <div className="w-full grid grid-cols-2 gap-4 mb-8">
+              <div className="p-4 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">Identidad</p>
+                  <div className="flex items-center gap-2 text-white/90 font-bold overflow-hidden">
+                      <Fingerprint className="h-4 w-4 text-primary shrink-0 opacity-70" />
+                      <span className="text-[11px] truncate">{userProfile.dni}</span>
                   </div>
-                  <div className="h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <QrCode className="h-3 w-3 text-primary" />
+              </div>
+              <div className="p-4 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">
+                      {isSupplier ? 'Categoría' : 'Institución'}
+                  </p>
+                  <div className="flex items-center gap-2 text-white/90 font-bold overflow-hidden">
+                      {isSupplier ? <Building className="h-4 w-4 text-primary shrink-0 opacity-70" /> : <University className="h-4 w-4 text-primary shrink-0 opacity-70" />}
+                      <span className="text-[11px] truncate">{userProfile.university || 'EstuClub'}</span>
                   </div>
-                </div>
+              </div>
+          </div>
 
-                <div className="relative p-2 bg-white rounded-2xl shadow-inner inline-block group-hover:scale-105 transition-transform duration-500">
-                    {isLoading ? (
-                        <div className="h-28 w-28 flex items-center justify-center">
-                           <div className="h-6 w-6 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        </div>
-                    ) : qrCodeUrl ? (
-                         <img src={qrCodeUrl} alt="Verification QR" className="h-28 w-28 object-contain mix-blend-multiply" />
-                    ) : (
-                        <div className="h-28 w-28 flex flex-col items-center justify-center text-destructive text-[8px] font-black uppercase">
-                            <QrCode className="h-6 w-6 mb-1 opacity-20" />
-                            Error QR
-                        </div>
-                    )}
-                </div>
-            </div>
+          {/* QR Section - Modern & Scannable */}
+          <div className="mt-auto w-full pt-6 border-t border-white/10 flex flex-col items-center">
+              <div className="relative p-3 bg-white rounded-3xl shadow-2xl group-hover:scale-[1.03] transition-transform duration-500">
+                  <div className="absolute top-0 left-0 h-4 w-4 border-t-2 border-l-2 border-primary/20 rounded-tl-xl" />
+                  <div className="absolute top-0 right-0 h-4 w-4 border-t-2 border-r-2 border-primary/20 rounded-tr-xl" />
+                  <div className="absolute bottom-0 left-0 h-4 w-4 border-b-2 border-l-2 border-primary/20 rounded-bl-xl" />
+                  <div className="absolute bottom-0 right-0 h-4 w-4 border-b-2 border-r-2 border-primary/20 rounded-br-xl" />
+
+                  {isLoading ? (
+                      <div className="h-32 w-32 flex items-center justify-center">
+                         <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                      </div>
+                  ) : qrCodeUrl ? (
+                      <div className="bg-white p-1 rounded-xl">
+                        <img src={qrCodeUrl} alt="Verification QR" className="h-32 w-32 object-contain" />
+                      </div>
+                  ) : (
+                      <div className="h-32 w-32 flex flex-col items-center justify-center text-destructive text-[10px] font-black uppercase">
+                          <QrCode className="h-8 w-8 mb-2 opacity-20" />
+                          Error QR
+                      </div>
+                  )}
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 text-white/30">
+                <ShieldCheck className="h-3 w-3" />
+                <span className="text-[9px] font-bold uppercase tracking-widest">Digital ID System</span>
+              </div>
+          </div>
         </div>
         
-        {/* Footer Brand */}
-        <div className="py-2.5 bg-black/20 text-center">
-             <p className="text-[8px] font-black uppercase tracking-[0.5em] text-white/20">ESTUCLUB • DIGITAL ID SYSTEM</p>
+        {/* Minimal Footer */}
+        <div className="py-3 bg-black/40 text-center border-t border-white/5">
+            <p className="text-[9px] font-black uppercase tracking-[0.6em] text-white/10">ESTUCLUB VERIFIED</p>
         </div>
       </div>
     </motion.div>

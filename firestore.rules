@@ -80,7 +80,7 @@ service cloud.firestore {
       allow write: if isAdmin();
       allow update: if isMe(supplierId) || isAdmin()
         || (signedIn() && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
+            .hasOnly(['favoritesCount', 'avgRating', 'reviewCount']));
 
       match /availability/{docId} {
         allow read: if true;

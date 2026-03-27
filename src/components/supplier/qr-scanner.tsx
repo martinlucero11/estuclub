@@ -26,7 +26,9 @@ interface UserProfile {
 
 // Validation data structure
 interface ValidationData {
-    redemption: BenefitRedemption;
+    type: 'redemption' | 'appointment' | 'profile';
+    redemption?: BenefitRedemption;
+    appointment?: any;
     profile: UserProfile;
 }
 
@@ -38,61 +40,98 @@ const qrboxFunction = (viewfinderWidth: number, viewfinderHeight: number): any =
 
 // Validation Result Component
 function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: ValidationData, onScanAgain: () => void, alreadyUsed: boolean }) {
-    const { redemption, profile } = data;
+    const { type, redemption, appointment, profile } = data;
 
-    if (!redemption || !profile) {
+    if (!profile) {
         return (
             <div className="flex flex-col items-center justify-center bg-background/90 p-4">
                 <Alert variant="destructive">
                     <XCircle className="h-4 w-4" />
                     <AlertTitle>Error de Datos</AlertTitle>
-                    <AlertDescription>No se pudieron cargar los detalles del canje. Por favor, intenta de nuevo.</AlertDescription>
+                    <AlertDescription>No se pudieron cargar los detalles. Por favor, intenta de nuevo.</AlertDescription>
                 </Alert>
                 <Button className="w-full mt-4" onClick={onScanAgain}>Escanear de Nuevo</Button>
             </div>
         );
     }
 
+    const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
     const userInitial = profile.firstName ? profile.firstName.charAt(0).toUpperCase() : 'U';
 
     return (
-        <Card className="w-full max-w-md mx-auto">
-            <CardHeader className="text-center pb-4">
-                {alreadyUsed ? (
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50 mb-4">
-                        <AlertTriangle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                ) : (
-                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50 mb-4">
-                        <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                )}
-                <CardTitle>{alreadyUsed ? 'Canje Ya Utilizado' : 'Canje Validado'}</CardTitle>
-                <CardDescription>
-                    {alreadyUsed
-                        ? 'Este beneficio ya fue marcado como usado anteriormente.'
-                        : 'El beneficio ha sido marcado como usado exitosamente.'}
+        <Card className="w-full max-w-md mx-auto overflow-hidden border-2 border-primary/20">
+            <CardHeader className="text-center pb-6 bg-muted/30">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4 shadow-inner">
+                    {type === 'redemption' ? <Tag className="h-8 w-8 text-primary" /> : 
+                     type === 'appointment' ? <CheckCircle className="h-8 w-8 text-primary" /> : 
+                     <Fingerprint className="h-8 w-8 text-primary" />}
+                </div>
+                <CardTitle className="text-2xl font-black">
+                    {type === 'redemption' ? (alreadyUsed ? 'Canje Ya Usado' : 'Canje Validado') :
+                     type === 'appointment' ? 'Turno Verificado' : 'Identidad Verificada'}
+                </CardTitle>
+                <CardDescription className="font-medium text-muted-foreground/80">
+                    {type === 'redemption' ? (alreadyUsed ? 'Este beneficio ya fue utilizado.' : 'El beneficio se marcó como usado.') :
+                     type === 'appointment' ? 'El turno del estudiante es válido.' : 'Estudiante verificado en el sistema.'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-6">
-                <div className="flex w-full flex-col sm:flex-row items-center gap-6">
-                    <Avatar className="h-32 w-32 rounded-full border-4 border-primary">
-                        <AvatarImage src={profile.photoURL} alt={profile.username} />
-                        <AvatarFallback className="text-4xl">{userInitial}</AvatarFallback>
-                    </Avatar>
-                    <div className="space-y-3 text-left w-full">
-                        <p className="text-lg font-semibold text-foreground">{`${profile.firstName || ''} ${profile.lastName || ''}`.trim()}</p>
-                        <div className="flex items-center gap-3"><Fingerprint className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{redemption.userDni || 'N/A'}</p></div>
-                        <div className="flex items-center gap-3"><University className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{profile.university || 'No especificada'}</p></div>
-                        <div className="flex items-center gap-3"><Award className="h-5 w-5 text-muted-foreground" /><p className="text-md text-muted-foreground">{`${profile.points || 0} Puntos`}</p></div>
+            <CardContent className="pt-8 flex flex-col items-center space-y-8">
+                <div className="flex w-full flex-col items-center gap-6">
+                    <div className="relative group">
+                        <div className="absolute -inset-1 blur-lg opacity-20 bg-primary rounded-full group-hover:opacity-40 transition-opacity" />
+                        <Avatar className="h-28 w-28 rounded-full border-4 border-background shadow-2xl relative">
+                            <AvatarImage src={profile.photoURL} alt={profile.username} className="object-cover" />
+                            <AvatarFallback className="text-3xl font-black bg-primary/5 text-primary">{userInitial}</AvatarFallback>
+                        </Avatar>
+                    </div>
+                    
+                    <div className="text-center space-y-1">
+                        <p className="text-xl font-black tracking-tight">{fullName}</p>
+                        <p className="text-sm font-bold text-primary tracking-widest uppercase">@{profile.username}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 w-full gap-3 pt-4">
+                        <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/50 border border-border/50">
+                            <div className="h-8 w-8 rounded-lg bg-background flex items-center justify-center shadow-sm">
+                                <University className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 leading-none mb-1">Institución</p>
+                                <p className="text-sm font-bold">{profile.university || 'No especificada'}</p>
+                            </div>
+                        </div>
+                        
+                        {type === 'redemption' && redemption && (
+                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm">
+                                    <Tag className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Beneficio</p>
+                                    <p className="text-sm font-bold truncate max-w-[200px]">{redemption.benefitTitle}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {type === 'appointment' && appointment && (
+                            <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm">
+                                    <Building className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Servicio</p>
+                                    <p className="text-sm font-bold">{appointment.serviceName}</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-                <div className='w-full border-t pt-4 space-y-2'>
-                    <div className='flex items-center gap-2 text-sm'><Tag className='h-4 w-4 text-primary'/><span className="font-medium text-foreground">{redemption.benefitTitle || 'Beneficio sin título'}</span></div>
-                    <div className='flex items-center gap-2 text-sm text-muted-foreground'><Building className='h-4 w-4'/><span>{`Canjeado en: ${redemption.supplierName || 'Comercio no especificado'}`}</span></div>
-                </div>
             </CardContent>
-            <CardFooter><Button className="w-full" onClick={onScanAgain}>Escanear Otro Código</Button></CardFooter>
+            <CardFooter className="pt-4 pb-8">
+                <Button className="w-full h-12 rounded-2xl font-black text-sm tracking-widest uppercase shadow-lg shadow-primary/20" onClick={onScanAgain}>
+                    Listo
+                </Button>
+            </CardFooter>
         </Card>
     );
 }
@@ -120,75 +159,102 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                 await scannerRef.current.stop();
             }
             
-            let redemptionId: string;
+            let type: 'redemption' | 'appointment' | 'profile' = 'redemption';
+            let id = '';
+            
+            // 1. Detect QR Type
             try {
-                 const jsonData = JSON.parse(decodedText);
-                 redemptionId = jsonData.redemptionId;
-                 if (!redemptionId) throw new Error("El código QR no contiene un ID de canje válido.");
-            } catch (error) {
-                throw new Error("El formato del código QR o ID es incorrecto.");
+                // Check if it's a verification URL (ID Card)
+                const url = new URL(decodedText);
+                if (url.pathname.includes('/verify') && url.searchParams.get('userId')) {
+                    type = 'profile';
+                    id = url.searchParams.get('userId')!;
+                }
+            } catch (e) {
+                // Not a URL, try JSON
+                try {
+                    const jsonData = JSON.parse(decodedText);
+                    if (jsonData.redemptionId) {
+                        type = 'redemption';
+                        id = jsonData.redemptionId;
+                    } else if (jsonData.appointmentId) {
+                        type = 'appointment';
+                        id = jsonData.appointmentId;
+                    } else {
+                        throw new Error("Formato de código QR no reconocido.");
+                    }
+                } catch (jsonError) {
+                    throw new Error("El formato del código QR o ID es incorrecto.");
+                }
             }
 
-            if (!user) throw new Error("Debes iniciar sesión para validar un canje.");
+            if (!user) throw new Error("Debes iniciar sesión para realizar validaciones.");
 
-            const redemptionRef = doc(firestore, "benefitRedemptions", redemptionId);
-            const redemptionSnap = await getDoc(redemptionRef);
-            if (!redemptionSnap.exists()) throw new Error("Canje no encontrado. El código puede ser antiguo o inválido.");
+            let finalValidationData: ValidationData;
 
-            const redemptionData = redemptionSnap.data() as BenefitRedemption;
-            if (!redemptionData) throw new Error("No se pudieron leer los datos del canje.");
+            if (type === 'redemption') {
+                const redemptionRef = doc(firestore, "benefitRedemptions", id);
+                const redemptionSnap = await getDoc(redemptionRef);
+                if (!redemptionSnap.exists()) throw new Error("Canje no encontrado.");
 
-            if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este canje.");
-            
-            const userProfileRef = doc(firestore, "users", redemptionData.userId);
-            const userProfileSnap = await getDoc(userProfileRef);
-            if (!userProfileSnap.exists()) throw new Error("El perfil del estudiante no fue encontrado.");
+                const redemptionData = redemptionSnap.data() as BenefitRedemption;
+                if (redemptionData.supplierId !== user.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este canje.");
+                
+                const userProfileRef = doc(firestore, "users", redemptionData.userId);
+                const userProfileSnap = await getDoc(userProfileRef);
+                if (!userProfileSnap.exists()) throw new Error("Perfil del estudiante no encontrado.");
 
-            const userProfileData = userProfileSnap.data() as UserProfile;
-            if (!userProfileData) throw new Error("No se pudieron leer los datos del perfil del estudiante.");
-
-            const finalValidationData = { 
-                redemption: { ...redemptionData, id: redemptionId }, 
-                profile: userProfileData 
-            };
-            setValidationData(finalValidationData);
-            
-            if (redemptionData.status === "pending") {
-                try {
+                const userProfileData = userProfileSnap.data() as UserProfile;
+                finalValidationData = { type, redemption: { ...redemptionData, id }, profile: userProfileData };
+                
+                if (redemptionData.status === "pending") {
                     const batch = writeBatch(firestore);
-                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', redemptionId);
                     const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
-                    
                     batch.set(redemptionRef, updateData, { merge: true });
+                    
+                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', id);
                     batch.set(userRedemptionRef, updateData, { merge: true });
 
-                    // GRANT POINTS UPON VALIDATION
                     if (redemptionData.pointsGranted && redemptionData.pointsGranted > 0) {
                         const userRef = doc(firestore, 'users', redemptionData.userId);
                         batch.set(userRef, { points: increment(redemptionData.pointsGranted) }, { merge: true });
                     }
-
                     await batch.commit();
-                    toast({ title: "¡Canje exitoso!", description: "El beneficio ha sido marcado como usado." });
-                } catch (dbError) {
-                    console.error("[DATABASE WRITE ERROR]:", dbError);
-                    toast({ 
-                        variant: 'destructive',
-                        title: "Error al Guardar", 
-                        description: "Se validó el canje, pero hubo un error al guardarlo. Contacta a soporte."
-                    });
+                    toast({ title: "¡Canje exitoso!" });
+                } else {
+                    setWasAlreadyUsed(true);
                 }
+            } else if (type === 'appointment') {
+                const appointmentRef = doc(firestore, "appointments", id);
+                const appointmentSnap = await getDoc(appointmentRef);
+                if (!appointmentSnap.exists()) throw new Error("Turno no encontrado.");
+
+                const appointmentData = appointmentSnap.data() as any;
+                if (appointmentData.supplierId !== user.uid && !userIsAdmin) throw new Error("No tienes permiso para validar este turno.");
+
+                const userProfileRef = doc(firestore, "users", appointmentData.userId);
+                const userProfileSnap = await getDoc(userProfileRef);
+                if (!userProfileSnap.exists()) throw new Error("Perfil del estudiante no encontrado.");
+
+                finalValidationData = { type, appointment: appointmentData, profile: userProfileSnap.data() as UserProfile };
+                toast({ title: "Turno verificado" });
             } else {
-                setWasAlreadyUsed(true);
-                toast({ variant: 'default', title: "Canje Ya Verificado", description: "Este beneficio ya había sido utilizado.", duration: 5000 });
+                // Profile type
+                const userProfileRef = doc(firestore, "users", id);
+                const userProfileSnap = await getDoc(userProfileRef);
+                if (!userProfileSnap.exists()) throw new Error("Perfil de usuario no encontrado.");
+                
+                finalValidationData = { type, profile: userProfileSnap.data() as UserProfile };
+                toast({ title: "Usuario verificado" });
             }
+
+            setValidationData(finalValidationData);
 
         } catch (e: any) {
             console.error("[VALIDATION ERROR]:", e);
-            const errorMessage = e instanceof Error ? e.message : "Ocurrió un error desconocido durante la validación.";
+            const errorMessage = e instanceof Error ? e.message : "Error desconocido.";
             setScanError(errorMessage);
-            toast({ variant: 'destructive', title: "Error de Validación", description: errorMessage });
-            // Reset processing state on failure to allow retry
+            toast({ variant: 'destructive', title: "Error", description: errorMessage });
             setIsProcessing(false);
         }
     };
@@ -198,12 +264,15 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             toast({
                 variant: 'destructive',
                 title: 'ID Inválido',
-                description: 'Por favor, ingresa un ID de canje.',
+                description: 'Por favor, ingresa un ID.',
             });
             return;
         }
-        const fakeDecodedText = JSON.stringify({ redemptionId: manualId.trim() });
-        await handleScanSuccess(fakeDecodedText, {} as Html5QrcodeResult);
+        
+        // Try multiple formats for manual entry
+        // First try as redemptionId
+        const redemptionJson = JSON.stringify({ redemptionId: manualId.trim() });
+        await handleScanSuccess(redemptionJson, {} as Html5QrcodeResult);
     };
 
     const handleScanError = (errorMessage: string) => {
