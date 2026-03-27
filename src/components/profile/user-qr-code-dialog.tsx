@@ -70,11 +70,11 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+      <DialogContent className="sm:max-w-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden overflow-visible">
         <DialogTitle className="sr-only">ID Card de {userProfile?.username}</DialogTitle>
-        <div className="flex justify-center w-full overflow-visible">
+        <div className="flex justify-center w-full overflow-visible py-12">
           {isProfileLoading ? (
-            <Skeleton className="h-[520px] w-[340px] rounded-[2.5rem] bg-white/5" />
+            <Skeleton className="h-[520px] w-[330px] rounded-[2.5rem] bg-white/5" />
           ) : userProfile ? (
             <IDCard 
               userProfile={userProfile} 

@@ -65,7 +65,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
       )} />
       
       {/* Card Body */}
-      <div className="relative aspect-[1/1.58] w-full rounded-[2.5rem] overflow-hidden bg-[#0a0a0a] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
+      <div className="relative min-h-[540px] w-full rounded-[2.5rem] bg-[#0a0a0a] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
         
         {/* Header/Banner with Pattern */}
         <div className={cn("h-36 w-full relative overflow-hidden", roleColor)}>
@@ -190,7 +190,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
         </div>
         
         {/* Minimal Footer */}
-        <div className="py-3 bg-black/40 text-center border-t border-white/5">
+        <div className="py-3 bg-black/40 text-center border-t border-white/5 rounded-b-[2.5rem]">
             <p className="text-[9px] font-black uppercase tracking-[0.6em] text-white/10">ESTUCLUB VERIFIED</p>
         </div>
       </div>
