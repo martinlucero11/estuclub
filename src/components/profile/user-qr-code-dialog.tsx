@@ -25,6 +25,7 @@ interface UserQRCodeDialogProps {
 export default function UserQRCodeDialog({ userId, username, children }: UserQRCodeDialogProps) {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
   const firestore = useFirestore();
   const userProfileRef = doc(firestore, 'users', userId);
@@ -32,13 +33,23 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
 
   useEffect(() => {
     // We need to check for window to ensure this code only runs on the client
-    if (typeof window !== 'undefined') {
-        const verificationUrl = `${window.location.origin}/verify?userId=${userId}`;
+    if (typeof window !== 'undefined' && userProfile) {
+        // Enrich QR with more info as requested
+        const params = new URLSearchParams({
+          userId: userId,
+          dni: userProfile.dni || '',
+          level: (userProfile.level || 1).toString(),
+          name: `${userProfile.firstName} ${userProfile.lastName}`,
+          username: userProfile.username
+        });
+        
+        const verificationUrl = `${window.location.origin}/verify?${params.toString()}`;
+        
         import('qrcode').then(QRCode => {
             QRCode.toDataURL(verificationUrl, {
                 errorCorrectionLevel: 'H',
-                width: 256,
-                margin: 1,
+                width: 512,
+                margin: 2,
                 color: {
                   dark: '#000000',
                   light: '#ffffff',
@@ -54,29 +65,25 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
             });
         });
     }
-  }, [userId]);
+  }, [userId, userProfile]);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>ID Card de @{username}</DialogTitle>
-          <DialogDescription>
-            Este es tu código QR personal. Los proveedores pueden escanearlo para verificar tu identidad.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="my-4 flex justify-center w-full overflow-hidden">
+      <DialogContent className="sm:max-w-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+        <DialogTitle className="sr-only">ID Card de {userProfile?.username}</DialogTitle>
+        <div className="flex justify-center w-full overflow-visible">
           {isProfileLoading ? (
-            <Skeleton className="h-[400px] w-full max-w-[340px] rounded-[2.2rem]" />
+            <Skeleton className="h-[520px] w-[340px] rounded-[2.5rem] bg-white/5" />
           ) : userProfile ? (
             <IDCard 
               userProfile={userProfile} 
               qrCodeUrl={qrCodeUrl} 
               isLoading={isLoading} 
+              onClose={() => setOpen(false)}
             />
           ) : (
-            <p className="text-destructive">No se pudo cargar el perfil para la ID Card.</p>
+            <p className="text-destructive">No se pudo cargar el perfil.</p>
           )}
         </div>
       </DialogContent>

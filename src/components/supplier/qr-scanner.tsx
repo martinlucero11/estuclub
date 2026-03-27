@@ -22,6 +22,8 @@ interface UserProfile {
     points: number;
     firstName: string;
     lastName: string;
+    dni: string;
+    level?: number;
 }
 
 // Validation data structure
@@ -100,6 +102,29 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
                                 <p className="text-sm font-bold">{profile.university || 'No especificada'}</p>
                             </div>
                         </div>
+
+                        {type === 'profile' && (
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm">
+                                        <Fingerprint className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">DNI</p>
+                                        <p className="text-sm font-bold">{profile.dni || '---'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">
+                                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shadow-sm">
+                                        <Award className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 leading-none mb-1">Nivel</p>
+                                        <p className="text-sm font-bold">{profile.level || 1}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         
                         {type === 'redemption' && redemption && (
                             <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10">

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { QrCode, University, Award, ShieldCheck, Building, Fingerprint, Mail, Phone } from 'lucide-react';
+import { QrCode, University, Award, ShieldCheck, Building, Fingerprint, Mail, Phone, X } from 'lucide-react';
 import { cn, getAvatarUrl } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AvatarFallbackFachero } from './avatar-selector';
@@ -21,12 +21,14 @@ interface IDCardProps {
     photoURL?: string;
     useAvatar?: boolean;
     points?: number;
+    level?: number;
   };
   qrCodeUrl: string | null;
   isLoading?: boolean;
+  onClose?: () => void;
 }
 
-export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
+export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardProps) {
   const isSupplier = userProfile.role === 'supplier';
   const isAdmin = userProfile.role === 'admin';
   
@@ -46,6 +48,16 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
       animate={{ opacity: 1, scale: 1 }}
       className="relative w-full max-w-[340px] mx-auto group perspective-1000"
     >
+      {/* Floating Close Button - Only if onClose provided */}
+      {onClose && (
+        <button 
+          onClick={onClose}
+          className="absolute -top-12 right-0 h-10 w-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 text-white backdrop-blur-md hover:bg-white/20 transition-all z-50 group-hover:scale-110 active:scale-95"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      )}
+
       {/* Premium Glow Effect */}
       <div className={cn(
         "absolute -inset-4 rounded-[3rem] blur-3xl opacity-30 transition-all duration-700 group-hover:opacity-50",
@@ -53,7 +65,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
       )} />
       
       {/* Card Body */}
-      <div className="relative aspect-[1/1.58] w-full rounded-[2.5rem] overflow-hidden bg-[#121212] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
+      <div className="relative aspect-[1/1.58] w-full rounded-[2.5rem] overflow-hidden bg-[#0a0a0a] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
         
         {/* Header/Banner with Pattern */}
         <div className={cn("h-36 w-full relative overflow-hidden", roleColor)}>
@@ -61,7 +73,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
           <div className="absolute inset-0 bg-black/5" />
           
           {/* Brand Logo and Minimal Indicator */}
-          <div className="absolute top-8 left-0 right-0 px-8 flex justify-between items-center">
+          <div className="absolute top-10 left-0 right-0 px-8 flex justify-between items-center">
             <span className="text-[12px] font-black tracking-[0.4em] text-white uppercase italic drop-shadow-md">EstuClub</span>
             <div className="flex gap-1">
               <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
@@ -91,7 +103,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
             <motion.div 
               whileHover={{ rotate: 15, scale: 1.1 }}
               className={cn(
-                "absolute -bottom-1 -right-1 h-11 w-11 rounded-2xl flex items-center justify-center text-white border-4 border-[#121212] shadow-2xl z-20 transition-transform",
+                "absolute -bottom-1 -right-1 h-11 w-11 rounded-2xl flex items-center justify-center text-white border-4 border-[#0a0a0a] shadow-2xl z-20 transition-transform",
                 roleColor
               )}
             >
@@ -100,7 +112,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
           </div>
 
           {/* User Identity */}
-          <div className="space-y-1.5 mb-8">
+          <div className="space-y-1.5 mb-6">
             <h3 className="text-3xl font-black tracking-tighter text-white leading-tight drop-shadow-sm">
                 {fullName}
             </h3>
@@ -116,22 +128,32 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading }: IDCardProps) {
             </div>
           </div>
 
+          {/* New Level Badge */}
+          {!isSupplier && (
+            <div className="mb-6 px-3 py-1 rounded-full bg-white/[0.05] border border-white/10 flex items-center gap-2">
+              <Award className="h-3 w-3 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Nivel {userProfile.level || 1}</span>
+              <div className="h-1 w-1 rounded-full bg-white/20" />
+              <span className="text-[10px] font-bold text-white/40">{userProfile.points || 0} PTS</span>
+            </div>
+          )}
+
           {/* Info Grid - Premium Aesthetic */}
-          <div className="w-full grid grid-cols-2 gap-4 mb-8">
-              <div className="p-4 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">Identidad</p>
-                  <div className="flex items-center gap-2 text-white/90 font-bold overflow-hidden">
-                      <Fingerprint className="h-4 w-4 text-primary shrink-0 opacity-70" />
-                      <span className="text-[11px] truncate">{userProfile.dni}</span>
+          <div className="w-full grid grid-cols-2 gap-3 mb-8">
+              <div className="p-3 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
+                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">Identidad</p>
+                  <div className="flex items-center gap-1.5 text-white/90 font-bold overflow-hidden">
+                      <Fingerprint className="h-3.5 w-3.5 text-primary shrink-0 opacity-70" />
+                      <span className="text-[10px] truncate">{userProfile.dni}</span>
                   </div>
               </div>
-              <div className="p-4 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 mb-2">
+              <div className="p-3 bg-white/[0.03] rounded-[1.5rem] border border-white/10 text-left transition-colors hover:bg-white/[0.06]">
+                  <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/30 mb-1">
                       {isSupplier ? 'Categoría' : 'Institución'}
                   </p>
-                  <div className="flex items-center gap-2 text-white/90 font-bold overflow-hidden">
-                      {isSupplier ? <Building className="h-4 w-4 text-primary shrink-0 opacity-70" /> : <University className="h-4 w-4 text-primary shrink-0 opacity-70" />}
-                      <span className="text-[11px] truncate">{userProfile.university || 'EstuClub'}</span>
+                  <div className="flex items-center gap-1.5 text-white/90 font-bold overflow-hidden">
+                      {isSupplier ? <Building className="h-3.5 w-3.5 text-primary shrink-0 opacity-70" /> : <University className="h-3.5 w-3.5 text-primary shrink-0 opacity-70" />}
+                      <span className="text-[10px] truncate">{userProfile.university || 'EstuClub'}</span>
                   </div>
               </div>
           </div>
