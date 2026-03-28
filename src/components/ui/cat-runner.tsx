@@ -169,7 +169,11 @@ export function CatRunner() {
           ctx.fillText('🐈', cat.x - 10, cat.y + 25);
           ctx.globalAlpha = 1.0;
       }
-      ctx.fillText('🐈', cat.x, cat.y + 35);
+      ctx.save();
+      ctx.translate(cat.x + 18, 0); // Center of cat approx
+      ctx.scale(-1, 1);
+      ctx.fillText('🐈', -18, cat.y + 35);
+      ctx.restore();
       
       // Obstacles (Cyberpunk Spikes/Crates)
       obstacles.forEach(obs => {

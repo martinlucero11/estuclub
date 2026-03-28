@@ -14,9 +14,10 @@ interface HomeSectionDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     section?: HomeSection | null;
+    defaultBoard?: 'benefits' | 'delivery';
 }
 
-export function HomeSectionDialog({ isOpen, onOpenChange, section }: HomeSectionDialogProps) {
+export function HomeSectionDialog({ isOpen, onOpenChange, section, defaultBoard }: HomeSectionDialogProps) {
     const isEditMode = !!section;
     
     return (
@@ -32,6 +33,7 @@ export function HomeSectionDialog({ isOpen, onOpenChange, section }: HomeSection
                     <HomeSectionForm 
                         section={section} 
                         onSuccess={() => onOpenChange(false)}
+                        defaultBoard={defaultBoard}
                     />
                 </div>
             </DialogContent>

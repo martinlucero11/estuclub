@@ -33,31 +33,68 @@ export default function PanelCluberPage() {
         return true;
     });
 
+  const groups = [
+    {
+        title: "Operaciones Diarias",
+        items: dashboardNavItems.filter(i => ['Escanear QR', 'Canjes', 'Pedidos'].includes(i.title))
+    },
+    {
+        title: "Mi Tienda",
+        items: dashboardNavItems.filter(i => ['Mi Perfil de Cluber', 'Beneficios', 'Turnos', 'Anuncios', 'Productos'].includes(i.title))
+    },
+    {
+        title: "Métricas & Comunidad",
+        items: dashboardNavItems.filter(i => ['Mis Analíticas', 'Suscriptores', 'Solicitudes de Clubers', 'Gestión de Clubers', 'Analíticas Globales'].includes(i.title))
+    },
+    {
+        title: "Personalización App",
+        items: dashboardNavItems.filter(i => ['Diseño de Inicio', 'Gestión de Banners', 'Gestión de Categorías', 'Mantenimiento Usuarios'].includes(i.title))
+    }
+  ];
+
   return (
-    <div>
-        <h1 className="text-3xl font-bold mb-2">Panel Cluber</h1>
-        <p className="text-muted-foreground mb-8">
-            Selecciona una acción para continuar. Rol activo: <span className="font-semibold text-primary">{activeRole}</span>.
-        </p>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {dashboardNavItems.map((item: SidebarNavItemLink) => {
-                const Icon = item.icon;
-                return (
-                    <Link href={item.href} key={item.title}>
-                        <Card className="hover:shadow-lg transition-shadow rounded-2xl">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    {item.title}
-                                </CardTitle>
-                                {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
-                            </CardHeader>
-                            <div className="p-6 pt-0">
-                                 <CardDescription>Accede a la sección de {item.title.toLowerCase()}.</CardDescription>
-                            </div>
-                        </Card>
-                    </Link>
-                )
-            })}
+    <div className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-black tracking-tight leading-none">Panel de Control</h1>
+            <p className="text-muted-foreground text-sm font-medium opacity-70 italic">
+                Rol Activo: <span className="font-bold text-primary uppercase tracking-widest ml-1">{activeRole}</span>
+            </p>
+        </div>
+
+        <div className="grid gap-8">
+            {groups.map(group => group.items.length > 0 && (
+                <div key={group.title} className="space-y-4">
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 whitespace-nowrap">
+                            {group.title}
+                        </h2>
+                        <div className="h-[1px] w-full bg-border/30" />
+                    </div>
+                    
+                    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+                        {group.items.map((item: SidebarNavItemLink) => {
+                            const Icon = item.icon;
+                            return (
+                                <Link href={item.href} key={item.title} className="group">
+                                    <div className="h-full p-4 rounded-3xl bg-card border border-border/40 hover:border-primary/30 hover:bg-primary/[0.02] hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 flex flex-col items-center text-center gap-3 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        
+                                        <div className="p-3 rounded-2xl bg-muted group-hover:bg-primary group-hover:text-white transition-all duration-300 group-hover:scale-110 shadow-sm group-hover:shadow-primary/20">
+                                            {Icon && <Icon className="h-5 w-5" />}
+                                        </div>
+                                        
+                                        <div className="space-y-1">
+                                            <h3 className="text-xs font-bold tracking-tight leading-tight group-hover:text-primary transition-colors">
+                                                {item.title}
+                                            </h3>
+                                        </div>
+                                    </div>
+                                </Link>
+                            )
+                        })}
+                    </div>
+                </div>
+            ))}
         </div>
     </div>
   );

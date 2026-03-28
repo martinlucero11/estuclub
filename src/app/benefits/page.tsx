@@ -22,6 +22,7 @@ import type { SupplierProfile } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import LocationPicker from '@/components/maps/location-picker';
 import { cn } from '@/lib/utils';
+import { ModeToggle } from '@/components/layout/mode-toggle';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc' | 'proximity';
 
@@ -209,6 +210,7 @@ export default function BenefitsPage() {
         <MainLayout>
             <div className="flex-1 space-y-12 p-4 md:p-12 max-w-7xl mx-auto">
                 <header className="space-y-4">
+                    <ModeToggle />
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
                         Todos los <span className="text-primary">Beneficios</span>
                     </h1>

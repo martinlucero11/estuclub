@@ -209,6 +209,35 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin() || (isSupplier() && request.resource.data.supplierId == request.auth.uid);
     }
 
+    /* ================= PRODUCTS ================= */
+
+    match /products/{id} {
+      allow read: if true;
+      allow create: if (isSupplier() && request.resource.data.supplierId == request.auth.uid) || isAdmin();
+      allow update, delete: if (signedIn() && (
+        resource.data.supplierId == request.auth.uid ||
+        isAdmin()
+      ));
+    }
+
+    /* ================= ORDERS ================= */
+
+    match /orders/{id} {
+      allow list: if signedIn();
+      allow get: if signedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.supplierId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if signedIn() && (
+        resource.data.supplierId == request.auth.uid || 
+        (resource.data.userId == request.auth.uid && request.resource.data.status == 'cancelled') ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
     /* ================= REVIEWS ================= */
 
     match /reviews/{id} {

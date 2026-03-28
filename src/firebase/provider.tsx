@@ -142,7 +142,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
 
         if (supplierDoc.exists()) {
           userRoles.push('supplier');
-          supplierData = supplierDoc.data() as SupplierData;
+          supplierData = { id: uid, ...supplierDoc.data() } as SupplierData;
         }
 
         setProfileState({

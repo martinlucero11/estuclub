@@ -25,14 +25,24 @@ const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   emoji: z.string().min(1, 'Debes seleccionar un emoji.').max(4, 'El emoji es demasiado largo.'),
   colorClass: z.string().min(1, 'La clase de color es requerida.'),
+  type: z.enum(['benefits', 'delivery']).default('benefits'),
 });
+
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 
 interface CategoryFormProps {
     category?: Category | null;
     onSuccess: () => void;
+    defaultType?: 'benefits' | 'delivery';
 }
 
-export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
+export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +54,7 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
             name: category?.name || '',
             emoji: category?.emoji || '',
             colorClass: category?.colorClass || 'text-primary',
+            type: category?.type || defaultType || 'benefits',
         },
     });
 
@@ -78,42 +89,67 @@ export function CategoryForm({ category, onSuccess }: CategoryFormProps) {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Nombre de la Categoría</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="emoji"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Emoji de la Categoría</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Ej: 🍔" maxLength={4} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="colorClass"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Clase de Color (Tailwind)</FormLabel>
-                            <div className="relative">
-                                <Palette className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Nombre</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="type"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Board Destino</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Seleccionar board" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="benefits">Beneficios</SelectItem>
+                                        <SelectItem value="delivery">Delivery</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="emoji"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Emoji</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Ej: text-blue-500" {...field} className="pl-10" />
+                                    <Input placeholder="Ej: 🍔" maxLength={4} {...field} />
                                 </FormControl>
-                            </div>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="colorClass"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Color (Tailwind)</FormLabel>
+                                <div className="relative">
+                                    <Palette className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <FormControl>
+                                        <Input placeholder="Ej: text-blue-500" {...field} className="pl-10" />
+                                    </FormControl>
+                                </div>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
                         <Save className="mr-2 h-4 w-4" />

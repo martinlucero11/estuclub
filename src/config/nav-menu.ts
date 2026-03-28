@@ -15,11 +15,14 @@ import {
     QrCode,
     Building,
     BarChart,
+    Package,
     History as HistoryIcon,
     Trophy,
     UtensilsCrossed,
     HelpCircle,
     AlertCircle,
+    Heart as HeartIcon,
+    ShoppingBag,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -28,61 +31,79 @@ export const navConfig: NavConfig = {
       title: "Inicio",
       href: "/",
       icon: Home,
+      category: "Explorar",
     },
     {
       title: "Beneficios",
       href: "/benefits",
       icon: Ticket,
+      category: "Explorar",
     },
     {
       title: "Clubers",
       href: "/proveedores",
       icon: Building,
+      category: "Explorar",
     },
     {
       title: "Ranking",
       href: "/leaderboard",
       icon: Trophy,
+      category: "Explorar",
     },
     {
       title: "Cinco.Dos",
       href: "/cinco-dos",
       icon: UtensilsCrossed,
+      category: "Explorar",
     },
     {
       title: "Anuncios",
       href: "/announcements",
       icon: Megaphone,
+      category: "Explorar", // Keep in explorrar for now
     },
     {
       title: "Mis Turnos",
       href: "/mis-turnos",
       icon: CalendarClock,
       role: ["user", "admin", "supplier"],
-    },
-    {
-      title: "Solicitar ser Cluber",
-      href: "/solicitar-cluber",
-      icon: Building,
-      role: ["user"], // Only for regular users
+      category: "Mi Actividad",
     },
     {
       title: "Mis Canjes",
       href: "/my-redemptions",
       icon: HistoryIcon,
       role: ["user", "admin", "supplier"],
+      category: "Mi Actividad",
     },
     {
-      title: "Panel Cluber",
+      title: "Favoritos",
+      href: "/favorites",
+      icon: HeartIcon, // I'll need to import this
+      category: "Mi Actividad",
+      role: ["user", "admin", "supplier"],
+    },
+    {
+      title: "Solicitar ser Cluber",
+      href: "/solicitar-cluber",
+      icon: Building,
+      role: ["user"],
+      category: "Mi Actividad",
+    },
+    {
+      title: "Panel de Control", // Renamed from Panel Cluber
       href: "/panel-cluber",
       icon: LayoutDashboard,
       role: ["admin", "supplier"],
+      category: "Gestión",
     },
     {
       title: "Ajustes",
       href: "/settings",
       icon: Settings,
-      role: ["user", "admin", "supplier"], // Any logged in user
+      role: ["user", "admin", "supplier"],
+      category: "Gestión",
     }
   ],
   sidebarNav: [
@@ -141,6 +162,20 @@ export const navConfig: NavConfig = {
             icon: CalendarClock,
             role: ["supplier"],
             supplierCapability: "appointmentsEnabled",
+        },
+        {
+            title: "Pedidos",
+            href: "/panel-cluber/orders",
+            icon: ShoppingBag,
+            role: ["supplier"],
+            supplierCapability: "deliveryEnabled",
+        },
+        {
+            title: "Productos",
+            href: "/panel-cluber/products",
+            icon: Package,
+            role: ["supplier"],
+            supplierCapability: "deliveryEnabled",
         },
       ]
     },

@@ -15,9 +15,10 @@ interface CategoryDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     category?: Category | null;
+    defaultType?: 'benefits' | 'delivery';
 }
 
-export function CategoryDialog({ isOpen, onOpenChange, category }: CategoryDialogProps) {
+export function CategoryDialog({ isOpen, onOpenChange, category, defaultType }: CategoryDialogProps) {
     const isEditMode = !!category;
     
     return (
@@ -32,6 +33,7 @@ export function CategoryDialog({ isOpen, onOpenChange, category }: CategoryDialo
                 <CategoryForm 
                     category={category} 
                     onSuccess={() => onOpenChange(false)}
+                    defaultType={defaultType}
                 />
             </DialogContent>
         </Dialog>

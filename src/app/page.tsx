@@ -5,12 +5,14 @@ import { Suspense, useMemo } from 'react';
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
+import { ModeToggle } from '@/components/layout/mode-toggle';
 import Link from 'next/link';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { EmptyState } from '@/components/ui/empty-state';
 import { HomeSection } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
+import { cn } from '@/lib/utils';
 import HomeSectionRenderer from '@/components/home/home-section-renderer';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
@@ -43,7 +45,13 @@ function HomeContent() {
         );
     }, [firestore]);
 
-    const { data: sections, isLoading } = useCollection(sectionsQuery);
+    const { data: allSections, isLoading } = useCollection(sectionsQuery);
+
+    const sections = useMemo(() => {
+        if (!allSections) return [];
+        // Default to 'benefits' if targetBoard is missing (for legacy sections)
+        return allSections.filter(s => (s.targetBoard || 'benefits') === 'benefits');
+    }, [allSections]);
 
     if (isLoading) {
         return <HomeSectionsSkeleton />;
@@ -58,9 +66,9 @@ function HomeContent() {
     }
 
     return (
-        <div className="space-y-10 pb-12 pt-2 animate-stagger">
+        <div className="pb-12 pt-2 animate-stagger">
             {sections.map((section) => (
-                <section key={section.id} className="space-y-4">
+                <section key={section.id} className={cn(section.title ? "space-y-4 mb-10" : "mb-4")}>
                     {section.title && (
                         <div className="flex items-center justify-between px-1">
                             <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-muted-foreground/80 tracking-[0.2em]">
@@ -94,7 +102,8 @@ function HomeContent() {
 export default function HomePage() {
     return (
         <MainLayout>
-            <div className="mx-auto w-full px-4">
+            <div className="mx-auto w-full px-4 pt-4">
+                <ModeToggle />
                 <WelcomeMessage />
                 <PendingReviews />
                 <Suspense fallback={<HomeSectionsSkeleton />}>

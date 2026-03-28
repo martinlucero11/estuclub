@@ -12,7 +12,7 @@ import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import { Save, Search } from 'lucide-react';
-import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock } from '@/types/data';
+import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock, Product } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,8 +22,9 @@ import { Separator } from '@/components/ui/separator';
 const formSchema = z.object({
   title: z.string().optional(),
   isActive: z.boolean().default(true),
+  targetBoard: z.enum(['benefits', 'delivery']).default('benefits'),
   
-  contentType: z.enum(["benefits", "suppliers", "announcements", "banners", "categories", "banner", "benefits_nearby", "suppliers_nearby"]),
+  contentType: z.enum(["benefits", "suppliers", "announcements", "banners", "categories", "banner", "message", "benefits_nearby", "suppliers_nearby", "delivery_suppliers", "delivery_products", "delivery_promos", "productexmplsupplier", "minisuppliers"]),
 
   layout_kind: z.enum(["carousel", "grid"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
@@ -33,6 +34,7 @@ const formSchema = z.object({
   query_isFeatured: z.boolean().optional(),
   query_isVisible: z.boolean().optional(),
   query_category: z.string().optional(),
+  query_deliveryCategory: z.string().optional(),
   query_supplierType: z.string().optional(),
   query_sort_field: z.string().optional(),
   query_sort_direction: z.enum(["asc", "desc"]).optional(),
@@ -40,6 +42,10 @@ const formSchema = z.object({
 
   manual_items: z.array(z.string()).optional(),
   manual_bannerId: z.string().optional(),
+  message_title: z.string().optional(),
+  message_body: z.string().optional(),
+  message_imageUrl: z.string().optional(),
+  message_alignment: z.enum(["left", "center"]).default("left"),
 }).refine(data => {
     if (data.contentType === 'banner') {
         return !!data.manual_bannerId;
@@ -56,9 +62,10 @@ type FormValues = z.infer<typeof formSchema>;
 interface HomeSectionFormProps {
     section?: HomeSection | null;
     onSuccess: () => void;
+    defaultBoard?: 'benefits' | 'delivery';
 }
 
-export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
+export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectionFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,12 +83,16 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const announcementsQuery = useMemo(() => firestore ? query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>())) : null, [firestore]);
     const { data: announcements } = useCollection(announcementsQuery);
 
+    const productsQuery = useMemo(() => firestore ? query(collection(firestore, 'products').withConverter(createConverter<Product>())) : null, [firestore]);
+    const { data: products } = useCollection(productsQuery);
+
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
         defaultValues: useMemo(() => {
             const defaults = {
                 title: '',
                 isActive: true,
+                targetBoard: defaultBoard || 'benefits' as const,
                 contentType: 'benefits' as const,
                 layout_kind: 'carousel' as const,
                 data_source_mode: 'auto' as const,
@@ -94,6 +105,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 query_limit: 10,
                 manual_items: [],
                 manual_bannerId: '',
+                message_title: '',
+                message_body: '',
+                message_imageUrl: '',
+                message_alignment: 'left' as const,
             };
             if (!section) return defaults;
 
@@ -101,6 +116,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             const base = {
                 title: section.title,
                 isActive: section.isActive,
+                targetBoard: section.targetBoard || 'benefits',
             };
 
             if (block.kind === 'banner') {
@@ -109,6 +125,17 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     ...base,
                     contentType: 'banner',
                     manual_bannerId: block.bannerId,
+                };
+            }
+            if (block.kind === 'message') {
+                return {
+                    ...defaults,
+                    ...base,
+                    contentType: 'message',
+                    message_title: block.message.title,
+                    message_body: block.message.body,
+                    message_imageUrl: block.message.imageUrl,
+                    message_alignment: block.message.alignment || 'left',
                 };
             }
             if (block.kind === 'categories') {
@@ -135,6 +162,7 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                     query_isFeatured: block.query.filters?.some(f => f.field === 'isFeatured' && f.value === true) || false,
                     query_isVisible: isVisibleFilter ? isVisibleFilter.value : true,
                     query_category: block.query.filters?.find(f => f.field === 'category')?.value as string || '',
+                    query_deliveryCategory: block.query.filters?.find(f => f.field === 'deliveryCategory')?.value as string || '',
                     query_supplierType: block.query.filters?.find(f => f.field === 'type')?.value as string || '',
                     query_sort_field: block.query.sort?.field || 'createdAt',
                     query_sort_direction: block.query.sort?.direction || 'desc',
@@ -162,9 +190,10 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
     const selectableItems = useMemo(() => {
         let items: { id: string; name: string }[] = [];
         if (watchContentType === 'benefits' && benefits) items = benefits.map(b => ({ id: b.id, name: b.title }));
-        if (watchContentType === 'suppliers' && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
+        if ((watchContentType === 'suppliers' || watchContentType === 'minisuppliers') && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
         if (watchContentType === 'announcements' && announcements) items = announcements.map(a => ({ id: a.id, name: a.title }));
         if (watchContentType === 'banners' && banners) items = banners.map(b => ({ id: b.id, name: b.title || `Banner sin título (${b.id.substring(0,5)})` }));
+        if ((watchContentType === 'delivery_products' || watchContentType === 'delivery_promos' || watchContentType === 'productexmplsupplier') && products) items = products.map(p => ({ id: p.id, name: p.name }));
         
         if (!searchTerm) return items;
         return items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -195,6 +224,17 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                         kind: 'categories',
                     };
                     break;
+                case 'message':
+                    finalBlock = {
+                        kind: 'message',
+                        message: {
+                            title: values.message_title,
+                            body: values.message_body || '',
+                            imageUrl: values.message_imageUrl,
+                            alignment: values.message_alignment as any,
+                        }
+                    };
+                    break;
                 case 'benefits_nearby':
                 case 'suppliers_nearby':
                     finalBlock = {
@@ -206,24 +246,27 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                 default: // Dynamic content
                     const query = {
                         filters: [] as WhereFilter[],
-                        sort: {
-                            field: values.query_sort_field || 'createdAt',
-                            direction: values.query_sort_direction || 'desc',
-                        },
-                        limit: values.query_limit || 10,
+                        // Only add sort if explicitly defined
+                        ...(values.query_sort_field && {
+                            sort: { 
+                                field: values.query_sort_field, 
+                                direction: values.query_sort_direction as any || 'desc' 
+                            }
+                        }),
                     };
                     
                     if (values.query_isVisible) {
-                        const visibilityField = values.contentType === 'banners' ? 'isActive' : 'isVisible';
+                        const visibilityField = (values.contentType === 'banners' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers') ? 'isActive' : 'isVisible';
                         query.filters.push({ field: visibilityField, op: '==', value: true });
                     }
 
                     if (values.query_isFeatured) query.filters.push({ field: 'isFeatured', op: '==', value: true });
                     if (values.query_category) query.filters.push({ field: 'category', op: '==', value: values.query_category });
+                    if (values.query_deliveryCategory) query.filters.push({ field: 'deliveryCategory', op: '==', value: values.query_deliveryCategory });
                     if (values.query_supplierType) query.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
 
                     const commonDynamicProps = {
-                        contentType: values.contentType as "benefits" | "suppliers" | "announcements" | "banners",
+                        contentType: values.contentType as any,
                         mode: values.data_source_mode,
                         ...(values.data_source_mode === 'auto' && { query }),
                         ...(values.data_source_mode === 'manual' && { items: values.manual_items || [] }),
@@ -247,7 +290,8 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             const dataToSave: Omit<HomeSection, 'id' | 'createdAt'> = {
                 title: values.title || '',
                 isActive: values.isActive,
-                block: finalBlock,
+                targetBoard: values.targetBoard,
+                block: finalBlock as HomeSectionBlock,
                 order: section?.order ?? new Date().getTime(),
             };
 
@@ -270,29 +314,40 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
             setIsSubmitting(false);
         }
     }
-    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'banner' || watchContentType === 'benefits_nearby' || watchContentType === 'suppliers_nearby';
+    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'banner' || watchContentType === 'message' || watchContentType === 'benefits_nearby' || watchContentType === 'suppliers_nearby';
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-1">
                 <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="font-semibold text-lg">1. Contenido</h3>
-                    <FormField control={form.control} name="title" render={({ field }) => (
-                        <FormItem><FormLabel>Título del Bloque (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: Beneficios Destacados" /></FormControl><FormMessage /></FormItem>
-                    )} />
+                    <h3 className="font-semibold text-lg">1. Configuración General</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="title" render={({ field }) => (
+                            <FormItem><FormLabel>Título de la Sección</FormLabel><FormControl><Input {...field} placeholder="Ej: Ofertas Destacadas" /></FormControl><FormMessage /></FormItem>
+                        )} />
+                        <FormField control={form.control} name="targetBoard" render={({ field }) => (
+                            <FormItem><FormLabel>Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="benefits">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem></SelectContent></Select></FormItem>
+                        )} />
+                    </div>
                     <FormField control={form.control} name="contentType" render={({ field }) => (
                         <FormItem><FormLabel>Tipo de Contenido</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>
                                 <SelectItem value="benefits">Beneficios</SelectItem>
                                 <SelectItem value="suppliers">Proveedores (Clubers)</SelectItem>
+                                <SelectItem value="delivery_suppliers">Delivery (Locales)</SelectItem>
                                 <SelectItem value="benefits_nearby">Beneficios Cercanos (GPS)</SelectItem>
                                 <SelectItem value="suppliers_nearby">Clubers Cercanos (GPS)</SelectItem>
                                 <SelectItem value="announcements">Anuncios</SelectItem>
                                 <SelectItem value="banners">Carrusel de Banners</SelectItem>
                                 <Separator className="my-1" />
+                                <SelectItem value="delivery_products">Delivery (Productos)</SelectItem>
+                                <SelectItem value="delivery_promos">Delivery (Promociones)</SelectItem>
+                                <SelectItem value="productexmplsupplier">Delivery (Tarjeta Detallada)</SelectItem>
+                                <Separator className="my-1" />
                                 <SelectItem value="categories">Grilla de Categorías</SelectItem>
                                 <SelectItem value="banner">Banner Individual</SelectItem>
+                                <SelectItem value="message">Mensaje Home (Configurable)</SelectItem>
                             </SelectContent>
                         </Select><FormMessage /></FormItem>
                     )} />
@@ -355,6 +410,9 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                                 {watchContentType === 'benefits' && <FormField control={form.control} name="query_category" render={({ field }) => (
                                     <FormItem><FormLabel>Categoría de Beneficio (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent>{benefitCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                 )} />}
+                                {watchContentType === 'delivery_suppliers' && <FormField control={form.control} name="query_deliveryCategory" render={({ field }) => (
+                                    <FormItem><FormLabel>Categoría de Delivery (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent>{deliveryCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                )} />}
                                 {watchContentType === 'suppliers' && <FormField control={form.control} name="query_supplierType" render={({ field }) => (
                                     <FormItem><FormLabel>Tipo de Proveedor (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todos los tipos" /></SelectTrigger></FormControl><SelectContent>{cluberCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                 )} />}
@@ -394,15 +452,40 @@ export function HomeSectionForm({ section, onSuccess }: HomeSectionFormProps) {
                      </div>
                 )}
                 
-                {watchContentType === 'banner' && (
-                    <div className="space-y-4 rounded-md border p-4">
-                        <h3 className="font-semibold text-lg">Banner Específico</h3>
-                        <FormField control={form.control} name="manual_bannerId" render={({ field }) => (
-                            <FormItem><FormLabel>Banner a Mostrar</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un banner" /></SelectTrigger></FormControl>
-                                <SelectContent>{banners?.map(b => <SelectItem key={b.id} value={b.id}>{b.title || `Banner sin título (${b.id.substring(0,5)})`}</SelectItem>)}</SelectContent>
-                            </Select><FormMessage /></FormItem>
-                        )} />
+                {watchContentType === 'message' && (
+                    <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                            Configuración del Mensaje
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            <FormField control={form.control} name="message_title" render={({ field }) => (
+                                <FormItem><FormLabel>Título (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: ¡Bienvenidos alumnos!" /></FormControl></FormItem>
+                            )} />
+                            <FormField control={form.control} name="message_body" render={({ field }) => (
+                                <FormItem><FormLabel>Cuerpo del Mensaje</FormLabel><FormControl><Input {...field} placeholder="Ej: Descubre los mejores beneficios..." /></FormControl></FormItem>
+                            )} />
+                            <FormField control={form.control} name="message_imageUrl" render={({ field }) => (
+                                <FormItem><FormLabel>URL de Imagen (Opcional)</FormLabel><FormControl><Input {...field} placeholder="https://..." /></FormControl></FormItem>
+                            )} />
+                             <FormField control={form.control} name="message_alignment" render={({ field }) => (
+                                <FormItem><FormLabel>Alineación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="left">Izquierda</SelectItem><SelectItem value="center">Centro</SelectItem></SelectContent></Select></FormItem>
+                            )} />
+                        </div>
+                        
+                        <div className="mt-6 pt-6 border-t border-primary/10">
+                            <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-4">Previsualización</p>
+                            <div className={`p-6 rounded-3xl glass glass-dark border border-white/10 flex flex-col md:flex-row items-center gap-6 ${form.watch('message_alignment') === 'center' ? 'text-center' : 'text-left'}`}>
+                                <div className="flex-1 space-y-2">
+                                    <h4 className="text-2xl font-black tracking-tighter">{form.watch('message_title') || 'Título de ejemplo'}</h4>
+                                    <p className="text-sm opacity-70 italic">{form.watch('message_body') || 'Cuerpo del mensaje de ejemplo...'}</p>
+                                </div>
+                                {form.watch('message_imageUrl') && (
+                                    <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/20">
+                                        <img src={form.watch('message_imageUrl')} className="w-full h-full object-cover" alt="Preview" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 )}
 

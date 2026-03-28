@@ -73,7 +73,7 @@ export function useDoc<T = any>(
 
     const unsubscribe = onSnapshot(
       docRef,
-      { includeMetadataChanges: true },
+      // metadata changes disabled to avoid internal SDK assertion errors
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });

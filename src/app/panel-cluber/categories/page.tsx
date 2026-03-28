@@ -42,8 +42,12 @@ function LoadingSkeleton() {
     );
 }
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from 'react';
+
 export default function CategoriesPage() {
     const { isAdmin, isLoading } = useAdmin();
+    const [activeTab, setActiveTab] = useState<'benefits' | 'delivery'>('benefits');
 
     if (isLoading) {
         return <LoadingSkeleton />;
@@ -54,15 +58,42 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
             <BackButton />
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Gestión de Categorías</h1>
+            
+            <div className="flex flex-col gap-2">
+                <h1 className="text-3xl font-black tracking-tight">Gestión de Categorías</h1>
+                <p className="text-muted-foreground font-medium italic opacity-80">
+                    Organiza las etiquetas y filtros que aparecen en cada sección de la plataforma.
+                </p>
             </div>
-            <p className="text-muted-foreground">
-                Crea, edita y elimina las categorías de beneficios que aparecen en la página de inicio.
-            </p>
-            <CategoryTable />
+
+            <Tabs defaultValue="benefits" onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+                <div className="flex items-center justify-between mb-6">
+                    <TabsList className="bg-background/60 backdrop-blur-md border border-white/10 p-1 h-12 rounded-2xl shadow-inner">
+                        <TabsTrigger 
+                            value="benefits" 
+                            className="rounded-xl px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                        >
+                            Beneficios
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="delivery" 
+                            className="rounded-xl px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
+                        >
+                            Delivery
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+
+                <TabsContent value="benefits" className="mt-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <CategoryTable type="benefits" />
+                </TabsContent>
+                
+                <TabsContent value="delivery" className="mt-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <CategoryTable type="delivery" />
+                </TabsContent>
+            </Tabs>
         </div>
     );
 }

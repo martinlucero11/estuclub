@@ -158,6 +158,25 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
     },
   },
   {
+    id: "deliveryEnabled",
+    header: () => <div className="text-center">Delivery</div>,
+    cell: ({ row }) => {
+      const supplier = row.original;
+      const isLoading = loadingStates[supplier.id]?.deliveryEnabled;
+
+      return (
+        <div className="flex justify-center">
+          <Switch
+            checked={!!supplier.deliveryEnabled}
+            onCheckedChange={(value) => onToggle(supplier.id, 'deliveryEnabled', value)}
+            disabled={isLoading}
+            aria-label="Toggle delivery"
+          />
+        </div>
+      );
+    },
+  },
+  {
     id: "status",
     header: "Estado",
     cell: ({ row }) => {

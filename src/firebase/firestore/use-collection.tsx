@@ -63,7 +63,7 @@ export function useCollection<T extends DocumentData>(
 
     const unsubscribe = onSnapshot(
       query,
-      { includeMetadataChanges: true }, // Important for offline/online state detection
+      // metadata changes disabled to avoid internal SDK assertion errors in rapid re-subscriptions
       (snapshot) => {
         const docs = snapshot.docs.map((doc) => {
           const docData = doc.data();

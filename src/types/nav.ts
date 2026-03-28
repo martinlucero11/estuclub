@@ -17,6 +17,8 @@ export interface NavItem {
   icon?: LucideIcon;
   label?: string;
   role?: string | string[];
+  category?: string; // For grouping in sidebar
+  supplierCapability?: keyof import('./data').SupplierProfile;
 }
 
 /**
@@ -25,7 +27,6 @@ export interface NavItem {
  */
 export interface SidebarNavItemLink extends NavItem {
   items?: SidebarNavItemLink[];
-  supplierCapability?: keyof import('./data').SupplierProfile;
 }
 
 /**

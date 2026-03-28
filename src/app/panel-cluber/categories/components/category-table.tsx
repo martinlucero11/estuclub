@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
-export function CategoryTable() {
+export function CategoryTable({ type = 'benefits' }: { type?: 'benefits' | 'delivery' }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -28,8 +28,10 @@ export function CategoryTable() {
     const { data: rawCategories, isLoading } = useCollection(categoriesQuery);
     const categories = useMemo(() => {
         if (!rawCategories) return [];
-        return [...rawCategories].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    }, [rawCategories]);
+        return [...rawCategories]
+            .filter(c => (c.type || 'benefits') === type)
+            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }, [rawCategories, type]);
     const [isReorderDialogOpen, setIsReorderDialogOpen] = useState(false);
     
     const handleEdit = useCallback((category: Category) => {
@@ -81,6 +83,7 @@ export function CategoryTable() {
             <CategoryDialog 
                 isOpen={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
+                defaultType={type}
             />
             {selectedCategory && (
                  <CategoryDialog 

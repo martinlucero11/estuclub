@@ -19,6 +19,7 @@ import { FavoriteButton } from '@/components/layout/favorite-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ReviewList } from '@/components/reviews/review-list';
+import { ProductGrid } from '@/components/delivery/product-grid';
 import { StarRating } from '@/components/reviews/star-rating';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -169,10 +170,11 @@ function CluberProfileContent() {
     const supplierInitials = getInitials(supplier.name);
     const isOwnProfile = user?.uid === supplier.id;
 
+    const tabParam = searchParams.get('tab');
     const hasBenefits = benefits && benefits.length > 0;
     const hasServices = supplier.appointmentsEnabled && services && services.length > 0;
     
-    const defaultTab = hasBenefits ? "benefits" : hasServices ? "services" : "benefits";
+    const defaultTab = tabParam || (supplier.deliveryEnabled ? "catalog" : hasBenefits ? "benefits" : hasServices ? "services" : "benefits");
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -238,12 +240,25 @@ function CluberProfileContent() {
                 )}
 
                 <Tabs defaultValue={defaultTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mx-auto max-w-lg mb-12 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
+                    <TabsList className="grid w-full grid-cols-4 mx-auto max-w-xl mb-12 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
                         <TabsTrigger value="benefits" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Beneficios</TabsTrigger>
+                        <TabsTrigger value="catalog" className="font-extrabold rounded-xl data-[state=active]:shadow-lg" disabled={!supplier.deliveryEnabled}>Catálogo</TabsTrigger>
                         <TabsTrigger value="services" className="font-extrabold rounded-xl data-[state=active]:shadow-lg" disabled={!hasServices}>Turnos</TabsTrigger>
                         <TabsTrigger value="reviews" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Reseñas</TabsTrigger>
                     </TabsList>
                     
+                    <TabsContent value="catalog" className="animate-in fade-in-50 duration-500">
+                        {supplier.deliveryEnabled ? (
+                            <ProductGrid 
+                                supplierId={supplier.id} 
+                                supplierName={supplier.name} 
+                                supplierPhone={supplier.whatsapp || ''} 
+                            />
+                        ) : (
+                            <EmptyState icon={ShoppingBag} title="Sin Catálogo" description="Este Cluber no tiene productos disponibles para delivery por el momento."/>
+                        )}
+                    </TabsContent>
+
                     <TabsContent value="benefits" className="animate-in fade-in-50 duration-500">
                          {benefitsLoading ? <BrandSkeleton className="h-64 w-full rounded-[2rem]" /> : (
                             hasBenefits ? <BenefitsGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>

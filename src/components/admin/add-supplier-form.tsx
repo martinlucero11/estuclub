@@ -15,13 +15,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useCollectionOnce } from '@/firebase';
 import { collection, query, where, getDocs, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { UserPlus } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
-import { cluberCategories } from '@/types/data';
+import { cluberCategories, Category } from '@/types/data';
+import { createConverter } from '@/lib/firestore-converter';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 
@@ -37,6 +39,8 @@ const formSchema = z.object({
   description: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   locationCoords: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  deliveryEnabled: z.boolean().default(false),
+  deliveryCategory: z.string().optional(),
 });
 
 function slugify(text: string) {
@@ -54,11 +58,24 @@ function slugify(text: string) {
     .replace(/-+$/, '') // Trim - from end of text
 }
 
-
 export default function AddSupplierForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch categories from Firestore
+  const categoriesQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'categories').withConverter(createConverter<Category>()),
+      where('type', '==', 'delivery')
+    );
+  }, [firestore]);
+  const { data: dbCategories } = useCollectionOnce(categoriesQuery);
+  const deliveryCategories = useMemo(() => {
+    if (!dbCategories) return [];
+    return dbCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(c => c.name);
+  }, [dbCategories]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,6 +85,7 @@ export default function AddSupplierForm() {
       type: 'Comercio',
       description: '',
       logoUrl: '',
+      deliveryEnabled: false,
     },
   });
 
@@ -104,6 +122,8 @@ export default function AddSupplierForm() {
         logoUrl: values.logoUrl || '',
         appointmentsEnabled: false, // Default to false
         announcementsEnabled: false,
+        deliveryEnabled: values.deliveryEnabled,
+        deliveryCategory: values.deliveryCategory || '',
         isFeatured: false,
         createdAt: serverTimestamp(),
       };
@@ -211,6 +231,51 @@ export default function AddSupplierForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="deliveryEnabled"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-3xl border border-primary/10 p-4 bg-primary/5">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base font-bold">Módulo de Delivery</FormLabel>
+                <FormDescription className="text-xs font-medium italic opacity-70">
+                  Habilita la gestión de productos y recepción de pedidos para este Cluber.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {form.watch('deliveryEnabled') && (
+            <FormField
+                control={form.control}
+                name="deliveryCategory"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-[10px] font-black uppercase tracking-widest opacity-70">Categoría de Delivery</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                                <SelectTrigger className="rounded-xl border-white/10 h-11 bg-white/5">
+                                    <SelectValue placeholder="Seleccionar rubro delivery" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {deliveryCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
         <FormField
           control={form.control}
           name="locationCoords"

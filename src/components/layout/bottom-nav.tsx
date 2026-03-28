@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, QrCode, CalendarDays, Building, Trophy } from 'lucide-react';
+import { Home, Ticket, QrCode, CalendarDays, Building, Trophy, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { motion } from 'framer-motion';
@@ -17,13 +17,22 @@ export function BottomNav() {
     ? '/panel-cluber/appointments'
     : '/turnos';
 
-  // Dynamically generate nav items based on roles
+  const isDeliveryMode = pathname.startsWith('/delivery');
+
+  // Dynamically generate nav items based on roles and mode
   const navItems = [
-    { href: '/', label: 'Inicio', icon: Home },
-    { href: '/benefits', label: 'Beneficios', icon: Ticket },
-    ...(showScanner 
-      ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] 
-      : [{ href: '/leaderboard', label: 'Ranking', icon: Trophy, special: true }]
+    { href: isDeliveryMode ? '/delivery' : '/', label: 'Inicio', icon: Home },
+    { 
+        href: isDeliveryMode ? '/delivery' : '/benefits', 
+        label: isDeliveryMode ? 'Comidas' : 'Beneficios', 
+        icon: isDeliveryMode ? Building : Ticket 
+    },
+    ...(isDeliveryMode
+      ? [{ href: '/orders', label: 'Pedidos', icon: ShoppingCart, special: true }]
+      : (showScanner 
+          ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] 
+          : [{ href: '/leaderboard', label: 'Ranking', icon: Trophy, special: true }]
+        )
     ),
     { href: '/proveedores', label: 'Clubers', icon: Building },
     { href: turnosHref, label: 'Turnos', icon: CalendarDays },
@@ -32,11 +41,11 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass glass-dark shadow-premium ring-1 ring-primary/5 pb-safe">
       <div className="grid h-16 grid-cols-5 border-t border-primary/5">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.href}
+              key={`${item.href}-${index}`}
               href={item.href}
               onClick={() => haptic.vibrateSubtle()}
               className={cn(

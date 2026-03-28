@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import { StatusBarConfig } from "@/components/layout/status-bar-config";
 import Loading from "./loading";
 import VerificationGate from "@/components/auth/verification-gate";
+import { CartProvider } from "@/context/cart-context";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -88,9 +89,11 @@ export default function RootLayout({
           <Suspense fallback={<Loading />}>
             <FirebaseProvider>
               <VerificationGate>
-                <MessagingProvider>
-                  {children}
-                </MessagingProvider>
+                <CartProvider>
+                  <MessagingProvider>
+                    {children}
+                  </MessagingProvider>
+                </CartProvider>
               </VerificationGate>
               <Toaster />
             </FirebaseProvider>

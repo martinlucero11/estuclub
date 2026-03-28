@@ -1,12 +1,15 @@
 'use client';
 import Link from "next/link";
-import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement } from "@/types/data";
+import { doc } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import type { Banner, SupplierProfile, Announcement, SerializableBenefit, SerializableAnnouncement, Product } from "@/types/data";
 import Image from "next/image";
 import { getInitials, cn, optimizeImage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
 import BenefitCard from "../perks/perk-card";
+import { ProductCard } from "../delivery/product-card";
 import {
   Carousel,
   CarouselContent,
@@ -16,10 +19,13 @@ import {
 } from '@/components/ui/carousel';
 import AnnouncementCard from "../announcements/announcement-card";
 import { makeAnnouncementSerializable } from "@/lib/data";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, Plus, Clock, Truck, ShoppingCart } from "lucide-react";
 import { formatDistance, calculateDistance } from "@/lib/geo-utils";
 import { useUser } from "@/firebase";
 import { useMemo } from "react";
+import { useDoc } from "@/firebase/firestore/use-doc";
+import { useCart } from "@/context/cart-context";
+import { Button } from "../ui/button";
 
 // --- SUPPLIER CARD ---
 const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
@@ -84,6 +90,28 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
     );
 };
 
+// --- MINI SUPPLIER CARD (CIRCULAR LOGOS) ---
+const MiniSupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
+    return (
+        <Link 
+            href={`/proveedores/view?slug=${supplier.slug}`} 
+            onClick={() => haptic.vibrateSubtle()}
+            className="block w-full group text-center active:scale-95 transition-all duration-200"
+        >
+            <div className="flex flex-col items-center gap-2">
+                <div className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden border border-white/10 group-hover:border-primary/40 group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-500">
+                    <Image
+                        src={optimizeImage(supplier.logoUrl || '', 200)}
+                        alt={supplier.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                </div>
+            </div>
+        </Link>
+    );
+};
+
 // --- BANNER CAROUSEL CARD ---
 interface BannerCarouselCardProps {
   banner: Banner
@@ -119,7 +147,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
 };
 
 
-// --- CAROUSEL COMPONENTS (ESTRUCTURA FINAL Y ROBUSTA) ---
+// --- CAROUSEL COMPONENTS ---
 
 const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center glass glass-dark text-foreground rounded-full shadow-2xl border border-white/10 transition-all duration-300 hover:scale-110 active:scale-90 disabled:opacity-0 w-12 h-12 z-20 backdrop-blur-xl hover:bg-primary/10 hover:border-primary/30";
 
@@ -157,6 +185,22 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     )
+}
+
+export function MiniSuppliersCarousel({ items: suppliers }: { items: any[] }) {
+    if (!suppliers || suppliers.length === 0) return null;
+
+    return (
+        <Carousel opts={{ align: "start" }} className="w-full">
+            <CarouselContent className="-ml-2">
+                {suppliers.map((item) => (
+                    <CarouselItem key={item.id} className="basis-[18%] sm:basis-[12%] md:basis-[10%] lg:basis-[8%] pl-2">
+                        <MiniSupplierCard supplier={item as SupplierProfile} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+        </Carousel>
+    );
 }
 
 export function AnnouncementsCarousel({ items: announcements }: { items: Announcement[] }) {
@@ -200,6 +244,149 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
             </CarouselContent>
             <CarouselPrevious className={cn(carouselArrowClasses, "left-2 z-10")} />
             <CarouselNext className={cn(carouselArrowClasses, "right-2 z-10")} />
+        </Carousel>
+    );
+}
+export function ProductsCarousel({ items: products }: { items: any[] }) {
+    if (!products || products.length === 0) return <p className="text-muted-foreground italic text-sm">No hay productos destacados.</p>;
+
+    return (
+        <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
+            <CarouselContent className="py-10 -my-10">
+                {products.map((item, index) => (
+                    <CarouselItem key={item.id} className="basis-[65%] sm:basis-1/3 md:basis-1/4 pl-4">
+                        <ProductCard product={item} variant="carousel" />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")}/>
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
+        </Carousel>
+    );
+}
+
+// --- PRODUCT WITH SUPPLIER CARD (PREMIUM DESIGN) ---
+const ProductWithSupplierCard = ({ product }: { product: Product }) => {
+    const firestore = useFirestore();
+    const { data: supplier } = useDoc<SupplierProfile>(product.supplierId ? doc(firestore, 'roles_supplier', product.supplierId) : null);
+    const { addItem } = useCart();
+
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        haptic.vibrateSubtle();
+        if (supplier) {
+            addItem({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                imageUrl: product.imageUrl
+            }, {
+                id: supplier.id,
+                name: supplier.name,
+                phone: supplier.whatsappContact || ''
+            });
+        }
+    };
+    
+    return (
+        <Link 
+            href={`/proveedores/view?slug=${supplier?.slug || ''}&tab=catalogo`}
+            onClick={() => haptic.vibrateSubtle()}
+            className="group block h-full"
+        >
+            <div className="flex flex-col h-full bg-card rounded-[2.5rem] overflow-hidden shadow-premium border border-primary/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:glass-glow-pink">
+                {/* Image Section */}
+                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                    <Image 
+                        src={optimizeImage(product.imageUrl || '', 800)}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute top-4 left-4 z-10">
+                        <span className="bg-emerald-400/90 text-emerald-950 text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-white/20 uppercase tracking-wider">
+                            Mismo precio que en local
+                        </span>
+                    </div>
+
+                    {/* Add to Cart Floating Button */}
+                    <Button 
+                        size="icon" 
+                        variant="default"
+                        className="absolute bottom-4 right-4 h-12 w-12 rounded-2xl shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 z-20 group/btn bg-primary text-white"
+                        onClick={handleAddToCart}
+                    >
+                        <Plus className="h-6 w-6 group-hover/btn:rotate-90 transition-transform duration-300" />
+                    </Button>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/30">
+                    <div className="flex items-center gap-4">
+                        <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
+                            <AvatarImage src={supplier?.logoUrl} />
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                {getInitials(supplier?.name || 'S')}
+                            </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                                <h4 className="font-black text-lg tracking-tight truncate group-hover:text-primary transition-colors">
+                                    {supplier?.name || 'EstuCluber'}
+                                </h4>
+                                {supplier?.avgRating && (
+                                    <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-600 px-2 py-1 rounded-lg">
+                                        <Star className="h-2.5 w-2.5 fill-current" />
+                                        <span className="text-[10px] font-black">{supplier.avgRating.toFixed(1)}</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                                <div className="flex items-center gap-1 text-[11px] font-bold">
+                                    <Clock className="h-3 w-3 text-primary/60" />
+                                    <span>30-50 min</span>
+                                </div>
+                                <span className="text-foreground/20 text-xs">•</span>
+                                <div className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap">
+                                    <Truck className="h-3 w-3 text-primary/60" />
+                                    <span>$ {supplier?.deliveryCost || 'Envío'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-primary/5">
+                        <div className="flex items-center justify-between gap-2">
+                            <p className="text-sm font-bold opacity-60 line-clamp-1">{product.name}</p>
+                            <p className="font-black text-primary">$ {product.price.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+};
+
+export function ProductsWithSupplierCarousel({ items: products }: { items: any[] }) {
+    if (!products || products.length === 0) return (
+        <div className="text-center py-10 opacity-50 italic">No hay productos destacados.</div>
+    );
+
+    return (
+        <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
+            <CarouselContent className="py-10 -my-10">
+                {products.map((item, index) => (
+                    <CarouselItem key={item.id} className="basis-[85%] sm:basis-1/2 md:basis-[45%] pl-4">
+                        <ProductWithSupplierCard product={item} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")}/>
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     );
 }

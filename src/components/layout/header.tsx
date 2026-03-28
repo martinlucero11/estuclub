@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, LayoutGrid, LogIn, Heart } from 'lucide-react';
+import { User, LogOut, LayoutGrid, LogIn, Heart, ChevronDown, ChevronRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +38,8 @@ import { MagneticButton } from '../ui/magnetic-button';
 import { getAvatarUrl } from '@/lib/utils';
 import { AvatarFallbackFachero } from '@/components/profile/avatar-selector';
 import { usePlatform } from '@/hooks/use-platform';
+import { ModeToggle } from './mode-toggle';
+import { Suspense } from 'react';
 
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
@@ -135,9 +137,21 @@ function UserMenu() {
 }
 
 function AppSidebar() {
-    const { roles } = useUser();
+    const { roles, supplierData } = useUser();
     const allRoles = ['user', ...roles];
     const pathname = usePathname();
+    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>(() => {
+        if (typeof window === 'undefined') return {};
+        const saved = localStorage.getItem('sidebar-collapsed-groups');
+        return saved ? JSON.parse(saved) : {};
+    });
+
+    const toggleGroup = (group: string) => {
+        haptic.vibrateSubtle();
+        const newCollapsed = { ...collapsedGroups, [group]: !collapsedGroups[group] };
+        setCollapsedGroups(newCollapsed);
+        localStorage.setItem('sidebar-collapsed-groups', JSON.stringify(newCollapsed));
+    };
 
     return (
         <Sheet>
@@ -167,41 +181,80 @@ function AppSidebar() {
                 </SheetHeader>
                 
                 <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-premium pr-2">
-                    <nav className="flex flex-col gap-1.5">
-                        {navConfig.mainNav.map((item) => {
-                            if (!hasRequiredRole(allRoles, item.role)) return null;
-
-                            const Icon = item.icon;
-                            const isActive = pathname === item.href;
+                    <nav className="flex flex-col gap-4">
+                        {Array.from(new Set(navConfig.mainNav.map(i => i.category || 'Otros'))).map((category) => {
+                            const categoryItems = navConfig.mainNav.filter(i => (i.category || 'Otros') === category);
+                            const visibleItems = categoryItems.filter(item => {
+                                const roleMatch = hasRequiredRole(allRoles, item.role);
+                                if (!roleMatch) return false;
+                                
+                                // Check for supplier capabilities (e.g., deliveryEnabled)
+                                if (item.supplierCapability && (!supplierData || !supplierData[item.supplierCapability])) {
+                                    return false;
+                                }
+                                
+                                return true;
+                            });
                             
+                            if (visibleItems.length === 0) return null;
+                            const isCollapsed = collapsedGroups[category];
+
                             return (
-                                <SheetClose asChild key={item.href}>
-                                    <Link href={item.href}>
-                                        <Button 
-                                            variant="ghost" 
-                                            className={cn(
-                                                "w-full justify-start text-base py-6 h-auto transition-all duration-300 group rounded-2xl relative",
-                                                isActive ? "bg-primary/10 text-primary" : "hover:bg-white/5 opacity-70 hover:opacity-100"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "mr-4 p-2.5 rounded-xl transition-all duration-300",
-                                                isActive ? "bg-primary text-white shadow-lg shadow-primary/25" : "bg-white/5 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                                            )}>
-                                                {Icon && <Icon className="h-5 w-5" />}
-                                            </div>
-                                            <span className="font-bold tracking-tight">{item.title}</span>
+                                <div key={category} className="space-y-2">
+                                    <button 
+                                        onClick={() => toggleGroup(category)}
+                                        className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-colors group/header"
+                                    >
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 group-hover/header:text-primary transition-colors">
+                                            {category}
+                                        </h3>
+                                        {isCollapsed ? (
+                                            <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover/header:text-primary transition-colors" />
+                                        ) : (
+                                            <ChevronDown className="h-3 w-3 text-muted-foreground/30 group-hover/header:text-primary transition-colors" />
+                                        )}
+                                    </button>
+                                    
+                                    <div className={cn(
+                                        "flex flex-col gap-1 overflow-hidden transition-all duration-300",
+                                        isCollapsed ? "max-h-0 opacity-0" : "max-h-[1000px] opacity-100"
+                                    )}>
+                                        {visibleItems.map((item) => {
+                                            const Icon = item.icon;
+                                            const isActive = pathname === item.href;
                                             
-                                            {isActive && (
-                                                <motion.div 
-                                                    layoutId="active-pill"
-                                                    className="absolute right-4 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_10px_rgba(236,72,153,0.8)]"
-                                                />
-                                            )}
-                                        </Button>
-                                    </Link>
-                                </SheetClose>
-                            )
+                                            return (
+                                                <SheetClose asChild key={item.href}>
+                                                    <Link href={item.href}>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            className={cn(
+                                                                "w-full justify-start text-sm py-5 h-auto transition-all duration-300 group rounded-2xl relative",
+                                                                isActive ? "bg-primary/10 text-primary" : "hover:bg-white/5 opacity-70 hover:opacity-100"
+                                                            )}
+                                                        >
+                                                            <div className={cn(
+                                                                "mr-3 p-2 rounded-xl transition-all duration-300",
+                                                                isActive ? "bg-primary text-white shadow-lg shadow-primary/25" : "bg-white/5 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                                            )}>
+                                                                {Icon && <Icon className="h-4 w-4" />}
+                                                            </div>
+                                                            <span className="font-bold tracking-tight">{item.title}</span>
+                                                            
+                                                            {isActive && (
+                                                                <motion.div 
+                                                                    layoutId="active-pill"
+                                                                    className="absolute right-4 w-1 h-1 rounded-full bg-primary shadow-[0_0_10px_rgba(236,72,153,0.8)]"
+                                                                />
+                                                            )}
+                                                        </Button>
+                                                    </Link>
+                                                </SheetClose>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            );
                         })}
                     </nav>
                 </div>
@@ -222,14 +275,16 @@ export default function Header() {
   const { isMobile, isWeb } = usePlatform();
 
   return (
-    <header className={cn(
-        "sticky top-0 z-40 w-full shadow-premium transition-all duration-300 pt-safe header-mesh",
-        isMobile ? "h-24" : "h-16"
-    )}>
+    <>
+    <header 
+      className={cn(
+        "sticky top-0 z-40 w-full shadow-premium transition-all duration-300 pt-safe header-mesh overflow-hidden",
+        isMobile ? "min-h-[80px]" : "min-h-[70px]"
+      )}
+    >
       <div className="absolute inset-0 glass-header z-[-1]" />
       <div className={cn(
-        "container relative flex h-full justify-between px-4 pb-4",
-        isMobile ? "items-end" : "items-center"
+        "container relative flex h-full justify-between px-4 items-center h-full py-4",
       )}>
         {/* Left Slot: Actions */}
         <div className="flex items-center">
@@ -237,7 +292,7 @@ export default function Header() {
         </div>
 
         {/* Center Slot: Positioned Logo */}
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-5 mb-0.5">
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 mt-1">
             <Link href="/" aria-label="Homepage">
                 <Image 
                     src="/logo.svg" 
@@ -261,6 +316,8 @@ export default function Header() {
       
       {/* Subtle bottom glow */}
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+      
     </header>
+    </>
   );
 }

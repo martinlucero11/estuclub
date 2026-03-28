@@ -6,6 +6,8 @@ import type { Category } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal, Square } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 // Define the shape of the actions props
 interface CategoryActionsProps {
@@ -58,6 +60,21 @@ export const getCategoryColumns = (
         const emoji = row.getValue('emoji') as string;
         return <span className="text-2xl">{emoji}</span>;
     },
+  },
+  {
+    accessorKey: 'type',
+    header: 'Board',
+    cell: ({ row }) => {
+        const type = row.getValue('type') as string;
+        return (
+            <Badge variant="outline" className={cn(
+                "font-black uppercase text-[10px] tracking-widest",
+                type === 'delivery' ? "border-primary text-primary bg-primary/5" : "border-blue-500 text-blue-500 bg-blue-500/5"
+            )}>
+                {type === 'delivery' ? 'Delivery' : 'Benefits'}
+            </Badge>
+        );
+    }
   },
     {
     accessorKey: 'colorClass',

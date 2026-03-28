@@ -45,6 +45,13 @@ export interface UserProfile {
     favoriteSuppliers?: string[];
     xp?: number;
     level?: number;
+    isCincoDos?: boolean; // PWA plus membership
+    location?: {
+      address: string;
+      city?: string;
+      lat?: number;
+      lng?: number;
+    };
     createdAt: Timestamp;
 }
 
@@ -54,6 +61,9 @@ export interface UserProfile {
  */
 export const cluberCategories = ['Comercio', 'Profesional', 'Empresa', 'Emprendimiento', 'Salud', 'Estética', 'Servicios'] as const;
 export type CluberCategory = typeof cluberCategories[number];
+
+export const deliveryCategories = ['Comida Rápida', 'Restaurantes', 'Farmacia', 'Supermercado', 'Bebidas', 'Otros'] as const;
+export type DeliveryCategory = typeof deliveryCategories[number];
 
 
 /**
@@ -81,6 +91,13 @@ export interface SupplierProfile {
   announcementsEnabled?: boolean;
   avgRating?: number;
   reviewCount?: number;
+  // --- Delivery Lite ---
+  deliveryEnabled?: boolean;
+  deliveryCost?: number;
+  deliveryCostType?: 'free' | 'customer' | 'to_be_agreed';
+  minOrderAmount?: number;
+  deliveryRadius?: number;
+  deliveryCategory?: string; // e.g., 'Comida Rápida', 'Restaurantes', 'Farmacia', etc.
   location?: {
     lat: number;
     lng: number;
@@ -251,12 +268,13 @@ export interface Category {
   emoji: string;
   colorClass: string;
   order?: number;
+  type: 'benefits' | 'delivery';
   [key: string]: any;
 }
 
 // Discriminated union for HomeSection.block
 type DynamicContentConfig = {
-  contentType: "benefits" | "suppliers" | "announcements" | "banners" | "benefits_nearby" | "suppliers_nearby";
+  contentType: "benefits" | "suppliers" | "announcements" | "banners" | "benefits_nearby" | "suppliers_nearby" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers";
   mode: "auto" | "manual";
   query?: {
     filters?: WhereFilter[];
@@ -279,8 +297,17 @@ export type HomeSectionBlock =
       kind: "banner";
       bannerId: string;
     }
-  | {
+    | {
       kind: "categories";
+    }
+  | {
+      kind: "message";
+      message: {
+        title?: string;
+        body: string;
+        imageUrl?: string;
+        alignment?: 'left' | 'center';
+      };
     };
 
 export interface HomeSection {
@@ -288,6 +315,7 @@ export interface HomeSection {
   title: string;
   order: number;
   isActive: boolean;
+  targetBoard: 'benefits' | 'delivery';
   createdAt?: Timestamp;
   block: HomeSectionBlock;
 }
@@ -317,3 +345,53 @@ export interface Notification {
   target?: 'all' | 'subscribers'; // Who should receive it
   createdAt: Timestamp;
 }
+
+/**
+ * --- Delivery Lite Models ---
+ */
+
+export interface Product {
+    id: string;
+    supplierId: string;
+    name: string;
+    description: string;
+    price: number;
+    originalPrice?: number; // Pre-discount price
+    imageUrl?: string;
+    category?: string;
+    stockAvailable: boolean;
+    isActive: boolean;
+    createdAt: Timestamp;
+}
+
+export interface OrderItem {
+    productId: string;
+    name: string;
+    price: number;
+    quantity: number;
+    imageUrl?: string;
+}
+
+export interface Order {
+    id: string;
+    userId: string;
+    userName: string;
+    userPhone: string;
+    supplierId: string;
+    supplierName: string;
+    items: OrderItem[];
+    subtotal: number;
+    deliveryCost: number;
+    totalAmount: number;
+    status: 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled';
+    deliveryAddress?: string;
+    deliveryNote?: string;
+    type: 'delivery' | 'pickup';
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+
+export type SerializableOrder = Omit<Order, 'createdAt' | 'updatedAt'> & {
+    createdAt: string;
+    updatedAt: string;
+};

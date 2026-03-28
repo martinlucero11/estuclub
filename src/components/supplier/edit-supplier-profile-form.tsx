@@ -18,13 +18,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
 import { doc, updateDoc, GeoPoint } from 'firebase/firestore';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Save, Loader2, Camera } from 'lucide-react';
+import { Save, Loader2, Camera, Truck } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
-import { SupplierProfile, cluberCategories } from '@/types/data';
+import { SupplierProfile, cluberCategories, deliveryCategories } from '@/types/data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Switch } from '@/components/ui/switch';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 
@@ -42,6 +43,11 @@ const formSchema = z.object({
   whatsapp: z.string().optional(),
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   locationCoords: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  deliveryEnabled: z.boolean().default(false),
+  deliveryCost: z.number().optional(),
+  deliveryCostType: z.enum(['free', 'customer', 'to_be_agreed']).default('free'),
+  minOrderAmount: z.number().optional(),
+  deliveryCategory: z.string().optional(),
 });
 
 function slugify(text: string) {
@@ -84,6 +90,11 @@ export default function EditSupplierProfileForm() {
       address: '',
       whatsapp: '',
       logoUrl: '',
+      deliveryEnabled: false,
+      deliveryCost: 0,
+      deliveryCostType: 'free',
+      minOrderAmount: 0,
+      deliveryCategory: '',
     },
   });
 
@@ -101,6 +112,11 @@ export default function EditSupplierProfileForm() {
             locationCoords: supplierProfile.locationCoords 
                ? { lat: supplierProfile.locationCoords.latitude, lng: supplierProfile.locationCoords.longitude } 
                : undefined,
+            deliveryEnabled: supplierProfile.deliveryEnabled || false,
+            deliveryCost: supplierProfile.deliveryCost || 0,
+            deliveryCostType: supplierProfile.deliveryCostType || 'free',
+            minOrderAmount: supplierProfile.minOrderAmount || 0,
+            deliveryCategory: supplierProfile.deliveryCategory || '',
         });
     }
   }, [supplierProfile, form]);
@@ -337,11 +353,120 @@ export default function EditSupplierProfileForm() {
           )}
         />
         
-        <Button type="submit" disabled={isSubmitting || isUploadingLogo} className="w-full sm:w-auto">
+         <div className="space-y-4 pt-6 border-t border-border/50">
+            <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                <Truck className="h-5 w-5" /> Configuración de Delivery
+            </h3>
+            <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                    control={form.control}
+                    name="deliveryEnabled"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-2xl border p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-base">Habilitar Delivery</FormLabel>
+                                <div className="text-sm text-muted-foreground">Activa esta opción para recibir pedidos online.</div>
+                            </div>
+                            <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+                
+                <FormField
+                    control={form.control}
+                    name="deliveryCategory"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Sub-categoría de Delivery</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona una sub-categoría" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {deliveryCategories.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="deliveryCostType"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Tipo de Costo de Envío</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Selecciona el tipo de costo" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="free">Gratis</SelectItem>
+                                    <SelectItem value="customer">A cargo del Cliente (Fijo)</SelectItem>
+                                    <SelectItem value="to_be_agreed">A convenir</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                {form.watch('deliveryCostType') === 'customer' && (
+                    <FormField
+                        control={form.control}
+                        name="deliveryCost"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Costo de Envío ($)</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number" 
+                                        placeholder="500" 
+                                        {...field} 
+                                        onChange={e => field.onChange(Number(e.target.value))}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
+
+                <FormField
+                    control={form.control}
+                    name="minOrderAmount"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Pedido Mínimo ($)</FormLabel>
+                            <FormControl>
+                                <Input 
+                                    type="number" 
+                                    placeholder="0" 
+                                    {...field}
+                                    onChange={e => field.onChange(Number(e.target.value))}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+         </div>
+
+        <Button type="submit" disabled={isSubmitting || isUploadingLogo} className="w-full sm:w-auto h-12 px-8 text-lg font-black rounded-2xl shadow-lg shadow-primary/20">
           {isSubmitting ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
+              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Guardando...</>
           ) : (
-              <><Save className="mr-2 h-4 w-4" /> Guardar Cambios</>
+              <><Save className="mr-2 h-5 w-5" /> Guardar Cambios</>
           )}
         </Button>
       </form>
