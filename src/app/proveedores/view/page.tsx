@@ -22,6 +22,7 @@ import { ReviewList } from '@/components/reviews/review-list';
 import { ProductGrid } from '@/components/delivery/product-grid';
 import { StarRating } from '@/components/reviews/star-rating';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -186,13 +187,7 @@ function CluberProfileContent() {
             >
                 <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
                 
-                <Link 
-                    href="/proveedores" 
-                    className="absolute top-8 left-8 hidden md:flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
-                >
-                    <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                    Clubers
-                </Link>
+                <BackButton />
 
                 <motion.div 
                     whileHover={{ scale: 1.05, rotate: -2 }}

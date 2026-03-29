@@ -17,6 +17,7 @@ import { ModeToggle } from '@/components/layout/mode-toggle';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 
 type SortOption = 'name_asc' | 'proximity';
 
@@ -181,8 +182,9 @@ const TruckIcon = ({ className }: { className?: string }) => (
 export default function DeliveryLandingPage() {
     return (
         <MainLayout>
+            <BackButton href="/" />
             <div className="flex-1 space-y-12 p-4 md:p-12 max-w-7xl mx-auto">
-                <div className="flex justify-start">
+                <div className="flex justify-end pr-4 md:pr-0">
                     <ModeToggle />
                 </div>
                 

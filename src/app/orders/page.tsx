@@ -14,6 +14,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 
 function OrdersListSkeleton() {
     return (
@@ -134,6 +135,7 @@ function OrdersList() {
 export default function StudentOrdersPage() {
     return (
         <MainLayout>
+            <BackButton />
             <div className="flex-1 space-y-12 p-4 md:p-12 max-w-5xl mx-auto">
                 <header className="space-y-4">
                     <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary/10 rounded-2xl border border-primary/20">

@@ -2,15 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, QrCode, CalendarDays, Building, Trophy, ShoppingCart } from 'lucide-react';
+import { Home, Ticket, QrCode, CalendarDays, Building, Trophy, ShoppingCart, ShoppingBag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
+import { CartSheet } from '../delivery/cart-sheet';
+import { useCart } from '@/context/cart-context';
 
 export function BottomNav() {
   const pathname = usePathname();
   const { roles, supplierData } = useUser();
+  const { totalItems } = useCart();
   const showScanner = roles.includes('admin') || roles.includes('supplier');
 
   const turnosHref = (roles.includes('supplier') && supplierData?.appointmentsEnabled)
@@ -19,23 +22,14 @@ export function BottomNav() {
 
   const isDeliveryMode = pathname.startsWith('/delivery');
 
-  // Dynamically generate nav items based on roles and mode
+  // Hard nav items as per user request: Beneficios - Delivery - Turnos - Clubers
   const navItems = [
-    { href: isDeliveryMode ? '/delivery' : '/', label: 'Inicio', icon: Home },
-    { 
-        href: isDeliveryMode ? '/delivery' : '/benefits', 
-        label: isDeliveryMode ? 'Comidas' : 'Beneficios', 
-        icon: isDeliveryMode ? Building : Ticket 
-    },
-    ...(isDeliveryMode
-      ? [{ href: '/orders', label: 'Pedidos', icon: ShoppingCart, special: true }]
-      : (showScanner 
-          ? [{ href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true }] 
-          : [{ href: '/leaderboard', label: 'Ranking', icon: Trophy, special: true }]
-        )
-    ),
-    { href: '/proveedores', label: 'Clubers', icon: Building },
+    { href: '/', label: 'Beneficios', icon: Ticket },
+    { href: '/delivery', label: 'Delivery', icon: ShoppingBag },
+    // Center Item (index 2)
+    { href: '#cart', label: 'Carrito', icon: ShoppingCart, special: true },
     { href: turnosHref, label: 'Turnos', icon: CalendarDays },
+    { href: '/proveedores', label: 'Clubers', icon: Building },
   ];
 
   return (
@@ -43,6 +37,35 @@ export function BottomNav() {
       <div className="grid h-16 grid-cols-5 border-t border-primary/5">
         {navItems.map((item, index) => {
           const isActive = pathname === item.href;
+          
+          if (item.special) {
+            return (
+              <CartSheet key="cart-sheet">
+                <button
+                  onClick={() => haptic.vibrateSubtle()}
+                  className="relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300"
+                >
+                  <motion.div 
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
+                  >
+                    <item.icon className="h-7 w-7" />
+                    {totalItems > 0 && (
+                        <motion.div 
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-1 -right-1 bg-white text-primary text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center shadow-lg border-2 border-primary"
+                        >
+                            {totalItems}
+                        </motion.div>
+                    )}
+                  </motion.div>
+                </button>
+              </CartSheet>
+            );
+          }
+
           return (
             <Link
               key={`${item.href}-${index}`}
@@ -50,39 +73,27 @@ export function BottomNav() {
               onClick={() => haptic.vibrateSubtle()}
               className={cn(
                 'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300',
-                isActive && !item.special ? 'text-primary' : 'hover:text-primary'
+                isActive ? 'text-primary' : 'hover:text-primary'
               )}
             >
-              {item.special ? (
-                <motion.div 
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
+                <motion.div
+                animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }}
+                className="flex flex-col items-center"
                 >
-                  <item.icon className="h-7 w-7" />
+                <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+                <span className={cn(
+                    "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-opacity",
+                    isActive ? "opacity-100" : "opacity-60"
+                )}>
+                    {item.label}
+                </span>
                 </motion.div>
-              ) : (
-                <>
-                  <motion.div
-                    animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }}
-                    className="flex flex-col items-center"
-                  >
-                    <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
-                    <span className={cn(
-                        "text-[11px] mt-1 font-black uppercase tracking-widest transition-opacity",
-                        isActive ? "opacity-100" : "opacity-60"
-                    )}>
-                        {item.label}
-                    </span>
-                  </motion.div>
-                  {isActive && (
-                    <motion.div 
-                      layoutId="nav-pill"
-                      className="absolute bottom-1 w-1 h-1 rounded-full bg-primary"
-                    />
-                  )}
-                </>
-              )}
+                {isActive && (
+                <motion.div 
+                    layoutId="nav-pill"
+                    className="absolute bottom-1 w-1 h-1 rounded-full bg-primary"
+                />
+                )}
             </Link>
           );
         })}

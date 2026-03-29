@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 import { Card } from '@/components/ui/card';
 import { useState, useMemo } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
@@ -142,7 +143,8 @@ function CluberListPage() {
 export default function ClubersPage() {
     return (
         <MainLayout>
-             <div className="flex-1 space-y-8 p-4 md:p-8">
+            <BackButton />
+            <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Clubers" />
                 <p className="text-muted-foreground -mt-8 mb-8">
                     Explora los comercios, profesionales y empresas asociadas.

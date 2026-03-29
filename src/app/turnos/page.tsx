@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { BackButton } from '@/components/ui/back-button';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -111,7 +112,8 @@ function CluberList() {
 export default function TurnosPage() {
     return (
         <MainLayout>
-             <div className="flex-1 space-y-8 p-4 md:p-8">
+            <BackButton />
+            <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Solicitar Turno" className="flex-col md:flex-row items-start md:items-center">
                      <Button asChild>
                         <Link href="/mis-turnos">
