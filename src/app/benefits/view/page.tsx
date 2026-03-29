@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { notFound, useSearchParams } from 'next/navigation';
 import type { SerializableBenefit } from '@/types/data';
-import benefitDetailSkeleton from '@/components/perks/perk-detail-skeleton';
+import BenefitDetailSkeleton from '@/components/perks/perk-detail-skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export default function BenefitDetailPage() {
     const { data: benefit, isLoading, error } = useDocOnce(benefitRef);
 
     if (isLoading || isUserLoading) {
-        return <benefitDetailSkeleton />;
+        return <BenefitDetailSkeleton />;
     }
 
     if (!id || error) {
@@ -136,7 +136,7 @@ export default function BenefitDetailPage() {
                             </CardContent>
 
                             <CardFooter className="p-0 mt-10">
-                                 <RedeemPerkDialog benefit={serializableBenefit}>
+                                 <RedeemPerkDialog perk={serializableBenefit}>
                                     <Button 
                                         className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
                                         onClick={() => haptic.vibrateImpact()}

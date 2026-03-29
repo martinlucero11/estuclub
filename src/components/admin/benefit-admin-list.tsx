@@ -72,7 +72,7 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
         </div>
       </div>
       <EditPerkDialog
-        benefit={benefit}
+        perk={benefit}
         isOpen={isEditOpen}
         onOpenChange={setIsEditOpen}
       />
@@ -135,7 +135,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
     if (isPreconditionFailed || isMaskedPermissionError) {
         const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'studio-7814845508-d173f'; // Using the known project ID
-        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=benefits&field[0].fieldPath=ownerId&field[0].order=ASCENDING&field[1].fieldPath=createdAt&field[1].order=DESCENDING`;
+        const indexUrl = `https://console.firebase.google.com/project/${projectId}/firestore/indexes/composite-create?collectionId=perks&field[0].fieldPath=ownerId&field[0].order=ASCENDING&field[1].fieldPath=createdAt&field[1].order=DESCENDING`;
         return (
             <Card className="border-destructive">
                  <CardHeader>

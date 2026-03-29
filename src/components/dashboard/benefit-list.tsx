@@ -108,7 +108,7 @@ export default function BenefitList({ user }: BenefitListProps) {
               setIsEditDialogOpen(open);
               if (!open) setSelectedBenefit(null);
           }}
-          benefit={selectedBenefit}
+          perk={selectedBenefit}
         />
       )}
       <DeleteConfirmationDialog
