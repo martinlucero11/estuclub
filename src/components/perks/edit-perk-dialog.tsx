@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { benefitCategories, type SerializableBenefit, WhereFilter } from '@/types/data';
+import { perkCategories, type SerializableBenefit, WhereFilter } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
 import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat } from 'lucide-react';
 import { useFirestore } from '@/firebase';
@@ -47,7 +47,7 @@ const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.'),
   highlight: z.string().optional(),
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres.'),
-  category: z.enum(benefitCategories, {
+  category: z.enum(perkCategories, {
     errorMap: () => ({ message: 'Por favor, selecciona una categoría válida.' }),
   }),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.'),
@@ -61,13 +61,13 @@ const formSchema = z.object({
   isVisible: z.boolean().default(true),
 });
 
-interface EditBenefitDialogProps {
-  benefit: SerializableBenefit;
+interface EditPerkDialogProps {
+  perk: SerializableBenefit;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: EditBenefitDialogProps) {
+export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkDialogProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { isAdmin } = useAdmin();
@@ -76,25 +76,25 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: benefit.title,
-      highlight: benefit.highlight || '',
-      description: benefit.description,
-      category: benefit.category,
-      imageUrl: benefit.imageUrl,
-      location: benefit.location,
-      points: benefit.points || 0,
-      redemptionLimit: benefit.redemptionLimit || 0,
-      validUntil: benefit.validUntil ? new Date(benefit.validUntil) : undefined,
-      availableDays: benefit.availableDays || [],
-      active: benefit.active ?? true,
-      isFeatured: benefit.isFeatured ?? false,
-      isVisible: benefit.isVisible ?? true,
+      title: perk.title,
+      highlight: perk.highlight || '',
+      description: perk.description,
+      category: perk.category,
+      imageUrl: perk.imageUrl,
+      location: perk.location,
+      points: perk.points || 0,
+      redemptionLimit: perk.redemptionLimit || 0,
+      validUntil: perk.validUntil ? new Date(perk.validUntil) : undefined,
+      availableDays: perk.availableDays || [],
+      active: perk.active ?? true,
+      isFeatured: perk.isFeatured ?? false,
+      isVisible: perk.isVisible ?? true,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    const benefitRef = doc(firestore, 'benefits', benefit.id);
+    const perkRef = doc(firestore, 'perks', perk.id);
     try {
         const dataToUpdate: any = { ...values };
         
@@ -116,7 +116,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
             delete dataToUpdate.highlight;
         }
 
-      await updateDoc(benefitRef, dataToUpdate);
+      await updateDoc(perkRef, dataToUpdate);
       toast({
         title: 'Beneficio Actualizado',
         description: `El beneficio "${values.title}" ha sido actualizado.`,
@@ -185,7 +185,7 @@ export default function EditBenefitDialog({ benefit, isOpen, onOpenChange }: Edi
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                        {benefitCategories.map((category) => (
+                        {perkCategories.map((category) => (
                             <SelectItem key={category} value={category}>
                             {category}
                             </SelectItem>

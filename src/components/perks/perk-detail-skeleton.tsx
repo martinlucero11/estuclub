@@ -2,7 +2,7 @@ import MainLayout from '@/components/layout/main-layout';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 
-export default function PerkDetailSkeleton() {
+export default function perkDetailSkeleton() {
   return (
     <MainLayout>
        <div className="container max-w-2xl mx-auto p-4 py-8 md:py-12 min-h-screen">

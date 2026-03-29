@@ -49,8 +49,8 @@ function HomeContent() {
 
     const sections = useMemo(() => {
         if (!allSections) return [];
-        // Default to 'benefits' if targetBoard is missing (for legacy sections)
-        return allSections.filter(s => (s.targetBoard || 'benefits') === 'benefits');
+        // Default to 'perks' if targetBoard is missing (for legacy sections)
+        return allSections.filter(s => (s.targetBoard || 'perks') === 'perks');
     }, [allSections]);
 
     if (isLoading) {

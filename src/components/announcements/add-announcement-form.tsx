@@ -62,13 +62,21 @@ export default function AddAnnouncementForm() {
 
     try {
       const announcementsRef = collection(firestore, 'announcements');
-      const announcementDocRef = await addDoc(announcementsRef, {
-        ...values,
+      const dataToSave: any = {
         authorId: user.uid,
         authorUsername: userProfile.username,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+      };
+
+      Object.keys(values).forEach(key => {
+        const value = (values as any)[key];
+        if (value !== undefined) {
+          dataToSave[key] = value;
+        }
       });
+
+      const announcementDocRef = await addDoc(announcementsRef, dataToSave);
 
       // Create notification
       if (announcementDocRef) {

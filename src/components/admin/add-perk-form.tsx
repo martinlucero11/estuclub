@@ -60,7 +60,7 @@ const formSchema = z.object({
   targetAudience: z.enum(['all', 'level_1', 'level_2', 'level_3', 'cinco_dos']).default('all'),
 });
 
-export default function AddPerkForm() {
+export default function AddbenefitForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
@@ -90,12 +90,20 @@ export default function AddPerkForm() {
 
     setIsSubmitting(true);
     try {
-      const benefitsRef = collection(firestore, 'benefits');
+      const benefitsRef = collection(firestore, 'perks');
+      
+      // Filter out undefined values to prevent Firestore errors
       const dataToSave: any = {
-        ...values,
         ownerId: user.uid, // Track who created the benefit
         createdAt: serverTimestamp(),
       };
+      
+      Object.keys(values).forEach(key => {
+        const value = (values as any)[key];
+        if (value !== undefined) {
+          dataToSave[key] = value;
+        }
+      });
       
       if (values.locationCoords) {
           dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);

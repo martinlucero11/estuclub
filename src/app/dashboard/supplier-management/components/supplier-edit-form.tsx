@@ -25,7 +25,7 @@ const formSchema = z.object({
   whatsapp: z.string().optional(),
   appointmentsEnabled: z.boolean().default(false),
   announcementsEnabled: z.boolean().default(false),
-  canCreatePerks: z.boolean().default(false),
+  canCreatebenefits: z.boolean().default(false),
 });
 
 interface SupplierEditFormProps {
@@ -50,7 +50,7 @@ export function SupplierEditForm({ supplier, onSuccess }: SupplierEditFormProps)
             whatsapp: supplier?.whatsapp || '',
             appointmentsEnabled: supplier?.appointmentsEnabled || false,
             announcementsEnabled: supplier?.announcementsEnabled || false,
-            canCreatePerks: supplier?.canCreatePerks || true,
+            canCreatebenefits: supplier?.canCreatebenefits || true,
         },
     });
 
@@ -148,7 +148,7 @@ export function SupplierEditForm({ supplier, onSuccess }: SupplierEditFormProps)
 
                 <FormField
                     control={form.control}
-                    name="canCreatePerks"
+                    name="canCreatebenefits"
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                             <div className="space-y-0.5"><FormLabel>Crear Beneficios</FormLabel></div>

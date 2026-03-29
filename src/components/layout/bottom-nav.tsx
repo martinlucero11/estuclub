@@ -53,11 +53,17 @@ export function BottomNav() {
                     <item.icon className="h-7 w-7" />
                     {totalItems > 0 && (
                         <motion.div 
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="absolute -top-1 -right-1 bg-white text-primary text-[10px] font-black h-5 w-5 rounded-full flex items-center justify-center shadow-lg border-2 border-primary"
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            whileHover={{ scale: 1.2 }}
+                            className="absolute -top-1.5 -right-1.5 bg-white text-primary text-[11px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border-2 border-primary z-20"
                         >
-                            {totalItems}
+                            <motion.span
+                                animate={{ scale: [1, 1.1, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                            >
+                                {totalItems}
+                            </motion.span>
                         </motion.div>
                     )}
                   </motion.div>

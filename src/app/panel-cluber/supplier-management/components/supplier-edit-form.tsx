@@ -27,7 +27,7 @@ const formSchema = z.object({
   logoUrl: z.string().url('URL de logo no válida').optional().or(z.literal('')),
   address: z.string().optional(),
   whatsapp: z.string().optional(),
-  canCreatePerks: z.boolean().default(false),
+  canCreatebenefits: z.boolean().default(false),
   announcementsEnabled: z.boolean().default(false),
   appointmentsEnabled: z.boolean().default(false),
   location: z.object({
@@ -75,7 +75,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
             logoUrl: supplierProfile?.logoUrl || '',
             address: supplierProfile?.address || '',
             whatsapp: supplierProfile?.whatsapp || '',
-            canCreatePerks: supplierProfile?.canCreatePerks || false,
+            canCreatebenefits: supplierProfile?.canCreatebenefits || false,
             announcementsEnabled: supplierProfile?.announcementsEnabled || false,
             appointmentsEnabled: supplierProfile?.appointmentsEnabled || false,
             location: supplierProfile?.location ? { lat: supplierProfile.location.lat, lng: supplierProfile.location.lng } : undefined,
@@ -239,7 +239,7 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
 
                 <FormField
                     control={form.control}
-                    name="canCreatePerks"
+                    name="canCreatebenefits"
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                             <div className="space-y-0.5"><FormLabel>Crear Beneficios</FormLabel></div>

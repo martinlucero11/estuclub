@@ -122,7 +122,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
 
     setIsSubmitting(true);
     try {
-      const benefitsRef = collection(firestore, 'benefits');
+      const benefitsRef = collection(firestore, 'perks');
       const dataToSave: any = {
         ...values,
         createdAt: serverTimestamp(),

@@ -67,12 +67,20 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
     setIsSubmitting(true);
     try {
       const applicationsRef = collection(firestore, 'comedor_applications');
-      await addDoc(applicationsRef, {
-        ...values,
+      const dataToSave: any = {
         userId: user.uid,
         status: 'pending',
         createdAt: serverTimestamp(),
+      };
+
+      Object.keys(values).forEach(key => {
+        const value = (values as any)[key];
+        if (value !== undefined) {
+          dataToSave[key] = value;
+        }
       });
+
+      await addDoc(applicationsRef, dataToSave);
 
       toast({
         title: '¡Solicitud enviada!',

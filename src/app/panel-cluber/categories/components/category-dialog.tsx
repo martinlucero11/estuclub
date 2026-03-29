@@ -15,7 +15,7 @@ interface CategoryDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     category?: Category | null;
-    defaultType?: 'benefits' | 'delivery';
+    defaultType?: 'perks' | 'delivery';
 }
 
 export function CategoryDialog({ isOpen, onOpenChange, category, defaultType }: CategoryDialogProps) {

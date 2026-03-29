@@ -86,7 +86,7 @@ export default function AdminAnalyticsDashboard() {
     const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce<SupplierProfile>(suppliersQuery);
 
     const benefitsQuery = useMemo(() =>
-        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())),
+        query(collection(firestore, 'perks').withConverter(createConverter<Benefit>())),
         [firestore]
     );
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(benefitsQuery);
@@ -370,7 +370,7 @@ export default function AdminAnalyticsDashboard() {
         { accessorKey: 'reviewCount', header: 'Reseñas' }
     ];
 
-    const openDetail = (type: 'users' | 'redemptions' | 'benefits' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
+    const openDetail = (type: 'users' | 'redemptions' | 'perks' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
         if (!stats) return;
         const config = {
             users: {

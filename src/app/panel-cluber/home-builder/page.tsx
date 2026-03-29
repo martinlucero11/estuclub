@@ -50,7 +50,7 @@ export default function HomeBuilderPage() {
     const { toast } = useToast();
     const { isAdmin, isLoading: isAdminLoading } = useAdmin();
 
-    const [activeBoard, setActiveBoard] = useState<'benefits' | 'delivery'>('benefits');
+    const [activeBoard, setActiveBoard] = useState<'perks' | 'delivery'>('perks');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isDeleteDialogOpenConfirm, setIsDeleteDialogOpenConfirm] = useState(false);
     const [selectedSection, setSelectedSection] = useState<HomeSection | null>(null);
@@ -70,7 +70,7 @@ export default function HomeBuilderPage() {
 
     useEffect(() => {
         if (remoteSections) {
-            const filtered = remoteSections.filter(s => (s.targetBoard || 'benefits') === activeBoard);
+            const filtered = remoteSections.filter(s => (s.targetBoard || 'perks') === activeBoard);
             setLocalSections(filtered);
             setHasOrderChanged(false);
         }
@@ -147,7 +147,7 @@ export default function HomeBuilderPage() {
         <div className="space-y-6 max-w-5xl mx-auto p-4 md:p-8">
             <BackButton />
             
-            <Tabs defaultValue="benefits" onValueChange={(v) => setActiveBoard(v as any)} className="w-full">
+            <Tabs defaultValue="perks" onValueChange={(v) => setActiveBoard(v as any)} className="w-full">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight">Diseño de Inicio</h1>
@@ -158,7 +158,7 @@ export default function HomeBuilderPage() {
                     
                     <div className="flex items-center gap-3">
                         <TabsList className="bg-muted/50 p-1 rounded-xl h-12">
-                            <TabsTrigger value="benefits" className="rounded-lg font-bold px-6 h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                            <TabsTrigger value="perks" className="rounded-lg font-bold px-6 h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
                                 Beneficios
                             </TabsTrigger>
                             <TabsTrigger value="delivery" className="rounded-lg font-bold px-6 h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
@@ -219,7 +219,7 @@ export default function HomeBuilderPage() {
                                         <div className="flex items-center justify-center sm:justify-start gap-2 mb-1">
                                             <CardTitle className="text-lg font-bold">{section.title}</CardTitle>
                                             <Badge variant="outline" className="text-[9px] uppercase font-black tracking-widest opacity-60">
-                                                {section.targetBoard || 'benefits'}
+                                                {section.targetBoard || 'perks'}
                                             </Badge>
                                         </div>
                                         <CardDescription className="capitalize font-medium text-muted-foreground/80">{description}</CardDescription>
@@ -242,7 +242,7 @@ export default function HomeBuilderPage() {
                         }) : (
                              <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-border/50 p-16 text-center bg-muted/20 animate-in fade-in zoom-in-95">
                                 <LayoutTemplate className="mx-auto h-20 w-20 text-muted-foreground/20 mb-6" />
-                                <h3 className="text-2xl font-black tracking-tight text-foreground/80">Sin bloques en {activeBoard === 'benefits' ? 'Beneficios' : 'Delivery'}</h3>
+                                <h3 className="text-2xl font-black tracking-tight text-foreground/80">Sin bloques en {activeBoard === 'perks' ? 'Beneficios' : 'Delivery'}</h3>
                                 <p className="mt-3 text-base text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed">
                                    Empieza a construir tu página de inicio añadiendo un nuevo bloque para este modo.
                                 </p>

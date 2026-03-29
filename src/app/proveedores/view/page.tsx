@@ -8,7 +8,7 @@ import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Server, ChevronLeft } from 'lucide-react';
-import BenefitsGrid from '@/components/perks/perks-grid';
+import PerksGrid from '@/components/perks/benefits-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
 import ServiceList from '@/components/supplier/service-list';
@@ -119,7 +119,7 @@ function CluberProfileContent() {
     
     const benefitsQuery = useMemo(() => {
         if (!supplier || !firestore) return null;
-        return query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('isVisible', '==', true));
+        return query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplier.id), where('isVisible', '==', true));
     }, [supplier, firestore]);
 
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
@@ -175,7 +175,7 @@ function CluberProfileContent() {
     const hasBenefits = benefits && benefits.length > 0;
     const hasServices = supplier.appointmentsEnabled && services && services.length > 0;
     
-    const defaultTab = tabParam || (supplier.deliveryEnabled ? "catalog" : hasBenefits ? "benefits" : hasServices ? "services" : "benefits");
+    const defaultTab = tabParam || (supplier.deliveryEnabled ? "catalog" : hasBenefits ? "perks" : hasServices ? "services" : "perks");
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -236,7 +236,7 @@ function CluberProfileContent() {
 
                 <Tabs defaultValue={defaultTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-4 mx-auto max-w-xl mb-12 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
-                        <TabsTrigger value="benefits" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Beneficios</TabsTrigger>
+                        <TabsTrigger value="perks" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Beneficios</TabsTrigger>
                         <TabsTrigger value="catalog" className="font-extrabold rounded-xl data-[state=active]:shadow-lg" disabled={!supplier.deliveryEnabled}>Catálogo</TabsTrigger>
                         <TabsTrigger value="services" className="font-extrabold rounded-xl data-[state=active]:shadow-lg" disabled={!hasServices}>Turnos</TabsTrigger>
                         <TabsTrigger value="reviews" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">Reseñas</TabsTrigger>
@@ -254,9 +254,9 @@ function CluberProfileContent() {
                         )}
                     </TabsContent>
 
-                    <TabsContent value="benefits" className="animate-in fade-in-50 duration-500">
+                    <TabsContent value="perks" className="animate-in fade-in-50 duration-500">
                          {benefitsLoading ? <BrandSkeleton className="h-64 w-full rounded-[2rem]" /> : (
-                            hasBenefits ? <BenefitsGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
+                            hasBenefits ? <PerksGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
                          )}
                     </TabsContent>
 

@@ -6,21 +6,21 @@ import type { SerializableBenefit } from '@/types/data';
 import { Building, MapPin, Lock } from 'lucide-react';
 import { cn, optimizeImage } from '@/lib/utils';
 import { Badge } from '../ui/badge';
-import RedeemBenefitDialog from './redeem-perk-dialog';
+import RedeemPerkDialog from './redeem-perk-dialog';
 import { FavoriteButton } from '../layout/favorite-button';
 import { useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { calculateDistance, formatDistance } from '@/lib/geo-utils';
 import { getLevelInfo } from '@/lib/gamification';
 
-interface BenefitCardProps {
-  benefit: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
+interface perkCardProps {
+  perk: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
   className?: string;
   variant?: 'grid' | 'carousel';
   priority?: boolean;
 }
 
-export default function BenefitCard({ benefit, className, variant = 'grid', priority = false }: BenefitCardProps) {
+export default function perkCard({ perk, className, variant = 'grid', priority = false }: perkCardProps) {
   const { userData, userLocation, roles } = useUser();
   const { isApproved: isCincoDos } = useCincoDosStatus();
   const isAdmin = roles.includes('admin');
@@ -31,25 +31,25 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
   
   const isLocked = useMemo(() => {
     if (isAdmin) return false;
-    if (benefit.minLevel && userLevel < benefit.minLevel) return true;
-    if (benefit.targetAudience === 'cinco_dos' && !isCincoDos) return true;
+    if (perk.minLevel && userLevel < perk.minLevel) return true;
+    if (perk.targetAudience === 'cinco_dos' && !isCincoDos) return true;
     return false;
-  }, [benefit.minLevel, userLevel, benefit.targetAudience, isCincoDos, isAdmin]);
+  }, [perk.minLevel, userLevel, perk.targetAudience, isCincoDos, isAdmin]);
 
-  const supplierName = benefit.supplierName || "Club de Beneficios";
+  const supplierName = perk.supplierName || "Club de Beneficios";
   
   // Calculate distance if both locations are available
   const distance = useMemo(() => {
-    if (userLocation && benefit.supplierLocation) {
+    if (userLocation && perk.supplierLocation) {
         return calculateDistance(
             userLocation.lat, userLocation.lng,
-            benefit.supplierLocation.lat, benefit.supplierLocation.lng
+            perk.supplierLocation.lat, perk.supplierLocation.lng
         );
     }
     return null;
-  }, [userLocation, benefit.supplierLocation]);
+  }, [userLocation, perk.supplierLocation]);
 
-  const primaryText = benefit.highlight || benefit.title;
+  const primaryText = perk.highlight || perk.title;
 
   const cardContent = (
     <div className={cn(
@@ -59,8 +59,8 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
       className
     )}>
         <Image
-            src={optimizeImage(benefit.imageUrl, 800)}
-            alt={benefit.title}
+            src={optimizeImage(perk.imageUrl, 800)}
+            alt={perk.title}
             fill
             className={cn(
                 "object-cover transition-transform duration-1000 ease-in-out",
@@ -80,7 +80,7 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
                     <Lock className="h-6 w-6 text-yellow-500 animate-pulse" />
                 </div>
                 <Badge className="bg-yellow-500/90 backdrop-blur-md text-black font-black uppercase tracking-tighter border-0 shadow-lg text-[10px] px-3 py-1">
-                    Nivel {benefit.minLevel}+
+                    Nivel {perk.minLevel}+
                 </Badge>
             </div>
         )}
@@ -88,17 +88,17 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
         <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-30 font-bold group">
             <div className="flex flex-col gap-2">
                 <div className="bg-primary text-white border border-white/30 py-1.5 px-4 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest leading-none w-fit shadow-lg">
-                    {benefit.category}
+                    {perk.category}
                 </div>
                 
-                {benefit.minLevel && (
+                {perk.minLevel && (
                     <Badge className={cn(
                         "w-fit text-[9px] font-black uppercase tracking-tighter px-2.5 py-1 rounded-lg border shadow-lg transition-all duration-500",
                         !isLocked 
                             ? "bg-green-500 text-white border-green-400/30" 
                             : "bg-yellow-500 text-black border-yellow-400/30"
                     )}>
-                        {isLocked ? `Nivel ${benefit.minLevel}+` : `Nivel ${benefit.minLevel} Desbloqueado`}
+                        {isLocked ? `Nivel ${perk.minLevel}+` : `Nivel ${perk.minLevel} Desbloqueado`}
                     </Badge>
                 )}
 
@@ -114,8 +114,8 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
 
             <div className="flex flex-col gap-2">
                 <FavoriteButton 
-                    id={benefit.id} 
-                    type="benefit" 
+                    id={perk.id} 
+                    type="perk" 
                     className="bg-black/40 backdrop-blur-md border-white/20 hover:bg-primary shadow-xl" 
                 />
             </div>
@@ -144,8 +144,8 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
   );
 
   return (
-    <RedeemBenefitDialog benefit={benefit}>
+    <RedeemPerkDialog perk={perk}>
         {cardContent}
-    </RedeemBenefitDialog>
+    </RedeemPerkDialog>
   );
 }

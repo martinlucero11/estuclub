@@ -25,8 +25,8 @@ import { triggerSuccessEffect } from '../ui/success-animation';
 import { MagneticButton } from '../ui/magnetic-button';
 import { getLevelInfo } from '@/lib/gamification';
 
-interface RedeemBenefitDialogProps {
-  benefit: SerializableBenefit;
+interface RedeemPerkDialogProps {
+  perk: SerializableBenefit;
   children?: React.ReactNode;
   isCarouselTrigger?: boolean;
 }
@@ -42,7 +42,7 @@ const dayAbbreviations: { [key: string]: string } = {
   "Domingo": "D"
 };
 
-export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigger = false }: RedeemBenefitDialogProps) {
+export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = false }: RedeemPerkDialogProps) {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -54,7 +54,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
 
   const userProfileRef = useMemo(() => {
     // Only create the user profile document reference if the user is logged in AND the dialog is open.
-    // This prevents the useDoc hook from running on page load for every benefit card.
+    // This prevents the useDoc hook from running on page load for every perk card.
     if (user && isOpen) {
       return doc(firestore, 'users', user.uid);
     }
@@ -95,7 +95,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       return;
     }
 
-    if (!user || !userProfile || !firestore || !benefit.ownerId) {
+    if (!user || !userProfile || !firestore || !perk.ownerId) {
       toast({ 
           variant: 'destructive', 
           title: 'Error de datos',
@@ -110,37 +110,37 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
     setRedemptionId(null);
     setQrCodeUrl(null);
 
-    const pointsToGrant = benefit.points || 0;
+    const pointsToGrant = perk.points || 0;
 
     try {
       const today = new Date();
       const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
 
-      if (benefit.availableDays && benefit.availableDays.length > 0 && !benefit.availableDays.some(d => d.toLowerCase() === todayDayString)) {
-        throw new Error(`Este beneficio solo está disponible los días: ${benefit.availableDays.join(', ')}.`);
+      if (perk.availableDays && perk.availableDays.length > 0 && !perk.availableDays.some(d => d.toLowerCase() === todayDayString)) {
+        throw new Error(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
       }
       
-      if (benefit.validUntil && new Date(benefit.validUntil) < new Date()) {
+      if (perk.validUntil && new Date(perk.validUntil) < new Date()) {
         throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
       }
 
       const userLevel = getLevelInfo(userProfile.points || 0).level;
       const isPrivileged = userProfile.role === 'admin' || userProfile.role === 'supplier';
 
-      if (benefit.minLevel && userLevel < benefit.minLevel && !isPrivileged) {
-        throw new Error(`Este beneficio requiere Nivel ${benefit.minLevel}. Tu nivel actual es ${userLevel}.`);
+      if (perk.minLevel && userLevel < perk.minLevel && !isPrivileged) {
+        throw new Error(`Este beneficio requiere Nivel ${perk.minLevel}. Tu nivel actual es ${userLevel}.`);
       }
       
       // TEMPORARILY REMOVED PRE-CHECKS TO ISOLATE PERMISSION ERROR
       /*
-      if (benefit.redemptionLimit && benefit.redemptionLimit > 0) {
+      if (perk.redemptionLimit && perk.redemptionLimit > 0) {
         const q = query(
           userRedemptionsRef, 
-          where("benefitId", "==", benefit.id),
+          where("perkId", "==", perk.id),
         );
         const querySnapshot = await getDocs(q);
-        if (querySnapshot.size >= benefit.redemptionLimit) {
-          throw new Error(`Has alcanzado el límite de canje (${benefit.redemptionLimit}) para este beneficio.`);
+        if (querySnapshot.size >= perk.redemptionLimit) {
+          throw new Error(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
         }
       }
       */
@@ -148,27 +148,27 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       const batch = writeBatch(firestore);
 
       // Using simpler supplier name fallback if possible
-      const supplierName = benefit.supplierName || 'Proveedor';
+      const supplierName = perk.supplierName || 'Proveedor';
       
-      const redemptionIdToSet = doc(collection(firestore, 'benefitRedemptions')).id;
-      const rootRedemptionRef = doc(firestore, "benefitRedemptions", redemptionIdToSet);
-      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionIdToSet);
+      const redemptionIdToSet = doc(collection(firestore, 'perkRedemptions')).id;
+      const rootRedemptionRef = doc(firestore, "perkRedemptions", redemptionIdToSet);
+      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_perks', redemptionIdToSet);
       
       const qrCodeValue = JSON.stringify({ redemptionId: redemptionIdToSet });
       
       // Prepare redemption data with careful defaults
       const redemptionData = {
         id: redemptionIdToSet,
-        benefitId: benefit.id,
-        benefitTitle: benefit.title || 'Beneficio',
-        benefitDescription: benefit.description || '',
-        benefitImageUrl: benefit.imageUrl || benefit.image || '',
-        benefitLocation: benefit.location || '',
+        perkId: perk.id,
+        perkTitle: perk.title || 'Beneficio',
+        perkDescription: perk.description || '',
+        perkImageUrl: perk.imageUrl || perk.image || '',
+        perkLocation: perk.location || '',
         userId: user.uid,
         userName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || userProfile.username || 'Usuario',
         userDni: userProfile.dni || 'No especificado',
-        supplierId: benefit.ownerId,
-        supplierName: benefit.supplierName || 'Proveedor',
+        supplierId: perk.ownerId,
+        supplierName: perk.supplierName || 'Proveedor',
         redeemedAt: serverTimestamp(),
         qrCodeValue: qrCodeValue,
         status: 'pending' as const,
@@ -203,7 +203,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       });
 
     } catch (e: any) {
-        console.error('Error redeeming benefit:', e);
+        console.error('Error redeeming perk:', e);
         setError(e.message || 'No se pudo canjear el beneficio. Por favor, inténtalo de nuevo.');
         toast({ 
             variant: 'destructive', 
@@ -255,7 +255,7 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
       </div>
   );
 
-  const points = benefit.points || 0;
+  const points = perk.points || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -266,20 +266,20 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
         {!redemptionId ? (
             <>
                 <DialogHeader>
-                    <DialogTitle>Canjear: {benefit.title}</DialogTitle>
+                    <DialogTitle>Canjear: {perk.title}</DialogTitle>
                     <DialogDescription>
                     Al canjear este beneficio, ganarás <span className="font-bold text-primary">{points}</span> puntos.
                     </DialogDescription>
                 </DialogHeader>
 
-                {benefit.availableDays && benefit.availableDays.length > 0 && (
+                {perk.availableDays && perk.availableDays.length > 0 && (
                     <div className="flex items-center gap-3 rounded-lg border p-3">
                         <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
                         <div className='flex-1'>
                             <p className="text-sm font-medium">Días disponibles</p>
                             <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
                                 {daysOrder.map(day => (
-                                    <span key={day} className={benefit.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
+                                    <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
                                         {dayAbbreviations[day]}
                                     </span>
                                 ))}
@@ -288,12 +288,12 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     </div>
                 )}
                 
-                {userProfile && benefit.minLevel && getLevelInfo(userProfile.points || 0).level < benefit.minLevel && userProfile.role !== 'admin' && userProfile.role !== 'supplier' && (
+                {userProfile && perk.minLevel && getLevelInfo(userProfile.points || 0).level < perk.minLevel && userProfile.role !== 'admin' && userProfile.role !== 'supplier' && (
                     <Alert className="bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-500">
                         <Lock className="h-4 w-4" />
                         <AlertTitle className="font-black uppercase tracking-tighter">Nivel Insuficiente</AlertTitle>
                         <AlertDescription className="text-xs">
-                            Este beneficio requiere **Nivel {benefit.minLevel}**. Sigue participando para subir de nivel y desbloquearlo.
+                            Este beneficio requiere **Nivel {perk.minLevel}**. Sigue participando para subir de nivel y desbloquearlo.
                         </AlertDescription>
                     </Alert>
                 )}
@@ -316,11 +316,11 @@ export default function RedeemBenefitDialog({ benefit, children, isCarouselTrigg
                     <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
                         Cancelar
                     </Button>
-                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}>
+                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (perk.minLevel ? (getLevelInfo(userProfile?.points || 0).level < perk.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}>
                         <Button 
                           type="button" 
                           onClick={handleRedeem} 
-                          disabled={isRedeeming || isProfileLoading || !user || (benefit.minLevel ? (getLevelInfo(userProfile?.points || 0).level < benefit.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}
+                          disabled={isRedeeming || isProfileLoading || !user || (perk.minLevel ? (getLevelInfo(userProfile?.points || 0).level < perk.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}
                           className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
                         >
                             {isRedeeming ? (

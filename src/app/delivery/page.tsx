@@ -183,7 +183,7 @@ export default function DeliveryLandingPage() {
     return (
         <MainLayout>
             <BackButton href="/" />
-            <div className="flex-1 space-y-12 p-4 md:p-12 max-w-7xl mx-auto">
+            <div className="flex-1 space-y-2 p-4 md:p-12 max-w-7xl mx-auto">
                 <div className="flex justify-end pr-4 md:pr-0">
                     <ModeToggle />
                 </div>

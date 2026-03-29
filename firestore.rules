@@ -151,19 +151,21 @@ service cloud.firestore {
 
     /* ================= BENEFITS ================= */
 
-    match /benefits/{id} {
+    /* ================= PERKS ================= */
+    
+    match /perks/{id} {
       allow read: if true;
       allow create: if isSupplier() || isAdmin();
-      allow update: if (signedIn() && (
+      allow update: if isAdmin() || (signedIn() && (
         resource.data.ownerId == request.auth.uid ||
         resource.data.supplierId == request.auth.uid
-      )) || isAdmin() || 
+      )) || 
       (signedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['favoritesCount']) && (isIncrementedBy('favoritesCount', 1) || isIncrementedBy('favoritesCount', -1)));
 
-      allow delete: if (signedIn() && (
+      allow delete: if isAdmin() || (signedIn() && (
         resource.data.ownerId == request.auth.uid ||
         resource.data.supplierId == request.auth.uid
-      )) || isAdmin();
+      ));
     }
 
     /* ================= ANNOUNCEMENTS ================= */
@@ -171,28 +173,28 @@ service cloud.firestore {
     match /announcements/{id} {
       allow read: if true;
       allow create: if isSupplier() || isAdmin();
-      allow update, delete: if (signedIn() && (
+      allow update, delete: if isAdmin() || (signedIn() && (
         resource.data.supplierId == request.auth.uid ||
         resource.data.ownerId == request.auth.uid ||
         resource.data.authorId == request.auth.uid
-      )) || isAdmin();
+      ));
     }
 
     /* ================= PUBLIC CONTENT ================= */
 
     match /banners/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write, delete: if isAdmin();
     }
 
     match /categories/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write, delete: if isAdmin();
     }
 
     match /home_sections/{id} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write, delete: if isAdmin();
     }
 
     match /settings/{id} {

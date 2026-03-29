@@ -1,7 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import BenefitsGrid from '@/components/perks/perks-grid';
+import PerksGrid from '@/components/perks/benefits-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
@@ -26,7 +26,7 @@ import { ModeToggle } from '@/components/layout/mode-toggle';
 
 type SortOption = 'createdAt_desc' | 'createdAt_asc' | 'proximity';
 
-function BenefitsGridSkeleton() {
+function PerksGridSkeleton() {
     return (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(8)].map((_, i) => (
@@ -54,7 +54,7 @@ function BenefitsList() {
     const benefitsQuery = useMemo(() => {
         if (!firestore) return null;
         
-        let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), limit(100));
+        let q = query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), limit(100));
 
         if (categoryFilter) {
             q = query(q, where('category', '==', categoryFilter));
@@ -185,7 +185,7 @@ function BenefitsList() {
                     </div>
                 ) : (
                     <div className="space-y-4 animate-in fade-in duration-300">
-                        {combinedIsLoading && <BenefitsGridSkeleton />}
+                        {combinedIsLoading && <PerksGridSkeleton />}
 
                         {error && (
                             <p className="text-destructive text-center font-bold">
@@ -195,7 +195,7 @@ function BenefitsList() {
 
                         {!combinedIsLoading && !error && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                                <BenefitsGrid benefits={processedBenefits as any[]} />
+                                <PerksGrid benefits={processedBenefits as any[]} />
                             </div>
                         )}
                     </div>
@@ -219,7 +219,7 @@ export default function BenefitsPage() {
                     </p>
                 </header>
 
-                <Suspense fallback={<BenefitsGridSkeleton />}>
+                <Suspense fallback={<PerksGridSkeleton />}>
                     <BenefitsList />
                 </Suspense>
             </div>

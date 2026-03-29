@@ -174,7 +174,15 @@ export default function EditSupplierProfileForm() {
     try {
       const newSlug = slugify(values.name);
       
-      const dataToSave: any = { ...values };
+      // Filter out undefined values to prevent Firestore errors
+      const dataToSave: any = {};
+      Object.keys(values).forEach(key => {
+        const value = (values as any)[key];
+        if (value !== undefined) {
+          dataToSave[key] = value;
+        }
+      });
+
       if (values.locationCoords) {
           dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);
       }

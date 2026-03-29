@@ -123,14 +123,14 @@ export default function SupplierList() {
                                 />
                             </div>
                              <div className="flex items-center space-x-2">
-                                <Label htmlFor={`perks-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                <Label htmlFor={`benefits-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
                                     <Gift className="h-4 w-4"/>
                                     Beneficios
                                 </Label>
                                 <Switch
-                                    id={`perks-switch-${supplier.id}`}
-                                    checked={!!supplier.canCreatePerks}
-                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreatePerks', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} crear beneficios.`)}
+                                    id={`benefits-switch-${supplier.id}`}
+                                    checked={!!supplier.canCreatebenefits}
+                                    onCheckedChange={(checked) => handlePermissionToggle(supplier.id, 'canCreatebenefits', !checked, `El proveedor ahora ${checked ? 'puede' : 'no puede'} crear beneficios.`)}
                                 />
                             </div>
                              <div className="flex items-center space-x-2">

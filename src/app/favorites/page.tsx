@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollectionOnce } from '@/firebase';
 import { collection, query, where, documentId } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
-import BenefitsGrid from '@/components/perks/perks-grid';
+import PerksGrid from '@/components/perks/benefits-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -28,7 +28,7 @@ function FavoritesContent() {
   const benefitsQuery = useMemo(() => {
     if (favoriteBenefitIds.length === 0) return null;
     return query(
-      collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), 
+      collection(firestore, 'perks').withConverter(createConverter<Benefit>()), 
       where(documentId(), 'in', favoriteBenefitIds.slice(0, 30))
     );
   }, [firestore, favoriteBenefitIds]);
@@ -155,7 +155,7 @@ function FavoritesContent() {
                 <BrandSkeleton className="h-64 w-full rounded-[2rem]" />
               </div>
             ) : (
-              <BenefitsGrid benefits={serializableBenefits} />
+              <PerksGrid benefits={serializableBenefits} />
             )}
           </section>
         </div>

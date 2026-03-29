@@ -18,7 +18,7 @@ const WelcomeMessage = () => {
     const displayName = user?.displayName?.split(' ')[0] || "Bienvenido";
 
     return (
-        <div className="py-6 animate-fade-in">
+        <div className="py-2 animate-fade-in">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                 Hola, <span className="text-primary">{displayName}</span> 👋
             </h1>

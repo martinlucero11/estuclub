@@ -15,7 +15,7 @@ export function CategoryBar() {
     const firestore = useFirestore();
     
     const isDelivery = pathname.startsWith('/delivery') || pathname.startsWith('/proveedores');
-    const type = isDelivery ? 'delivery' : 'benefits';
+    const type = isDelivery ? 'delivery' : 'perks';
     const currentCategory = searchParams.get('category');
 
     // Fetch categories dynamically

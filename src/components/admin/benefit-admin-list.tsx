@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Edit, Trash2, TrendingUp } from 'lucide-react';
 import type { Benefit, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
-import EditBenefitDialog from '@/components/perks/edit-perk-dialog';
+import EditPerkDialog from '@/components/perks/edit-perk-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -22,7 +22,7 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
   const firestore = useFirestore();
 
   const handleDelete = async () => {
-    const benefitRef = doc(firestore, 'benefits', benefit.id);
+    const benefitRef = doc(firestore, 'perks', benefit.id);
     try {
         await deleteDoc(benefitRef);
         toast({
@@ -71,7 +71,7 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
           </Button>
         </div>
       </div>
-      <EditBenefitDialog
+      <EditPerkDialog
         benefit={benefit}
         isOpen={isEditOpen}
         onOpenChange={setIsEditOpen}
@@ -93,7 +93,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   const benefitsQuery = useMemo(
     () => {
-        const baseCollection = collection(firestore, 'benefits').withConverter(createConverter<Benefit>());
+        const baseCollection = collection(firestore, 'perks').withConverter(createConverter<Benefit>());
         if (supplierId) {
             return query(baseCollection, where('ownerId', '==', supplierId), orderBy('createdAt', 'desc'))
         }

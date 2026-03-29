@@ -25,7 +25,7 @@ const formSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   emoji: z.string().min(1, 'Debes seleccionar un emoji.').max(4, 'El emoji es demasiado largo.'),
   colorClass: z.string().min(1, 'La clase de color es requerida.'),
-  type: z.enum(['benefits', 'delivery']).default('benefits'),
+  type: z.enum(['perks', 'delivery']).default('perks'),
 });
 
 import { 
@@ -39,7 +39,7 @@ import {
 interface CategoryFormProps {
     category?: Category | null;
     onSuccess: () => void;
-    defaultType?: 'benefits' | 'delivery';
+    defaultType?: 'perks' | 'delivery';
 }
 
 export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormProps) {
@@ -54,7 +54,7 @@ export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormP
             name: category?.name || '',
             emoji: category?.emoji || '',
             colorClass: category?.colorClass || 'text-primary',
-            type: category?.type || defaultType || 'benefits',
+            type: category?.type || defaultType || 'perks',
         },
     });
 
@@ -110,7 +110,7 @@ export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormP
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                        <SelectItem value="benefits">Beneficios</SelectItem>
+                                        <SelectItem value="perks">Beneficios</SelectItem>
                                         <SelectItem value="delivery">Delivery</SelectItem>
                                     </SelectContent>
                                 </Select>

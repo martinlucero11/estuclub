@@ -8,7 +8,7 @@ import { getInitials, cn, optimizeImage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { haptic } from "@/lib/haptics";
 import { motion } from "framer-motion";
-import BenefitCard from "../perks/perk-card";
+import PerkCard from "../perks/perk-card";
 import { ProductCard } from "../delivery/product-card";
 import {
   Carousel,
@@ -151,7 +151,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
 
 const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center glass glass-dark text-foreground rounded-full shadow-2xl border border-white/10 transition-all duration-300 hover:scale-110 active:scale-90 disabled:opacity-0 w-12 h-12 z-20 backdrop-blur-xl hover:bg-primary/10 hover:border-primary/30";
 
-export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
+export function PerksCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
     if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
@@ -159,7 +159,7 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
             <CarouselContent className="py-10 -my-10">
                 {benefits.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
-                        <BenefitCard benefit={item} variant="carousel" priority={index < 2} />
+                        <PerkCard perk={item} variant="carousel" priority={index < 2} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -244,6 +244,65 @@ export function BannersCarousel({ items: banners }: { items: any[] }) {
             </CarouselContent>
             <CarouselPrevious className={cn(carouselArrowClasses, "left-2 z-10")} />
             <CarouselNext className={cn(carouselArrowClasses, "right-2 z-10")} />
+        </Carousel>
+    );
+}
+
+// --- SUPPLIER PROMO CARD (BENEFIT STYLE) ---
+export function SupplierPromoCard({ supplier }: { supplier: SupplierProfile }) {
+    return (
+        <Link 
+            href={`/proveedores/view?slug=${supplier.slug}`}
+            onClick={() => haptic.vibrateSubtle()}
+            className="group relative flex w-full flex-col justify-end overflow-hidden rounded-[2.5rem] text-white transition-all duration-700 shadow-premium border border-white/5 aspect-[2.2/1] h-40 sm:h-48 hover:shadow-2xl active:scale-[0.98] hover:border-primary/30 hover:shadow-primary/10"
+        >
+            <Image
+                src={optimizeImage(supplier.coverUrl || supplier.logoUrl || '', 800)}
+                alt={supplier.name}
+                fill
+                className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
+                sizes="(max-width: 640px) 100vw, 33vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent transition-opacity duration-500 group-hover:from-primary/40 group-hover:via-black/40" />
+            
+            <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-30 font-bold group">
+                <div className="bg-primary text-white border border-white/30 py-1 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest leading-none w-fit shadow-lg">
+                    {supplier.type}
+                </div>
+            </div>
+
+            <div className="relative z-10 flex h-full flex-col justify-end p-4 text-left">
+                <div className='space-y-1'>
+                    <h3 className="font-black uppercase tracking-tighter leading-[0.9] mb-0.5 text-lg md:text-xl group-hover:text-primary transition-all duration-500 group-hover:scale-[1.02] origin-left drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]">
+                        {supplier.name}
+                    </h3>
+                </div>
+                
+                <div className="pt-3 flex items-center justify-between border-t border-white/20 mt-3 transition-colors duration-500 group-hover:border-primary/40">
+                    <div className="flex items-center gap-2 text-xs text-white font-black uppercase tracking-[0.15em] drop-shadow-md">
+                        <MapPin className="h-3.5 w-3.5 opacity-90" />
+                        <span className="truncate max-w-[150px]">{supplier.address || 'Cerca de ti'}</span>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    );
+}
+
+export function SupplierPromoCarousel({ items: suppliers }: { items: any[] }) {
+    if (!suppliers || suppliers.length === 0) return null;
+
+    return (
+        <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
+            <CarouselContent className="py-10 -my-10">
+                {suppliers.map((item) => (
+                    <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
+                        <SupplierPromoCard supplier={item as SupplierProfile} />
+                    </CarouselItem>
+                ))}
+            </CarouselContent>
+            <CarouselPrevious className={cn(carouselArrowClasses, "-left-2 lg:-left-6")}/>
+            <CarouselNext className={cn(carouselArrowClasses, "-right-2 lg:-right-6")} />
         </Carousel>
     );
 }

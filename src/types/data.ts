@@ -79,6 +79,7 @@ export interface SupplierProfile {
   logoUrl?: string;
   address?: string;
   whatsapp?: string;
+  coverUrl?: string; // High-quality promotional image for banners/promo cards
   isVisible: boolean; // Admin-controlled
   isFeatured: boolean; // Admin-controlled
   featuredRank?: number; // Admin-controlled
@@ -86,7 +87,7 @@ export interface SupplierProfile {
   createdAt?: Timestamp;
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;
-  canCreatePerks?: boolean;
+  canCreateBenefits?: boolean;
   canSendNotifications?: boolean;
   announcementsEnabled?: boolean;
   avgRating?: number;
@@ -268,13 +269,13 @@ export interface Category {
   emoji: string;
   colorClass: string;
   order?: number;
-  type: 'benefits' | 'delivery';
+  type: 'perks' | 'delivery';
   [key: string]: any;
 }
 
 // Discriminated union for HomeSection.block
 type DynamicContentConfig = {
-  contentType: "benefits" | "suppliers" | "announcements" | "banners" | "benefits_nearby" | "suppliers_nearby" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers";
+  contentType: "perks" | "suppliers" | "announcements" | "banners" | "benefits_nearby" | "suppliers_nearby" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo";
   mode: "auto" | "manual";
   query?: {
     filters?: WhereFilter[];
@@ -315,7 +316,7 @@ export interface HomeSection {
   title: string;
   order: number;
   isActive: boolean;
-  targetBoard: 'benefits' | 'delivery';
+  targetBoard: 'perks' | 'delivery';
   createdAt?: Timestamp;
   block: HomeSectionBlock;
 }

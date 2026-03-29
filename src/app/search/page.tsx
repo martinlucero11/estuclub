@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCollectionOnce, useFirestore } from '@/firebase';
 import { collection, query, where, limit } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
-import BenefitsGrid from '@/components/perks/perks-grid';
+import PerksGrid from '@/components/perks/benefits-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -22,7 +22,7 @@ function SearchResults() {
 
   // Memoize queries and limit results for performance
   const benefitsQuery = useMemo(() => 
-    query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('isVisible', '==', true), limit(50)),
+    query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), where('isVisible', '==', true), limit(50)),
     [firestore]
   );
   const suppliersQuery = useMemo(() => 
@@ -130,7 +130,7 @@ function SearchResults() {
               <h2 className="text-lg font-semibold text-foreground">Beneficios ({filteredBenefits.length})</h2>
             </div>
             {filteredBenefits.length > 0 ? (
-              <BenefitsGrid benefits={filteredBenefits} />
+              <PerksGrid benefits={filteredBenefits} />
             ) : (
               <div className="text-center py-24 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center space-y-3">
                 <Search className="h-10 w-10 text-muted-foreground/30" />

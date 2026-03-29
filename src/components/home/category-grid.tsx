@@ -27,22 +27,22 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                 {categories.map(category => (
                     <CarouselItem key={category.id} className="basis-auto pl-4">
                         <Link 
-                            href={`/${category.type === 'delivery' ? 'delivery' : 'benefits'}?category=${encodeURIComponent(category.name)}`} 
-                            className="block w-24 sm:w-28 text-center group"
+                            href={`/${category.type === 'delivery' ? 'delivery' : 'perks'}?category=${encodeURIComponent(category.name)}`} 
+                            className="block w-28 sm:w-32 text-center group"
                         >
                             <div 
                                 className={cn(
-                                    'flex flex-col items-center justify-center h-24 w-24 sm:h-28 sm:w-28 mx-auto rounded-[2.5rem] transition-all duration-700',
+                                    'flex flex-col items-center justify-center h-28 w-28 sm:h-32 sm:w-32 mx-auto rounded-[2.5rem] transition-all duration-700',
                                     'bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/20 shadow-premium glass',
                                     'group-hover:scale-105 group-hover:shadow-2xl group-hover:border-primary/40 group-hover:from-primary/40 group-hover:to-primary/20',
                                     'active:scale-95'
                                 )}
                             >
-                                <span className="text-5xl sm:text-6xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 drop-shadow-xl">
+                                <span className="text-6xl sm:text-7xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 drop-shadow-xl">
                                     {category.emoji}
                                 </span>
                             </div>
-                            <p className="mt-3 text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                            <p className="mt-3 text-[11px] sm:text-[13px] font-black uppercase tracking-wider text-foreground group-hover:text-primary transition-colors text-center px-1 leading-tight line-clamp-2">
                                 {category.name}
                             </p>
                         </Link>

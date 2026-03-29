@@ -82,17 +82,17 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
     },
   },
   {
-    id: "canCreatePerks",
+    id: "canCreatebenefits",
     header: () => <div className="text-center">Beneficios</div>,
     cell: ({ row }) => {
       const supplier = row.original;
-      const isLoading = loadingStates[supplier.id]?.canCreatePerks;
+      const isLoading = loadingStates[supplier.id]?.canCreatebenefits;
 
       return (
         <div className="flex justify-center">
           <Switch
-            checked={!!supplier.canCreatePerks}
-            onCheckedChange={(value) => onToggle(supplier.id, 'canCreatePerks', value)}
+            checked={!!supplier.canCreatebenefits}
+            onCheckedChange={(value) => onToggle(supplier.id, 'canCreatebenefits', value)}
             disabled={isLoading}
             aria-label="Toggle beneficios"
           />

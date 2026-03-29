@@ -112,21 +112,22 @@ export default function AddSupplierForm() {
       const slug = slugify(values.name);
 
       // 2. Add the user to the roles_supplier collection with data
+      // Process form values and filter out undefined to prevent Firestore errors
       const dataToSave: any = {
-        name: values.name,
-        type: values.type,
-        email: values.email,
         userId: userId,
         slug: slug,
-        description: values.description || '',
-        logoUrl: values.logoUrl || '',
         appointmentsEnabled: false, // Default to false
         announcementsEnabled: false,
-        deliveryEnabled: values.deliveryEnabled,
-        deliveryCategory: values.deliveryCategory || '',
         isFeatured: false,
         createdAt: serverTimestamp(),
       };
+
+      Object.keys(values).forEach(key => {
+        const value = (values as any)[key];
+        if (value !== undefined) {
+          dataToSave[key] = value;
+        }
+      });
 
       if (values.locationCoords) {
           const { GeoPoint } = await import('firebase/firestore');

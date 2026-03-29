@@ -34,7 +34,7 @@ export default function PanelCluberBenefitsPage() {
     roles: roles as UserRole[],
   };
   
-  const canCreate = roles.includes('admin') || supplierData?.canCreatePerks;
+  const canCreate = roles.includes('admin') || supplierData?.canCreatebenefits;
 
   return (
     <div className="space-y-4">

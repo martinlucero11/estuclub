@@ -6,7 +6,7 @@ import { collection, query, where, limit } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { makeBenefitSerializable } from '@/lib/data';
-import { BenefitsCarousel, SuppliersCarousel } from './carousels';
+import { PerksCarousel, SuppliersCarousel } from './carousels';
 import { calculateDistance } from '@/lib/geo-utils';
 import { MapPin } from 'lucide-react';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
@@ -69,7 +69,7 @@ export function NearbySuppliersCarousel() {
   );
 }
 
-export function NearbyBenefitsCarousel() {
+export function NearbyPerksCarousel() {
   const { userLocation, requestLocation } = useUser();
   const firestore = useFirestore();
   const { isApproved: isCincoDos } = useCincoDosStatus();
@@ -84,7 +84,7 @@ export function NearbyBenefitsCarousel() {
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
-      collection(firestore, 'benefits').withConverter(createConverter<Benefit>()),
+      collection(firestore, 'perks').withConverter(createConverter<Benefit>()),
       where('isVisible', '==', true),
       limit(40)
     );
@@ -139,7 +139,7 @@ export function NearbyBenefitsCarousel() {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-200">
-        <BenefitsCarousel items={sortedBenefits} />
+        <PerksCarousel items={sortedBenefits} />
     </div>
   );
 }

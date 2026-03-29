@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { notFound, useSearchParams } from 'next/navigation';
 import type { SerializableBenefit } from '@/types/data';
-import PerkDetailSkeleton from '@/components/perks/perk-detail-skeleton';
+import benefitDetailSkeleton from '@/components/perks/perk-detail-skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import Link from 'next/link';
 
-const RedeemBenefitDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), {
+const RedeemPerkDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), {
   ssr: false,
   loading: () => <Button className="w-full h-12 rounded-xl" disabled>Cargando...</Button>
 });
@@ -33,13 +33,13 @@ export default function BenefitDetailPage() {
 
     const benefitRef = useMemo(() => {
         if (!id) return null;
-        return doc(firestore, 'benefits', id).withConverter(createConverter<SerializableBenefit>());
+        return doc(firestore, 'perks', id).withConverter(createConverter<SerializableBenefit>());
     }, [id, firestore]);
     
     const { data: benefit, isLoading, error } = useDocOnce(benefitRef);
 
     if (isLoading || isUserLoading) {
-        return <PerkDetailSkeleton />;
+        return <benefitDetailSkeleton />;
     }
 
     if (!id || error) {
@@ -136,7 +136,7 @@ export default function BenefitDetailPage() {
                             </CardContent>
 
                             <CardFooter className="p-0 mt-10">
-                                 <RedeemBenefitDialog benefit={serializableBenefit}>
+                                 <RedeemPerkDialog benefit={serializableBenefit}>
                                     <Button 
                                         className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
                                         onClick={() => haptic.vibrateImpact()}
@@ -148,7 +148,7 @@ export default function BenefitDetailPage() {
                                             </span>
                                         )}
                                     </Button>
-                                </RedeemBenefitDialog>
+                                </RedeemPerkDialog>
                             </CardFooter>
                         </div>
                     </Card>

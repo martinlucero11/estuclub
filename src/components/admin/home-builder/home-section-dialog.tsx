@@ -14,7 +14,7 @@ interface HomeSectionDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     section?: HomeSection | null;
-    defaultBoard?: 'benefits' | 'delivery';
+    defaultBoard?: 'perks' | 'delivery';
 }
 
 export function HomeSectionDialog({ isOpen, onOpenChange, section, defaultBoard }: HomeSectionDialogProps) {

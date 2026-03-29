@@ -5,16 +5,16 @@ import { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
-import type { Benefit } from '@/types/data';
-import BenefitsGrid from '../perks/perks-grid';
+import type { Benefit, SerializableHomeSection } from '@/types/data';
+import PerksGrid from '../perks/benefits-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 
-export default function FeaturedPerks() {
+export function FeaturedPerks({ sections }: { sections: SerializableHomeSection[] }) {
   const firestore = useFirestore();
 
   const benefitsQuery = useMemo(() => 
     query(
-      collection(firestore, 'benefits').withConverter(createConverter<Benefit>()),
+      collection(firestore, 'perks').withConverter(createConverter<Benefit>()),
       where('isFeatured', '==', true),
       where('isVisible', '==', true),
       orderBy('featuredRank', 'asc'),
@@ -39,5 +39,5 @@ export default function FeaturedPerks() {
     return <p className="text-destructive">Error al cargar beneficios.</p>;
   }
 
-  return <BenefitsGrid benefits={serializableBenefits} />;
+  return <PerksGrid benefits={serializableBenefits} />;
 }

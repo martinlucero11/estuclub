@@ -16,9 +16,9 @@ export function ModeToggle() {
     const isDelivery = pathname.startsWith('/delivery');
     const isBenefits = pathname.startsWith('/benefits') || pathname === '/';
 
-    const handleToggle = (mode: 'benefits' | 'delivery') => {
+    const handleToggle = (mode: 'perks' | 'delivery') => {
         haptic.vibrateSubtle();
-        if (mode === 'benefits') {
+        if (mode === 'perks') {
             router.push('/');
         } else {
             router.push('/delivery');
@@ -26,14 +26,14 @@ export function ModeToggle() {
     };
 
     return (
-        <div className="flex justify-center w-full mb-8 mt-2 sticky top-[100px] z-30">
+        <div className="flex justify-center w-full mb-2 mt-2 sticky top-[100px] z-30">
             <div className="inline-flex p-1.5 bg-background/60 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl relative overflow-hidden group">
                 {/* Glossy highlight effect */}
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 
                 <div className="flex items-center gap-1 relative z-10">
                     <button
-                        onClick={() => handleToggle('benefits')}
+                        onClick={() => handleToggle('perks')}
                         className={cn(
                             "relative flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-500",
                             isBenefits ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
