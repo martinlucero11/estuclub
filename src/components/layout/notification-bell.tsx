@@ -133,7 +133,7 @@ export default function NotificationBell() {
     const handleNotificationClick = (n: Notification) => {
         setOpen(false);
         if (n.type === 'benefit') {
-            router.push(`/perks/view?id=${n.referenceId}`);
+            router.push(`/benefits/view?id=${n.referenceId}`);
         } else if (n.type === 'announcement') {
             router.push(`/announcements`);
         } else if (n.type === 'appointment') {

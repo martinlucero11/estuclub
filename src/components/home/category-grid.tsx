@@ -27,7 +27,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                 {categories.map(category => (
                     <CarouselItem key={category.id} className="basis-auto pl-4">
                         <Link 
-                            href={`/${category.type === 'delivery' ? 'delivery' : 'perks'}?category=${encodeURIComponent(category.name)}`} 
+                            href={`/${category.type === 'delivery' ? 'delivery' : 'benefits'}?category=${encodeURIComponent(category.name)}`} 
                             className="block w-28 sm:w-32 text-center group"
                         >
                             <div 

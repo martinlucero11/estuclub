@@ -79,7 +79,7 @@ function HomeContent() {
                                     <Link href={
                                         section.block.contentType === 'suppliers' || section.block.contentType === 'suppliers_nearby' 
                                             ? '/proveedores' 
-                                            : section.block.contentType === 'benefits_nearby'
+                                            : (section.block.contentType === 'benefits_nearby' || section.block.contentType === 'perks')
                                                 ? '/benefits'
                                                 : `/${section.block.contentType}`
                                     }>
