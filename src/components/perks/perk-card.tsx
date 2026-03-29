@@ -13,14 +13,14 @@ import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { calculateDistance, formatDistance } from '@/lib/geo-utils';
 import { getLevelInfo } from '@/lib/gamification';
 
-interface perkCardProps {
+interface PerkCardProps {
   perk: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
   className?: string;
   variant?: 'grid' | 'carousel';
   priority?: boolean;
 }
 
-export default function perkCard({ perk, className, variant = 'grid', priority = false }: perkCardProps) {
+export default function PerkCard({ perk, className, variant = 'grid', priority = false }: PerkCardProps) {
   const { userData, userLocation, roles } = useUser();
   const { isApproved: isCincoDos } = useCincoDosStatus();
   const isAdmin = roles.includes('admin');
@@ -115,7 +115,7 @@ export default function perkCard({ perk, className, variant = 'grid', priority =
             <div className="flex flex-col gap-2">
                 <FavoriteButton 
                     id={perk.id} 
-                    type="perk" 
+                    type="benefit" 
                     className="bg-black/40 backdrop-blur-md border-white/20 hover:bg-primary shadow-xl" 
                 />
             </div>

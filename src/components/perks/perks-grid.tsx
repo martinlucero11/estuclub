@@ -1,7 +1,7 @@
 
 'use client';
 import type { SerializableBenefit } from '@/types/data';
-import perkCard from './perk-card';
+import PerkCard from './perk-card';
 import { Archive } from 'lucide-react';
 import { PremiumEmptyState } from '../ui/premium-empty-state';
 
@@ -26,7 +26,7 @@ export default function PerksGrid({ perks }: PerksGridProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       {perks.map((perk) => (
-        <perkCard key={perk.id} perk={perk} variant="grid" />
+        <PerkCard key={perk.id} perk={perk} variant="grid" />
       ))}
     </div>
   );

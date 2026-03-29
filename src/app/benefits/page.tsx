@@ -1,7 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import PerksGrid from '@/components/perks/benefits-grid';
+import PerksGrid from '@/components/perks/perks-grid';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
@@ -195,7 +195,7 @@ function BenefitsList() {
 
                         {!combinedIsLoading && !error && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                                <PerksGrid benefits={processedBenefits as any[]} />
+                                <PerksGrid perks={processedBenefits as any[]} />
                             </div>
                         )}
                     </div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useCollectionOnce } from '@/firebase';
 import { collection, query, where, documentId } from 'firebase/firestore';
 import MainLayout from '@/components/layout/main-layout';
-import PerksGrid from '@/components/perks/benefits-grid';
+import PerksGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -155,7 +155,7 @@ function FavoritesContent() {
                 <BrandSkeleton className="h-64 w-full rounded-[2rem]" />
               </div>
             ) : (
-              <PerksGrid benefits={serializableBenefits} />
+              <PerksGrid perks={serializableBenefits} />
             )}
           </section>
         </div>

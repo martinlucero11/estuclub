@@ -6,7 +6,7 @@ import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import type { Benefit, SerializableHomeSection } from '@/types/data';
-import PerksGrid from '../perks/benefits-grid';
+import PerksGrid from '../perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 
 export function FeaturedPerks({ sections }: { sections: SerializableHomeSection[] }) {
@@ -39,5 +39,5 @@ export function FeaturedPerks({ sections }: { sections: SerializableHomeSection[
     return <p className="text-destructive">Error al cargar beneficios.</p>;
   }
 
-  return <PerksGrid benefits={serializableBenefits} />;
+  return <PerksGrid perks={serializableBenefits} />;
 }

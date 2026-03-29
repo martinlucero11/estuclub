@@ -8,7 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
-import perkCard from './perk-card';
+import PerkCard from './perk-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import type { CarouselItem as CarouselItemType } from '@/types/data';
 import Autoplay from "embla-carousel-autoplay"
@@ -40,10 +40,10 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
       <CarouselContent className="-ml-2">
         {carouselItems.map((item) => (
           <CarouselItem key={`${item.type}-${item.id}`} className="md:basis-1/2 lg:basis-1/3 pl-2 h-48">
-            {item.type === 'perk' ? (
-              <perkCard perk={item} variant="carousel" className="h-full" />
+            {item.type === 'benefit' ? (
+              <PerkCard perk={item} variant="carousel" className="h-full" />
             ) : (
-              <AnnouncementCard announcement={item} variant="carousel" className="h-full" />
+              <AnnouncementCard announcement={item as any} variant="carousel" className="h-full" />
             )}
           </CarouselItem>
         ))}

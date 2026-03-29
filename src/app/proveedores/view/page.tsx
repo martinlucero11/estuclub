@@ -8,7 +8,7 @@ import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Building, Briefcase, Wrench, Heart, Users, ShoppingBag, Gift, Server, ChevronLeft } from 'lucide-react';
-import PerksGrid from '@/components/perks/benefits-grid';
+import PerksGrid from '@/components/perks/perks-grid';
 import { makeBenefitSerializable } from '@/lib/data';
 import type { Benefit, SerializableBenefit, Service, Availability, CluberCategory, SupplierProfile } from '@/types/data';
 import ServiceList from '@/components/supplier/service-list';
@@ -256,7 +256,7 @@ function CluberProfileContent() {
 
                     <TabsContent value="perks" className="animate-in fade-in-50 duration-500">
                          {benefitsLoading ? <BrandSkeleton className="h-64 w-full rounded-[2rem]" /> : (
-                            hasBenefits ? <PerksGrid benefits={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
+                            hasBenefits ? <PerksGrid perks={serializableBenefits} /> : <EmptyState icon={Gift} title="Sin Beneficios" description="Este Cluber no tiene beneficios activos en este momento."/>
                          )}
                     </TabsContent>
 
