@@ -5,10 +5,12 @@ import { Plus, Edit2, Trash2, Package, Search, MoreVertical, Check, X, ImageIcon
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useProducts } from '@/hooks/use-products';
-import { Product, Category } from '@/types/data';
-import { useFirestore, useCollectionOnce } from '@/firebase';
+import { Product, Category, SupplierProfile } from '@/types/data';
+import { useFirestore, useCollectionOnce, useDoc } from '@/firebase';
 import { doc, setDoc, deleteDoc, serverTimestamp, updateDoc, collection, query, where } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MenuSectionManager } from './menu-section-manager';
 import { 
     Dialog, 
     DialogContent, 
@@ -42,6 +44,11 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
     const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);
     const firestore = useFirestore();
     const { toast } = useToast();
+    const { data: supplierProfile } = useDoc<SupplierProfile>(supplierId ? doc(firestore, 'roles_supplier', supplierId) : null);
+    
+    const menuSections = useMemo(() => {
+        return supplierProfile?.menuSections || [];
+    }, [supplierProfile]);
 
     // Fetch categories from Firestore to match the home carrusel
     const categoriesQuery = useMemo(() => {
@@ -91,6 +98,7 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                 id: productRef.id,
                 supplierId: supplierId,
                 category: selectedProduct.category || '',
+                menuSection: selectedProduct.menuSection || '',
                 imageUrl: selectedProduct.imageUrl || '',
                 isActive: selectedProduct.isActive ?? true,
                 stockAvailable: selectedProduct.stockAvailable ?? true,
@@ -130,9 +138,19 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-                <div className="relative w-full max-w-sm">
+        <Tabs defaultValue="inventory" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mx-auto max-w-md mb-8 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
+                <TabsTrigger value="inventory" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">
+                    Inventario
+                </TabsTrigger>
+                <TabsTrigger value="menu" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">
+                    Organizar Menú
+                </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="inventory" className="space-y-6 animate-in fade-in duration-500">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                    <div className="relative w-full max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
                         placeholder="Buscar productos..." 
@@ -146,7 +164,7 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                     <DialogTrigger asChild>
                         <Button 
                             className="rounded-2xl h-11 px-6 font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
-                            onClick={() => setSelectedProduct({ isActive: true, stockAvailable: true, imageUrl: '', category: '' })}
+                            onClick={() => setSelectedProduct({ isActive: true, stockAvailable: true, imageUrl: '', category: '', menuSection: '' })}
                         >
                             <Plus className="h-4 w-4 mr-2" /> Nuevo Producto
                         </Button>
@@ -231,7 +249,7 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                                         onValueChange={v => setSelectedProduct({...selectedProduct, category: v})}
                                     >
                                         <SelectTrigger id="category" className="rounded-xl bg-background/50 border-white/10 h-10">
-                                            <SelectValue placeholder="Seleccionar categoría" />
+                                            <SelectValue placeholder="Seleccionar categoría global" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {deliveryCategories.map(cat => (
@@ -240,6 +258,26 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                <div className="space-y-2 flex flex-col justify-end">
+                                    <Label htmlFor="menuSection" className="text-[10px] font-black uppercase tracking-widest opacity-70">Sección del Menú</Label>
+                                    <Select 
+                                        value={selectedProduct?.menuSection || ''} 
+                                        onValueChange={v => setSelectedProduct({...selectedProduct, menuSection: v})}
+                                    >
+                                        <SelectTrigger id="menuSection" className="rounded-xl bg-background/50 border-white/10 h-10">
+                                            <SelectValue placeholder="Ninguna" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {menuSections.map(section => (
+                                                <SelectItem key={section} value={section}>{section}</SelectItem>
+                                            ))}
+                                            <SelectItem value="none">Sin asignación (Otros)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 flex flex-col justify-end">
                                     <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
                                         <Label htmlFor="isActive" className="text-[8px] font-black uppercase tracking-widest opacity-70">Visible</Label>
@@ -368,6 +406,11 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                     ))}
                 </div>
             )}
-        </div>
+            </TabsContent>
+
+            <TabsContent value="menu" className="animate-in fade-in duration-500">
+                <MenuSectionManager supplierId={supplierId} sections={menuSections} products={products || []} />
+            </TabsContent>
+        </Tabs>
     );
 }

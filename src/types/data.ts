@@ -113,6 +113,7 @@ export interface SupplierProfile {
     address: string;
     city?: string;
   };
+  menuSections?: string[]; // Custom subcategories defined by the supplier
   [key: string]: any;
 }
 
@@ -154,6 +155,7 @@ export interface Benefit {
   minLevel?: number;
   isExclusive?: boolean;
   targetAudience?: 'all' | 'level_1' | 'level_2' | 'level_3' | 'cinco_dos';
+  linkedProductIds?: string[]; // IDs of delivery products this benefit applies to
   [key: string]: any;
 }
 
@@ -161,6 +163,7 @@ export interface Benefit {
 export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'validUntil'> & {
   createdAt: string; // Always a string
   validUntil?: string; // Optional string
+  linkedProductIds?: string[];
 };
 
 /**
@@ -367,7 +370,8 @@ export interface Product {
     price: number;
     originalPrice?: number; // Pre-discount price
     imageUrl?: string;
-    category?: string;
+    category?: string; // Global category
+    menuSection?: string; // Supplier's custom subcategory
     stockAvailable: boolean;
     isActive: boolean;
     createdAt: Timestamp;

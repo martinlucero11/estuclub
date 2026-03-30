@@ -1,7 +1,7 @@
 'use client';
 
-import { useDocOnce, useFirestore, useUser } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useDocOnce, useFirestore, useUser, useCollectionOnce } from '@/firebase';
+import { doc, query, collection, where } from 'firebase/firestore';
 import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { notFound, useSearchParams } from 'next/navigation';
@@ -10,7 +10,9 @@ import BenefitDetailSkeleton from '@/components/perks/perk-detail-skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, MapPin, Award, Flame, Star, ChevronLeft } from 'lucide-react';
+import { ArrowRight, MapPin, Award, Flame, Star, ChevronLeft, Package, ShoppingBag } from 'lucide-react';
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
 import dynamic from 'next/dynamic';
 import { makeBenefitSerializable } from '@/lib/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -37,6 +39,41 @@ export default function BenefitDetailPage() {
     }, [id, firestore]);
     
     const { data: benefit, isLoading, error } = useDocOnce(benefitRef);
+    
+    const ownerRef = useMemo(() => {
+        if (!benefit?.ownerId) return null;
+        return doc(firestore, 'roles_supplier', benefit.ownerId);
+    }, [benefit, firestore]);
+    const { data: owner } = useDocOnce(ownerRef);
+
+    const deliveryProductsQuery = useMemo(() => {
+        if (!benefit?.linkedProductIds || benefit.linkedProductIds.length === 0 || !firestore) return null;
+        const chunk = benefit.linkedProductIds.slice(0, 10);
+        return query(collection(firestore, 'products'), where('id', 'in', chunk), where('isActive', '==', true));
+    }, [benefit, firestore]);
+    const { data: linkedProducts } = useCollectionOnce(deliveryProductsQuery);
+
+    const { addItem } = useCart();
+    const { toast } = useToast();
+
+    const handleAddComboToCart = () => {
+        if (!linkedProducts || !owner) return;
+        linkedProducts.forEach((product: any) => {
+            addItem({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                quantity: 1,
+                imageUrl: product.imageUrl
+            }, {
+                id: owner.id,
+                name: owner.name,
+                phone: owner.whatsapp || ''
+            });
+        });
+        haptic.vibrateSuccess();
+        toast({ title: "¡Combo añadido al carrito!", description: "Revisa tu pedido en la sección de Delivery." });
+    };
 
     if (isLoading || isUserLoading) {
         return <BenefitDetailSkeleton />;
@@ -130,6 +167,31 @@ export default function BenefitDetailPage() {
                                         <div className="flex-1">
                                             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Ubicación</p>
                                             <p className="text-sm font-bold text-foreground truncate">{serializableBenefit.location}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 && (
+                                    <div className="mt-8 flex flex-col gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <h3 className="text-sm font-black uppercase tracking-widest text-orange-500 flex items-center gap-2">
+                                                <Package className="h-4 w-4" /> Combo Exclusivo Estuclub
+                                            </h3>
+                                        </div>
+                                        <div className="flex flex-col gap-3 p-4 rounded-[1.5rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 shadow-inner">
+                                            {linkedProducts.map((p: any) => (
+                                                <div key={p.id} className="flex justify-between items-center text-sm font-bold text-foreground bg-background/50 rounded-xl p-3 shadow-sm border border-white/5">
+                                                    <span className="truncate pr-2">{p.name}</span>
+                                                    <span className="text-primary flex-shrink-0">${p.price}</span>
+                                                </div>
+                                            ))}
+                                            <Button 
+                                                variant="outline"
+                                                className="w-full h-12 mt-2 rounded-xl font-black uppercase tracking-[0.1em] text-xs border-orange-500/50 text-orange-500 hover:bg-orange-500/20 hover:text-orange-500 shadow-xl shadow-orange-500/10 transition-all active:scale-95" 
+                                                onClick={handleAddComboToCart}
+                                            >
+                                                <ShoppingBag className="h-4 w-4 mr-2" /> Canjear por Delivery
+                                            </Button>
                                         </div>
                                     </div>
                                 )}

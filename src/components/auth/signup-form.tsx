@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle, Briefcase } from 'lucide-react';
+import { KeyRound, Mail, UserPlus, Fingerprint, Phone, User as UserIcon, AtSign, VenetianMask, University, Library, AlertCircle, Briefcase, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useAuthService } from '@/firebase';
 import { doc, getDoc, setDoc, serverTimestamp, writeBatch, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
@@ -310,7 +310,7 @@ export default function SignupForm() {
                 <p className="text-[10px] font-bold text-muted-foreground/70">Completa tus datos para unirte al club.</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="firstName"
@@ -386,7 +386,7 @@ export default function SignupForm() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="dni"
@@ -528,14 +528,19 @@ export default function SignupForm() {
               </motion.div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-               <FormField
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <FormField
                   control={form.control}
                   name="birthDate"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className={labelClasses}>Nacimiento</FormLabel>
-                      <FormControl><Input type="date" {...field} className={cn(inputClasses, "pl-4 block w-full text-xs")} /></FormControl>
+                      <div className="relative group/input">
+                        <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <FormControl>
+                          <Input type="date" {...field} className={cn(inputClasses, "pr-4 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer")} />
+                        </FormControl>
+                      </div>
                       <FormMessage className="text-[10px] font-bold" />
                     </FormItem>
                   )}

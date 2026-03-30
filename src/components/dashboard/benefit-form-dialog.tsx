@@ -28,11 +28,11 @@ import {
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { benefitCategories, WhereFilter } from '@/types/data';
+import { benefitCategories, WhereFilter, Product } from '@/types/data';
 import { useToast } from '@/hooks/use-toast';
-import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat, PlusCircle } from 'lucide-react';
+import { Globe, Image as ImageIcon, Save, Award, CalendarIcon, Repeat, PlusCircle, Package } from 'lucide-react';
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, serverTimestamp, Timestamp, addDoc, query } from 'firebase/firestore';
+import { collection, serverTimestamp, Timestamp, addDoc, query, where } from 'firebase/firestore';
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -63,11 +63,13 @@ const formSchema = z.object({
   minLevel: z.coerce.number().min(0).max(10).default(1),
   targetAudience: z.enum(['all', 'level_1', 'level_2', 'level_3', 'cinco_dos']).default('all'),
   ownerId: z.string().min(1, 'Debes seleccionar un proveedor.'),
+  linkedProductIds: z.array(z.string()).optional(),
 });
 
 interface Supplier {
     id: string;
     name: string;
+    deliveryEnabled?: boolean;
 }
 
 interface BenefitFormDialogProps {
@@ -88,7 +90,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
     return query(collection(firestore, 'roles_supplier').withConverter(createConverter<Supplier>()));
   }, [firestore]);
   const { data: suppliers } = useCollection(suppliersQuery);
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -105,8 +107,20 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
       minLevel: 1,
       targetAudience: 'all',
       ownerId: '', // Default to empty, admin must select
+      linkedProductIds: [],
     },
   });
+
+  const selectedOwnerId = form.watch('ownerId');
+  const activeSupplierId = isAdmin ? selectedOwnerId : user?.uid;
+  
+  const productsQuery = useMemo(() => {
+    if (!firestore || !activeSupplierId) return null;
+    return query(collection(firestore, 'products').withConverter(createConverter<Product>()), where('supplierId', '==', activeSupplierId), where('isActive', '==', true));
+  }, [firestore, activeSupplierId]);
+  const { data: supplierProducts } = useCollection(productsQuery);
+  
+  const hasDelivery = isAdmin ? suppliers?.find(s => s.id === activeSupplierId)?.deliveryEnabled : supplierData?.deliveryEnabled;
 
   useEffect(() => {
     if (!isAdmin && user) {
@@ -145,6 +159,10 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
 
       if (!values.highlight) {
         delete dataToSave.highlight;
+      }
+
+      if (values.linkedProductIds && values.linkedProductIds.length === 0) {
+        delete dataToSave.linkedProductIds;
       }
 
       const benefitDocRef = await addDoc(benefitsRef, dataToSave);
@@ -336,6 +354,64 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         </FormItem>
                     )}
                 />
+                {hasDelivery && supplierProducts && supplierProducts.length > 0 && (
+                    <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 space-y-4">
+                        <h3 className="text-sm font-black uppercase tracking-widest text-orange-500 flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            Combo de Delivery
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-medium">Puedes vincular productos de tu menú a este beneficio. Así los usuarios podrán pedirlos directamente a su carrito.</p>
+                        <FormField
+                            control={form.control}
+                            name="linkedProductIds"
+                            render={() => (
+                                <FormItem>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                                        {supplierProducts.map((product) => (
+                                            <FormField
+                                                key={product.id}
+                                                control={form.control}
+                                                name="linkedProductIds"
+                                                render={({ field }) => {
+                                                    return (
+                                                        <FormItem
+                                                            key={product.id}
+                                                            className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border border-white/5 bg-background/50 p-3 shadow-sm hover:bg-white/5 transition-colors"
+                                                        >
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(product.id)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...(field.value || []), product.id])
+                                                                            : field.onChange(
+                                                                                field.value?.filter(
+                                                                                    (value) => value !== product.id
+                                                                                )
+                                                                            )
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <div className="space-y-1 leading-none">
+                                                                <FormLabel className="font-bold text-xs truncate max-w-[140px] block cursor-pointer">
+                                                                    {product.name}
+                                                                </FormLabel>
+                                                                <p className="text-[10px] text-primary font-black tracking-widest">
+                                                                    ${product.price}
+                                                                </p>
+                                                            </div>
+                                                        </FormItem>
+                                                    )
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                )}
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-4">
                     <h3 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
                         <Award className="h-4 w-4" />

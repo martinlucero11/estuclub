@@ -17,9 +17,10 @@ interface ProductCardProps {
     product: Product;
     onAdd?: () => void;
     variant?: 'default' | 'carousel';
+    previewMode?: boolean;
 }
 
-export function ProductCard({ product, onAdd, variant = 'default' }: ProductCardProps) {
+export function ProductCard({ product, onAdd, variant = 'default', previewMode = false }: ProductCardProps) {
     const firestore = useFirestore();
     const { addItem } = useCart();
     const { data: supplier } = useDoc<SupplierProfile>(product.supplierId ? doc(firestore, 'roles_supplier', product.supplierId) : null);
