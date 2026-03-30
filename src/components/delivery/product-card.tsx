@@ -51,10 +51,10 @@ export function ProductCard({ product, onAdd, variant = 'default' }: ProductCard
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             whileHover={{ y: -5 }}
-            className={`group relative bg-card glass glass-dark border border-white/10 rounded-[1.5rem] p-3 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ${variant === 'carousel' ? 'w-full' : ''}`}
+            className={`group relative bg-card glass glass-dark border border-white/10 rounded-2xl p-2.5 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ${variant === 'carousel' ? 'w-full' : ''}`}
         >
             {product.imageUrl && (
-                <div className="aspect-square w-full rounded-xl overflow-hidden mb-3 bg-muted relative shadow-inner">
+                <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 relative shadow-inner">
                     <Image 
                         src={optimizeImage(product.imageUrl, 400)} 
                         alt={product.name} 
@@ -69,44 +69,44 @@ export function ProductCard({ product, onAdd, variant = 'default' }: ProductCard
                 </div>
             )}
             
-            <div className="space-y-1.5 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-black text-xs leading-tight tracking-tight group-hover:text-primary transition-colors line-clamp-2">{product.name}</h4>
+            <div className="space-y-1 flex-1">
+                <div className="flex items-start justify-between gap-1.5">
+                    <h4 className="font-extrabold text-[11px] leading-tight tracking-tight group-hover:text-primary transition-colors line-clamp-2">{product.name}</h4>
                 </div>
                 
                 {/* Supplier Info (Comercio) */}
-                <div className="flex items-center gap-2 mt-1 opacity-60 group-hover:opacity-100 transition-opacity">
-                    <Avatar className="h-4 w-4 border border-primary/20">
+                <div className="flex items-center gap-1.5 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <Avatar className="h-3.5 w-3.5 border border-primary/20">
                         <AvatarImage src={supplier?.logoUrl} />
-                        <AvatarFallback className="text-[6px]">{getInitials(supplier?.name || 'S')}</AvatarFallback>
+                        <AvatarFallback className="text-[5px]">{getInitials(supplier?.name || 'S')}</AvatarFallback>
                     </Avatar>
-                    <span className="text-[9px] font-bold truncate text-muted-foreground uppercase tracking-wider">{supplier?.name || 'Cargando...'}</span>
+                    <span className="text-[8px] font-bold truncate text-muted-foreground uppercase tracking-wider">{supplier?.name || 'Cargando...'}</span>
                 </div>
 
                 <p className="text-[9px] text-muted-foreground font-medium italic line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">{product.description}</p>
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-2">
+            <div className="mt-2.5 flex items-center justify-between gap-1.5">
                 <div className="flex flex-col">
                     {product.originalPrice && product.originalPrice > product.price && (
                         <p className="text-[9px] text-muted-foreground line-through decoration-primary/40 leading-none mb-0.5">$ {product.originalPrice.toLocaleString()}</p>
                     )}
-                    <p className="font-black text-primary text-sm tracking-tighter">$ {product.price.toLocaleString()}</p>
+                    <p className="font-black text-primary text-[13px] tracking-tighter">$ {product.price.toLocaleString()}</p>
                 </div>
                 
                 <Button 
                     size="icon" 
                     variant="default"
-                    className="h-8 w-8 rounded-xl shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-110 active:scale-90" 
+                    className="h-7 w-7 rounded-lg shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-110 active:scale-90" 
                     onClick={handleAdd}
                     disabled={!product.stockAvailable}
                 >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-3.5 w-3.5" />
                 </Button>
             </div>
             
             {!product.stockAvailable && (
-                <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center rounded-[1.5rem] z-20">
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20">
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-destructive text-white px-3 py-1.5 rounded-full shadow-2xl">Sin Stock</span>
                 </div>
             )}

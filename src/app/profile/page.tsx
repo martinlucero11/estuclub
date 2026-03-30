@@ -36,6 +36,8 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getAvatarUrl, cn } from '@/lib/utils';
+import { StudentVerificationCard } from '@/components/profile/student-verification-card';
+import { Timestamp } from 'firebase/firestore';
 
 const UserQRCodeDialog = dynamic(() => import('@/components/profile/user-qr-code-dialog'), { ssr: false });
 
@@ -58,6 +60,10 @@ interface UserProfile {
     useAvatar?: boolean;
     points: number;
     id: string;
+    isStudent: boolean;
+    studentStatus?: 'pending' | 'submitted' | 'verified';
+    studentCertificateUrl?: string;
+    certificateDeadline?: Timestamp;
 }
 
 function ProfileSkeleton() {
@@ -281,6 +287,8 @@ export default function ProfilePage() {
                     <LevelProgress points={userProfile.points} />
                     <UserStats points={userProfile.points} rank={rank} isLoading={isRankLoading} />
                 </div>
+
+                <StudentVerificationCard userProfile={userProfile} />
 
                 <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
                     <CardHeader className="pb-2">

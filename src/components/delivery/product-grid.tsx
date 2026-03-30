@@ -41,7 +41,8 @@ export function ProductGrid({ supplierId, supplierName, supplierPhone }: Product
                             productId: product.id,
                             name: product.name,
                             price: product.price,
-                            quantity: 1
+                            quantity: 1,
+                            imageUrl: product.imageUrl
                         }, { id: supplierId, name: supplierName, phone: supplierPhone });
                         toast({ title: "Añadido al carrito", description: product.name });
                     }}

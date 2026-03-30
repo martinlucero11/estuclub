@@ -8,13 +8,25 @@ import { motion } from 'framer-motion';
 import { Ticket, Truck } from 'lucide-react';
 import { haptic } from '@/lib/haptics';
 
+import { useUser } from '@/firebase';
+
 export function ModeToggle() {
     const router = useRouter();
     const pathname = usePathname();
+    const { userData, roles } = useUser();
     
     // Determine current mode based on path
     const isDelivery = pathname.startsWith('/delivery');
     const isBenefits = pathname.startsWith('/benefits') || pathname === '/';
+
+    // Hide toggle if user is NOT a student AND NOT an admin
+    // This ensures non-students only experience the Delivery home
+    const isStudent = userData?.isStudent || false;
+    const isAdmin = roles.includes('admin');
+
+    if (!isStudent && !isAdmin) {
+        return null;
+    }
 
     const handleToggle = (mode: 'perks' | 'delivery') => {
         haptic.vibrateSubtle();

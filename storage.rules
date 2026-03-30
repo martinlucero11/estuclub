@@ -10,7 +10,7 @@ service firebase.storage {
 
     function isAdmin() {
       return request.auth != null &&
-        exists(/databases/(default)/documents/roles_admin/$(request.auth.uid));
+        firestore.exists(/databases/(default)/documents/roles_admin/$(request.auth.uid));
     }
 
     // More specific rule for supplier assets.

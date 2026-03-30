@@ -48,7 +48,7 @@ export default function PanelCluberPage() {
     },
     {
         title: "Personalización App",
-        items: dashboardNavItems.filter(i => ['Diseño de Inicio', 'Gestión de Banners', 'Gestión de Categorías', 'Mantenimiento Usuarios'].includes(i.title))
+        items: dashboardNavItems.filter(i => ['Diseño de Inicio', 'Gestión de Banners', 'Gestión de Categorías', 'Mantenimiento Usuarios', 'Herramientas del Sistema'].includes(i.title))
     }
   ];
 

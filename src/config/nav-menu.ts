@@ -233,6 +233,12 @@ export const navConfig: NavConfig = {
                 icon: AlertCircle,
                 role: ["admin"],
             },
+            {
+                title: "Herramientas del Sistema",
+                href: "/panel-cluber/admin-tools",
+                icon: Settings,
+                role: ["admin"],
+            },
         ]
     }
   ],

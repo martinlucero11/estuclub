@@ -1,11 +1,11 @@
 'use client';
 
 import React, { createContext, ReactNode, useMemo, useState, useEffect } from 'react';
-import { FirebaseApp, getApps, getApp, initializeApp } from 'firebase/app';
-import { Firestore, initializeFirestore, getFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged, getAuth } from 'firebase/auth';
-import { FirebaseStorage, getStorage } from 'firebase/storage';
-import { firebaseConfig } from '@/firebase/config';
+import { FirebaseApp } from 'firebase/app';
+import { Firestore, doc, getDoc } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { FirebaseStorage } from 'firebase/storage';
+import { getFirebaseServices } from '@/firebase/services';
 import type { UserProfile } from '@/types/data';
 
 // --- TYPE DEFINITIONS ---
@@ -44,6 +44,8 @@ export interface FirebaseContextState {
   requestLocation: () => void;
 }
 
+// Using unified singleton from services.ts
+
 // --- REACT CONTEXT ---
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
@@ -51,30 +53,7 @@ export const FirebaseContext = createContext<FirebaseContextState | undefined>(u
 // --- MAIN PROVIDER COMPONENT ---
 
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const services = useMemo(() => {
-    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-    
-    // Enable persistent local cache for offline support
-    // initializeFirestore throws if already initialized (hot reload), fallback to getFirestore
-    let firestore: Firestore;
-    try {
-      firestore = initializeFirestore(app, { 
-        localCache: persistentLocalCache({
-          tabManager: persistentMultipleTabManager(),
-          cacheSizeBytes: 100 * 1024 * 1024 // Increase cache to 100MB for better offline experience
-        }) 
-      });
-    } catch {
-      firestore = getFirestore(app);
-    }
-    
-    return {
-      firebaseApp: app,
-      firestore,
-      auth: getAuth(app),
-      storage: getStorage(app),
-    };
-  }, []);
+  const services = useMemo(() => getFirebaseServices(), []);
 
   const [authState, setAuthState] = useState<AuthState>({
     user: null,

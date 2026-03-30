@@ -355,17 +355,17 @@ const ProductWithSupplierCard = ({ product }: { product: Product }) => {
             onClick={() => haptic.vibrateSubtle()}
             className="group block h-full"
         >
-            <div className="flex flex-col h-full bg-card rounded-[2.5rem] overflow-hidden shadow-premium border border-primary/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:glass-glow-pink">
+            <div className="flex flex-col h-full bg-card rounded-[1.75rem] overflow-hidden shadow-premium border border-primary/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl hover:glass-glow-pink">
                 {/* Image Section */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <div className="relative aspect-[2/1] w-full overflow-hidden">
                     <Image 
                         src={optimizeImage(product.imageUrl || '', 800)}
                         alt={product.name}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute top-4 left-4 z-10">
-                        <span className="bg-emerald-400/90 text-emerald-950 text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-white/20 uppercase tracking-wider">
+                    <div className="absolute top-3 left-3 z-10">
+                        <span className="bg-emerald-400/90 text-emerald-950 text-[9px] font-black px-2 py-1 rounded-lg flex shadow-lg backdrop-blur-md border border-white/20 uppercase tracking-wider w-max">
                             Mismo precio que en local
                         </span>
                     </div>
@@ -374,17 +374,17 @@ const ProductWithSupplierCard = ({ product }: { product: Product }) => {
                     <Button 
                         size="icon" 
                         variant="default"
-                        className="absolute bottom-4 right-4 h-12 w-12 rounded-2xl shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 z-20 group/btn bg-primary text-white"
+                        className="absolute bottom-3 right-3 h-10 w-10 rounded-xl shadow-2xl transition-all duration-300 hover:scale-110 active:scale-90 z-20 group/btn bg-primary text-white"
                         onClick={handleAddToCart}
                     >
-                        <Plus className="h-6 w-6 group-hover/btn:rotate-90 transition-transform duration-300" />
+                        <Plus className="h-5 w-5 group-hover/btn:rotate-90 transition-transform duration-300" />
                     </Button>
                 </div>
 
                 {/* Content Section */}
-                <div className="p-5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/30">
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
+                <div className="p-3.5 flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/30">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-11 w-11 border border-primary/20 shadow-xl flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
                             <AvatarImage src={supplier?.logoUrl} />
                             <AvatarFallback className="bg-primary/10 text-primary font-bold">
                                 {getInitials(supplier?.name || 'S')}
@@ -392,36 +392,36 @@ const ProductWithSupplierCard = ({ product }: { product: Product }) => {
                         </Avatar>
                         
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                                <h4 className="font-black text-lg tracking-tight truncate group-hover:text-primary transition-colors">
+                            <div className="flex items-center justify-between gap-1.5">
+                                <h4 className="font-black text-base tracking-tight truncate group-hover:text-primary transition-colors">
                                     {supplier?.name || 'EstuCluber'}
                                 </h4>
                                 {supplier?.avgRating && (
-                                    <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-600 px-2 py-1 rounded-lg">
-                                        <Star className="h-2.5 w-2.5 fill-current" />
-                                        <span className="text-[10px] font-black">{supplier.avgRating.toFixed(1)}</span>
+                                    <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-600 px-1.5 py-0.5 rounded-md">
+                                        <Star className="h-2 w-2 fill-current" />
+                                        <span className="text-[9px] font-black">{supplier.avgRating.toFixed(1)}</span>
                                     </div>
                                 )}
                             </div>
                             
-                            <div className="flex items-center gap-3 mt-1 text-muted-foreground">
-                                <div className="flex items-center gap-1 text-[11px] font-bold">
-                                    <Clock className="h-3 w-3 text-primary/60" />
+                            <div className="flex items-center gap-2 mt-0.5 text-muted-foreground">
+                                <div className="flex items-center gap-1 text-[10px] font-bold">
+                                    <Clock className="h-2.5 w-2.5 text-primary/60" />
                                     <span>30-50 min</span>
                                 </div>
-                                <span className="text-foreground/20 text-xs">•</span>
-                                <div className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap">
-                                    <Truck className="h-3 w-3 text-primary/60" />
+                                <span className="text-foreground/20 text-[10px]">•</span>
+                                <div className="flex items-center gap-1 text-[10px] font-bold whitespace-nowrap">
+                                    <Truck className="h-2.5 w-2.5 text-primary/60" />
                                     <span>$ {supplier?.deliveryCost || 'Envío'}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="mt-4 pt-4 border-t border-primary/5">
+                    <div className="mt-3 pt-3 border-t border-primary/5">
                         <div className="flex items-center justify-between gap-2">
-                            <p className="text-sm font-bold opacity-60 line-clamp-1">{product.name}</p>
-                            <p className="font-black text-primary">$ {product.price.toLocaleString()}</p>
+                            <p className="text-xs font-bold opacity-60 line-clamp-1">{product.name}</p>
+                            <p className="font-black text-primary text-sm">$ {product.price.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -436,10 +436,10 @@ export function ProductsWithSupplierCarousel({ items: products }: { items: any[]
     );
 
     return (
-        <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
-            <CarouselContent className="py-10 -my-10">
+        <Carousel opts={{ align: "start" }} className="w-full py-8 -my-8">
+            <CarouselContent className="py-8 -my-8">
                 {products.map((item, index) => (
-                    <CarouselItem key={item.id} className="basis-[85%] sm:basis-1/2 md:basis-[45%] pl-4">
+                    <CarouselItem key={item.id} className="basis-[75%] sm:basis-[45%] md:basis-[35%] pl-4">
                         <ProductWithSupplierCard product={item} />
                     </CarouselItem>
                 ))}

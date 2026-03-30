@@ -14,6 +14,7 @@ import { Label } from '../ui/label';
 import type { SupplierProfile } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
+import { AdminSupplierImageModal } from './admin-supplier-image-modal';
 
 const typeIcons = {
     Institucion: Building,
@@ -108,7 +109,8 @@ export default function SupplierList() {
                                     <p className="font-semibold text-base">{supplier.name}</p>
                                 </Link>
                             </Button>
-                            <p className="text-sm text-muted-foreground">{supplier.email}</p>
+                            <p className="text-sm text-muted-foreground mb-2">{supplier.email}</p>
+                            <AdminSupplierImageModal supplier={supplier} />
                         </div>
                         <div className="flex flex-col space-y-2 items-end">
                             <div className="flex items-center space-x-2">

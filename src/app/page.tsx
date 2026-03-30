@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import { ModeToggle } from '@/components/layout/mode-toggle';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
+import { useUser, useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { EmptyState } from '@/components/ui/empty-state';
 import { HomeSection } from '@/types/data';
@@ -36,11 +36,17 @@ function HomeSectionsSkeleton() {
 
 function HomeContent() {
     const firestore = useFirestore();
+    const { userData, roles } = useUser();
+    
+    // Default to false if not loaded yet to avoid flickering a student-only view to guests
+    const isStudent = userData?.isStudent || false;
+    const isAdmin = roles.includes('admin');
+    const targetBoard = (isStudent || isAdmin) ? 'perks' : 'delivery';
+
     const sectionsQuery = useMemo(() => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()),
-            where('isActive', '==', true),
             orderBy('order', 'asc')
         );
     }, [firestore]);
@@ -49,9 +55,9 @@ function HomeContent() {
 
     const sections = useMemo(() => {
         if (!allSections) return [];
-        // Default to 'perks' if targetBoard is missing (for legacy sections)
-        return allSections.filter(s => (s.targetBoard || 'perks') === 'perks');
-    }, [allSections]);
+        // Filter sections based on the active "world"
+        return allSections.filter(s => s.isActive && (s.targetBoard || 'perks') === targetBoard);
+    }, [allSections, targetBoard]);
 
     if (isLoading) {
         return <HomeSectionsSkeleton />;

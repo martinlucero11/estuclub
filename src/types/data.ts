@@ -52,6 +52,14 @@ export interface UserProfile {
       lat?: number;
       lng?: number;
     };
+    // Student Info
+    isStudent: boolean;
+    studentStatus?: 'pending' | 'submitted' | 'verified';
+    certificateDeadline?: Timestamp;
+    institution: string;
+    educationLevel: string;
+    career: string;
+    studentCertificateUrl: string;
     createdAt: Timestamp;
 }
 

@@ -48,6 +48,7 @@ const formSchema = z.object({
   deliveryCostType: z.enum(['free', 'customer', 'to_be_agreed']).default('free'),
   minOrderAmount: z.number().optional(),
   deliveryCategory: z.string().optional(),
+  coverUrl: z.string().url('URL de imagen de portada no válida').optional().or(z.literal('')),
 });
 
 function slugify(text: string) {
@@ -78,6 +79,11 @@ export default function EditSupplierProfileForm() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  // States and refs for COVER upload
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
   const supplierRef = useMemo(() => user ? doc(firestore, 'roles_supplier', user.uid) : null, [user, firestore]);
   const { data: supplierProfile, isLoading } = useDoc<SupplierProfile>(supplierRef);
 
@@ -95,6 +101,7 @@ export default function EditSupplierProfileForm() {
       deliveryCostType: 'free',
       minOrderAmount: 0,
       deliveryCategory: '',
+      coverUrl: '',
     },
   });
 
@@ -117,16 +124,17 @@ export default function EditSupplierProfileForm() {
             deliveryCostType: supplierProfile.deliveryCostType || 'free',
             minOrderAmount: supplierProfile.minOrderAmount || 0,
             deliveryCategory: supplierProfile.deliveryCategory || '',
+            coverUrl: supplierProfile.coverUrl || '',
         });
     }
   }, [supplierProfile, form]);
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    path: 'logo',
+    path: 'logo' | 'cover',
     setUploading: (isUploading: boolean) => void,
     setPreview: (url: string | null) => void,
-    fieldName: 'logoUrl'
+    fieldName: 'logoUrl' | 'coverUrl'
   ) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -251,6 +259,51 @@ export default function EditSupplierProfileForm() {
                 <Camera className="mr-2 h-4 w-4" />
                 Subir Logo
             </Button>
+        </FormItem>
+
+        <FormItem className="flex flex-col items-center">
+            <FormLabel>Imagen de Portada (Delivery Card)</FormLabel>
+            <div className="relative w-full aspect-[16/10] max-w-md overflow-hidden rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-muted/50 transition-all hover:border-primary/40 group">
+                {(isUploadingCover) && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
+                        <Loader2 className="h-10 w-10 text-white animate-spin" />
+                    </div>
+                )}
+                {coverPreview || form.watch('coverUrl') ? (
+                    <img 
+                        src={coverPreview || form.watch('coverUrl') || ''} 
+                        alt="Portada" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                    />
+                ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+                        <Camera className="h-12 w-12 opacity-20" />
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-50">Vista previa de tarjeta</span>
+                    </div>
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Button 
+                        type="button" 
+                        variant="secondary" 
+                        onClick={() => coverInputRef.current?.click()} 
+                        disabled={isUploadingCover}
+                        className="rounded-full font-black uppercase tracking-widest text-[10px]"
+                    >
+                        Cambiar Imagen
+                    </Button>
+                </div>
+            </div>
+            <Input 
+                type="file" 
+                className="hidden"
+                ref={coverInputRef}
+                onChange={(e) => handleImageUpload(e, 'cover', setIsUploadingCover, setCoverPreview, 'coverUrl')}
+                accept="image/png, image/jpeg, image/webp"
+                disabled={isUploadingCover}
+            />
+            <p className="text-[10px] text-muted-foreground italic text-center max-w-sm mt-2">
+                Esta es la imagen de "fondo" que se verá cuando los alumnos busquen tu local en la sección de Delivery. Recomendamos formato 16:10.
+            </p>
         </FormItem>
         
         <FormField

@@ -18,9 +18,8 @@ export function PendingReviews() {
     if (!user) return null;
     return query(
       collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
-      where('status', '==', 'used'),
       orderBy('usedAt', 'desc'),
-      limit(5)
+      limit(20)
     );
   }, [user?.uid, firestore]);
 
@@ -28,8 +27,8 @@ export function PendingReviews() {
 
   const pendingReview = useMemo(() => {
     if (!redemptions) return null;
-    // Find the first one that doesn't have a review and hasn't been closed in this session
-    return redemptions.find(r => !r.hasReview && !closedIds.includes(r.id));
+    // Find the first one that doesn't have a review, was used, and hasn't been closed in this session
+    return redemptions.find(r => r.status === 'used' && !r.hasReview && !closedIds.includes(r.id));
   }, [redemptions, closedIds]);
 
   if (isLoading) {

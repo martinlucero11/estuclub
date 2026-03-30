@@ -112,8 +112,12 @@ function DeliveryList() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60 z-10" />
                                     
                                     <div className="aspect-[16/10] overflow-hidden relative">
-                                        {supplier.logoUrl ? (
-                                            <img src={supplier.logoUrl} alt={supplier.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        {(supplier.coverUrl || supplier.logoUrl) ? (
+                                            <img 
+                                                src={supplier.coverUrl || supplier.logoUrl} 
+                                                alt={supplier.name} 
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                            />
                                         ) : (
                                             <div className="w-full h-full bg-muted flex items-center justify-center">
                                                 <ShoppingBag className="h-12 w-12 text-muted-foreground/20" />
@@ -179,15 +183,17 @@ const TruckIcon = ({ className }: { className?: string }) => (
     </svg>
 );
 
+import dynamic from 'next/dynamic';
+const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
+const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
+
 export default function DeliveryLandingPage() {
     return (
         <MainLayout>
-            <BackButton href="/" />
-            <div className="flex-1 space-y-2 p-4 md:p-12 max-w-7xl mx-auto">
-                <div className="flex justify-end pr-4 md:pr-0">
-                    <ModeToggle />
-                </div>
-                
+            <div className="mx-auto w-full px-4 pt-4">
+                <ModeToggle />
+                <WelcomeMessage />
+                <PendingReviews />
                 <Suspense fallback={<div className="space-y-8"><Skeleton className="h-48 w-full rounded-3xl" /></div>}>
                     <DeliveryHomeSections />
                 </Suspense>
@@ -205,7 +211,6 @@ function DeliveryHomeSections() {
         if (!firestore) return null;
         return query(
             collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()),
-            where('isActive', '==', true),
             orderBy('order', 'asc')
         );
     }, [firestore]);
@@ -214,7 +219,7 @@ function DeliveryHomeSections() {
 
     const sections = useMemo(() => {
         if (!allSections) return [];
-        return allSections.filter(s => s.targetBoard === 'delivery');
+        return allSections.filter(s => s.isActive && s.targetBoard === 'delivery');
     }, [allSections]);
 
     if (isLoading) return null;

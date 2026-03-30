@@ -96,24 +96,26 @@ export function CartSheet({ children }: CartSheetProps) {
                                             <p className="text-primary font-bold text-xs">$ {(item.price * item.quantity).toLocaleString()}</p>
                                         </div>
                                         
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3 bg-white/5 rounded-xl p-1 px-2 border border-white/5">
+                                        <div className="flex items-center justify-between mt-2">
+                                            <div className="flex items-center gap-1">
                                                 <button 
                                                     onClick={() => {
                                                         haptic.vibrateSubtle();
                                                         updateQuantity(item.productId, item.quantity - 1);
                                                     }}
-                                                    className="p-1 hover:text-primary transition-colors"
+                                                    className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary/10 hover:bg-secondary/20 hover:text-primary transition-all active:scale-95 border border-primary/10"
                                                 >
                                                     <Minus className="h-3 w-3" />
                                                 </button>
-                                                <span className="text-xs font-black min-w-[1rem] text-center">{item.quantity}</span>
+                                                <div className="w-8 h-7 flex items-center justify-center text-sm font-black text-center bg-transparent">
+                                                    {item.quantity}
+                                                </div>
                                                 <button 
                                                     onClick={() => {
                                                         haptic.vibrateSubtle();
                                                         updateQuantity(item.productId, item.quantity + 1);
                                                     }}
-                                                    className="p-1 hover:text-primary transition-colors"
+                                                    className="h-7 w-7 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 border border-primary/20"
                                                 >
                                                     <Plus className="h-3 w-3" />
                                                 </button>

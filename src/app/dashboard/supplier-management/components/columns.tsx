@@ -6,8 +6,9 @@ import { SupplierProfile } from "@/types/data";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, MoreHorizontal, Trash2, Edit } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Trash2, Edit, ImageIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { AdminSupplierImageModal } from "@/components/admin/admin-supplier-image-modal";
 
 type ToggleHandler = (
   supplierId: string, 
@@ -200,8 +201,14 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
                 <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => onEdit(supplier)}>
                     <Edit className="mr-2 h-4 w-4" />
-                    Editar
+                    Editar Perfil
                 </DropdownMenuItem>
+                <AdminSupplierImageModal supplier={supplier}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                        Editar Imágenes
+                    </DropdownMenuItem>
+                </AdminSupplierImageModal>
                 <DropdownMenuItem onClick={() => onDelete(supplier.id)} className="text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" />
                     Eliminar
