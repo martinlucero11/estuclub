@@ -28,6 +28,8 @@ import { MapPin } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 
+const PendingReviewTrigger = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
+
 const LeafletMap = dynamic(() => import('@/components/maps/leaflet-map'), { 
     ssr: false,
     loading: () => <BrandSkeleton className="h-[300px] w-full rounded-[2rem]" />
@@ -273,7 +275,8 @@ function CluberProfileContent() {
                         )}
                     </TabsContent>
 
-                    <TabsContent value="reviews" className="animate-in fade-in-50 duration-500 max-w-2xl mx-auto">
+                    <TabsContent value="reviews" className="animate-in fade-in-50 duration-500 max-w-2xl mx-auto space-y-8">
+                        <PendingReviewTrigger supplierId={supplier.id} />
                         <ReviewList supplierId={supplier.id} />
                     </TabsContent>
                 </Tabs>

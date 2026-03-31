@@ -193,7 +193,6 @@ export default function DeliveryLandingPage() {
             <div className="mx-auto w-full px-4 pt-4">
                 <ModeToggle />
                 <WelcomeMessage />
-                <PendingReviews />
                 <Suspense fallback={<div className="space-y-8"><Skeleton className="h-48 w-full rounded-3xl" /></div>}>
                     <DeliveryHomeSections />
                 </Suspense>

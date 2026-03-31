@@ -113,7 +113,6 @@ export default function HomePage() {
             <div className="mx-auto w-full px-4 pt-4">
                 <ModeToggle />
                 <WelcomeMessage />
-                <PendingReviews />
                 <Suspense fallback={<HomeSectionsSkeleton />}>
                     <HomeContent />
                 </Suspense>

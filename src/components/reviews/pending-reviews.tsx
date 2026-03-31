@@ -9,19 +9,32 @@ import type { BenefitRedemption } from '@/types/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquarePlus } from 'lucide-react';
 
-export function PendingReviews() {
+interface PendingReviewsProps {
+  supplierId?: string;
+}
+
+export function PendingReviews({ supplierId }: PendingReviewsProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const [closedIds, setClosedIds] = useState<string[]>([]);
 
   const pendingQuery = useMemo(() => {
     if (!user) return null;
-    return query(
+    let q = query(
       collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
-      orderBy('usedAt', 'desc'),
-      limit(20)
+      orderBy('usedAt', 'desc')
     );
-  }, [user?.uid, firestore]);
+    
+    if (supplierId) {
+        q = query(
+            collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
+            where('supplierId', '==', supplierId),
+            orderBy('usedAt', 'desc')
+        );
+    }
+    
+    return q;
+  }, [user?.uid, firestore, supplierId]);
 
   const { data: redemptions, isLoading } = useCollection(pendingQuery);
 
