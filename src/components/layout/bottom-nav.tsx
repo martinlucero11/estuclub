@@ -32,7 +32,7 @@ export function BottomNav() {
   // Define Navigation Sets
   const benefitsNav = [
     { href: '/', label: 'Inicio', icon: Home },
-    { href: '/perks', label: 'Beneficios', icon: Ticket },
+    { href: '/benefits', label: 'Beneficios', icon: Ticket },
     benefitsCenterBtn,
     { href: '/turnos', label: 'Turnos', icon: CalendarDays },
     { href: '/profile', label: 'Perfil', icon: User },

@@ -150,9 +150,9 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       // Using simpler supplier name fallback if possible
       const supplierName = perk.supplierName || 'Proveedor';
       
-      const redemptionIdToSet = doc(collection(firestore, 'perkRedemptions')).id;
-      const rootRedemptionRef = doc(firestore, "perkRedemptions", redemptionIdToSet);
-      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_perks', redemptionIdToSet);
+      const redemptionIdToSet = doc(collection(firestore, 'benefitRedemptions')).id;
+      const rootRedemptionRef = doc(firestore, "benefitRedemptions", redemptionIdToSet);
+      const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionIdToSet);
       
       const qrCodeValue = JSON.stringify({ redemptionId: redemptionIdToSet });
       
