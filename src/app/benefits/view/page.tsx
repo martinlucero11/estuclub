@@ -57,17 +57,23 @@ export default function BenefitDetailPage() {
     const { toast } = useToast();
 
     const handleAddComboToCart = () => {
-        if (!linkedProducts || !owner) return;
+        if (!linkedProducts || linkedProducts.length === 0) {
+            toast({ title: "Error", description: "No hay productos vinculados." });
+            return;
+        }
+
+        const fallbackSupplierId = benefit?.ownerId || linkedProducts[0]?.supplierId || 'unknown';
+
         linkedProducts.forEach((product: any) => {
-            let finalPrice = product.price;
-            const isSameSupplier = benefit?.ownerId === product.supplierId;
+            let finalPrice = Number(product.price);
+            const isSameSupplier = String(benefit?.ownerId) === String(product.supplierId);
 
             if (isSameSupplier) {
-                if (benefit?.discountPercentage && benefit.discountPercentage > 0) {
-                    finalPrice = finalPrice * (1 - benefit.discountPercentage / 100);
+                if (benefit?.discountPercentage && Number(benefit.discountPercentage) > 0) {
+                    finalPrice = finalPrice * (1 - Number(benefit.discountPercentage) / 100);
                 }
-                if (benefit?.discountAmount && benefit.discountAmount > 0) {
-                    finalPrice = Math.max(0, finalPrice - benefit.discountAmount);
+                if (benefit?.discountAmount && Number(benefit.discountAmount) > 0) {
+                    finalPrice = Math.max(0, finalPrice - Number(benefit.discountAmount));
                 }
                 finalPrice = Math.round(finalPrice);
             }
@@ -79,9 +85,9 @@ export default function BenefitDetailPage() {
                 quantity: 1,
                 imageUrl: product.imageUrl
             }, {
-                id: owner.id,
-                name: owner.name,
-                phone: owner.whatsapp || ''
+                id: owner?.id || fallbackSupplierId,
+                name: owner?.name || benefit?.supplierName || 'Comercio',
+                phone: owner?.whatsappContact || owner?.whatsapp || ''
             });
         });
         haptic.vibrateSuccess();
@@ -193,15 +199,15 @@ export default function BenefitDetailPage() {
                                         </div>
                                         <div className="flex flex-col gap-3 p-4 rounded-[1.5rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 shadow-inner">
                                             {linkedProducts.map((p: any) => {
-                                                let finalPrice = p.price;
-                                                const isSameSupplier = serializableBenefit.ownerId === p.supplierId;
+                                                let finalPrice = Number(p.price);
+                                                const isSameSupplier = String(serializableBenefit.ownerId) === String(p.supplierId);
 
                                                 if (isSameSupplier) {
-                                                    if (serializableBenefit.discountPercentage && serializableBenefit.discountPercentage > 0) {
-                                                        finalPrice = finalPrice * (1 - serializableBenefit.discountPercentage / 100);
+                                                    if (serializableBenefit.discountPercentage && Number(serializableBenefit.discountPercentage) > 0) {
+                                                        finalPrice = finalPrice * (1 - Number(serializableBenefit.discountPercentage) / 100);
                                                     }
-                                                    if (serializableBenefit.discountAmount && serializableBenefit.discountAmount > 0) {
-                                                        finalPrice = Math.max(0, finalPrice - serializableBenefit.discountAmount);
+                                                    if (serializableBenefit.discountAmount && Number(serializableBenefit.discountAmount) > 0) {
+                                                        finalPrice = Math.max(0, finalPrice - Number(serializableBenefit.discountAmount));
                                                     }
                                                     finalPrice = Math.round(finalPrice);
                                                 }
