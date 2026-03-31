@@ -1,4 +1,5 @@
 'use client';
+// Estuclub Premium Build: 2026-03-31 (v2.0.1)
 
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
