@@ -145,7 +145,8 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
         }
     };
 
-    return         <Dialog open={open} onOpenChange={onOpenChange}>
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[450px] bg-white border-slate-100 shadow-[0_30px_90px_rgba(0,0,0,0.1)] rounded-[3.5rem] overflow-hidden p-0 selection:bg-pink-100">
                 <DialogHeader className="p-10 pb-2 flex flex-col gap-6">
                     <div className="flex items-center gap-5">
