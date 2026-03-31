@@ -363,7 +363,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         </FormItem>
                     )}
                 />
-                {hasDelivery && supplierProducts && supplierProducts.length > 0 && (
+                {supplierProducts && supplierProducts.length > 0 && (
                     <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-orange-500 flex items-center gap-2">
                             <Package className="h-4 w-4" />
