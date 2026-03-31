@@ -12,6 +12,7 @@ import { useFirestore, useDoc } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCart } from '@/context/cart-context';
+import Link from 'next/link';
 
 interface ProductCardProps {
     product: Product;
@@ -48,13 +49,14 @@ export function ProductCard({ product, onAdd, variant = 'default', previewMode =
     };
 
     return (
-        <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ y: -5 }}
-            className={`group relative bg-card glass glass-dark border border-white/10 rounded-2xl p-2.5 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 ${variant === 'carousel' ? 'w-full' : ''}`}
-        >
-            {product.imageUrl && (
+        <Link href={`/delivery/producto/${product.id}`} className={`block h-full group ${variant === 'carousel' ? 'w-full' : ''}`}>
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                whileHover={{ y: -5 }}
+                className="relative bg-card glass glass-dark border border-white/10 rounded-2xl p-2.5 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
+            >
+                {product.imageUrl && (
                 <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 relative shadow-inner">
                     <Image 
                         src={optimizeImage(product.imageUrl, 400)} 
@@ -107,10 +109,11 @@ export function ProductCard({ product, onAdd, variant = 'default', previewMode =
             </div>
             
             {!product.stockAvailable && (
-                <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20">
+                <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center rounded-2xl z-20 pointer-events-none">
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] bg-destructive text-white px-3 py-1.5 rounded-full shadow-2xl">Sin Stock</span>
                 </div>
             )}
-        </motion.div>
+            </motion.div>
+        </Link>
     );
 }
