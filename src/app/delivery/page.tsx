@@ -187,17 +187,63 @@ import dynamic from 'next/dynamic';
 const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
 const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
 
-export default function DeliveryLandingPage() {
+import { ChevronLeft } from 'lucide-react';
+
+function DeliveryPageContent() {
+    const searchParams = useSearchParams();
+    const categoryFilter = searchParams.get('category');
+    const router = useRouter();
+
     return (
         <MainLayout>
             <div className="mx-auto w-full px-4 pt-4">
-                <ModeToggle />
-                <WelcomeMessage />
+                <div className="flex items-center justify-between mb-4">
+                    <ModeToggle />
+                    {categoryFilter && (
+                        <Button 
+                            variant="secondary" 
+                            size="sm" 
+                            onClick={() => router.push('/delivery')}
+                            className="font-black text-[10px] uppercase tracking-[0.2em] text-primary gap-2 h-10 px-6 rounded-2xl animate-in slide-in-from-right-4 duration-500 shadow-premium"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            Volver al Inicio
+                        </Button>
+                    )}
+                </div>
+
+                {categoryFilter ? (
+                  <div className="mb-10 space-y-2 animate-in fade-in slide-in-from-left-4 duration-700">
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase italic px-1">
+                      {categoryFilter}
+                    </h1>
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-1 opacity-60">
+                      Explorando locales en esta categoría
+                    </p>
+                  </div>
+                ) : (
+                  <WelcomeMessage />
+                )}
+                
                 <Suspense fallback={<div className="space-y-8"><Skeleton className="h-48 w-full rounded-3xl" /></div>}>
-                    <DeliveryHomeSections />
+                    {categoryFilter ? (
+                        <div className="py-4">
+                            <DeliveryList />
+                        </div>
+                    ) : (
+                        <DeliveryHomeSections />
+                    )}
                 </Suspense>
             </div>
         </MainLayout>
+    );
+}
+
+export default function DeliveryLandingPage() {
+    return (
+        <Suspense fallback={<DeliveryListSkeleton />}>
+            <DeliveryPageContent />
+        </Suspense>
     );
 }
 
