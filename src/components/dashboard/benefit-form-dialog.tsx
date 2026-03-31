@@ -64,6 +64,8 @@ const formSchema = z.object({
   targetAudience: z.enum(['all', 'level_1', 'level_2', 'level_3', 'cinco_dos']).default('all'),
   ownerId: z.string().min(1, 'Debes seleccionar un proveedor.'),
   linkedProductIds: z.array(z.string()).optional(),
+  discountAmount: z.coerce.number().min(0, 'El descuento debe ser positivo.').optional(),
+  discountPercentage: z.coerce.number().min(0, 'El porcentaje debe ser mayor o igual a 0.').max(100, 'El porcentaje no puede ser mayor a 100.').optional(),
 });
 
 interface Supplier {
@@ -163,6 +165,13 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
 
       if (values.linkedProductIds && values.linkedProductIds.length === 0) {
         delete dataToSave.linkedProductIds;
+      }
+
+      if (!values.discountAmount) {
+        delete dataToSave.discountAmount;
+      }
+      if (!values.discountPercentage) {
+        delete dataToSave.discountPercentage;
       }
 
       const benefitDocRef = await addDoc(benefitsRef, dataToSave);
@@ -478,6 +487,42 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         </FormItem>
                     )}
                 />
+                
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 p-4 rounded-2xl bg-secondary/20 border border-secondary/30">
+                    <FormField
+                        control={form.control}
+                        name="discountAmount"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Descuento Fijo (en pesos $)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="Ej: 500" {...field} value={field.value || ''} />
+                            </FormControl>
+                            <FormDescription>
+                                Opcional. Útil si el beneficio es un descuento de monto fijo.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="discountPercentage"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Porcentaje de Descuento (%)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="Ej: 20" {...field} value={field.value || ''} min={0} max={100} />
+                            </FormControl>
+                            <FormDescription>
+                                Opcional. Útil si el beneficio es un porcentaje de descuento.
+                            </FormDescription>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     <FormField
                         control={form.control}

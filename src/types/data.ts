@@ -156,6 +156,8 @@ export interface Benefit {
   isExclusive?: boolean;
   targetAudience?: 'all' | 'level_1' | 'level_2' | 'level_3' | 'cinco_dos';
   linkedProductIds?: string[]; // IDs of delivery products this benefit applies to
+  discountAmount?: number; // Optional discount amount in currency
+  discountPercentage?: number; // Optional percentage discount
   [key: string]: any;
 }
 

@@ -55,7 +55,7 @@ export default function PerkCard({ perk, className, variant = 'grid', priority =
     <div className={cn(
       "group relative flex w-full flex-col justify-end overflow-hidden rounded-[2.5rem] text-white transition-all duration-700 shadow-premium border border-white/5",
       !isLocked ? "hover:shadow-2xl active:scale-[0.98] hover:border-primary/30 hover:shadow-primary/10" : "cursor-not-allowed",
-      variant === 'grid' ? 'aspect-[4/5]' : 'aspect-square h-48',
+      variant === 'grid' ? 'aspect-[4/5]' : 'h-[260px] w-full sm:h-[280px]',
       className
     )}>
         <Image

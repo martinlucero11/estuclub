@@ -59,10 +59,23 @@ export default function BenefitDetailPage() {
     const handleAddComboToCart = () => {
         if (!linkedProducts || !owner) return;
         linkedProducts.forEach((product: any) => {
+            let finalPrice = product.price;
+            const isSameSupplier = benefit?.ownerId === product.supplierId;
+
+            if (isSameSupplier) {
+                if (benefit?.discountPercentage && benefit.discountPercentage > 0) {
+                    finalPrice = finalPrice * (1 - benefit.discountPercentage / 100);
+                }
+                if (benefit?.discountAmount && benefit.discountAmount > 0) {
+                    finalPrice = Math.max(0, finalPrice - benefit.discountAmount);
+                }
+                finalPrice = Math.round(finalPrice);
+            }
+
             addItem({
                 productId: product.id,
                 name: product.name,
-                price: product.price,
+                price: finalPrice,
                 quantity: 1,
                 imageUrl: product.imageUrl
             }, {
@@ -179,12 +192,33 @@ export default function BenefitDetailPage() {
                                             </h3>
                                         </div>
                                         <div className="flex flex-col gap-3 p-4 rounded-[1.5rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 shadow-inner">
-                                            {linkedProducts.map((p: any) => (
-                                                <div key={p.id} className="flex justify-between items-center text-sm font-bold text-foreground bg-background/50 rounded-xl p-3 shadow-sm border border-white/5">
-                                                    <span className="truncate pr-2">{p.name}</span>
-                                                    <span className="text-primary flex-shrink-0">${p.price}</span>
-                                                </div>
-                                            ))}
+                                            {linkedProducts.map((p: any) => {
+                                                let finalPrice = p.price;
+                                                const isSameSupplier = serializableBenefit.ownerId === p.supplierId;
+
+                                                if (isSameSupplier) {
+                                                    if (serializableBenefit.discountPercentage && serializableBenefit.discountPercentage > 0) {
+                                                        finalPrice = finalPrice * (1 - serializableBenefit.discountPercentage / 100);
+                                                    }
+                                                    if (serializableBenefit.discountAmount && serializableBenefit.discountAmount > 0) {
+                                                        finalPrice = Math.max(0, finalPrice - serializableBenefit.discountAmount);
+                                                    }
+                                                    finalPrice = Math.round(finalPrice);
+                                                }
+                                                const hasDiscount = finalPrice < p.price;
+                                                
+                                                return (
+                                                    <div key={p.id} className="flex justify-between items-center text-sm font-bold text-foreground bg-background/50 rounded-xl p-3 shadow-sm border border-white/5">
+                                                        <span className="truncate pr-2">{p.name}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            {hasDiscount && (
+                                                                <span className="text-muted-foreground line-through text-xs font-medium">${p.price}</span>
+                                                            )}
+                                                            <span className="text-primary flex-shrink-0">${finalPrice}</span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
                                             <Button 
                                                 variant="outline"
                                                 className="w-full h-12 mt-2 rounded-xl font-black uppercase tracking-[0.1em] text-xs border-orange-500/50 text-orange-500 hover:bg-orange-500/20 hover:text-orange-500 shadow-xl shadow-orange-500/10 transition-all active:scale-95" 
