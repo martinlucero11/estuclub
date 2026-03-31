@@ -96,22 +96,22 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
         setLoading(true);
         try {
-            // A. Create Order
+            // A. Create Order (Safely check for undefined to prevent Firebase crashes)
             const orderRef = await addDoc(collection(firestore, 'orders'), {
                 userId: user.uid,
-                userName: profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.displayName || 'Estudiante',
+                userName: profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.displayName || 'Estudiante EstuClub',
                 userPhone: profile?.phone || '',
                 supplierId,
-                supplierName: supplierName || 'Comercio',
-                items,
-                subtotal,
-                deliveryCost,
-                serviceFee,
-                totalAmount: totalWithService,
+                supplierName: supplierName || 'Commerce',
+                items: items.map(i => ({ ...i })), // Deep copy to avoid proxy issues
+                subtotal: Math.round(subtotal),
+                deliveryCost: Math.round(deliveryCost),
+                serviceFee: Math.round(serviceFee),
+                totalAmount: Math.round(totalWithService),
                 status: 'pending_payment',
                 type,
-                deliveryAddress: type === 'delivery' ? address : 'Retiro en local',
-                deliveryNote: note,
+                deliveryAddress: type === 'delivery' ? (address || 'No especificada') : 'Retiro en local',
+                deliveryNote: note || '',
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
             });
@@ -125,7 +125,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                     items,
                     supplierId,
                     totalSubtotal: subtotal,
-                    origin: supplierProfile?.location?.address || supplierProfile?.address,
+                    origin: supplierProfile?.location?.address || supplierProfile?.address || '',
                     destination: address,
                 })
             });
@@ -140,151 +140,166 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
             }
         } catch (error) {
             console.error(error);
-            toast({ title: "Error al iniciar el pago", description: "Verifica tu conexión.", variant: "destructive" });
+            toast({ 
+                title: "Error al iniciar el pago", 
+                description: "Verifica tu conexión u orden.", 
+                variant: "destructive" 
+            });
         } finally {
             setLoading(false);
         }
     };
 
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast({ title: "GPS no disponible", description: "Tu navegador no soporta geolocalización." });
+            return;
+        }
+
+        setCalculatingLogistics(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                // Since reverse geocoding requires a server-side API call for keys,
+                // we'll at least put the coordinates if we don't have a label.
+                setAddress(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+                setCalculatingLogistics(false);
+                toast({ title: "Ubicación obtenida", description: "Hemos fijado tus coordenadas." });
+            },
+            (error) => {
+                setCalculatingLogistics(false);
+                toast({ title: "Error de GPS", description: "No pudimos obtener tu ubicación.", variant: "destructive" });
+            }
+        );
+    };
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[450px] bg-white border-slate-100 shadow-[0_30px_90px_rgba(0,0,0,0.1)] rounded-[3.5rem] overflow-hidden p-0 selection:bg-pink-100">
-                <DialogHeader className="p-10 pb-2 flex flex-col gap-6">
-                    <div className="flex items-center gap-5">
-                        <div className="h-16 w-16 rounded-[2rem] bg-pink-50 flex items-center justify-center border border-pink-100 shadow-sm">
-                            <ShoppingBag className="h-8 w-8 text-pink-500" />
+            <DialogContent className="sm:max-w-[440px] bg-white border-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.12)] rounded-[3rem] overflow-hidden p-0 selection:bg-pink-100">
+                <DialogHeader className="p-8 pb-1 flex flex-col gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-pink-50 flex items-center justify-center border border-pink-100 shadow-sm shrink-0">
+                            <ShoppingBag className="h-6 w-6 text-pink-500" />
                         </div>
-                        <div className="space-y-1">
-                            <DialogTitle className="text-4xl font-black italic uppercase tracking-tighter text-slate-900">Check Out</DialogTitle>
-                            <DialogDescription className="font-black text-slate-400 uppercase tracking-[0.3em] text-[10px]">
-                                EstuClub Secure Logistics
+                        <div className="space-y-0.5">
+                            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">Check Out</DialogTitle>
+                            <DialogDescription className="font-black text-slate-400 uppercase tracking-[0.2em] text-[9px]">
+                                Secure Logistics ✨
                             </DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
 
-                <div className="space-y-8 px-10 py-6">
-                    <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-4">
+                <div className="space-y-5 px-8 py-4">
+                    <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-3">
                         <div className="relative">
                             <RadioGroupItem value="delivery" id="delivery" className="peer sr-only" />
-                            <Label htmlFor="delivery" className="flex flex-col items-center gap-3 rounded-[2rem] border-2 border-slate-50 bg-slate-50 p-6 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-[0_15px_30px_rgba(219,39,119,0.08)]">
-                                <Truck className={cn("h-8 w-8", type === 'delivery' ? "text-pink-500" : "text-slate-300")} />
-                                <span className={cn("font-black text-[11px] uppercase tracking-widest", type === 'delivery' ? "text-slate-900" : "text-slate-400")}>Envío</span>
+                            <Label htmlFor="delivery" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-50 bg-slate-50 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-md">
+                                <Truck className={cn("h-6 w-6", type === 'delivery' ? "text-pink-500" : "text-slate-300")} />
+                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'delivery' ? "text-slate-900" : "text-slate-400")}>Envío</span>
                             </Label>
                         </div>
                         <div className="relative">
                             <RadioGroupItem value="pickup" id="pickup" className="peer sr-only" />
-                            <Label htmlFor="pickup" className="flex flex-col items-center gap-3 rounded-[2rem] border-2 border-slate-50 bg-slate-50 p-6 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-[0_15px_30px_rgba(219,39,119,0.08)]">
-                                <ShoppingBag className={cn("h-8 w-8", type === 'pickup' ? "text-pink-500" : "text-slate-300")} />
-                                <span className={cn("font-black text-[11px] uppercase tracking-widest", type === 'pickup' ? "text-slate-900" : "text-slate-400")}>Retiro</span>
+                            <Label htmlFor="pickup" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-50 bg-slate-50 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-md">
+                                <ShoppingBag className={cn("h-6 w-6", type === 'pickup' ? "text-pink-500" : "text-slate-300")} />
+                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'pickup' ? "text-slate-900" : "text-slate-400")}>Retiro</span>
                             </Label>
                         </div>
                     </RadioGroup>
 
                     {type === 'delivery' && (
-                        <div className="space-y-3 animate-in slide-in-from-bottom-2 duration-500">
-                            <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1 italic">Dirección de Entrega</Label>
+                        <div className="space-y-2.5 animate-in slide-in-from-bottom-1 duration-300">
+                            <div className="flex justify-between items-center px-1">
+                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Dirección</Label>
+                                <button 
+                                    onClick={handleGetCurrentLocation}
+                                    className="text-[9px] font-black uppercase tracking-widest text-pink-500 hover:text-pink-600 flex items-center gap-1.5 transition-colors"
+                                >
+                                    <MapPin className="h-2.5 w-2.5" /> Ubicación Actual
+                                </button>
+                            </div>
                             <div className="relative group">
-                                <MapPin className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-pink-500 transition-transform group-focus-within:scale-110" />
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-pink-500" />
                                 <Input 
-                                    placeholder={calculatingLogistics ? "Sincronizando..." : "Calle, Altura, Ciudad..."} 
-                                    className="h-16 pl-14 bg-slate-50 border-slate-100 rounded-2xl font-black italic tracking-tight text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-pink-200 transition-all shadow-inner"
+                                    placeholder={calculatingLogistics ? "Sincronizando..." : "Calle, Altura..."} 
+                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-xl font-bold italic text-slate-900 placeholder:text-slate-300 focus:bg-white transition-all shadow-sm"
                                     value={address}
                                     onChange={e => setAddress(e.target.value)}
                                 />
-                                {calculatingLogistics && <Loader2 className="absolute right-5 top-1/2 -translate-y-1/2 h-5 w-5 animate-spin text-pink-500" />}
+                                {calculatingLogistics && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 animate-spin text-pink-500" />}
                             </div>
                         </div>
                     )}
 
-                    <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-1 italic">Nota Estudiantil</Label>
-                        <Textarea className="bg-slate-50 border-slate-100 rounded-2xl min-h-[100px] text-slate-900 font-bold placeholder:text-slate-300 focus:bg-white focus:border-pink-200 transition-all resize-none p-5 shadow-inner" placeholder="Ej: Piso 4, B. Tocar timbre..." value={note} onChange={e => setNote(e.target.value)} />
+                    <div className="space-y-1.5">
+                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-1 italic">Nota Rider</Label>
+                        <Input className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-bold placeholder:text-slate-300 focus:bg-white transition-all shadow-sm px-4" placeholder="Ej: Portero A..." value={note} onChange={e => setNote(e.target.value)} />
                     </div>
 
-                    <div className="bg-white border-2 border-pink-50 p-8 rounded-[2.5rem] space-y-5 shadow-[0_20px_40px_rgba(219,39,119,0.04)] relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-[0.03] rotate-12">
-                            <Sparkles className="h-24 w-24 text-pink-500" />
-                        </div>
-                        
-                        <div className="flex justify-between items-center text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <span>Subtotal Productos</span>
+                    <div className="bg-white border border-pink-100 p-6 rounded-[2rem] space-y-4 shadow-sm">
+                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <span>Productos</span>
                             <span className="text-slate-900">$ {subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[11px] font-black text-slate-400 uppercase tracking-widest h-6 leading-none">
-                            <span>Servicio Logístico <span className="text-[9px] text-pink-500 lowercase italic ml-1 tracking-tight"> (Rider pro)</span></span>
-                            <span className={cn("font-black", deliveryCost === 0 ? "text-green-500" : "text-slate-900", calculatingLogistics && "animate-pulse opacity-50")}>
-                                {calculatingLogistics ? 'Calculando...' : (deliveryCost === 0 ? 'BONIFICADO' : `$ ${deliveryCost.toLocaleString()}`)}
+                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest h-5">
+                            <span>Envío <span className="text-pink-500 lowercase italic ml-1 tracking-tight">(Pro)</span></span>
+                            <span className={cn("font-black", deliveryCost === 0 ? "text-green-500" : "text-slate-900", calculatingLogistics && "animate-pulse")}>
+                                {calculatingLogistics ? '...' : (deliveryCost === 0 ? 'BONIFICADO' : `$ ${deliveryCost.toLocaleString()}`)}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <div className="flex items-center gap-2">
-                                <span>✨ Tarifa EstuClub</span>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="h-4 w-4 rounded-full bg-slate-100 flex items-center justify-center cursor-help transition-all hover:bg-pink-100">
-                                                <Info className="h-2.5 w-2.5 text-slate-400 group-hover:text-pink-500" />
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent side="top" className="bg-white border-pink-100 text-[11px] p-5 max-w-[260px] rounded-2xl text-slate-600 shadow-2xl z-[100] font-bold leading-relaxed">
-                                            <p className="font-black uppercase tracking-widest text-pink-500 mb-2">Diferencial EstuClub</p>
-                                            Esta tarifa asegura la trazabilidad de tu pedido y el soporte 24/7 de nuestro equipo.
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                            <div className="flex items-center gap-1.5">
+                                <span>✨ EstuClub</span>
+                                <Info className="h-3 w-3 text-slate-300" />
                             </div>
                             <span className="text-slate-900">$ {serviceFee.toLocaleString()}</span>
                         </div>
                         <Separator className="bg-pink-50" />
-                        <div className="flex justify-between items-end gap-4 relative z-10">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-pink-500 italic">Inversión Final</p>
+                        <div className="flex justify-between items-end gap-4 overflow-hidden">
+                            <div className="space-y-0.5 min-w-0">
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-pink-500 italic">Total</p>
                                 <span className={cn(
-                                    "text-5xl font-black tracking-tighter text-slate-900 italic underline decoration-pink-500/20 underline-offset-8 transition-all duration-500 block",
+                                    "text-4xl font-black tracking-tighter text-slate-900 italic underline decoration-pink-500/20 underline-offset-4 transition-all duration-300 block truncate",
                                     calculatingLogistics ? "opacity-20 blur-[1px]" : "opacity-100"
                                 )}>
                                     $ {totalWithService.toLocaleString()}
                                 </span>
                             </div>
-                            <div className="flex flex-col items-end gap-2 pb-1">
-                                <Badge className="bg-white border-pink-100 text-pink-500 font-black text-[10px] px-4 py-1.5 shadow-sm">ESTU PRO</Badge>
-                                <div className="flex items-center gap-2 text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                                    <CreditCard className="h-3 w-3" /> Mercado Pago
+                            <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                <Badge className="bg-white border-pink-100 text-pink-500 font-black text-[8px] px-3 py-1 shadow-sm">ESTU PRO</Badge>
+                                <div className="flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">
+                                    <CreditCard className="h-2.5 w-2.5" /> MP
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {!canPlaceOrder && (
-                        <div className="p-6 rounded-[2rem] bg-amber-50 border border-amber-100 flex gap-4 items-center animate-in zoom-in-95 duration-500">
-                            <Info className="h-6 w-6 text-amber-500 shrink-0" />
-                            <p className="text-[11px] font-bold text-amber-900/70 leading-snug">
-                                Pedido mínimo requerido: <span className="font-black text-amber-600">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>. Te faltan ${(supplierProfile?.minOrderAmount || 0) - subtotal}.
+                        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-100 flex gap-3 items-center animate-in zoom-in-95 duration-500">
+                            <Info className="h-4 w-4 text-amber-500 shrink-0" />
+                            <p className="text-[9px] font-bold text-amber-900/70">
+                                Mínimo: <span className="font-black">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>. Te falta: ${(supplierProfile?.minOrderAmount || 0) - subtotal}.
                             </p>
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="p-10 flex flex-col gap-6 sm:flex-col items-stretch bg-slate-50 border-t border-slate-100">
+                <DialogFooter className="p-8 flex flex-col gap-4 sm:flex-col items-stretch bg-slate-50 border-t border-slate-100">
                     <Button 
                         disabled={loading || calculatingLogistics || !canPlaceOrder} 
                         onClick={handlePaymentRedirect} 
-                        className="w-full h-24 bg-pink-500 hover:bg-pink-600 text-white font-black text-3xl uppercase tracking-[0.1em] italic rounded-[3rem] shadow-[0_20px_50px_-12px_rgba(236,72,153,0.4)] transition-all hover:scale-[1.01] active:scale-95 relative group overflow-hidden border-none"
+                        className="w-full h-20 bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl uppercase tracking-[0.1em] italic rounded-[2.5rem] shadow-lg transition-all hover:scale-[1.01] active:scale-95 border-none"
                     >
-                        {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : (
-                            <div className="flex items-center gap-5 relative z-10">
-                                PAGAR
-                                <Sparkles className="h-7 w-7 animate-pulse" />
-                            </div>
-                        )}
-                        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
+                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "PAGAR ✨"}
                     </Button>
-                    <div className="flex items-center justify-center gap-3 opacity-30 group hover:opacity-60 transition-opacity">
-                        <ShieldCheck className="h-4 w-4 text-slate-900" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-900">Compra Protegida EstuClub</span>
+                    <div className="flex items-center justify-center gap-3 opacity-30">
+                        <ShieldCheck className="h-3.5 w-3.5 text-slate-900" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-900">Seguro EstuClub</span>
                     </div>
                 </DialogFooter>
+            </DialogContent>
+        </Dialog>
             </DialogContent>
         </Dialog>
     );
