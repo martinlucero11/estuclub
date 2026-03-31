@@ -278,7 +278,7 @@ export default function Header() {
     <>
     <header 
       className={cn(
-        "sticky top-0 z-40 w-full shadow-premium transition-all duration-300 pt-safe header-mesh overflow-hidden",
+        "fixed top-0 left-0 right-0 z-50 w-full shadow-premium transition-all duration-300 pt-safe header-mesh overflow-hidden",
         isMobile ? "min-h-[80px]" : "min-h-[70px]"
       )}
     >
@@ -318,6 +318,8 @@ export default function Header() {
       <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       
     </header>
+    {/* Spacer to prevent content from jumping under the fixed header */}
+    <div className={cn("w-full shrink-0", isMobile ? "h-[80px]" : "h-[70px]")} />
     </>
   );
 }

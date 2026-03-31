@@ -21,11 +21,19 @@ export function BottomNav() {
   // Detect current context
   const isInDeliveryContext = pathname.startsWith('/delivery') || pathname.startsWith('/orders');
 
+  // Determine Center Button for Benefits Context
+  let benefitsCenterBtn;
+  if (isPrivileged) {
+      benefitsCenterBtn = { href: '/panel-cluber/scanner', label: 'Escanear', icon: QrCode, special: true };
+  } else {
+      benefitsCenterBtn = { href: '/leaderboard', label: 'Ranking', icon: Trophy, special: true };
+  }
+
   // Define Navigation Sets
   const benefitsNav = [
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/perks', label: 'Beneficios', icon: Ticket },
-    { href: '#cart', label: 'Carrito', icon: ShoppingCart, special: true },
+    benefitsCenterBtn,
     { href: '/turnos', label: 'Turnos', icon: CalendarDays },
     { href: '/profile', label: 'Perfil', icon: User },
   ];
@@ -60,36 +68,50 @@ export function BottomNav() {
           const isActive = pathname === item.href;
           
           if (item.special) {
-            return (
-              <CartSheet key="cart-sheet">
-                <button
-                  onClick={() => haptic.vibrateSubtle()}
-                  className="relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300"
+            const specialButtonContent = (
+              <button
+                onClick={() => haptic.vibrateSubtle()}
+                className="relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300"
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
                 >
-                  <motion.div 
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
-                  >
-                    <item.icon className="h-7 w-7" />
-                    {totalItems > 0 && (
-                        <motion.div 
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            whileHover={{ scale: 1.2 }}
-                            className="absolute -top-1.5 -right-1.5 bg-white text-primary text-[11px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border-2 border-primary z-20"
-                        >
-                            <motion.span
-                                animate={{ scale: [1, 1.1, 1] }}
-                                transition={{ repeat: Infinity, duration: 2 }}
-                            >
-                                {totalItems}
-                            </motion.span>
-                        </motion.div>
-                    )}
-                  </motion.div>
-                </button>
-              </CartSheet>
+                  <item.icon className="h-7 w-7" />
+                  {item.href === '#cart' && totalItems > 0 && (
+                      <motion.div 
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          whileHover={{ scale: 1.2 }}
+                          className="absolute -top-1.5 -right-1.5 bg-white text-primary text-[11px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border-2 border-primary z-20"
+                      >
+                          <motion.span
+                              animate={{ scale: [1, 1.1, 1] }}
+                              transition={{ repeat: Infinity, duration: 2 }}
+                          >
+                              {totalItems}
+                          </motion.span>
+                      </motion.div>
+                  )}
+                </motion.div>
+                {/* Fallback label for screen readers or forced display */}
+                <span className="sr-only mt-3 text-[9px] font-black uppercase tracking-[0.05em] text-primary">{item.label}</span>
+              </button>
+            );
+
+            if (item.href === '#cart') {
+                return (
+                  <CartSheet key="cart-sheet">
+                    {specialButtonContent}
+                  </CartSheet>
+                );
+            }
+
+            return (
+              <Link key={`${item.href}-${index}`} href={item.href}>
+                  {specialButtonContent}
+              </Link>
             );
           }
 

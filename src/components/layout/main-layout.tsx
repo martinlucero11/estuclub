@@ -51,7 +51,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     }}
                     className={cn(
                         "flex-1 w-full z-0",
-                        isMobile ? "pb-24" : "pb-20"
+                        isMobile ? "pb-[130px]" : "pb-32"
                     )}
                 >
                     {children}
