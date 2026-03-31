@@ -105,47 +105,47 @@ export default function OrderTrackingPage() {
                 >
                     <div className="absolute top-0 right-0 p-4">
                         {currentStatus.pulse && (
-                            <span className="relative flex h-3 w-3">
+                            <span className="relative flex h-4 w-4">
                                 <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", currentStatus.color.replace('text', 'bg'))}></span>
-                                <span className={cn("relative inline-flex rounded-full h-3 w-3", currentStatus.color.replace('text', 'bg'))}></span>
+                                <span className={cn("relative inline-flex rounded-full h-4 w-4", currentStatus.color.replace('text', 'bg'))}></span>
                             </span>
                         )}
                     </div>
 
-                    <div className={cn("mx-auto h-20 w-20 rounded-3xl flex items-center justify-center mb-4 transition-all duration-700", currentStatus.bg)}>
-                        <Icon className={cn("h-10 w-10", currentStatus.color)} />
+                    <div className={cn("mx-auto h-24 w-24 rounded-[2rem] flex items-center justify-center mb-6 shadow-2xl transition-all duration-700", currentStatus.bg, "border border-white/10")}>
+                        <Icon className={cn("h-12 w-12", currentStatus.color)} />
                     </div>
                     
-                    <h1 className="text-2xl font-black italic uppercase tracking-tighter mb-1">
+                    <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2">
                         {currentStatus.label}
                     </h1>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-[12px] font-black text-slate-200 uppercase tracking-widest opacity-80">
                         {supplier?.name || order.supplierName}
                     </p>
                 </motion.div>
 
                 {/* Progress Tracker */}
-                <div className="bg-white/5 border border-white/5 rounded-[2rem] p-6">
+                <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-inner">
                     <div className="flex justify-between relative">
-                        <div className="absolute top-4 left-0 w-full h-[2px] bg-white/10" />
+                        <div className="absolute top-5 left-0 w-full h-[3px] bg-white/5 rounded-full" />
                         <div 
-                            className="absolute top-4 left-0 h-[2px] bg-pink-500 transition-all duration-1000"
+                            className="absolute top-5 left-0 h-[3px] bg-gradient-to-r from-pink-600 to-pink-400 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(236,72,153,0.3)]"
                             style={{ width: `${(currentStatus.step / (STEPS.length - 1)) * 100}%` }}
                         />
                         {STEPS.map((step, idx) => {
                             const isPast = idx <= currentStatus.step;
                             const isCurrent = idx === currentStatus.step;
                             return (
-                                <div key={step.key} className="relative z-10 flex flex-col items-center gap-2">
+                                <div key={step.key} className="relative z-10 flex flex-col items-center gap-3">
                                     <div className={cn(
-                                        "h-8 w-8 rounded-full border-2 flex items-center justify-center transition-all duration-500",
-                                        isPast ? "bg-pink-500 border-pink-500 text-black shadow-[0_0_15px_rgba(236,72,153,0.5)]" : "bg-[#050505] border-white/10 text-slate-600"
+                                        "h-10 w-10 rounded-full border-2 flex items-center justify-center transition-all duration-500",
+                                        isPast ? "bg-pink-500 border-pink-400 text-black shadow-[0_0_20px_rgba(236,72,153,0.4)]" : "bg-[#050505] border-white/5 text-slate-700"
                                     )}>
-                                        {isPast ? <CheckCircle2 className="h-4 w-4" /> : <div className="h-1.5 w-1.5 rounded-full bg-current" />}
+                                        {isPast ? <CheckCircle2 className="h-5 w-5" /> : <div className="h-2 w-2 rounded-full bg-current" />}
                                     </div>
                                     <span className={cn(
-                                        "text-[8px] font-black uppercase tracking-widest transition-colors",
-                                        isPast ? "text-white" : "text-slate-600"
+                                        "text-[9px] font-black uppercase tracking-[0.2em] transition-colors",
+                                        isPast ? "text-white" : "text-slate-700"
                                     )}>
                                         {step.label}
                                     </span>
@@ -155,99 +155,127 @@ export default function OrderTrackingPage() {
                     </div>
                 </div>
 
-                {/* Rider Info (Conditional) */}
+                {/* Rider Info Card - High Visibility */}
                 <AnimatePresence>
                     {(order.riderId || order.status === 'searching_rider') && (
                         <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="bg-cyan-500/10 border border-cyan-500/20 rounded-[2.5rem] p-6 space-y-4 shadow-[0_10px_30px_rgba(6,182,212,0.1)]"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-cyan-400/5 border border-cyan-400/20 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group shadow-[0_20px_40px_rgba(6,182,212,0.05)]"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className="h-12 w-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-                                    <Truck className="h-6 w-6 text-cyan-400" />
+                            <div className="absolute -top-12 -right-12 h-32 w-32 bg-cyan-400/10 rounded-full blur-3xl group-hover:bg-cyan-400/20 transition-all duration-1000" />
+                            
+                            <div className="flex items-center gap-6 relative z-10">
+                                <div className="h-16 w-16 rounded-[1.5rem] bg-cyan-400/10 flex items-center justify-center border border-cyan-400/20 group-hover:border-cyan-400/40 transition-colors">
+                                    <Truck className={cn("h-8 w-8 text-cyan-400", order.status === 'searching_rider' && "animate-bounce")} />
                                 </div>
-                                <div className="flex-1">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Logística Estuclub</h3>
-                                    <p className="font-bold">
-                                        {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando repartidor...' : 'Asignando Rider...')}
+                                <div className="flex-1 space-y-1">
+                                    <h3 className="text-[11px] font-black uppercase tracking-widest text-cyan-400/80">Logística Estuclub</h3>
+                                    <p className="text-lg font-black tracking-tight leading-none">
+                                        {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando Repartidor...' : 'Asignando Rider...')}
                                     </p>
+                                    {order.status === 'searching_rider' && (
+                                        <p className="text-[10px] font-bold text-slate-400 italic">Un Rider oficial tomará tu pedido en unos segundos.</p>
+                                    )}
                                 </div>
-                                {rider?.phone && (
-                                    <div className="flex gap-2">
-                                        <Button size="icon" variant="ghost" className="rounded-xl bg-white/5 border border-white/10" asChild>
-                                            <a href={`tel:${rider.phone}`}><Phone className="h-4 w-4 text-cyan-400" /></a>
-                                        </Button>
-                                        <Button size="icon" variant="ghost" className="rounded-xl bg-white/5 border border-white/10" asChild>
-                                            <a href={`https://wa.me/${rider.phone}`} target="_blank" rel="noreferrer"><MessageCircle className="h-4 w-4 text-green-400" /></a>
-                                        </Button>
-                                    </div>
-                                )}
                             </div>
+
+                            {rider?.phone && (
+                                <div className="flex gap-3 pt-2 relative z-10">
+                                    <Button size="lg" className="flex-1 rounded-2xl bg-[#0a0a0a] border border-white/5 font-black uppercase tracking-widest text-[10px] h-12 shadow-xl hover:bg-white/5" asChild>
+                                        <a href={`tel:${rider.phone}`} className="flex items-center justify-center gap-2">
+                                            <Phone className="h-3 w-3 text-cyan-400" />
+                                            Llamar Rider
+                                        </a>
+                                    </Button>
+                                    <Button size="lg" className="flex-1 rounded-2xl bg-green-500/10 border border-green-500/20 font-black uppercase tracking-widest text-[10px] h-12 shadow-xl hover:bg-green-500/20 text-green-400" asChild>
+                                        <a href={`https://wa.me/${rider.phone}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2">
+                                            <MessageCircle className="h-3 w-3" />
+                                            WhatsApp
+                                        </a>
+                                    </Button>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
 
                 {/* Details Section */}
-                <div className="bg-white/5 border border-white/5 rounded-[2.5rem] p-8 space-y-6">
-                    <div className="space-y-4">
-                        <div className="flex items-start gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-pink-500/20 transition-colors">
-                                <MapPin className="h-5 w-5 text-slate-400" />
+                <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl">
+                    <div className="space-y-6">
+                        <div className="flex items-start gap-6 group">
+                            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-pink-500/10 group-hover:border-pink-500/20 transition-all">
+                                <MapPin className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
                             </div>
-                            <div>
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Dirección de Entrega</h4>
-                                <p className="text-sm font-bold">{order.deliveryAddress}</p>
-                                {order.deliveryNote && <p className="text-[10px] text-slate-400 mt-1 italic">"{order.deliveryNote}"</p>}
+                            <div className="space-y-1">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Dirección de Entrega</h4>
+                                <p className="text-base font-black tracking-tight">{order.deliveryAddress}</p>
+                                {order.deliveryNote && <p className="text-[11px] text-slate-400 mt-2 italic bg-white/5 p-3 rounded-xl border border-white/5 leading-relaxed">"{order.deliveryNote}"</p>}
                             </div>
                         </div>
 
                         <Separator className="bg-white/5" />
 
-                        <div className="flex items-start gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
-                                <Store className="h-5 w-5 text-slate-400" />
+                        <div className="flex items-start gap-6 group">
+                            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-pink-500/10 group-hover:border-pink-500/20 transition-all">
+                                <Store className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
                             </div>
-                            <div>
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Origen</h4>
-                                <p className="text-sm font-bold">{supplier?.name || order.supplierName}</p>
-                                <p className="text-[10px] text-slate-400">{supplier?.location?.address || 'Retiro en local'}</p>
+                            <div className="space-y-1">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Comercio</h4>
+                                <p className="text-base font-black tracking-tight">{supplier?.name || order.supplierName}</p>
+                                <p className="text-[11px] text-slate-400 italic">{supplier?.location?.address || 'Estuclub Official Point'}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 rounded-3xl p-6 space-y-3">
-                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Resumen</h4>
+                    <div className="bg-gradient-to-b from-white/[0.03] to-transparent rounded-[2.5rem] p-8 space-y-4 border border-white/5 shadow-inner">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4 flex items-center gap-2">
+                            <Package className="h-3 w-3" /> Detalle
+                        </h4>
                         {order.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-xs font-bold">
-                                <span className="text-slate-400">{item.quantity}x {item.name}</span>
-                                <span>$ {(item.price * item.quantity).toLocaleString()}</span>
+                            <div key={idx} className="flex justify-between text-xs font-bold tracking-tight">
+                                <span className="text-slate-300">{item.quantity}x {item.name}</span>
+                                <span className="text-white">$ {(item.price * item.quantity).toLocaleString()}</span>
                             </div>
                         ))}
-                        <Separator className="bg-white/5 my-2" />
-                        <div className="flex justify-between text-sm font-black italic uppercase tracking-tighter">
-                            <span className="text-pink-500">Total Pagado</span>
-                            <span>$ {order.totalAmount.toLocaleString()}</span>
+                        <Separator className="bg-white/10 my-4" />
+                        <div className="flex justify-between text-lg font-black italic uppercase tracking-tighter">
+                            <span className="text-pink-500">Monto Final</span>
+                            <span className="text-white">$ {order.totalAmount.toLocaleString()}</span>
                         </div>
+                        <p className="text-[9px] text-center text-slate-500 font-bold uppercase tracking-widest pt-2">Pago Verificado • Estuclub Secure Express</p>
                     </div>
                 </div>
 
-                {/* Floating Help Button */}
-                <Button variant="ghost" className="w-full h-14 rounded-2xl border border-white/5 bg-white/5 font-bold uppercase tracking-widest text-[10px] text-slate-400 hover:text-white transition-all">
-                    ¿Necesitas ayuda con tu pedido?
-                </Button>
+                {/* Footer Actions */}
+                <div className="space-y-3 pt-4">
+                    <Button 
+                        onClick={() => router.push('/delivery')}
+                        className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all shadow-2xl"
+                    >
+                        Volver a la Tienda
+                    </Button>
+                    <Button 
+                        variant="ghost" 
+                        onClick={() => router.push('/orders')}
+                        className="w-full h-14 rounded-[1.5rem] bg-white/5 border border-white/5 font-black uppercase tracking-widest text-[10px] text-slate-400 hover:text-white"
+                    >
+                        Ver todos mis pedidos
+                    </Button>
+                </div>
             </main>
 
-            {/* Success Celebration (Confetti simulation with design) */}
+            {/* Success Celebration */}
             {order.status === 'delivered' && (
-                <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-[100]">
+                <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-[100] bg-black/40 backdrop-blur-sm">
                     <motion.div 
-                        initial={{ scale: 0, rotate: -45 }}
+                        initial={{ scale: 0, rotate: -15 }}
                         animate={{ scale: 1, rotate: 0 }}
-                        className="bg-green-500 text-black font-black italic uppercase tracking-tighter px-12 py-6 rounded-full shadow-[0_0_100px_rgba(34,197,94,0.5)]"
+                        className="bg-green-500 text-black font-black italic uppercase tracking-tighter px-14 py-8 rounded-[2.5rem] shadow-[0_0_100px_rgba(34,197,94,0.6)] flex flex-col items-center gap-2 border-4 border-black"
                     >
-                        ¡Entregado! ✨
+                        <CheckCircle2 className="h-12 w-12" />
+                        <span className="text-4xl">¡Entregado!</span>
+                        <span className="text-xs tracking-widest">Disfruta tu pedido ✨</span>
                     </motion.div>
                 </div>
             )}

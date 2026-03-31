@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MapPin, Truck, ShoppingBag, CreditCard, Sparkles, Info } from 'lucide-react';
+import { Loader2, MapPin, Truck, ShoppingBag, CreditCard, Sparkles, Info, ShieldCheck } from 'lucide-react';
 import { getLiveShippingRate } from '@/lib/shipping';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -204,10 +204,10 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                             <span>Productos</span>
                             <span className="text-white">$ {subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                        <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest h-5">
                             <span>Envío <span className="text-[9px] text-pink-500/60 lowercase italic">(Estuclub Rider)</span></span>
-                            <span className={cn(deliveryCost === 0 ? "text-green-400" : "text-white")}>
-                                {calculatingLogistics ? '...' : (deliveryCost === 0 ? 'Gratis' : `$ ${deliveryCost.toLocaleString()}`)}
+                            <span className={cn(deliveryCost === 0 ? "text-green-400" : "text-white", calculatingLogistics && "animate-pulse")}>
+                                {calculatingLogistics ? 'Calibrando...' : (deliveryCost === 0 ? 'Gratis' : `$ ${deliveryCost.toLocaleString()}`)}
                             </span>
                         </div>
                         <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
@@ -220,8 +220,9 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                                                 <Info className="h-2.5 w-2.5 text-slate-400" />
                                             </div>
                                         </TooltipTrigger>
-                                        <TooltipContent className="bg-slate-900/95 border border-white/10 text-[10px] p-3 max-w-[220px] rounded-2xl text-slate-300 backdrop-blur-md shadow-2xl">
-                                            Esto nos ayuda a mantener la plataforma activa y asegurar que tu pedido llegue seguro con nuestros Riders.
+                                        <TooltipContent side="top" className="bg-slate-900 border border-white/10 text-[10px] p-4 max-w-[240px] rounded-2xl text-slate-300 shadow-2xl z-[100]">
+                                            <p className="font-black uppercase tracking-widest text-pink-500 mb-1">¿Por qué este cargo?</p>
+                                            Esto nos ayuda a mantener la tecnología de EstuClub, asegurar tus pagos y garantizar que los Riders tengan una app de primer nivel.
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -231,25 +232,53 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                         <Separator className="bg-white/10" />
                         <div className="flex justify-between items-end">
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-pink-500">Total</p>
-                                <span className="text-3xl font-black tracking-tighter text-white italic underline decoration-pink-500/30 underline-offset-4">$ {totalWithService.toLocaleString()}</span>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-pink-500 mb-1">Total a pagar</p>
+                                <span className={cn(
+                                    "text-4xl font-black tracking-tighter text-white italic underline decoration-pink-500/30 underline-offset-4 transition-opacity",
+                                    calculatingLogistics ? "opacity-50" : "opacity-100"
+                                )}>
+                                    $ {totalWithService.toLocaleString()}
+                                </span>
                             </div>
-                            <Badge className="bg-pink-500/10 border-pink-500/20 text-pink-400 font-black text-[9px] px-3 py-1 mb-2">MVP PRICE</Badge>
+                            <div className="flex flex-col items-end gap-1">
+                                <Badge className="bg-pink-500/10 border-pink-500/20 text-pink-400 font-black text-[9px] px-3 py-1">SECURE CHECKOUT</Badge>
+                                <div className="flex items-center gap-1 text-[8px] font-black text-slate-500 uppercase tracking-widest">
+                                    <CreditCard className="h-2.5 w-2.5" /> Mercado Pago
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {!canPlaceOrder && (
+                        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex gap-3 items-center animate-in slide-in-from-bottom-2">
+                            <Info className="h-5 w-5 text-amber-500 shrink-0" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-amber-200">
+                                Pago mínimo: ${supplierProfile?.minOrderAmount?.toLocaleString()} (Faltan ${(supplierProfile?.minOrderAmount || 0) - subtotal})
+                            </p>
+                        </div>
+                    )}
                 </div>
 
-                <DialogFooter className="pt-2">
-                    <Button disabled={loading || calculatingLogistics || !canPlaceOrder} onClick={handlePaymentRedirect} className="w-full h-16 bg-pink-500 text-black font-black text-xl uppercase tracking-[0.2em] rounded-[1.8rem] hover:bg-pink-400 shadow-2xl relative group overflow-hidden">
-                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
-                            <>
-                                <CreditCard className="mr-3 h-6 w-6" />
-                                PAGAR AHORA
-                                <Sparkles className="ml-3 h-5 w-5 animate-pulse" />
-                            </>
-                        )}
-                        <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                    </Button>
+                <DialogFooter className="pt-2 px-6 pb-8">
+                    <div className="w-full space-y-4">
+                        <Button 
+                            disabled={loading || calculatingLogistics || !canPlaceOrder} 
+                            onClick={handlePaymentRedirect} 
+                            className="w-full h-20 bg-pink-500 text-black font-black text-2xl uppercase tracking-[0.2em] rounded-[2rem] hover:bg-white transition-all shadow-[0_15px_40px_rgba(236,72,153,0.3)] relative group overflow-hidden border-none"
+                        >
+                            {loading ? <Loader2 className="h-8 w-8 animate-spin" /> : (
+                                <div className="flex items-center gap-4">
+                                    PAGAR
+                                    <Sparkles className="h-6 w-6 animate-pulse" />
+                                </div>
+                            )}
+                            <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/10 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                        </Button>
+                        <div className="flex items-center justify-center gap-2 opacity-50">
+                            <ShieldCheck className="h-3 w-3 text-green-500" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Protección al Estudiante EstuClub</span>
+                        </div>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
