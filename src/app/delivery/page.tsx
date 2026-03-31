@@ -6,7 +6,7 @@ import { useCollection, useFirestore, useUser } from '@/firebase';
 import type { SupplierProfile } from '@/types/data';
 import { collection, query, where, limit, orderBy } from 'firebase/firestore';
 import { Suspense, useState, useMemo } from 'react';
-import { ArrowDownUp, Grid, ShoppingBag, MapPin, Search } from 'lucide-react';
+import { ArrowDownUp, Grid, ShoppingBag, MapPin, Search, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { createConverter } from '@/lib/firestore-converter';
@@ -241,6 +241,21 @@ function DeliveryHomeSections() {
                             <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-muted-foreground/80 tracking-[0.2em]">
                                 {section.title}
                             </h2>
+                            {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
+                                <Button variant="ghost" asChild className="h-auto p-0 text-sm font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
+                                    <Link href={
+                                        ['suppliers', 'minisuppliers', 'supplierpromo', 'suppliers_nearby'].includes(section.block.contentType as string)
+                                            ? '/proveedores' 
+                                            : ['delivery_suppliers', 'delivery_products', 'delivery_promos', 'productexmplsupplier'].includes(section.block.contentType as string)
+                                                ? '/delivery'
+                                                : ['benefits_nearby', 'perks'].includes(section.block.contentType as string)
+                                                    ? '/benefits'
+                                                    : `/${section.block.contentType}`
+                                    }>
+                                        VER TODOS <ArrowRight className="ml-1 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
                     )}
                     <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">

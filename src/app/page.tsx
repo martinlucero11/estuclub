@@ -83,11 +83,13 @@ function HomeContent() {
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
                                 <Button variant="ghost" asChild className="h-auto p-0 text-sm font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
                                     <Link href={
-                                        section.block.contentType === 'suppliers' || section.block.contentType === 'suppliers_nearby' 
+                                        ['suppliers', 'minisuppliers', 'supplierpromo', 'suppliers_nearby'].includes(section.block.contentType as string)
                                             ? '/proveedores' 
-                                            : (section.block.contentType === 'benefits_nearby' || section.block.contentType === 'perks')
-                                                ? '/benefits'
-                                                : `/${section.block.contentType}`
+                                            : ['delivery_suppliers', 'delivery_products', 'delivery_promos', 'productexmplsupplier'].includes(section.block.contentType as string)
+                                                ? '/delivery'
+                                                : ['benefits_nearby', 'perks'].includes(section.block.contentType as string)
+                                                    ? '/benefits'
+                                                    : `/${section.block.contentType}`
                                     }>
                                         VER TODOS <ArrowRight className="ml-1 h-4 w-4" />
                                     </Link>
