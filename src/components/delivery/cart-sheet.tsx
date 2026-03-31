@@ -22,7 +22,14 @@ export function CartSheet({ children }: CartSheetProps) {
         if (!items.length || !supplierPhone) return;
         haptic.vibrateSuccess();
 
-        const itemLines = items.map(item => `- ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toLocaleString()})`).join('\n');
+        const itemLines = items.map(item => {
+            const line = `- ${item.quantity}x ${item.name} ($${(item.price * item.quantity).toLocaleString()})`;
+            if (item.originalPrice && item.originalPrice > item.price) {
+                const savings = (item.originalPrice - item.price) * item.quantity;
+                return `${line} (Ahorro: $${savings.toLocaleString()})`;
+            }
+            return line;
+        }).join('\n');
         const message = `*Nuevo Pedido via EstuClub*\n\nHola *${supplierName}*, quisiera realizar el siguiente pedido:\n\n${itemLines}\n\n*Total: $${subtotal.toLocaleString()}*\n\n_Pedido generado desde la app EstuClub_`;
         
         const encodedMessage = encodeURIComponent(message);
@@ -93,7 +100,14 @@ export function CartSheet({ children }: CartSheetProps) {
                                     <div className="flex-1 flex flex-col justify-between py-1">
                                         <div className="space-y-0.5">
                                             <h4 className="font-black text-sm tracking-tight leading-tight">{item.name}</h4>
-                                            <p className="text-primary font-bold text-xs">$ {(item.price * item.quantity).toLocaleString()}</p>
+                                            <div className="flex items-center gap-2">
+                                                {item.originalPrice && item.originalPrice > item.price && (
+                                                    <span className="text-[10px] text-muted-foreground line-through opacity-50 font-bold">
+                                                        $ {(item.originalPrice * item.quantity).toLocaleString()}
+                                                    </span>
+                                                )}
+                                                <p className="text-primary font-bold text-xs">$ {(item.price * item.quantity).toLocaleString()}</p>
+                                            </div>
                                         </div>
                                         
                                         <div className="flex items-center justify-between mt-2">

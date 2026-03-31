@@ -1,7 +1,7 @@
 'use client';
 
 import { useDocOnce, useFirestore, useUser, useCollectionOnce } from '@/firebase';
-import { doc, query, collection, where } from 'firebase/firestore';
+import { doc, query, collection, where, documentId } from 'firebase/firestore';
 import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { notFound, useSearchParams } from 'next/navigation';
@@ -49,7 +49,7 @@ export default function BenefitDetailPage() {
     const deliveryProductsQuery = useMemo(() => {
         if (!benefit?.linkedProductIds || benefit.linkedProductIds.length === 0 || !firestore) return null;
         const chunk = benefit.linkedProductIds.slice(0, 10);
-        return query(collection(firestore, 'products'), where('id', 'in', chunk), where('isActive', '==', true));
+        return query(collection(firestore, 'products'), where(documentId(), 'in', chunk), where('isActive', '==', true));
     }, [benefit, firestore]);
     const { data: linkedProducts } = useCollectionOnce(deliveryProductsQuery);
 
@@ -58,40 +58,47 @@ export default function BenefitDetailPage() {
 
     const handleAddComboToCart = () => {
         if (!linkedProducts || linkedProducts.length === 0) {
-            toast({ title: "Error", description: "No hay productos vinculados." });
+            toast({ title: "Error", description: "No hay productos vinculados al beneficio." });
             return;
         }
 
-        const fallbackSupplierId = benefit?.ownerId || linkedProducts[0]?.supplierId || 'unknown';
+        const fallbackSupplierId = benefit?.ownerId || linkedProducts[0]?.supplierId || 'estuclub-comercio';
+        let itemsAdded = 0;
 
         linkedProducts.forEach((product: any) => {
-            let finalPrice = Number(product.price);
-            const isSameSupplier = String(benefit?.ownerId) === String(product.supplierId);
+            if (!product) return;
 
-            if (isSameSupplier) {
-                if (benefit?.discountPercentage && Number(benefit.discountPercentage) > 0) {
-                    finalPrice = finalPrice * (1 - Number(benefit.discountPercentage) / 100);
-                }
-                if (benefit?.discountAmount && Number(benefit.discountAmount) > 0) {
-                    finalPrice = Math.max(0, finalPrice - Number(benefit.discountAmount));
-                }
-                finalPrice = Math.round(finalPrice);
+            // Se calcula el descuento asumiendo que el beneficio está explícitamente enlazado a estos productos
+            let finalPrice = Number(product.price || 0);
+
+            if (benefit?.discountPercentage && Number(benefit.discountPercentage) > 0) {
+                finalPrice = finalPrice * (1 - Number(benefit.discountPercentage) / 100);
             }
+            if (benefit?.discountAmount && Number(benefit.discountAmount) > 0) {
+                finalPrice = Math.max(0, finalPrice - Number(benefit.discountAmount));
+            }
+            finalPrice = Math.round(finalPrice);
 
             addItem({
-                productId: product.id,
-                name: product.name,
+                productId: String(product.id || product.name),
+                name: String(product.name || 'Combo Benefit'),
                 price: finalPrice,
                 quantity: 1,
-                imageUrl: product.imageUrl
+                imageUrl: product.imageUrl || ''
             }, {
-                id: owner?.id || fallbackSupplierId,
+                id: fallbackSupplierId,
                 name: owner?.name || benefit?.supplierName || 'Comercio',
                 phone: owner?.whatsappContact || owner?.whatsapp || ''
             });
+            itemsAdded++;
         });
-        haptic.vibrateSuccess();
-        toast({ title: "¡Combo añadido al carrito!", description: "Revisa tu pedido en la sección de Delivery." });
+        
+        if (itemsAdded > 0) {
+            haptic.vibrateSuccess();
+            toast({ title: "¡Combo añadido al carrito!", description: "Revisa tu pedido en la sección de Delivery." });
+        } else {
+            toast({ title: "Error", description: "No pudimos añadir el beneficio al carrito." });
+        }
     };
 
     if (isLoading || isUserLoading) {
@@ -199,18 +206,16 @@ export default function BenefitDetailPage() {
                                         </div>
                                         <div className="flex flex-col gap-3 p-4 rounded-[1.5rem] bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 shadow-inner">
                                             {linkedProducts.map((p: any) => {
-                                                let finalPrice = Number(p.price);
-                                                const isSameSupplier = String(serializableBenefit.ownerId) === String(p.supplierId);
+                                                let finalPrice = Number(p.price || 0);
 
-                                                if (isSameSupplier) {
-                                                    if (serializableBenefit.discountPercentage && Number(serializableBenefit.discountPercentage) > 0) {
-                                                        finalPrice = finalPrice * (1 - Number(serializableBenefit.discountPercentage) / 100);
-                                                    }
-                                                    if (serializableBenefit.discountAmount && Number(serializableBenefit.discountAmount) > 0) {
-                                                        finalPrice = Math.max(0, finalPrice - Number(serializableBenefit.discountAmount));
-                                                    }
-                                                    finalPrice = Math.round(finalPrice);
+                                                if (serializableBenefit.discountPercentage && Number(serializableBenefit.discountPercentage) > 0) {
+                                                    finalPrice = finalPrice * (1 - Number(serializableBenefit.discountPercentage) / 100);
                                                 }
+                                                if (serializableBenefit.discountAmount && Number(serializableBenefit.discountAmount) > 0) {
+                                                    finalPrice = Math.max(0, finalPrice - Number(serializableBenefit.discountAmount));
+                                                }
+                                                finalPrice = Math.round(finalPrice);
+                                                
                                                 const hasDiscount = finalPrice < p.price;
                                                 
                                                 return (
@@ -230,8 +235,8 @@ export default function BenefitDetailPage() {
                                 )}
                             </CardContent>
 
-                            <CardFooter className="flex flex-col gap-3 p-0 mt-10">
-                                {serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 ? (
+                            <CardFooter className="flex flex-col gap-4 p-0 mt-10">
+                                {serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 && (
                                     <Button 
                                         className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-orange-500/30 bg-orange-500 hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95" 
                                         onClick={() => {
@@ -243,25 +248,26 @@ export default function BenefitDetailPage() {
                                     >
                                         {isUserLoading ? 'Procesando...' : (
                                             <span className="flex items-center justify-center gap-3">
-                                                Agregar al Carrito <ShoppingBag className="h-5 w-5" />
+                                                Pedir por Delivery <ShoppingBag className="h-5 w-5" />
                                             </span>
                                         )}
                                     </Button>
-                                ) : (
-                                    <RedeemPerkDialog perk={serializableBenefit}>
-                                        <Button 
-                                            className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
-                                            onClick={() => haptic.vibrateImpact()}
-                                            disabled={isUserLoading || !user}
-                                        >
-                                            {isUserLoading ? 'Procesando...' : (
-                                                <span className="flex items-center justify-center gap-3">
-                                                    Canjear ahora <ArrowRight className="h-5 w-5" />
-                                                </span>
-                                            )}
-                                        </Button>
-                                    </RedeemPerkDialog>
                                 )}
+                                
+                                <RedeemPerkDialog perk={serializableBenefit}>
+                                    <Button 
+                                        className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-xl transition-all hover:scale-[1.02] active:scale-95" 
+                                        variant={serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 ? "outline" : "default"}
+                                        onClick={() => haptic.vibrateImpact()}
+                                        disabled={isUserLoading || !user}
+                                    >
+                                        {isUserLoading ? 'Procesando...' : (
+                                            <span className="flex items-center justify-center gap-3">
+                                                Canjear Presencial <ArrowRight className="h-5 w-5" />
+                                            </span>
+                                        )}
+                                    </Button>
+                                </RedeemPerkDialog>
                             </CardFooter>
                         </div>
                     </Card>

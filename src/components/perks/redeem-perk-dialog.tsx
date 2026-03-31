@@ -12,18 +12,21 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useUser, useFirestore, useDoc } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, increment, query, where, getDocs, Timestamp, getDoc, setDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useDoc, useCollectionOnce } from '@/firebase';
+import { collection, serverTimestamp, doc, writeBatch, query, where, documentId, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import type { SerializableBenefit, UserProfile } from '@/types/data';
-import { CheckCircle, CalendarDays, Award, Loader2, Lock } from 'lucide-react';
+import { CheckCircle, CalendarDays, Award, Loader2, Lock, ShoppingBag, ArrowRight, Package } from 'lucide-react';
 import { BrandSkeleton } from '../ui/brand-skeleton';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import { triggerSuccessEffect } from '../ui/success-animation';
 import { MagneticButton } from '../ui/magnetic-button';
 import { getLevelInfo } from '@/lib/gamification';
+import { useCart } from '@/context/cart-context';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 interface RedeemPerkDialogProps {
   perk: SerializableBenefit;
@@ -46,6 +49,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { addItem } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [isRedeeming, setIsRedeeming] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,21 +57,30 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
 
   const userProfileRef = useMemo(() => {
-    // Only create the user profile document reference if the user is logged in AND the dialog is open.
-    // This prevents the useDoc hook from running on page load for every perk card.
-    if (user && isOpen) {
-      return doc(firestore, 'users', user.uid);
-    }
+    if (user && isOpen) return doc(firestore, 'users', user.uid);
     return null;
   }, [user, firestore, isOpen]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // OWNER (Supplier) Data for Cart
+  const ownerRef = useMemo(() => {
+    if (!perk?.ownerId || !isOpen) return null;
+    return doc(firestore, 'roles_supplier', perk.ownerId);
+  }, [perk, firestore, isOpen]);
+  const { data: owner } = useDoc<any>(ownerRef);
+
+  // Delivery Products Query
+  const deliveryProductsQuery = useMemo(() => {
+    if (!perk?.linkedProductIds || perk.linkedProductIds.length === 0 || !firestore || !isOpen) return null;
+    const chunk = perk.linkedProductIds.slice(0, 10);
+    return query(collection(firestore, 'products'), where(documentId(), 'in', chunk), where('isActive', '==', true));
+  }, [perk, firestore, isOpen]);
+  const { data: linkedProducts } = useCollectionOnce(deliveryProductsQuery);
+
   useEffect(() => {
     if (!redemptionId || typeof window === 'undefined') return;
-    
     const qrCodeValue = JSON.stringify({ redemptionId: redemptionId });
-
     import('qrcode').then(QRCode => {
         QRCode.toDataURL(qrCodeValue, {
             errorCorrectionLevel: 'H',
@@ -83,133 +96,103 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     });
   }, [redemptionId]);
 
+  const handleAddComboToCart = () => {
+    if (!linkedProducts || linkedProducts.length === 0) {
+        toast({ title: "Error", description: "No hay productos vinculados al beneficio." });
+        return;
+    }
+
+    const fallbackSupplierId = perk?.ownerId || linkedProducts[0]?.supplierId || 'estuclub-comercio';
+    let itemsAdded = 0;
+
+    linkedProducts.forEach((product: any) => {
+        const originalPrice = Number(product.price || 0);
+        let finalPrice = originalPrice;
+
+        if (perk?.discountPercentage && Number(perk.discountPercentage) > 0) {
+            finalPrice = finalPrice * (1 - Number(perk.discountPercentage) / 100);
+        }
+        if (perk?.discountAmount && Number(perk.discountAmount) > 0) {
+            finalPrice = Math.max(0, finalPrice - Number(perk.discountAmount));
+        }
+        finalPrice = Math.round(finalPrice);
+
+        addItem({
+            productId: String(product.id || product.name),
+            name: String(product.name || 'Combo Benefit'),
+            price: finalPrice,
+            originalPrice: originalPrice,
+            quantity: 1,
+            imageUrl: product.imageUrl || ''
+        }, {
+            id: fallbackSupplierId,
+            name: owner?.name || perk?.supplierName || 'Comercio',
+            phone: owner?.whatsappContact || owner?.whatsapp || ''
+        });
+        itemsAdded++;
+    });
+    
+    if (itemsAdded > 0) {
+        haptic.vibrateSuccess();
+        toast({ title: "¡Combo añadido al carrito!", description: "Revisa tu pedido en la sección de Delivery." });
+        setIsOpen(false); // Close on success
+    }
+  };
 
   const handleRedeem = async () => {
     if (typeof window !== 'undefined' && !navigator.onLine) {
-      toast({
-        variant: 'destructive',
-        title: 'Sin conexión',
-        description: 'Se requiere una conexión a internet activa para realizar el canje. Por favor, intenta de nuevo cuando tengas señal.'
-      });
-      setIsRedeeming(false);
+      toast({ variant: 'destructive', title: 'Sin conexión', description: 'Se requiere una conexión a internet activa.' });
       return;
     }
-
     if (!user || !userProfile || !firestore || !perk.ownerId) {
-      toast({ 
-          variant: 'destructive', 
-          title: 'Error de datos',
-          description: 'No se pudo cargar la información completa para el canje. Inténtalo de nuevo.' 
-      });
+      toast({ variant: 'destructive', title: 'Error de datos', description: 'No se pudo cargar la información.' });
       return;
     }
 
     setIsRedeeming(true);
     haptic.vibrateImpact();
     setError(null);
-    setRedemptionId(null);
-    setQrCodeUrl(null);
 
     const pointsToGrant = perk.points || 0;
 
     try {
-      const today = new Date();
-      const todayDayString = today.toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
-
+      const todayDayString = new Date().toLocaleDateString('es-ES', { weekday: 'long' }).toLowerCase();
       if (perk.availableDays && perk.availableDays.length > 0 && !perk.availableDays.some(d => d.toLowerCase() === todayDayString)) {
         throw new Error(`Este beneficio solo está disponible los días: ${perk.availableDays.join(', ')}.`);
       }
       
-      if (perk.validUntil && new Date(perk.validUntil) < new Date()) {
-        throw new Error("Este beneficio ha expirado y ya no se puede canjear.");
-      }
-
       const userLevel = getLevelInfo(userProfile.points || 0).level;
-      const isPrivileged = userProfile.role === 'admin' || userProfile.role === 'supplier';
-
-      if (perk.minLevel && userLevel < perk.minLevel && !isPrivileged) {
-        throw new Error(`Este beneficio requiere Nivel ${perk.minLevel}. Tu nivel actual es ${userLevel}.`);
+      if (perk.minLevel && userLevel < perk.minLevel && userProfile.role !== 'admin' && userProfile.role !== 'supplier') {
+        throw new Error(`Este beneficio requiere Nivel ${perk.minLevel}.`);
       }
-      
-      // TEMPORARILY REMOVED PRE-CHECKS TO ISOLATE PERMISSION ERROR
-      /*
-      if (perk.redemptionLimit && perk.redemptionLimit > 0) {
-        const q = query(
-          userRedemptionsRef, 
-          where("perkId", "==", perk.id),
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.size >= perk.redemptionLimit) {
-          throw new Error(`Has alcanzado el límite de canje (${perk.redemptionLimit}) para este beneficio.`);
-        }
-      }
-      */
-      
-      const batch = writeBatch(firestore);
-
-      // Using simpler supplier name fallback if possible
-      const supplierName = perk.supplierName || 'Proveedor';
       
       const redemptionIdToSet = doc(collection(firestore, 'benefitRedemptions')).id;
       const rootRedemptionRef = doc(firestore, "benefitRedemptions", redemptionIdToSet);
       const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionIdToSet);
       
-      const qrCodeValue = JSON.stringify({ redemptionId: redemptionIdToSet });
-      
-      // Prepare redemption data with careful defaults
       const redemptionData = {
         id: redemptionIdToSet,
         perkId: perk.id,
         perkTitle: perk.title || 'Beneficio',
-        perkDescription: perk.description || '',
-        perkImageUrl: perk.imageUrl || perk.image || '',
-        perkLocation: perk.location || '',
+        perpDescription: perk.description || '',
         userId: user.uid,
         userName: `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim() || userProfile.username || 'Usuario',
-        userDni: userProfile.dni || 'No especificado',
         supplierId: perk.ownerId,
         supplierName: perk.supplierName || 'Proveedor',
         redeemedAt: serverTimestamp(),
-        qrCodeValue: qrCodeValue,
         status: 'pending' as const,
         pointsGranted: pointsToGrant
       };
 
-      console.log("Attempting direct writes to isolate permissions error...");
-      
-      try {
-        console.log("Writing to root collection...");
-        // Use setDoc instead of batch for debugging
-        await setDoc(rootRedemptionRef, redemptionData);
-      } catch (err: any) {
-        console.error("FAILED root collection write:", err);
-        throw new Error(`Error de permisos (Root): ${err.message || 'Desconocido'}`);
-      }
-
-      try {
-        console.log("Writing to user subcollection...");
-        await setDoc(userRedemptionRef, redemptionData);
-      } catch (err: any) {
-        console.error("FAILED user subcollection write:", err);
-        throw new Error(`Error de permisos (Sub): ${err.message || 'Desconocido'}`);
-      }
+      await setDoc(rootRedemptionRef, redemptionData);
+      await setDoc(userRedemptionRef, redemptionData);
 
       setRedemptionId(redemptionIdToSet);
       haptic.vibrateSuccess();
       triggerSuccessEffect();
-      toast({
-        title: '¡Beneficio Canjeado!',
-        description: `Muestra el código QR al proveedor para validarlo. Se han sumado ${pointsToGrant} puntos a tu cuenta.`,
-      });
-
+      toast({ title: '¡Beneficio Canjeado!', description: `Muestra el código QR al proveedor.` });
     } catch (e: any) {
-        console.error('Error redeeming perk:', e);
-        setError(e.message || 'No se pudo canjear el beneficio. Por favor, inténtalo de nuevo.');
-        toast({ 
-            variant: 'destructive', 
-            title: 'Error al Canjear', 
-            description: e.message || 'Ocurrió un problema al canjear el beneficio.'
-        });
+        setError(e.message || 'No se pudo canjear.');
     } finally {
       setIsRedeeming(false);
     }
@@ -225,8 +208,6 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     }
   }
 
-  const isLoading = isUserLoading || (!!user && isProfileLoading);
-
   const TriggerWrapper = ({ children }: { children: React.ReactNode }) => (
     isCarouselTrigger ? (
       <div className="h-full w-full cursor-pointer" onClick={(e) => { e.preventDefault(); setIsOpen(true); }}>
@@ -239,117 +220,162 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     )
   );
 
-  
   const RedemptionSuccessView = () => (
-      <div className='text-center space-y-4 flex flex-col items-center'>
+      <div className='text-center space-y-4 flex flex-col items-center py-4'>
           <CheckCircle className="h-16 w-16 text-green-500" />
-          <h3 className="text-lg font-semibold">¡Beneficio Pre-canjeado!</h3>
-          <p className='text-sm text-muted-foreground'>Muestra el siguiente código QR al proveedor para completar la validación.</p>
-          <div className="my-4 flex justify-center">
+          <h3 className="text-lg font-black uppercase tracking-tighter">¡Beneficio Pre-canjeado!</h3>
+          <p className='text-xs text-muted-foreground max-w-[250px]'>Muestra el código QR al proveedor para completar la validación.</p>
+          <div className="my-2 flex justify-center">
             {qrCodeUrl ? (
-                <img src={qrCodeUrl} alt="Código QR de canje" className="rounded-2xl border-4 border-background shadow-xl" />
+                <img src={qrCodeUrl} alt="Código QR de canje" className="rounded-2xl border-4 border-background shadow-xl w-48 h-48" />
             ) : (
-                <BrandSkeleton className="h-64 w-64 rounded-2xl" />
+                <BrandSkeleton className="h-48 w-48 rounded-2xl" />
             )}
           </div>
       </div>
   );
-
-  const points = perk.points || 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <TriggerWrapper>
         {children}
       </TriggerWrapper>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md overflow-hidden p-0 rounded-[2.5rem] border-none bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="sr-only">
+            <DialogTitle>{perk.title}</DialogTitle>
+            <DialogDescription>{perk.content || perk.description}</DialogDescription>
+        </DialogHeader>
         {!redemptionId ? (
-            <>
-                <DialogHeader>
-                    <DialogTitle>Canjear: {perk.title}</DialogTitle>
-                    <DialogDescription>
-                    Al canjear este beneficio, ganarás <span className="font-bold text-primary">{points}</span> puntos.
-                    </DialogDescription>
-                </DialogHeader>
+            <div className="flex flex-col">
+                <div className="relative w-full aspect-video overflow-hidden">
+                    <Image
+                        src={perk.imageUrl || perk.image}
+                        alt={perk.title}
+                        fill
+                        className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <div className="absolute bottom-4 left-6 right-6">
+                        <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 text-[10px] font-black text-white shadow-2xl mb-2">
+                             <Award className="h-3 w-3 text-primary" />
+                             <span>{perk.points || 0} PUNTOS XP</span>
+                        </div>
+                        <h2 className="text-2xl font-black tracking-tighter uppercase text-white leading-none line-clamp-2">
+                            {perk.title}
+                        </h2>
+                    </div>
+                </div>
 
-                {perk.availableDays && perk.availableDays.length > 0 && (
-                    <div className="flex items-center gap-3 rounded-lg border p-3">
-                        <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
-                        <div className='flex-1'>
-                            <p className="text-sm font-medium">Días disponibles</p>
-                            <div className="flex flex-wrap gap-x-2 pt-1 font-mono text-sm text-muted-foreground">
-                                {daysOrder.map(day => (
-                                    <span key={day} className={perk.availableDays?.includes(day) ? 'text-foreground font-bold' : 'text-muted-foreground/50'}>
-                                        {dayAbbreviations[day]}
-                                    </span>
-                                ))}
+                <div className="p-6 space-y-6">
+                    <div className="space-y-2">
+                        <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">
+                            {perk.content || perk.description}
+                        </p>
+                    </div>
+
+                    {perk.availableDays && perk.availableDays.length > 0 && (
+                        <div className="flex items-center gap-3 rounded-2xl bg-neutral-100 p-3 border border-neutral-200">
+                            <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
+                            <div className='flex-1'>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Días disponibles</p>
+                                <div className="flex flex-wrap gap-x-2 pt-0.5 font-black text-sm text-neutral-900">
+                                    {daysOrder.map(day => (
+                                        <span key={day} className={perk.availableDays?.includes(day) ? 'text-primary' : 'text-neutral-300'}>
+                                            {dayAbbreviations[day]}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-                
-                {userProfile && perk.minLevel && getLevelInfo(userProfile.points || 0).level < perk.minLevel && userProfile.role !== 'admin' && userProfile.role !== 'supplier' && (
-                    <Alert className="bg-yellow-500/10 border-yellow-500/20 text-yellow-700 dark:text-yellow-500">
-                        <Lock className="h-4 w-4" />
-                        <AlertTitle className="font-black uppercase tracking-tighter">Nivel Insuficiente</AlertTitle>
-                        <AlertDescription className="text-xs">
-                            Este beneficio requiere **Nivel {perk.minLevel}**. Sigue participando para subir de nivel y desbloquearlo.
-                        </AlertDescription>
-                    </Alert>
-                )}
+                    )}
 
-                {userProfile && (
-                     <p className="text-sm text-center text-muted-foreground">
-                        Tus puntos actuales: <span className="font-bold text-foreground">{userProfile.points || 0}</span>
-                    </p>
-                )}
+                    {/* Linked Products Section */}
+                    {linkedProducts && linkedProducts.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary">
+                                <Package className="h-4 w-4" />
+                                <span>Combo Incluido</span>
+                            </div>
+                            <div className="flex flex-col gap-2 p-3 rounded-2xl bg-neutral-100 border border-neutral-200">
+                                {linkedProducts.map((p: any) => {
+                                    let finalPrice = Number(p.price || 0);
+                                    if (perk.discountPercentage) finalPrice = finalPrice * (1 - Number(perk.discountPercentage)/100);
+                                    if (perk.discountAmount) finalPrice = Math.max(0, finalPrice - Number(perk.discountAmount));
+                                    finalPrice = Math.round(finalPrice);
+                                    
+                                    return (
+                                        <div key={p.id} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-neutral-200 shadow-sm">
+                                            <div className="flex-1">
+                                                <p className="text-sm font-bold text-neutral-800">{p.name}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                {finalPrice < p.price && (
+                                                    <span className="text-[10px] text-neutral-400 line-through mr-1.5">${p.price}</span>
+                                                )}
+                                                <span className="text-lg font-black text-primary">${finalPrice}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
 
+                    {error && (
+                        <Alert variant="destructive" className="rounded-2xl">
+                            <AlertTitle className="font-black uppercase tracking-tighter text-xs">Error</AlertTitle>
+                            <AlertDescription className="text-xs">{error}</AlertDescription>
+                        </Alert>
+                    )}
 
-                {error && (
-                    <Alert variant="destructive">
-                        <AlertTitle>Error</AlertTitle>
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
+                    <div className="flex flex-col gap-3 pt-2">
+                         {linkedProducts && linkedProducts.length > 0 && (
+                            <Button 
+                                onClick={handleAddComboToCart}
+                                className="h-14 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-orange-500/20 group"
+                            >
+                                Pedir por Delivery
+                                <ShoppingBag className="ml-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                            </Button>
+                         )}
 
-                <DialogFooter className="sm:justify-between gap-2">
-                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-                        Cancelar
-                    </Button>
-                    <MagneticButton disabled={isRedeeming || isProfileLoading || !user || (perk.minLevel ? (getLevelInfo(userProfile?.points || 0).level < perk.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}>
                         <Button 
-                          type="button" 
-                          onClick={handleRedeem} 
-                          disabled={isRedeeming || isProfileLoading || !user || (perk.minLevel ? (getLevelInfo(userProfile?.points || 0).level < perk.minLevel && userProfile?.role !== 'admin' && userProfile?.role !== 'supplier') : false)}
-                          className="h-12 rounded-xl font-black uppercase tracking-widest text-[10px] px-6 shadow-lg shadow-primary/20"
+                            variant={linkedProducts && linkedProducts.length > 0 ? "outline" : "default"}
+                            onClick={handleRedeem}
+                            disabled={isRedeeming || isProfileLoading || !user}
+                            className={cn(
+                                "h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl",
+                                !(linkedProducts && linkedProducts.length > 0) && "bg-primary shadow-primary/20"
+                            )}
                         >
-                            {isRedeeming ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Procesando...
-                                </>
-                            ) : isProfileLoading ? 'Cargando...' : (
+                            {isRedeeming ? <Loader2 className="animate-spin h-4 w-4" /> : (
                                 <span className="flex items-center">
-                                    <Award className='mr-2 h-4 w-4' />
-                                    Confirmar Canje
+                                    Canjear Presencial
+                                    <ArrowRight className="ml-2 h-4 w-4" />
                                 </span>
                             )}
                         </Button>
-                    </MagneticButton>
-                </DialogFooter>
-            </>
+                        
+                        <button 
+                            onClick={() => setIsOpen(false)}
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-neutral-900 transition-colors py-2"
+                        >
+                            Cerrar detalle
+                        </button>
+                    </div>
+                </div>
+            </div>
         ) : (
-            <>
-                <DialogHeader>
-                    <DialogTitle>Validación Requerida</DialogTitle>
-                </DialogHeader>
+            <div className="p-6 pt-10">
                 <RedemptionSuccessView />
-                <DialogFooter>
-                    <Button type="button" variant="secondary" onClick={() => setIsOpen(false)}>
-                        Cerrar
-                    </Button>
-                </DialogFooter>
-            </>
+                <Button 
+                    className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs mt-4" 
+                    variant="secondary" 
+                    onClick={() => setIsOpen(false)}
+                >
+                    Entendido
+                </Button>
+            </div>
         )}
       </DialogContent>
     </Dialog>

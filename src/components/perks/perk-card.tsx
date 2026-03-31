@@ -6,12 +6,16 @@ import type { SerializableBenefit } from '@/types/data';
 import { Building, MapPin, Lock } from 'lucide-react';
 import { cn, optimizeImage } from '@/lib/utils';
 import { Badge } from '../ui/badge';
-import RedeemPerkDialog from './redeem-perk-dialog';
 import { FavoriteButton } from '../layout/favorite-button';
 import { useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { calculateDistance, formatDistance } from '@/lib/geo-utils';
 import { getLevelInfo } from '@/lib/gamification';
+import dynamic from 'next/dynamic';
+
+const RedeemPerkDialog = dynamic(() => import('./redeem-perk-dialog'), {
+  ssr: false,
+});
 
 interface PerkCardProps {
   perk: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
@@ -127,7 +131,7 @@ export default function PerkCard({ perk, className, variant = 'grid', priority =
                 <h3 className={cn(
                     "font-black uppercase tracking-tighter leading-[0.9] mb-1",
                     "text-xl md:text-2xl group-hover:text-primary transition-all duration-500 group-hover:scale-[1.02] origin-left",
-                    "drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]"
+                    "drop-shadow-[0_4px_8_rgba(0,0,0,0.8)]"
                 )}>
                     {primaryText}
                 </h3>

@@ -70,7 +70,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             const existing = prev.find(i => i.productId === newItem.productId);
             if (existing) {
                 return prev.map(i => i.productId === newItem.productId 
-                    ? { ...i, quantity: i.quantity + newItem.quantity, price: newItem.price }
+                    ? { ...i, quantity: i.quantity + newItem.quantity, price: newItem.price, originalPrice: newItem.originalPrice }
                     : i
                 );
             }
