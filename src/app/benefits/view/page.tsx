@@ -219,32 +219,43 @@ export default function BenefitDetailPage() {
                                                     </div>
                                                 );
                                             })}
-                                            <Button 
-                                                variant="outline"
-                                                className="w-full h-12 mt-2 rounded-xl font-black uppercase tracking-[0.1em] text-xs border-orange-500/50 text-orange-500 hover:bg-orange-500/20 hover:text-orange-500 shadow-xl shadow-orange-500/10 transition-all active:scale-95" 
-                                                onClick={handleAddComboToCart}
-                                            >
-                                                <ShoppingBag className="h-4 w-4 mr-2" /> Canjear por Delivery
-                                            </Button>
                                         </div>
                                     </div>
                                 )}
                             </CardContent>
 
-                            <CardFooter className="p-0 mt-10">
-                                 <RedeemPerkDialog perk={serializableBenefit}>
+                            <CardFooter className="flex flex-col gap-3 p-0 mt-10">
+                                {serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 ? (
                                     <Button 
-                                        className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
-                                        onClick={() => haptic.vibrateImpact()}
+                                        className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-orange-500/30 bg-orange-500 hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95" 
+                                        onClick={() => {
+                                            if (!isUserLoading && user) {
+                                                handleAddComboToCart();
+                                            }
+                                        }}
                                         disabled={isUserLoading || !user}
                                     >
                                         {isUserLoading ? 'Procesando...' : (
                                             <span className="flex items-center justify-center gap-3">
-                                                Canjear ahora <ArrowRight className="h-5 w-5" />
+                                                Agregar al Carrito <ShoppingBag className="h-5 w-5" />
                                             </span>
                                         )}
                                     </Button>
-                                </RedeemPerkDialog>
+                                ) : (
+                                    <RedeemPerkDialog perk={serializableBenefit}>
+                                        <Button 
+                                            className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-95" 
+                                            onClick={() => haptic.vibrateImpact()}
+                                            disabled={isUserLoading || !user}
+                                        >
+                                            {isUserLoading ? 'Procesando...' : (
+                                                <span className="flex items-center justify-center gap-3">
+                                                    Canjear ahora <ArrowRight className="h-5 w-5" />
+                                                </span>
+                                            )}
+                                        </Button>
+                                    </RedeemPerkDialog>
+                                )}
                             </CardFooter>
                         </div>
                     </Card>

@@ -34,8 +34,8 @@ export function BottomNav() {
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/benefits', label: 'Beneficios', icon: Ticket },
     benefitsCenterBtn,
-    { href: '/turnos', label: 'Turnos', icon: CalendarDays },
     { href: '/profile', label: 'Perfil', icon: User },
+    { href: '#cart', label: 'Carrito', icon: ShoppingCart },
   ];
 
   const deliveryNav = [
@@ -117,13 +117,48 @@ export function BottomNav() {
             );
           }
 
+          if (item.href === '#cart' && !item.special) {
+              const cartContent = (
+                <button
+                  onClick={() => haptic.vibrateSubtle()}
+                  className={cn(
+                    'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300 w-full h-full',
+                    isActive ? 'text-primary' : 'hover:text-primary'
+                  )}
+                >
+                    <motion.div animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }} className="flex flex-col items-center relative">
+                        <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+                        {totalItems > 0 && (
+                            <div className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[10px] font-black h-4 w-4 rounded-full flex items-center justify-center shadow-sm">
+                                {totalItems}
+                            </div>
+                        )}
+                        <span className={cn(
+                            "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-opacity text-center px-1",
+                            isActive ? "opacity-100" : "opacity-60"
+                        )}>
+                            {item.label}
+                        </span>
+                    </motion.div>
+                </button>
+              );
+              
+              return (
+                  <div key="cart-sheet-normal" className="relative flex flex-col items-center justify-center w-full h-full">
+                      <CartSheet>
+                          {cartContent}
+                      </CartSheet>
+                  </div>
+              );
+          }
+
           return (
             <Link
               key={`${item.href}-${index}`}
               href={item.href}
               onClick={() => haptic.vibrateSubtle()}
               className={cn(
-                'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300',
+                'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300 w-full h-full',
                 isActive ? 'text-primary' : 'hover:text-primary',
                 item.highlight && "text-primary/80"
               )}
