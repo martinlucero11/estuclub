@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { haptic } from '@/lib/haptics';
 import { Separator } from '@/components/ui/separator';
 import { CheckoutDialog } from './checkout-dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface CartSheetProps {
     children: React.ReactNode;
@@ -32,21 +33,24 @@ export function CartSheet({ children }: CartSheetProps) {
                 <SheetTrigger asChild>
                     {children}
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh] sm:h-[600px] rounded-t-[3rem] glass glass-dark border-t border-white/10 p-0 overflow-hidden flex flex-col">
-                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1.5 rounded-full bg-white/10" />
+                <SheetContent side="bottom" className="h-[90vh] sm:h-[650px] rounded-t-[3.5rem] bg-white border-t border-slate-100 p-0 overflow-hidden flex flex-col shadow-[0_-20px_60px_rgba(0,0,0,0.08)] selection:bg-pink-100">
+                    <div className="absolute top-3 left-1/2 -translate-x-1/2 w-16 h-1.5 rounded-full bg-slate-200" />
                     
-                    <SheetHeader className="p-6 pb-2">
+                    <SheetHeader className="p-10 pb-4">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <SheetTitle className="text-3xl font-black tracking-tighter italic">Tu Carrito</SheetTitle>
+                                <SheetTitle className="text-4xl font-black italic tracking-tighter text-slate-900">Tu Carrito</SheetTitle>
                                 {supplierName && (
-                                    <p className="text-pink-500 font-black uppercase tracking-widest text-[10px]">Pidiendo a: {supplierName}</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
+                                        <p className="text-pink-500 font-black uppercase tracking-[0.2em] text-[10px]">Pidiendo a: {supplierName}</p>
+                                    </div>
                                 )}
                             </div>
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="rounded-full text-destructive hover:bg-destructive/10"
+                                className="rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all"
                                 onClick={() => {
                                     if (confirm('¿Vaciar el carrito?')) clearCart();
                                 }}
@@ -56,63 +60,61 @@ export function CartSheet({ children }: CartSheetProps) {
                         </div>
                     </SheetHeader>
 
-                    <Separator className="bg-white/5" />
-
-                    <ScrollArea className="flex-1 px-6">
+                    <ScrollArea className="flex-1 px-10">
                         {items.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-                                <div className="h-20 w-20 rounded-full bg-white/5 flex items-center justify-center">
-                                    <ShoppingBag className="h-10 w-10 text-muted-foreground opacity-20" />
+                            <div className="flex flex-col items-center justify-center py-24 text-center space-y-6">
+                                <div className="h-24 w-24 rounded-[2.5rem] bg-slate-50 flex items-center justify-center border border-slate-100 rotate-12">
+                                    <ShoppingBag className="h-10 w-10 text-slate-200" />
                                 </div>
-                                <div className="space-y-1">
-                                    <p className="font-bold text-lg">Tu carrito está vacío</p>
-                                    <p className="text-sm text-muted-foreground">¡Añade algo rico para empezar!</p>
+                                <div className="space-y-2">
+                                    <p className="font-black italic text-2xl tracking-tighter text-slate-300">Carrito vacío</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Elegí algo épico</p>
                                 </div>
                             </div>
                         ) : (
-                            <div className="py-6 space-y-6">
+                            <div className="py-6 space-y-8">
                                 {items.map((item) => (
-                                    <div key={item.productId} className="flex gap-4 group">
-                                        <div className="relative h-20 w-20 rounded-2xl overflow-hidden bg-muted flex-shrink-0 border border-white/5">
+                                    <div key={item.productId} className="flex gap-6 group">
+                                        <div className="relative h-24 w-24 rounded-[2rem] overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100 group-hover:border-pink-200 transition-all duration-500 shadow-sm">
                                             {item.imageUrl ? (
                                                 <Image 
                                                     src={optimizeImage(item.imageUrl, 200)} 
                                                     alt={item.name} 
                                                     fill 
-                                                    className="object-cover"
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-                                                    <ShoppingBag className="h-8 w-8" />
+                                                <div className="w-full h-full flex items-center justify-center text-slate-200">
+                                                    <ShoppingBag className="h-10 w-10" />
                                                 </div>
                                             )}
                                         </div>
                                         
-                                        <div className="flex-1 flex flex-col justify-between py-1">
-                                            <div className="space-y-0.5">
-                                                <h4 className="font-black text-sm tracking-tight leading-tight">{item.name}</h4>
-                                                <div className="flex items-center gap-2">
+                                        <div className="flex-1 flex flex-col justify-center gap-2">
+                                            <div className="space-y-1">
+                                                <h4 className="font-black text-xl tracking-tighter italic text-slate-900 leading-tight">{item.name}</h4>
+                                                <div className="flex items-center gap-3">
                                                     {item.originalPrice && item.originalPrice > item.price && (
-                                                        <span className="text-[10px] text-muted-foreground line-through opacity-50 font-bold">
+                                                        <span className="text-xs text-slate-300 line-through font-bold">
                                                             $ {(item.originalPrice * item.quantity).toLocaleString()}
                                                         </span>
                                                     )}
-                                                    <p className="text-pink-500 font-bold text-xs">$ {(item.price * item.quantity).toLocaleString()}</p>
+                                                    <p className="text-pink-500 font-black text-base tracking-tight">$ {(item.price * item.quantity).toLocaleString()}</p>
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-1">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-1.5">
                                                     <button 
                                                         onClick={() => {
                                                             haptic.vibrateSubtle();
                                                             updateQuantity(item.productId, item.quantity - 1);
                                                         }}
-                                                        className="h-7 w-7 flex items-center justify-center rounded-lg bg-secondary/10 hover:bg-secondary/20 hover:text-pink-500 transition-all active:scale-95 border border-pink-500/10"
+                                                        className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-white hover:text-pink-500 shadow-sm transition-all active:scale-90 border border-transparent hover:border-slate-200"
                                                     >
-                                                        <Minus className="h-3 w-3" />
+                                                        <Minus className="h-3.5 w-3.5" />
                                                     </button>
-                                                    <div className="w-8 h-7 flex items-center justify-center text-sm font-black text-center bg-transparent">
+                                                    <div className="w-6 h-9 flex items-center justify-center text-sm font-black text-slate-900 italic tracking-tighter">
                                                         {item.quantity}
                                                     </div>
                                                     <button 
@@ -120,9 +122,9 @@ export function CartSheet({ children }: CartSheetProps) {
                                                             haptic.vibrateSubtle();
                                                             updateQuantity(item.productId, item.quantity + 1);
                                                         }}
-                                                        className="h-7 w-7 flex items-center justify-center rounded-lg bg-pink-500/10 text-pink-500 hover:bg-pink-500/20 transition-all active:scale-95 border border-pink-500/20"
+                                                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-pink-500 text-white shadow-lg shadow-pink-500/20 transition-all active:scale-95"
                                                     >
-                                                        <Plus className="h-3 w-3" />
+                                                        <Plus className="h-3.5 w-3.5" />
                                                     </button>
                                                 </div>
                                                 
@@ -131,9 +133,9 @@ export function CartSheet({ children }: CartSheetProps) {
                                                         haptic.vibrateSubtle();
                                                         removeItem(item.productId);
                                                     }}
-                                                    className="text-muted-foreground h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                                                    className="text-slate-300 invisible group-hover:visible transition-all p-2.5 hover:text-red-500 hover:bg-red-50 rounded-xl"
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Trash2 className="h-4.5 w-4.5" />
                                                 </button>
                                             </div>
                                         </div>
@@ -143,26 +145,34 @@ export function CartSheet({ children }: CartSheetProps) {
                         )}
                     </ScrollArea>
 
-                    <SheetFooter className="p-6 bg-gradient-to-t from-background to-transparent border-t border-white/10 flex-col gap-4 sm:flex-col">
-                        <div className="flex items-center justify-between w-full mb-2">
-                            <span className="text-muted-foreground font-bold uppercase tracking-widest text-xs">Subtotal</span>
-                            <span className="text-2xl font-black text-pink-500">$ {subtotal.toLocaleString()}</span>
+                    <SheetFooter className="p-10 bg-slate-50 border-t border-slate-100 flex-col gap-6 sm:flex-col">
+                        <div className="flex items-center justify-between w-full">
+                            <div className="space-y-1">
+                                <span className="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">Inversión Bruta</span>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-4xl font-black italic tracking-tighter text-slate-900">$ {subtotal.toLocaleString()}</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <Badge className="bg-white border-slate-100 text-slate-900 font-black text-[10px] py-1.5 px-4 shadow-sm">
+                                    {totalItems} ITEMS EN BOLSA
+                                </Badge>
+                            </div>
                         </div>
                         
                         <Button 
                             onClick={handleConfirmOrder} 
                             disabled={items.length === 0}
-                            className="w-full h-16 rounded-[1.5rem] bg-pink-500 hover:bg-pink-400 text-black font-black text-lg tracking-[0.2em] uppercase shadow-2xl shadow-pink-500/20 gap-3 border-none relative group overflow-hidden"
+                            className="w-full h-24 rounded-[3rem] bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl tracking-[0.1em] italic shadow-[0_25px_50px_-12px_rgba(236,72,153,0.4)] transition-all hover:scale-[1.01] active:scale-95 border-none group relative overflow-hidden"
                         >
-                            <div className="flex items-center gap-2">
-                                <CreditCard className="h-6 w-6" />
+                            <div className="relative z-10 flex items-center gap-4">
                                 PAGAR AHORA
-                                <Sparkles className="h-5 w-5 animate-pulse" />
+                                <Sparkles className="h-7 w-7 animate-pulse" />
                             </div>
-                            <div className="absolute inset-0 bg-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                         </Button>
-                        <p className="text-[10px] text-center text-slate-500 uppercase tracking-widest font-black opacity-60 px-4">
-                            Pagos 100% Seguros vía Mercado Pago • EstuClub Riders
+                        <p className="text-[10px] text-center text-slate-400 font-black uppercase tracking-[0.3em] px-4">
+                            Pagos 100% Seguros Vía Mercado Pago
                         </p>
                     </SheetFooter>
                 </SheetContent>

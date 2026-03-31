@@ -41,40 +41,43 @@ export async function POST(req: Request) {
 
         // 3. Create Preference with Mercado Pago V2 SDK
         const preference = new Preference(mpClient);
+        
+        // Final Sanity Check for URLs (Clean potential trailing slashes)
+        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
 
         const response = await preference.create({
             body: {
                 items: [
                     ...items.map((item: any) => ({
-                        id: item.id,
+                        id: item.id || item.productId,
                         title: item.name,
                         quantity: item.quantity,
-                        unit_price: item.price,
+                        unit_price: Math.round(item.price),
                         currency_id: 'ARS'
                     })),
                     {
                         id: 'shipping_stcl',
-                        title: 'Logística de Envío Estuclub',
+                        title: 'Logística de Envío Estuclub 🏍️',
                         quantity: 1,
-                        unit_price: shippingFee,
+                        unit_price: Math.round(shippingFee),
                         currency_id: 'ARS'
                     },
                     {
                         id: 'platform_stcl',
-                        title: 'Tarifa de Servicio Estuclub (Gestión)',
+                        title: 'Tarifa de Gestión Estuclub ✨',
                         quantity: 1,
-                        unit_price: serviceFee,
+                        unit_price: Math.round(serviceFee),
                         currency_id: 'ARS'
                     }
                 ],
                 back_urls: {
-                    success: `${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}`,
-                    failure: `${process.env.NEXT_PUBLIC_BASE_URL}/delivery`,
-                    pending: `${process.env.NEXT_PUBLIC_BASE_URL}/orders/${orderId}`,
+                    success: `${baseUrl}/orders/${orderId}`,
+                    failure: `${baseUrl}/delivery`,
+                    pending: `${baseUrl}/orders/${orderId}`,
                 },
                 auto_return: 'approved',
-                notification_url: `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhooks/mercadopago`,
-                marketplace_fee: estuclubShare, 
+                notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+                marketplace_fee: Math.round(estuclubShare), 
                 external_reference: orderId,
                 metadata: {
                     order_id: orderId,
