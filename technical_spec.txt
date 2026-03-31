@@ -1,0 +1,64 @@
+========================================================
+             ESTUCLUB: TECHNICAL SPECIFICATION
+========================================================
+
+1. TECNOLOGIAS DEL CORE (TECH STACK)
+------------------------------------
+* Framework: Next.js 14+ (App Router Architecture)
+* Lenguaje: TypeScript
+* Base de Datos: Firebase Firestore (NoSQL, Real-time)
+* Autenticación: Firebase Auth (Sincronización con perfiles de usuario)
+* Estilos: Tailwind CSS & Vanilla CSS (Luxury Aesthetic)
+* Animaciones: Framer Motion (Transiciones fluidas y micro-interacciones)
+* Iconografia: Lucide React
+* Almacenamiento: Firebase Storage (Imagenes de productos, logos y comprobantes)
+* PWA/Mobil: Capacitor.js (Android APK Ready)
+
+2. FUNCIONALIDADES CLAVE (FEATURES)
+-----------------------------------
+
+2.1. SISTEMA DE BENEFICIOS (PERKS)
+- Canje Dinamico: Generación de códigos QR únicos vinculados a redenciones en Firestore.
+- Geolocalización: Calculo de distancias (Haversine formula) para mostrar beneficios "Cerca tuyo".
+- Membresia 'Cinco Dos': Sistema de beneficios exclusivos para usuarios premium/verificados.
+- Limites de Redención: Control de stock y frecuencia por beneficio.
+
+2.2. DELIVERY LITE & CART SYSTEM
+- Catalogo Multinivel: Productos organizados por categorias definidas por cada comercio (Cluber).
+- Carrito Inteligente: Persistencia en LocalStorage para no perder el pedido al navegar.
+- Integracion WhatsApp: Generación de mensajes formateados dinamicamente para confirmar pedidos directamente con el local.
+- Precios con Ahorro: Visualización de 'Precio Anterior' vs 'Pecio con Beneficio' con tachado visual.
+
+2.3. MISMUKI: EL JUEGO (CAT RUNNER)
+- Motor: HTML5 Canvas API (Rendering 60FPS).
+- Estetica Cyberpunk: Fondo parallax, grid moving, efectos neon y particulas.
+- Fisica: Gravedad incremental y velocidad dinamica (Dificultad progresiva).
+- Sistema de Puntos: +1 por cada obstaculo superado.
+
+2.4. HOME BUILDER (CMS PROPIO)
+- Maquetacion Dinamica: El administrador puede crear secciones (Carousels, Grids, Banners, Mensajes) desde el panel de control sin tocar código.
+- Filtrado por Tablero: Alternancia automatica entre 'Mundo Perks' y 'Mundo Delivery'.
+
+3. ARQUITECTURA DE DATOS (DATA MODELS)
+--------------------------------------
+* /users: Perfiles de estudiantes, puntos (XP), nivel y estado de verificación.
+* /roles_supplier: Perfiles de comercios, configuración de delivery y reputación.
+* /perks: Definición de beneficios, puntos requeridos y filtros de audiencia.
+* /products: Inventario de productos para delivery vinculados a proveedores.
+* /redeemed_benefits: Historico de canjes con timestamps y estados de uso.
+* /home_sections: Configuración JSON de la estructura de la Home.
+
+4. CONSIDERACIONES DE DISEÑO
+----------------------------
+- UX Premium: Interacciones hapticas (Vibración) en dispositivos moviles.
+- Modo Oscuro Nativo: Implementación de colores HSL personalizados.
+- Accesibilidad: Cumplimiento de Radix UI (ARIA Labels y Visually Hidden content).
+- SEO: Generacion dinamica de Metadata por pagina.
+
+5. FLUJO DE VENTAS (TECH SPEECH)
+--------------------------------
+Estuclub es una infraestructura escalable que combina lo mejor de una PWA ultra-veloz con la potencia de Firebase. A diferencia de un sitio estatico, Estuclub gestiona estados en tiempo real, permite a los comercios autogestionar su catalogo de delivery y ofrece una experiencia gamificada mediante 'Mismuki'. La arquitectura esta diseñada para soportar miles de usuarios concurrentes con latencia minima.
+
+========================================================
+         DOCUMENTO GENERADO POR ANTIGRAVITY AI
+========================================================

@@ -19,7 +19,7 @@ export type WhereFilter = {
 /**
  * Defines the possible roles a user can have within the application.
  */
-export type UserRole = 'admin' | 'supplier' | 'user';
+export type UserRole = 'admin' | 'supplier' | 'user' | 'rider';
 
 /**
  * Represents the data stored for a user in the /users collection.
@@ -60,6 +60,11 @@ export interface UserProfile {
     educationLevel: string;
     career: string;
     studentCertificateUrl: string;
+    // Rider & Subscription Info
+    subscriptionStatus?: 'none' | 'pending' | 'active' | 'expired';
+    subscriptionPaidAt?: Timestamp;
+    mp_linked?: boolean;
+    mp_user_id?: string;
     createdAt: Timestamp;
 }
 
@@ -399,7 +404,8 @@ export interface Order {
     subtotal: number;
     deliveryCost: number;
     totalAmount: number;
-    status: 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled';
+    status: 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
+    riderId?: string;
     deliveryAddress?: string;
     deliveryNote?: string;
     type: 'delivery' | 'pickup';

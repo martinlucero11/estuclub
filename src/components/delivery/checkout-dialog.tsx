@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { useFirestore, useUser, useDoc } from '@/firebase';
 import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -20,55 +20,83 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, MapPin, Truck, ShoppingBag } from 'lucide-react';
+import { Loader2, MapPin, Truck, ShoppingBag, CreditCard, Sparkles, Info } from 'lucide-react';
+import { getLiveShippingRate } from '@/lib/shipping';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { 
+    Tooltip, 
+    TooltipContent, 
+    TooltipProvider, 
+    TooltipTrigger 
+} from '@/components/ui/tooltip';
 
 interface CheckoutDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
+const SERVICE_FEE_PERCENTAGE = 0.05;
+
 export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
-    const { items, subtotal, supplierId, supplierName, supplierPhone, clearCart } = useCart();
+    const { items, subtotal, supplierId, supplierName, clearCart } = useCart();
     const { user, userData: profile } = useUser();
     const firestore = useFirestore();
     const { toast } = useToast();
 
     const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
+    const [calculatingLogistics, setCalculatingLogistics] = useState(false);
     const [type, setType] = useState<'delivery' | 'pickup'>('delivery');
     const [address, setAddress] = useState(profile?.location?.address || '');
     const [note, setNote] = useState('');
+    const [shippingDetails, setShippingDetails] = useState<{ rate: number, distance: number } | null>(null);
 
     // Fetch supplier settings
     const supplierRef = supplierId ? doc(firestore, 'roles_supplier', supplierId) : null;
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierRef);
 
-    const isToBeAgreed = supplierProfile?.deliveryCostType === 'to_be_agreed';
-    const deliveryCost = type === 'delivery' 
-        ? (isToBeAgreed ? 0 : (supplierProfile?.deliveryCost || 0)) 
-        : 0;
-    
-    const total = subtotal + deliveryCost;
+    // 1. Calculate Shipping in Real-Time
+    useEffect(() => {
+        const calculateShipping = async () => {
+            if (type !== 'delivery' || !address || address.length < 5 || !supplierProfile) {
+                setShippingDetails(null);
+                return;
+            }
+
+            setCalculatingLogistics(true);
+            try {
+                const origin = supplierProfile.location?.address || supplierProfile.address || '';
+                const result = await getLiveShippingRate(origin, address);
+                if (result.success) {
+                    setShippingDetails({ rate: result.rate, distance: result.distanceKm });
+                }
+            } catch (error) {
+                console.error("Logistics calculation failed", error);
+            } finally {
+                setCalculatingLogistics(false);
+            }
+        };
+
+        const timer = setTimeout(calculateShipping, 800);
+        return () => clearTimeout(timer);
+    }, [address, type, supplierProfile]);
+
+    const deliveryCost = type === 'delivery' ? (shippingDetails?.rate || 0) : 0;
+    const serviceFee = Math.round((subtotal + deliveryCost) * SERVICE_FEE_PERCENTAGE);
+    const totalWithService = subtotal + deliveryCost + serviceFee;
     const canPlaceOrder = subtotal >= (supplierProfile?.minOrderAmount || 0);
 
-    const handlePlaceOrder = async () => {
+    const handlePaymentRedirect = async () => {
         if (!firestore || !user || !supplierId) return;
         if (type === 'delivery' && !address) {
             toast({ title: "Dirección requerida", variant: "destructive" });
             return;
         }
-        if (!canPlaceOrder) {
-            toast({ 
-                title: "Pedido mínimo no alcanzado", 
-                description: `El monto mínimo para este local es $${supplierProfile?.minOrderAmount?.toLocaleString()}`,
-                variant: "destructive" 
-            });
-            return;
-        }
 
         setLoading(true);
         try {
-            const orderData = {
+            // A. Create Order
+            const orderRef = await addDoc(collection(firestore, 'orders'), {
                 userId: user.uid,
                 userName: profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.displayName || 'Estudiante',
                 userPhone: profile?.phone || '',
@@ -77,183 +105,153 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                 items,
                 subtotal,
                 deliveryCost,
-                deliveryCostType: supplierProfile?.deliveryCostType || 'free',
-                totalAmount: total,
-                status: 'pending',
+                serviceFee,
+                totalAmount: totalWithService,
+                status: 'pending_payment',
                 type,
                 deliveryAddress: type === 'delivery' ? address : 'Retiro en local',
                 deliveryNote: note,
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
-            };
+            });
 
-            const docRef = await addDoc(collection(firestore, 'orders'), orderData);
-            
-            // --- WhatsApp Integration ---
-            if (supplierPhone) {
-                const itemsList = items.map(i => `• *${i.quantity}x* ${i.name} ($${(i.price * i.quantity).toLocaleString()})`).join('\n');
-                
-                let shippingLabel = "";
-                if (type === 'delivery') {
-                    if (isToBeAgreed) shippingLabel = "🚚 *Envío:* A convenir";
-                    else if (deliveryCost === 0) shippingLabel = "🚚 *Envío:* Gratis";
-                    else shippingLabel = `🚚 *Envío:* $${deliveryCost.toLocaleString()}`;
-                } else {
-                    shippingLabel = "🏪 *Retiro en local*";
-                }
+            // B. Call Checkout API
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderRef.id,
+                    items,
+                    supplierId,
+                    totalSubtotal: subtotal,
+                    origin: supplierProfile?.location?.address || supplierProfile?.address,
+                    destination: address,
+                })
+            });
 
-                const deliveryAddressInfo = type === 'delivery' ? `📍 *Dirección:* ${address}` : "";
-                
-                const message = `*NUEVO PEDIDO # ${docRef.id.slice(-6).toUpperCase()}*\n\n` +
-                                `👤 *Cliente:* ${orderData.userName}\n` +
-                                `${shippingLabel}\n` +
-                                `${deliveryAddressInfo}\n\n` +
-                                `🛒 *Productos:*\n${itemsList}\n\n` +
-                                `💰 *Total:* ${isToBeAgreed ? `$${subtotal.toLocaleString()} + Envío` : `$${total.toLocaleString()}`}\n\n` +
-                                `📝 *Nota:* ${note || 'Sin notas'}\n\n` +
-                                `_Pedido enviado vía EstuClub_`;
+            const data = await response.json();
 
-                const whatsappUrl = `https://wa.me/${supplierPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
-            }
-
-            setSuccess(true);
-            setTimeout(() => {
+            if (data.init_point) {
                 clearCart();
-                onOpenChange(false);
-                setSuccess(false);
-            }, 3000);
+                window.location.href = data.init_point;
+            } else {
+                throw new Error("Payment initialization failed");
+            }
         } catch (error) {
             console.error(error);
-            toast({ title: "Error al procesar el pedido", variant: "destructive" });
+            toast({ title: "Error al iniciar el pago", description: "Verifica tu conexión.", variant: "destructive" });
         } finally {
             setLoading(false);
         }
     };
 
-    if (success) {
-        return (
-            <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="sm:max-w-[400px] text-center py-12">
-                    <div className="flex flex-col items-center gap-4">
-                        <CheckCircle2 className="h-20 w-20 text-green-500 animate-bounce" />
-                        <h2 className="text-2xl font-black">¡Pedido Enviado!</h2>
-                        <p className="text-muted-foreground">El comercio ha recibido tu pedido y te contactará pronto.</p>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        );
-    }
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <ShoppingBag className="h-5 w-5 text-primary" /> Finalizar Pedido
+            <DialogContent className="sm:max-w-[425px] bg-[#0A0A0A] border-white/5 shadow-2xl rounded-[3rem] overflow-hidden">
+                <DialogHeader className="space-y-3">
+                    <DialogTitle className="flex items-center gap-3 text-2xl font-black italic uppercase tracking-tighter text-white">
+                        <div className="h-10 w-10 rounded-xl bg-pink-500/20 flex items-center justify-center border border-pink-500/30">
+                            <ShoppingBag className="h-6 w-6 text-pink-400" />
+                        </div>
+                        Finalizar Pedido
                     </DialogTitle>
-                    <DialogDescription>
-                        Revisa los detalles y confirma tu pedido para {supplierName}.
+                    <DialogDescription className="font-bold text-slate-400 uppercase tracking-widest text-[9px]">
+                        Review & Secure Checkout via EstuClub
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
                     <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-4">
-                        <div>
+                        <div className="relative">
                             <RadioGroupItem value="delivery" id="delivery" className="peer sr-only" />
-                            <Label
-                                htmlFor="delivery"
-                                className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                            >
-                                <Truck className="mb-2 h-6 w-6" />
-                                <span className="font-bold">Envío</span>
+                            <Label htmlFor="delivery" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-white/5 bg-white/5 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/50 peer-data-[state=checked]:bg-pink-500/10">
+                                <Truck className={cn("h-6 w-6", type === 'delivery' ? "text-pink-400" : "text-slate-500")} />
+                                <span className="font-black text-[10px] uppercase tracking-widest">Envío</span>
                             </Label>
                         </div>
-                        <div>
+                        <div className="relative">
                             <RadioGroupItem value="pickup" id="pickup" className="peer sr-only" />
-                            <Label
-                                htmlFor="pickup"
-                                className="flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                            >
-                                <ShoppingBag className="mb-2 h-6 w-6" />
-                                <span className="font-bold">Retiro</span>
+                            <Label htmlFor="pickup" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-white/5 bg-white/5 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/50 peer-data-[state=checked]:bg-pink-500/10">
+                                <ShoppingBag className={cn("h-6 w-6", type === 'pickup' ? "text-pink-400" : "text-slate-500")} />
+                                <span className="font-black text-[10px] uppercase tracking-widest">Retiro</span>
                             </Label>
                         </div>
                     </RadioGroup>
 
                     {type === 'delivery' && (
-                        <div className="space-y-2">
-                            <Label htmlFor="address">Dirección de entrega</Label>
+                        <div className="space-y-3 animate-in fade-in duration-500">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">Dirección de entrega</Label>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-400" />
                                 <Input 
-                                    id="address" 
-                                    placeholder="Calle, Número, Departamento..." 
-                                    className="pl-9"
+                                    placeholder={calculatingLogistics ? "Calculando..." : "Calle, Altura, Ciudad..."} 
+                                    className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl font-bold"
                                     value={address}
                                     onChange={e => setAddress(e.target.value)}
                                 />
+                                {calculatingLogistics && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-pink-500" />}
                             </div>
                         </div>
                     )}
 
                     <div className="space-y-2">
-                        <Label htmlFor="note">Nota para el comercio (opcional)</Label>
-                        <Textarea 
-                            id="note" 
-                            placeholder="Ej: Sin cebolla, puerta roja..." 
-                            value={note}
-                            onChange={e => setNote(e.target.value)}
-                        />
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 px-1">Nota adicional</Label>
+                        <Textarea className="bg-white/5 border-white/10 rounded-2xl min-h-[80px]" placeholder="Ej: Portero B, dejar en recepción..." value={note} onChange={e => setNote(e.target.value)} />
                     </div>
 
-                    <div className="bg-muted/50 p-4 rounded-2xl space-y-2">
-                        <div className="flex justify-between text-sm">
-                            <span>Subtotal</span>
-                            <span>$ {subtotal.toLocaleString()}</span>
+                    <div className="bg-slate-900/50 border border-white/5 p-6 rounded-[2rem] space-y-4 shadow-inner glass">
+                        <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span>Productos</span>
+                            <span className="text-white">$ {subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span>Envío</span>
-                            <span className="font-bold">
-                                {isToBeAgreed 
-                                    ? 'A convenir' 
-                                    : deliveryCost === 0 
-                                        ? 'Gratis' 
-                                        : `$ ${deliveryCost.toLocaleString()}`
-                                }
+                        <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span>Envío <span className="text-[9px] text-pink-500/60 lowercase italic">(Estuclub Rider)</span></span>
+                            <span className={cn(deliveryCost === 0 ? "text-green-400" : "text-white")}>
+                                {calculatingLogistics ? '...' : (deliveryCost === 0 ? 'Gratis' : `$ ${deliveryCost.toLocaleString()}`)}
                             </span>
                         </div>
-                        {supplierProfile?.minOrderAmount ? (
-                            <div className="flex justify-between text-[10px] text-muted-foreground uppercase tracking-widest pt-1 border-t border-border/10">
-                                <span>Pedido Mínimo</span>
-                                <span className={cn(canPlaceOrder ? "text-green-500" : "text-amber-500")}>
-                                    $ {supplierProfile.minOrderAmount.toLocaleString()}
-                                </span>
+                        <div className="flex justify-between items-center text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2">
+                                <span>✨ Tarifa de Servicio</span>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="h-4 w-4 rounded-full bg-white/10 flex items-center justify-center cursor-help transition-transform hover:scale-110">
+                                                <Info className="h-2.5 w-2.5 text-slate-400" />
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent className="bg-slate-900/95 border border-white/10 text-[10px] p-3 max-w-[220px] rounded-2xl text-slate-300 backdrop-blur-md shadow-2xl">
+                                            Esto nos ayuda a mantener la plataforma activa y asegurar que tu pedido llegue seguro con nuestros Riders.
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                             </div>
-                        ) : null}
-                        <Separator className="my-2" />
-                        <div className="flex justify-between font-black text-lg">
-                            <span>Total</span>
-                            <span className="text-primary">
-                                {isToBeAgreed ? `$ ${subtotal.toLocaleString()} + Envío` : `$ ${total.toLocaleString()}`}
-                            </span>
+                            <span className="text-white">$ {serviceFee.toLocaleString()}</span>
+                        </div>
+                        <Separator className="bg-white/10" />
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-pink-500">Total</p>
+                                <span className="text-3xl font-black tracking-tighter text-white italic underline decoration-pink-500/30 underline-offset-4">$ {totalWithService.toLocaleString()}</span>
+                            </div>
+                            <Badge className="bg-pink-500/10 border-pink-500/20 text-pink-400 font-black text-[9px] px-3 py-1 mb-2">MVP PRICE</Badge>
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter>
-                    <Button 
-                        className="w-full h-12 text-lg font-black" 
-                        disabled={loading}
-                        onClick={handlePlaceOrder}
-                    >
-                        {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
-                        Confirmar Pedido
+                <DialogFooter className="pt-2">
+                    <Button disabled={loading || calculatingLogistics || !canPlaceOrder} onClick={handlePaymentRedirect} className="w-full h-16 bg-pink-500 text-black font-black text-xl uppercase tracking-[0.2em] rounded-[1.8rem] hover:bg-pink-400 shadow-2xl relative group overflow-hidden">
+                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (
+                            <>
+                                <CreditCard className="mr-3 h-6 w-6" />
+                                PAGAR AHORA
+                                <Sparkles className="ml-3 h-5 w-5 animate-pulse" />
+                            </>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
-
-import { Separator } from '@/components/ui/separator';
