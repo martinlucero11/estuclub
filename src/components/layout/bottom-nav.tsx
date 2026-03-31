@@ -102,14 +102,16 @@ export function BottomNav() {
 
             if (item.href === '#cart') {
                 return (
-                  <CartSheet key="cart-sheet">
-                    {specialButtonContent}
-                  </CartSheet>
+                  <div key="cart-sheet" className="relative flex flex-col items-center justify-center w-full h-full">
+                    <CartSheet>
+                      {specialButtonContent}
+                    </CartSheet>
+                  </div>
                 );
             }
 
             return (
-              <Link key={`${item.href}-${index}`} href={item.href}>
+              <Link key={`${item.href}-${index}`} href={item.href} className="relative flex flex-col items-center justify-center w-full h-full">
                   {specialButtonContent}
               </Link>
             );
