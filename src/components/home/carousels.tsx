@@ -130,7 +130,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
             <motion.div 
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="relative w-full overflow-hidden rounded-[2.5rem] h-28 sm:h-32 md:h-40 shadow-premium group-hover:shadow-2xl transition-all duration-500 border border-white/5 group-hover:border-primary/20"
+                className="relative w-full overflow-hidden rounded-[2.5rem] aspect-[3/1] shadow-premium group-hover:shadow-2xl transition-all duration-500 border border-white/5 group-hover:border-primary/20"
             >
                 <Image
                     src={optimizeImage(banner.imageUrl, 1200)}
