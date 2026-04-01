@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Montserrat, Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { FirebaseProvider } from "@/firebase/provider";
@@ -17,6 +17,18 @@ import { FloatingAdminMetrics } from "@/components/analytics/FloatingAdminMetric
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
   variable: "--font-sans",
+});
+
+const fontMontserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  weight: ["700", "900"],
+});
+
+const fontInter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  weight: ["700", "800"],
 });
 
 export const viewport: Viewport = {
@@ -80,7 +92,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased overflow-x-hidden", fontSans.variable)}>
+      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased overflow-x-hidden", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

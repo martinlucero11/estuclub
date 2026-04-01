@@ -21,6 +21,11 @@ service cloud.firestore {
       return signedIn() && 
         exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
     }
+    
+    function isRider() {
+      return signedIn() && 
+        exists(/databases/$(database)/documents/roles_rider/$(request.auth.uid));
+    }
 
     function isIncrementedBy(field, amount) {
       return request.resource.data[field] == resource.data[field] + amount;
@@ -52,6 +57,11 @@ service cloud.firestore {
       allow get: if signedIn() && request.auth.uid == uid;
       allow list: if true;
       allow write: if isAdmin();
+    }
+    
+    match /roles_rider/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list, write: if isAdmin();
     }
 
     /* ================= PERKS & PUBLIC CONTENT ================= */
@@ -90,7 +100,7 @@ service cloud.firestore {
 
     match /orders/{id} {
       allow list: if signedIn();
-      allow get, update: if isAdmin() || (signedIn() && (
+      allow get, update: if isAdmin() || isRider() || (signedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.supplierId == request.auth.uid
       ));
@@ -110,6 +120,12 @@ service cloud.firestore {
     match /supplier_requests/{id} {
       allow read, write: if isAdmin() || signedIn();
     }
+    
+    match /rider_applications/{id} {
+      allow read, write: if isAdmin();
+      allow create: if signedIn();
+      allow get: if signedIn() && (request.auth.uid == resource.data.userId || isAdmin());
+    }
 
     /* ================= REVIEWS ================= */
 
@@ -122,8 +138,8 @@ service cloud.firestore {
     /* ================= GLOBAL ACCESS ================= */
 
     match /{document=**} {
+      allow read, write: if isAdmin();
       allow read: if true; // Fallback for public collections
-      allow write: if isAdmin();
     }
   }
 }

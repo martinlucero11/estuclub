@@ -40,7 +40,7 @@ export function BottomNav() {
 
   const deliveryNav = [
     { href: '/delivery', label: 'Tienda', icon: ShoppingBag },
-    { href: '/delivery/explorar', label: 'Explorar', icon: Search },
+    { href: '/delivery', label: 'Explorar', icon: Search },
     { href: '#cart', label: 'Carrito', icon: ShoppingCart, special: true },
     { href: '/orders', label: 'Pedidos', icon: CalendarDays },
     { href: '/profile', label: 'Perfil', icon: User },

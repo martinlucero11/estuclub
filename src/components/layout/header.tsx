@@ -49,13 +49,17 @@ import { Suspense } from 'react';
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
   const firestore = useFirestore();
-  const { data: suppliers, isLoading } = useCollectionOnce<SupplierProfile>(
-    query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()))
-  );
   const isSupplier = roles.includes('supplier');
   const auth = useAuthService();
   const router = useRouter();
   const { toast } = useToast();
+
+  const activeRole = useMemo(() => {
+    if (roles.includes('admin')) return 'ADMIN';
+    if (roles.includes('rider')) return 'RIDER';
+    if (roles.includes('supplier') || roles.includes('cluber')) return 'CLUBER';
+    return 'USER';
+  }, [roles]);
 
   const handleSignOut = async () => {
     try {
@@ -93,7 +97,6 @@ function UserMenu() {
 
   const avatarUrl = useMemo(() => {
     if (isSupplier) {
-      // Supplier respects useAvatar preference
       if (userData?.useAvatar) return getAvatarUrl(userData?.avatarSeed);
       return user?.photoURL || userData?.photoURL;
     }
@@ -101,47 +104,58 @@ function UserMenu() {
   }, [user?.photoURL, userData?.avatarSeed, userData?.photoURL, userData?.useAvatar, isSupplier]);
 
   return (
-    <DropdownMenu>
-        <MagneticButton>
-          <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="Menú de usuario">
-                  <Avatar className="h-9 w-9 bg-background">
-                      {avatarUrl ? (
-                        <AvatarImage src={avatarUrl} alt={user.displayName || 'Avatar de usuario'} className="object-cover" />
-                      ) : (
-                        <AvatarFallbackFachero className="w-full h-full text-lg" />
-                      )}
-                  </Avatar>
-              </Button>
-          </DropdownMenuTrigger>
-        </MagneticButton>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">
-              {user.displayName || 'Estudiante'}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/favorites'); }}>
-          <Heart className="mr-2 h-4 w-4" />
-          <span>Mis Favoritos</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/profile'); }}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Mi Perfil</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => { haptic.vibrateImpact(); handleSignOut(); }}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Cerrar sesión</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+        <div className={cn(
+            "hidden xs:flex items-center px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase",
+            activeRole === 'ADMIN' ? "bg-primary/20 border-primary shadow-[0_0_15px_rgba(255,0,127,0.3)] text-white" :
+            activeRole === 'RIDER' ? "bg-black border-primary text-primary" :
+            "bg-white border-primary text-primary"
+        )}>
+            {activeRole === 'ADMIN' && <Crown className="h-3 w-3 mr-1.5 text-yellow-400" />}
+            {activeRole}
+        </div>
+        <DropdownMenu>
+            <MagneticButton>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="Menú de usuario">
+                    <Avatar className="h-9 w-9 bg-background">
+                        {avatarUrl ? (
+                            <AvatarImage src={avatarUrl} alt={user.displayName || 'Avatar de usuario'} className="object-cover" />
+                        ) : (
+                            <AvatarFallbackFachero className="w-full h-full text-lg" />
+                        )}
+                    </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            </MagneticButton>
+        <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">
+                {user.displayName || 'Estudiante'}
+                </p>
+                <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+                </p>
+            </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/favorites'); }}>
+            <Heart className="mr-2 h-4 w-4" />
+            <span>Mis Favoritos</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { haptic.vibrateSubtle(); router.push('/profile'); }}>
+            <User className="mr-2 h-4 w-4" />
+            <span>Mi Perfil</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => { haptic.vibrateImpact(); handleSignOut(); }}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Cerrar sesión</span>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+        </DropdownMenu>
+    </div>
   );
 }
 
@@ -320,26 +334,22 @@ export default function Header() {
     >
       <div className="absolute inset-0 glass-header z-[-1]" />
       <div className={cn(
-        "container relative flex h-full justify-between px-4 items-center h-full py-4",
+        "container relative flex h-full justify-between items-center px-4 py-4",
       )}>
-        {/* Left Slot: Actions */}
-        <div className="flex items-center">
+        {/* Left Side: Menu + Logo */}
+        <div className="flex items-center gap-2">
           <AppSidebar />
-        </div>
-
-        {/* Center Slot: Positioned Logo */}
-        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 mt-1">
-            <Link href="/" aria-label="Homepage">
+          <Link href="/" aria-label="Homepage" className="flex items-center">
                 <Image 
                     src="/logo.svg" 
                     alt="EstuClub Logo" 
                     width={110} 
                     height={28} 
                     priority
-                    className="h-7 sm:h-8 brightness-110 drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]"
+                    className="h-7 sm:h-8 brightness-110 contrast-125 filter drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]"
                     style={{ width: 'auto' }}
                 />
-            </Link>
+          </Link>
         </div>
 
         {/* Right Slot: Actions */}

@@ -406,6 +406,7 @@ export interface Order {
     subtotal: number;
     deliveryCost: number;
     totalAmount: number;
+    distanceKm?: number;
     status: 'pending_payment' | 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
     riderId?: string;
     deliveryAddress?: string;

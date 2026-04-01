@@ -13,34 +13,37 @@ import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const userRole = request.cookies.get('user-role')?.value;
+
+  // OVERLORD BYPASS: If user is admin, allow EVERYTHING to prevent lockouts.
+  if (userRole === 'admin') {
+    return NextResponse.next();
+  }
 
   const isCluberRoute = pathname.startsWith('/panel-cluber');
   const isAdminRoute = pathname.startsWith('/admin') || pathname.startsWith('/panel-admin') || pathname.startsWith('/verify');
-  // /rider itself is public (login + signup). Only sub-routes are protected.
   const isRiderRoute = pathname.startsWith('/rider/');
 
   if (!isCluberRoute && !isAdminRoute && !isRiderRoute) {
     return NextResponse.next();
   }
 
-  const userRole = request.cookies.get('user-role')?.value;
-
-  // Admin: only role === 'admin'
+  // Admin routes: already covered by overlord bypass above, but keeping for logic safety
   if (isAdminRoute && userRole !== 'admin') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Cluber panel: allow 'supplier', 'cluber', 'cluber_pending', and 'admin'
+  // Cluber panel: allow 'supplier', 'cluber', 'cluber_pending'
   if (isCluberRoute) {
-    const allowed = ['supplier', 'cluber', 'cluber_pending', 'admin'];
+    const allowed = ['supplier', 'cluber', 'cluber_pending'];
     if (!userRole || !allowed.includes(userRole)) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
-  // Rider: allow 'rider' and 'admin'. Block 'rider_pending' (needs approval).
+  // Rider: allow 'rider'. Block 'rider_pending' (needs approval).
   if (isRiderRoute) {
-    const allowed = ['rider', 'admin'];
+    const allowed = ['rider'];
     if (!userRole || !allowed.includes(userRole)) {
       return NextResponse.redirect(new URL('/', request.url));
     }
