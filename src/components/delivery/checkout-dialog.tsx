@@ -300,7 +300,5 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-            </DialogContent>
-        </Dialog>
     );
 }
