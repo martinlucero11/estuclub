@@ -20,14 +20,44 @@ import SupplierSelect from '@/components/admin/SupplierSelect';
 import { cn } from '@/lib/utils';
 import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 
+// ─── PENDING SCREEN ──────────────────────────────────────
+function CluberPending() {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 px-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="h-24 w-24 rounded-[3rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.1)]">
+                <Store className="h-12 w-12 text-indigo-500 animate-pulse" />
+            </div>
+            <div className="space-y-3">
+                <h1 className="text-3xl font-black tracking-tighter uppercase italic text-indigo-500 font-montserrat leading-none">Verificando tu <br/> Negocio</h1>
+                <p className="text-sm text-slate-400 font-bold max-w-xs mx-auto leading-relaxed italic uppercase tracking-widest opacity-60">
+                    Nuestro equipo de expansión está revisando tu postulación comercial.
+                </p>
+            </div>
+            <div className="p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10 max-w-xs">
+                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Estatus: Pendiente
+                </p>
+                <p className="text-[9px] font-bold text-slate-500 leading-relaxed italic">
+                    Recibirás una notificación y un email en cuanto tu local esté habilitado para vender.
+                </p>
+            </div>
+            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+                <Link href="/">← Volver al inicio</Link>
+            </Button>
+        </div>
+    );
+}
+
 export default function PanelCluberPage() {
-    // ... rest of the code
-  const { userData, roles, supplierData } = useUser();
+  const { userData, roles, supplierData, isUserLoading } = useUser();
   // Shop ID: Either the user's own supplier ID or the impersonated one for admins
   const { isAdmin, impersonatedSupplierId, impersonatedSupplierData } = useAdmin();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+
+  const isApprovedCluber = roles.includes('supplier') || roles.includes('cluber') || isAdmin;
+  const isPendingCluber = userData?.role === 'cluber_pending' && !isAdmin;
 
   const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
   const shopId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : userData?.uid;
@@ -56,7 +86,13 @@ export default function PanelCluberPage() {
     }
   };
 
-  if (!roles.includes('supplier') && !roles.includes('cluber') && !isAdmin) {
+  if (isUserLoading) return null;
+
+  if (isPendingCluber) {
+    return <CluberPending />;
+  }
+
+  if (!isApprovedCluber) {
     return (
       <div className="min-h-screen bg-[#d93b64] flex items-center justify-center p-6 selection:bg-black/20">
         <Card className="w-full max-w-md rounded-[3rem] border-none shadow-[0_20px_60px_rgba(0,0,0,0.2)] bg-white text-[#d93b64] animate-in fade-in zoom-in duration-700">

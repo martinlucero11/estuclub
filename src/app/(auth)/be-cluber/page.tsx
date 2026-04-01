@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Store, 
@@ -120,7 +120,12 @@ export default function BeCluberPage() {
             const gracePeriodEnd = new Date();
             gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
 
-            await addDoc(collection(firestore, 'supplier_requests'), {
+            const batch = writeBatch(firestore);
+            
+            // Add request
+            const requestRef = doc(collection(firestore, 'supplier_requests'));
+            batch.set(requestRef, {
+                id: requestRef.id,
                 userId: user.uid,
                 ...formData,
                 ...imageUrls,
@@ -128,6 +133,14 @@ export default function BeCluberPage() {
                 requestedAt: serverTimestamp(),
                 mp_grace_period_end: gracePeriodEnd
             });
+
+            // Update user role
+            const userRef = doc(firestore, 'users', user.uid);
+            batch.update(userRef, {
+                role: 'cluber_pending'
+            });
+
+            await batch.commit();
 
             setStep('success');
         } catch (error) {

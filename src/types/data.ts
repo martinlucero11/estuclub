@@ -19,7 +19,7 @@ export type WhereFilter = {
 /**
  * Defines the possible roles a user can have within the application.
  */
-export type UserRole = 'admin' | 'supplier' | 'user' | 'rider' | 'rider_pending';
+export type UserRole = 'admin' | 'supplier' | 'cluber' | 'user' | 'rider' | 'rider_pending' | 'cluber_pending';
 
 /**
  * Represents the data stored for a user in the /users collection.
