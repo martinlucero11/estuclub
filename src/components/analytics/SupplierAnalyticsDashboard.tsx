@@ -1,6 +1,6 @@
 'use client';
 
-import { useCollectionOnce, useFirestore, useDoc } from '@/firebase';
+import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc, orderBy } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { ReviewBreakdown } from './ReviewBreakdown';
@@ -16,10 +16,11 @@ import {
     Award, GraduationCap, Activity, PieChart as PieIcon, ArrowUpRight, ChevronRight,
     Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare
 } from 'lucide-react';
+import { useAdmin } from '@/context/admin-context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Benefit, BenefitRedemption, Appointment, UserProfile } from '@/types/data';
+import type { Benefit, BenefitRedemption, Appointment, UserProfile, SupplierProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { startOfMonth, subMonths, isAfter, isBefore, endOfMonth, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -45,8 +46,11 @@ function LoadingSkeleton() {
     );
 }
 
-export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnalyticsDashboardProps) {
+export default function SupplierAnalyticsDashboard({ supplierId: initialSupplierId }: SupplierAnalyticsDashboardProps) {
     const firestore = useFirestore();
+    const { roles } = useUser();
+    const { impersonatedSupplierId } = useAdmin();
+    const supplierId = (roles?.includes('admin') && impersonatedSupplierId) ? impersonatedSupplierId : initialSupplierId;
     const [activeTab, setActiveTab] = useState("overview");
     
     // Detail Dialog State
@@ -78,6 +82,10 @@ export default function SupplierAnalyticsDashboard({ supplierId }: SupplierAnaly
         [firestore, supplierId]
     );
     const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
+
+    const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce<SupplierProfile>(
+        query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()))
+    );
 
     const usersQuery = useMemo(() => 
         query(collection(firestore, 'users').withConverter(createConverter<UserProfile>())),

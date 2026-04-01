@@ -1,0 +1,8 @@
+﻿src/app/(admin)/verify/page.tsx(61,77): error TS2345: Argument of type 'Query<DocumentData, DocumentData>' is not assignable to parameter of type 'Query<RiderApplication, DocumentData>'.
+  The types returned by 'converter.fromFirestore(...)' are incompatible between these types.
+    Type 'DocumentData' is missing the following properties from type 'RiderApplication': id, userId, userName, email, and 8 more.
+src/app/(rider)/rider/page.tsx(342,9): error TS2367: This comparison appears to be unintentional because the types 'UserRole' and '"rider_pending"' have no overlap.
+src/app/(rider)/rider/page.tsx(397,16): error TS2339: Property 'vibrateMedium' does not exist on type '{ vibrateSubtle: () => Promise<void>; vibrateSuccess: () => Promise<void>; vibrateError: () => Promise<void>; vibrateImpact: () => Promise<void>; }'.
+src/app/(rider)/rider/page.tsx(440,27): error TS2322: Type 'DocumentData[]' is not assignable to type 'Order[]'.
+  Type 'DocumentData' is missing the following properties from type 'Order': id, userId, userName, userPhone, and 10 more.
+src/app/api/auth/mercadopago/route.ts(2,10): error TS2305: Module '"@/firebase/config"' has no exported member 'db'.

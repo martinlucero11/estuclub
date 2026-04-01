@@ -3,7 +3,7 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useDocOnce } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 import { Product, SupplierProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import MainLayout from '@/components/layout/main-layout';
@@ -40,6 +40,14 @@ export default function ProductDetailPage() {
     }, [product, firestore]);
 
     const { data: supplier, isLoading: supplierLoading } = useDocOnce<SupplierProfile>(supplierRef);
+
+    React.useEffect(() => {
+        if (id && firestore) {
+            // Telemetry: track view intention
+            const ref = doc(firestore, 'products', id);
+            updateDoc(ref, { viewsCount: increment(1) }).catch(console.error);
+        }
+    }, [id, firestore]);
 
     const isLoading = productLoading || (product && supplierLoading);
 

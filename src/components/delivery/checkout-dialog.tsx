@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { useFirestore, useUser, useDoc } from '@/firebase';
-import { collection, doc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { SupplierProfile } from '@/types/data';
 import { cn } from '@/lib/utils';
 import { 
@@ -103,6 +103,19 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
         setLoading(true);
         try {
+            // TELEMETRY: Track Intent
+            try {
+                await addDoc(collection(firestore, 'analytics_events'), {
+                    eventType: 'checkout_initiated',
+                    userId: user.uid,
+                    supplierId,
+                    totalAmount: Math.round(totalWithService),
+                    timestamp: serverTimestamp()
+                });
+            } catch (telemetryErr) {
+                console.error('Failed to log telemetry', telemetryErr);
+            }
+
             // A. Create Order (Safely check for undefined to prevent Firebase crashes)
             const orderRef = await addDoc(collection(firestore, 'orders'), {
                 userId: user.uid,

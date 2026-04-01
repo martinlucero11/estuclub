@@ -3,8 +3,16 @@
 import React from 'react';
 import OrdersDashboard from '@/components/supplier/orders-dashboard';
 import { Package } from 'lucide-react';
+import { useUser, useFirestore } from '@/firebase';
+import { useAdmin } from '@/context/admin-context';
 
 export default function MerchantOrdersPage() {
+    const { supplierData, roles } = useUser();
+    const { impersonatedSupplierId } = useAdmin();
+    
+    // If admin is impersonating, use that ID. Otherwise use the logged in supplier ID.
+    const effectiveSupplierId = (roles.includes('admin') && impersonatedSupplierId) ? impersonatedSupplierId : supplierData?.id;
+
     return (
         <div className="space-y-12">
             <header className="space-y-4">
@@ -20,7 +28,7 @@ export default function MerchantOrdersPage() {
                 </p>
             </header>
 
-            <OrdersDashboard />
+            <OrdersDashboard supplierId={effectiveSupplierId || ''} />
         </div>
     );
 }

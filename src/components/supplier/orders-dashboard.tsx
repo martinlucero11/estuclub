@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useAdmin } from '@/context/admin-context';
 import { collection, query, where, orderBy, limit, doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { 
     Clock, 
@@ -51,21 +52,26 @@ const statusConfig = {
     cancelled: { label: 'Cancelado', icon: XCircle, color: 'text-destructive bg-destructive/10 border-destructive/20' },
 };
 
-export default function OrdersDashboard() {
+export default function OrdersDashboard({ supplierId: propSupplierId }: { supplierId?: string }) {
     const firestore = useFirestore();
-    const { user, supplierData } = useUser();
+    const { user, supplierData: ownSupplierData, roles } = useUser();
+    const { impersonatedSupplierData } = useAdmin();
     const { toast } = useToast();
     const [statusFilter, setStatusFilter] = useState<string>('all');
 
+    // Determine the active supplier context
+    const supplierId = propSupplierId || user?.uid;
+    const supplierData = propSupplierId && propSupplierId !== user?.uid ? impersonatedSupplierData : ownSupplierData;
+
     const ordersQuery = useMemo(() => {
-        if (!firestore || !user) return null;
+        if (!firestore || !supplierId) return null;
         return query(
             collection(firestore, 'orders').withConverter(createConverter<Order>()),
-            where('supplierId', '==', user.uid),
+            where('supplierId', '==', supplierId),
             orderBy('createdAt', 'desc'),
             limit(50)
         );
-    }, [firestore, user]);
+    }, [firestore, supplierId]);
 
     const { data: orders, isLoading } = useCollection(ordersQuery);
 

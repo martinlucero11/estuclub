@@ -23,6 +23,7 @@ import {
     AlertCircle,
     Heart as HeartIcon,
     ShoppingBag,
+    Crown,
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -239,6 +240,38 @@ export const navConfig: NavConfig = {
                 icon: Settings,
                 role: ["admin"],
             },
+        ]
+    },
+    {
+        title: "👑 CONTROL CENTRAL",
+        href: "/panel-admin",
+        icon: Crown,
+        role: ["admin"],
+        items: [
+            {
+                title: "Mapa Logística Global",
+                href: "/rider",
+                icon: Building,
+                role: ["admin"],
+            },
+            {
+                title: "Verificación de Socios",
+                href: "/verify",
+                icon: Users,
+                role: ["admin"],
+            },
+            {
+                title: "Métricas en Tiempo Real",
+                href: "/panel-cluber/analytics",
+                icon: BarChart,
+                role: ["admin"],
+            },
+            {
+                title: "Gestión de Leads",
+                href: "/panel-cluber/supplier-requests",
+                icon: Megaphone,
+                role: ["admin"],
+            }
         ]
     }
   ],

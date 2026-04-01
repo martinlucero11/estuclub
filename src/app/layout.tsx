@@ -11,6 +11,8 @@ import { StatusBarConfig } from "@/components/layout/status-bar-config";
 import Loading from "./loading";
 import VerificationGate from "@/components/auth/verification-gate";
 import { CartProvider } from "@/context/cart-context";
+import { AdminProvider } from "@/context/admin-context";
+import { FloatingAdminMetrics } from "@/components/analytics/FloatingAdminMetrics";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -88,13 +90,16 @@ export default function RootLayout({
           <StatusBarConfig />
           <Suspense fallback={<Loading />}>
             <FirebaseProvider>
-              <VerificationGate>
-                <CartProvider>
-                  <MessagingProvider>
-                    {children}
-                  </MessagingProvider>
-                </CartProvider>
-              </VerificationGate>
+              <AdminProvider>
+                <VerificationGate>
+                  <CartProvider>
+                    <MessagingProvider>
+                      {children}
+                      <FloatingAdminMetrics />
+                    </MessagingProvider>
+                  </CartProvider>
+                </VerificationGate>
+              </AdminProvider>
               <Toaster />
             </FirebaseProvider>
           </Suspense>

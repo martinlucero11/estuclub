@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, LayoutGrid, LogIn, Heart, ChevronDown, ChevronRight } from 'lucide-react';
+import { User, LogOut, LayoutGrid, LogIn, Heart, ChevronDown, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,11 +23,16 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthService, useUser } from '@/firebase';
+import { useAuthService, useUser, useFirestore, useCollectionOnce } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
+import { createConverter } from '@/lib/firestore-converter';
+import { SupplierProfile } from '@/types/data';
 import { signOut } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { cn, hasRequiredRole } from '@/lib/utils';
+import { AdminProvider, useAdmin } from "@/context/admin-context";
+import { CommerceSelector } from './commerce-selector';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { haptic } from '@/lib/haptics';
@@ -43,6 +48,10 @@ import { Suspense } from 'react';
 
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
+  const firestore = useFirestore();
+  const { data: suppliers, isLoading } = useCollectionOnce<SupplierProfile>(
+    query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()))
+  );
   const isSupplier = roles.includes('supplier');
   const auth = useAuthService();
   const router = useRouter();
@@ -182,6 +191,33 @@ function AppSidebar() {
                 
                 <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-premium pr-2">
                     <nav className="flex flex-col gap-4">
+                        {/* Admin Overlord Section */}
+                        {roles.includes('admin') && navConfig.sidebarNav.filter(s => s.title === "👑 CONTROL CENTRAL").map(section => (
+                            <div key="admin-overlord" className="space-y-2 mb-4">
+                                <h3 className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2">
+                                    <Crown className="h-3 w-3 shadow-primary/20" /> {section.title}
+                                </h3>
+                                <div className="flex flex-col gap-1">
+                                    {section.items?.map(item => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <SheetClose asChild key={item.href}>
+                                                <Link href={item.href}>
+                                                    <Button variant="ghost" className="w-full justify-start text-[11px] font-black uppercase tracking-widest py-4 h-auto hover:bg-primary/5 hover:text-primary rounded-xl transition-all">
+                                                        <div className="mr-3 p-1.5 rounded-lg bg-primary/10 text-primary">
+                                                            {Icon && <Icon className="h-3.5 w-3.5" />}
+                                                        </div>
+                                                        {item.title}
+                                                    </Button>
+                                                </Link>
+                                            </SheetClose>
+                                        )
+                                    })}
+                                </div>
+                                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-4" />
+                            </div>
+                        ))}
+
                         {Array.from(new Set(navConfig.mainNav.map(i => i.category || 'Otros'))).map((category) => {
                             const categoryItems = navConfig.mainNav.filter(i => (i.category || 'Otros') === category);
                             const visibleItems = categoryItems.filter(item => {
@@ -271,7 +307,7 @@ function AppSidebar() {
 }
 
 export default function Header() {
-  const { user, isUserLoading } = useUser();
+  const { user, roles, isUserLoading } = useUser();
   const { isMobile, isWeb } = usePlatform();
 
   return (
@@ -307,7 +343,8 @@ export default function Header() {
         </div>
 
         {/* Right Slot: Actions */}
-        <div className="flex items-center gap-0.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-4">
+          {roles.includes('admin') && <CommerceSelector />}
           {isWeb && <SearchBar />}
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />

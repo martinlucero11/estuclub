@@ -17,6 +17,19 @@ export const haptic = {
       }
     }
   },
+  
+  /**
+   * Medium vibration
+   */
+  vibrateMedium: async () => {
+    try {
+      await Haptics.impact({ style: ImpactStyle.Medium });
+    } catch {
+      if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate(15);
+      }
+    }
+  },
 
   /**
    * Success vibration pattern

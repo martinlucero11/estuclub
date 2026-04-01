@@ -3,11 +3,15 @@
 import React from 'react';
 import { ProductManager } from '@/components/delivery/product-manager';
 import { useUser } from '@/firebase';
+import { useAdmin } from '@/context/admin-context';
 import { Package, Search, ShoppingBag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SupplierProductsPage() {
-    const { supplierData, isUserLoading } = useUser();
+    const { supplierData: ownSupplierData, roles, isUserLoading } = useUser();
+    const { impersonatedSupplierId, impersonatedSupplierData } = useAdmin();
+    
+    const supplierData = (roles.includes('admin') && impersonatedSupplierId) ? impersonatedSupplierData : ownSupplierData;
 
     if (isUserLoading) {
         return (

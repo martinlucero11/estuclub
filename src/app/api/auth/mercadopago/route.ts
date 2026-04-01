@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/firebase/config';
-import { doc, updateDoc } from 'firebase/firestore';
+import { adminDb } from '@/firebase/admin';
+import * as admin from 'firebase-admin';
 
 // Mercado Pago OAuth Credentials
 const CLIENT_ID = process.env.MP_CLIENT_ID || '';
@@ -41,14 +41,14 @@ export async function GET(request: Request) {
         if (data.access_token) {
             // Save tokens to Firestore (Preferably encrypted or in a secure subcollection)
             const userId = state || '';
-            const userRef = doc(db, 'users', userId);
+            const userRef = adminDb.collection('users').doc(userId);
             
-            await updateDoc(userRef, {
+            await userRef.update({
                 mp_linked: true,
                 mp_user_id: data.user_id,
                 mp_access_token: data.access_token,
                 mp_refresh_token: data.refresh_token,
-                mp_link_date: new Date()
+                mp_link_date: admin.firestore.FieldValue.serverTimestamp()
             });
 
             return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/profile?mp_linked=success`);

@@ -19,7 +19,7 @@ export type WhereFilter = {
 /**
  * Defines the possible roles a user can have within the application.
  */
-export type UserRole = 'admin' | 'supplier' | 'user' | 'rider';
+export type UserRole = 'admin' | 'supplier' | 'user' | 'rider' | 'rider_pending';
 
 /**
  * Represents the data stored for a user in the /users collection.
@@ -381,6 +381,7 @@ export interface Product {
     menuSection?: string; // Supplier's custom subcategory
     stockAvailable: boolean;
     isActive: boolean;
+    viewsCount?: number;
     createdAt: Timestamp;
 }
 
@@ -404,7 +405,7 @@ export interface Order {
     subtotal: number;
     deliveryCost: number;
     totalAmount: number;
-    status: 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
+    status: 'pending_payment' | 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
     riderId?: string;
     deliveryAddress?: string;
     deliveryNote?: string;
