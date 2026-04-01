@@ -245,18 +245,23 @@ export default function BeRiderPage() {
     if (!user) {
         return (
             <MainLayout>
-                <div className="min-h-screen bg-black flex items-center justify-center p-6">
-                    <Card className="bg-zinc-900 border-zinc-800 rounded-[2.5rem] p-10 max-w-sm text-center space-y-6 shadow-2xl">
-                        <div className="h-20 w-20 bg-[#d93b64]/20 rounded-3xl flex items-center justify-center mx-auto border border-[#d93b64]/30">
-                            <User className="h-10 w-10 text-[#d93b64]" />
+                <div className="min-h-[85dvh] flex items-center justify-center p-6 bg-[#FDFDFD]">
+                    <Card className="bg-white border-slate-100 rounded-[3rem] p-10 max-w-[400px] w-full text-center space-y-10 shadow-premium border-0 animate-in fade-in zoom-in duration-500">
+                        <div className="h-24 w-24 bg-[#d93b64]/5 rounded-[2.5rem] flex items-center justify-center mx-auto border border-[#d93b64]/10 shadow-inner">
+                            <Bike className="h-12 w-12 text-[#d93b64]" />
                         </div>
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-black text-white italic uppercase tracking-tighter">Iniciá Sesión</h2>
-                            <p className="text-zinc-500 font-medium text-xs leading-relaxed">Necesitás estar logueado para postularte como Rider en Estuclub.</p>
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-black text-slate-950 italic uppercase tracking-tighter leading-[0.9] font-montserrat tracking-tighter">Únete <br/><span className="text-[#d93b64]">Rider</span></h2>
+                            <p className="text-slate-400 font-bold text-[11px] uppercase tracking-[0.2em] leading-loose max-w-[260px] mx-auto italic">Necesitás una cuenta de Estuclub para postularte como repartidor.</p>
                         </div>
-                        <Button asChild className="w-full h-14 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl">
-                            <Link href="/login">INGRESAR AHORA</Link>
-                        </Button>
+                        <div className="flex flex-col gap-4">
+                            <Button asChild className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-[#d93b64]/20">
+                                <Link href="/signup">COMENZAR AHORA</Link>
+                            </Button>
+                            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                                <Link href="/login">Ya tengo cuenta (Ingresar)</Link>
+                            </Button>
+                        </div>
                     </Card>
                 </div>
             </MainLayout>
@@ -265,7 +270,7 @@ export default function BeRiderPage() {
 
     return (
         <MainLayout>
-            <div className="min-h-screen bg-[#050505] text-white font-inter relative overflow-hidden selection:bg-[#d93b64]/30">
+            <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter selection:bg-[#d93b64]/10">
                 {/* Camera Overlay */}
                 <AnimatePresence>
                     {activeCamera && (
@@ -278,20 +283,20 @@ export default function BeRiderPage() {
                 </AnimatePresence>
 
                 {/* Background Accents */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#d93b64]/5 blur-[120px] rounded-full -z-10" />
-                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#d93b64]/30 blur-[100px] rounded-full opacity-10 -z-10" />
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
+                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#d93b64]/5 blur-[100px] rounded-full opacity-10 -z-10" />
 
-                <div className="max-w-xl mx-auto px-6 pt-32 pb-32">
+                <div className="mobile-container pt-32 pb-32">
                     {/* Header */}
                     <header className="mb-12 space-y-4">
-                        <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#d93b64]/10 rounded-full border border-[#d93b64]/20">
+                        <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#d93b64]/5 rounded-full border border-[#d93b64]/10">
                             <ShieldCheck className="h-4 w-4 text-[#d93b64]" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Rider Onboarding</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64] italic">Rider Onboarding</span>
                         </div>
-                        <h1 className="text-5xl md:text-6xl font-black tracking-tighter italic uppercase leading-[0.85] font-montserrat">
+                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
                             Sé un <br/><span className="text-[#d93b64]">Rider</span>
                         </h1>
-                        <p className="text-zinc-500 font-medium text-sm leading-relaxed max-w-xs">Sumate a la logística de beneficios más grande del país.</p>
+                        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs opacity-70">Sumate a la logística de beneficios más grande del país.</p>
                     </header>
 
                     {/* Main Action Area */}
@@ -304,36 +309,36 @@ export default function BeRiderPage() {
                                 exit={{ opacity: 0, x: -20 }}
                                 className="space-y-8"
                             >
-                                <Card className="bg-zinc-900/50 backdrop-blur-3xl border-white/5 rounded-[2.5rem] p-10">
+                                <Card className="bg-white border-slate-100 rounded-[2.5rem] p-10 shadow-premium border-0">
                                     <div className="space-y-6">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Nombre Completo</Label>
-                                            <div className="relative">
-                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                            <div className="relative group/input">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64] transition-colors" />
                                                 <Input 
                                                     value={formData.displayName}
                                                     onChange={e => setFormData({...formData, displayName: e.target.value})}
                                                     placeholder="Ej: Juan Pérez" 
-                                                    className="h-14 pl-12 bg-black/40 border-white/5 rounded-2xl focus:border-[#d93b64] transition-all" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64] transition-all font-medium" 
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Teléfono Whatsapp</Label>
-                                            <div className="relative">
-                                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+                                            <div className="relative group/input">
+                                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64] transition-colors" />
                                                 <Input 
                                                     value={formData.phone}
                                                     onChange={e => setFormData({...formData, phone: e.target.value})}
                                                     placeholder="+54 11 1234 5678" 
-                                                    className="h-14 pl-12 bg-black/40 border-white/5 rounded-2xl focus:border-[#d93b64] transition-all" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64] transition-all font-medium" 
                                                 />
                                             </div>
                                         </div>
                                         <Button 
                                             disabled={!validateInfo()} 
                                             onClick={() => setStep('vehicle')}
-                                            className="w-full h-14 bg-white text-black hover:bg-neutral-200 font-black uppercase tracking-widest rounded-2xl transition-all shadow-xl"
+                                            className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-[#d93b64]/20 active:scale-95 transition-all"
                                         >
                                             CONTINUAR <ChevronRight className="ml-2 h-4 w-4" />
                                         </Button>

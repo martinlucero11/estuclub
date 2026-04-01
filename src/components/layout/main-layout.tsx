@@ -52,12 +52,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                         ease: [0.22, 1, 0.36, 1], // Custom "breathable" ease
                     }}
                     className={cn(
-                        "flex-1 w-full z-0 px-4 md:px-0",
+                        "flex-1 w-full z-0 px-0", // Removed px-4 here to use mobile-container padding
                         !isAuthPage && "pt-24", // Buffer for fixed header
                         !isAuthPage && (isMobile ? "pb-[140px]" : "pb-32") // Buffer for fixed nav/footer
                     )}
                 >
-                    <div className={cn("w-full h-full", !isAuthPage && "max-w-7xl mx-auto")}>
+                    <div className={cn(
+                        "w-full h-full", 
+                        !isAuthPage ? "max-w-7xl mx-auto px-4 md:px-0" : "mobile-container"
+                    )}>
                         {children}
                     </div>
                 </motion.main>

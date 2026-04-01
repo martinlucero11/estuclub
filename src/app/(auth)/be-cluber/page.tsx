@@ -156,18 +156,23 @@ export default function BeCluberPage() {
     if (!user) {
         return (
             <MainLayout>
-                <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                    <Card className="bg-white border-slate-200 rounded-[3rem] p-12 max-w-sm text-center space-y-8 shadow-premium border-0">
-                        <div className="h-20 w-20 bg-[#d93b64]/10 rounded-3xl flex items-center justify-center mx-auto border border-[#d93b64]/20 shadow-inner">
-                            <Store className="h-10 w-10 text-[#d93b64]" />
+                <div className="min-h-[80dvh] flex items-center justify-center p-6 bg-[#FDFDFD]">
+                    <Card className="bg-white border-slate-100 rounded-[3rem] p-10 max-w-[400px] w-full text-center space-y-10 shadow-premium border-0 animate-in fade-in zoom-in duration-500">
+                        <div className="h-24 w-24 bg-[#d93b64]/5 rounded-[2.5rem] flex items-center justify-center mx-auto border border-[#d93b64]/10 shadow-inner">
+                            <Store className="h-12 w-12 text-[#d93b64]" />
                         </div>
-                        <div className="space-y-3">
-                            <h2 className="text-2xl font-black text-slate-900 italic uppercase tracking-tighter">Acceso Corporativo</h2>
-                            <p className="text-slate-400 font-bold text-xs uppercase tracking-widest leading-loose">Necesitás iniciar sesión para postular tu marca.</p>
+                        <div className="space-y-4">
+                            <h2 className="text-4xl font-black text-slate-950 italic uppercase tracking-tighter leading-none font-montserrat">Únete <br/><span className="text-[#d93b64]">Hoy</span></h2>
+                            <p className="text-slate-400 font-bold text-[11px] uppercase tracking-[0.2em] leading-loose max-w-[240px] mx-auto italic">Necesitás una cuenta de Estuclub para postular tu marca.</p>
                         </div>
-                        <Button asChild className="w-full h-14 bg-slate-900 text-white font-black uppercase tracking-widest rounded-3xl shadow-xl">
-                            <Link href="/login">IDENTIFICAR COMERCIO</Link>
-                        </Button>
+                        <div className="flex flex-col gap-4">
+                            <Button asChild className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-[#d93b64]/20">
+                                <Link href="/signup">CREAR MI CUENTA</Link>
+                            </Button>
+                            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                                <Link href="/login">Ya tengo cuenta (Ingresar)</Link>
+                            </Button>
+                        </div>
                     </Card>
                 </div>
             </MainLayout>
@@ -176,7 +181,7 @@ export default function BeCluberPage() {
 
     return (
         <MainLayout>
-            <div className="min-h-screen bg-[#FDFDFD] text-slate-900 font-inter relative overflow-hidden">
+            <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter">
                 {/* Background Orbs */}
                 <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-400/5 blur-[120px] rounded-full -z-10" />
                 <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#d93b64]/5 blur-[100px] rounded-full -z-10" />
@@ -189,10 +194,10 @@ export default function BeCluberPage() {
                             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Corporate Onboarding</span>
                         </div>
                         <div className="space-y-4">
-                            <h1 className="text-6xl md:text-8xl font-black tracking-tighter italic uppercase leading-[0.75] text-[#1a1a1a] select-none font-montserrat">
-                                Impulsá tu <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d93b64] to-[#D00067]">Negocio</span>
+                            <h1 className="text-6xl md:text-8xl font-black tracking-tighter italic uppercase leading-[0.8] text-[#1a1a1a] select-none font-montserrat">
+                                Impulsá tu <br/><span className="text-[#d93b64]">Negocio</span>
                             </h1>
-                            <p className="text-sm md:text-base text-slate-400 font-bold max-w-sm italic uppercase tracking-[0.2em] leading-relaxed opacity-80">Unite a la red de beneficios que mueve a los estudiantes.</p>
+                            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-sm opacity-80 leading-loose">Unite a la red de beneficios que mueve a la comunidad universitaria.</p>
                         </div>
                     </header>
 

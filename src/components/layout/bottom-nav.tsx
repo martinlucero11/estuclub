@@ -72,7 +72,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass glass-dark shadow-premium ring-1 ring-primary/5 pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl shadow-premium border-t border-primary/5 pb-safe ring-1 ring-black/[0.02]">
       <div className="grid h-16 grid-cols-5 border-t border-primary/5">
         {navItems.map((item: any, index: number) => {
           const isActive = pathname === item.href;

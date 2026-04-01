@@ -73,12 +73,12 @@ export default function SignupPage() {
     }
 
     return (
-        <div className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-white p-6 overflow-x-hidden pt-safe pb-safe selection:bg-[#d93b64]/10">
+        <div className="relative flex min-h-[100dvh] flex-col items-center justify-center bg-white overflow-x-hidden pt-safe pb-safe selection:bg-[#d93b64]/10">
             {/* Premium Background Background */}
             <div className="absolute top-[-5%] right-[-10%] w-[60%] h-[60%] bg-[#d93b64]/5 blur-[120px] rounded-full -z-10" />
             <div className="absolute bottom-[-5%] left-[-10%] w-[50%] h-[50%] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
 
-            <div className="w-full max-w-md z-10 py-10">
+            <div className="mobile-container z-10 py-10">
                 <header className="mb-12 flex flex-col items-center text-center space-y-4">
                     <Link href="/" className="mb-2 transition-transform hover:scale-105 duration-300">
                          <Image 
