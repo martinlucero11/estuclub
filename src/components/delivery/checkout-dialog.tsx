@@ -52,6 +52,13 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     const [note, setNote] = useState('');
     const [shippingDetails, setShippingDetails] = useState<{ rate: number, distance: number } | null>(null);
 
+    // Auto-fill address from user profile when it loads
+    useEffect(() => {
+        if (profile?.location?.address && !address) {
+            setAddress(profile.location.address);
+        }
+    }, [profile]);
+
     // Fetch supplier settings
     const supplierRef = supplierId ? doc(firestore, 'roles_supplier', supplierId) : null;
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierRef);
@@ -175,127 +182,112 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[440px] bg-white border-slate-100 shadow-[0_30px_70px_rgba(0,0,0,0.12)] rounded-[3rem] overflow-hidden p-0 selection:bg-pink-100">
-                <DialogHeader className="p-8 pb-1 flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-pink-50 flex items-center justify-center border border-pink-100 shadow-sm shrink-0">
-                            <ShoppingBag className="h-6 w-6 text-pink-500" />
-                        </div>
-                        <div className="space-y-0.5">
-                            <DialogTitle className="text-3xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">Check Out</DialogTitle>
-                            <DialogDescription className="font-black text-slate-400 uppercase tracking-[0.2em] text-[9px]">
-                                Secure Logistics ✨
-                            </DialogDescription>
-                        </div>
+            <DialogContent className="sm:max-w-[400px] max-h-[90vh] overflow-y-auto bg-white border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-[2rem] p-0 selection:bg-pink-100">
+                <DialogHeader className="px-5 pt-5 pb-2 flex flex-row items-center gap-3">
+                    <div className="h-9 w-9 rounded-xl bg-pink-50 flex items-center justify-center border border-pink-100 shrink-0">
+                        <ShoppingBag className="h-4 w-4 text-pink-500" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">Check Out</DialogTitle>
+                        <DialogDescription className="font-bold text-slate-400 uppercase tracking-[0.15em] text-[8px]">Secure Logistics ✨</DialogDescription>
                     </div>
                 </DialogHeader>
 
-                <div className="space-y-5 px-8 py-4">
-                    <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-3">
+                <div className="space-y-3 px-5 pb-3">
+                    <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-2">
                         <div className="relative">
                             <RadioGroupItem value="delivery" id="delivery" className="peer sr-only" />
-                            <Label htmlFor="delivery" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-50 bg-slate-50 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-md">
-                                <Truck className={cn("h-6 w-6", type === 'delivery' ? "text-pink-500" : "text-slate-300")} />
-                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'delivery' ? "text-slate-900" : "text-slate-400")}>Envío</span>
+                            <Label htmlFor="delivery" className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-50 bg-slate-50 p-2.5 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
+                                <Truck className={cn("h-4 w-4", type === 'delivery' ? "text-pink-500" : "text-slate-300")} />
+                                <span className={cn("font-black text-[9px] uppercase tracking-widest", type === 'delivery' ? "text-slate-900" : "text-slate-400")}>Envío</span>
                             </Label>
                         </div>
                         <div className="relative">
                             <RadioGroupItem value="pickup" id="pickup" className="peer sr-only" />
-                            <Label htmlFor="pickup" className="flex flex-col items-center gap-2 rounded-2xl border-2 border-slate-50 bg-slate-50 p-4 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-md">
-                                <ShoppingBag className={cn("h-6 w-6", type === 'pickup' ? "text-pink-500" : "text-slate-300")} />
-                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'pickup' ? "text-slate-900" : "text-slate-400")}>Retiro</span>
+                            <Label htmlFor="pickup" className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-50 bg-slate-50 p-2.5 cursor-pointer transition-all peer-data-[state=checked]:border-pink-500/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
+                                <ShoppingBag className={cn("h-4 w-4", type === 'pickup' ? "text-pink-500" : "text-slate-300")} />
+                                <span className={cn("font-black text-[9px] uppercase tracking-widest", type === 'pickup' ? "text-slate-900" : "text-slate-400")}>Retiro</span>
                             </Label>
                         </div>
                     </RadioGroup>
 
                     {type === 'delivery' && (
-                        <div className="space-y-2.5 animate-in slide-in-from-bottom-1 duration-300">
-                            <div className="flex justify-between items-center px-1">
-                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 italic">Dirección</Label>
-                                <button 
-                                    onClick={handleGetCurrentLocation}
-                                    className="text-[9px] font-black uppercase tracking-widest text-pink-500 hover:text-pink-600 flex items-center gap-1.5 transition-colors"
-                                >
-                                    <MapPin className="h-2.5 w-2.5" /> Ubicación Actual
+                        <div className="space-y-1.5 animate-in slide-in-from-bottom-1 duration-200">
+                            <div className="flex justify-between items-center px-0.5">
+                                <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">Dirección</Label>
+                                <button onClick={handleGetCurrentLocation} className="text-[8px] font-black uppercase tracking-widest text-pink-500 hover:text-pink-600 flex items-center gap-1 transition-colors">
+                                    <MapPin className="h-2.5 w-2.5" /> GPS
                                 </button>
                             </div>
-                            <div className="relative group">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-pink-500" />
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-pink-500" />
                                 <Input 
                                     placeholder={calculatingLogistics ? "Sincronizando..." : "Calle, Altura..."} 
-                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-xl font-bold italic text-slate-900 placeholder:text-slate-300 focus:bg-white transition-all shadow-sm"
+                                    className="h-10 pl-9 text-sm bg-slate-50 border-slate-100 rounded-lg font-bold italic text-slate-900 placeholder:text-slate-300 focus:bg-white transition-all"
                                     value={address}
                                     onChange={e => setAddress(e.target.value)}
                                 />
-                                {calculatingLogistics && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4.5 w-4.5 animate-spin text-pink-500" />}
+                                {calculatingLogistics && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-pink-500" />}
                             </div>
                         </div>
                     )}
 
-                    <div className="space-y-1.5">
-                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 px-1 italic">Nota Rider</Label>
-                        <Input className="h-12 bg-slate-50 border-slate-100 rounded-xl text-slate-900 font-bold placeholder:text-slate-300 focus:bg-white transition-all shadow-sm px-4" placeholder="Ej: Portero A..." value={note} onChange={e => setNote(e.target.value)} />
+                    <div className="space-y-1">
+                        <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 px-0.5">Nota</Label>
+                        <Input className="h-10 text-sm bg-slate-50 border-slate-100 rounded-lg text-slate-900 font-bold placeholder:text-slate-300 focus:bg-white transition-all px-3" placeholder="Ej: Portero A..." value={note} onChange={e => setNote(e.target.value)} />
                     </div>
 
-                    <div className="bg-white border border-pink-100 p-6 rounded-[2rem] space-y-4 shadow-sm">
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <div className="bg-white border border-pink-100 p-4 rounded-xl space-y-2.5">
+                        <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
                             <span>Productos</span>
                             <span className="text-slate-900">$ {subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest h-5">
-                            <span>Envío <span className="text-pink-500 lowercase italic ml-1 tracking-tight">(Pro)</span></span>
+                        <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            <span>Envío</span>
                             <span className={cn("font-black", deliveryCost === 0 ? "text-green-500" : "text-slate-900", calculatingLogistics && "animate-pulse")}>
                                 {calculatingLogistics ? '...' : (deliveryCost === 0 ? 'BONIFICADO' : `$ ${deliveryCost.toLocaleString()}`)}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <div className="flex items-center gap-1.5">
-                                <span>✨ EstuClub</span>
-                                <Info className="h-3 w-3 text-slate-300" />
-                            </div>
+                        <div className="flex justify-between items-center text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            <span>✨ EstuClub</span>
                             <span className="text-slate-900">$ {serviceFee.toLocaleString()}</span>
                         </div>
                         <Separator className="bg-pink-50" />
-                        <div className="flex justify-between items-end gap-4 overflow-hidden">
-                            <div className="space-y-0.5 min-w-0">
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-pink-500 italic">Total</p>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <p className="text-[8px] font-black uppercase tracking-[0.15em] text-pink-500 italic">Total</p>
                                 <span className={cn(
-                                    "text-4xl font-black tracking-tighter text-slate-900 italic underline decoration-pink-500/20 underline-offset-4 transition-all duration-300 block truncate",
-                                    calculatingLogistics ? "opacity-20 blur-[1px]" : "opacity-100"
+                                    "text-2xl font-black tracking-tighter text-slate-900 italic transition-all duration-300",
+                                    calculatingLogistics ? "opacity-20" : "opacity-100"
                                 )}>
                                     $ {totalWithService.toLocaleString()}
                                 </span>
                             </div>
-                            <div className="flex flex-col items-end gap-1.5 shrink-0">
-                                <Badge className="bg-white border-pink-100 text-pink-500 font-black text-[8px] px-3 py-1 shadow-sm">ESTU PRO</Badge>
-                                <div className="flex items-center gap-1 text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">
-                                    <CreditCard className="h-2.5 w-2.5" /> MP
-                                </div>
-                            </div>
+                            <Badge className="bg-white border-pink-100 text-pink-500 font-black text-[7px] px-2 py-0.5">ESTU PRO</Badge>
                         </div>
                     </div>
 
                     {!canPlaceOrder && (
-                        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-100 flex gap-3 items-center animate-in zoom-in-95 duration-500">
-                            <Info className="h-4 w-4 text-amber-500 shrink-0" />
-                            <p className="text-[9px] font-bold text-amber-900/70">
-                                Mínimo: <span className="font-black">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>. Te falta: ${(supplierProfile?.minOrderAmount || 0) - subtotal}.
+                        <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-100 flex gap-2 items-center">
+                            <Info className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            <p className="text-[8px] font-bold text-amber-900/70">
+                                Mínimo: <span className="font-black">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>
                             </p>
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="p-8 flex flex-col gap-4 sm:flex-col items-stretch bg-slate-50 border-t border-slate-100">
+                <DialogFooter className="px-5 pb-5 pt-3 flex flex-col gap-2 sm:flex-col items-stretch border-t border-slate-100">
                     <Button 
                         disabled={loading || calculatingLogistics || !canPlaceOrder} 
                         onClick={handlePaymentRedirect} 
-                        className="w-full h-20 bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl uppercase tracking-[0.1em] italic rounded-[2.5rem] shadow-lg transition-all hover:scale-[1.01] active:scale-95 border-none"
+                        className="w-full h-14 bg-pink-500 hover:bg-pink-600 text-white font-black text-lg uppercase tracking-wider italic rounded-2xl shadow-md transition-all active:scale-95 border-none"
                     >
-                        {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "PAGAR ✨"}
+                        {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "PAGAR ✨"}
                     </Button>
-                    <div className="flex items-center justify-center gap-3 opacity-30">
-                        <ShieldCheck className="h-3.5 w-3.5 text-slate-900" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-900">Seguro EstuClub</span>
+                    <div className="flex items-center justify-center gap-2 opacity-30">
+                        <ShieldCheck className="h-3 w-3 text-slate-900" />
+                        <span className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-900">Seguro EstuClub</span>
                     </div>
                 </DialogFooter>
             </DialogContent>
