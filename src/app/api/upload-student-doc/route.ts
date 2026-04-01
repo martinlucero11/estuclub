@@ -1,10 +1,10 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
+import path from 'path';
 
 /**
- * API Route to upload a student certificate to Google Drive.
- * Requires: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_DRIVE_FOLDER_ID
+ * API Route to upload a student certificate to Google Drive using a Service Account.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -14,26 +14,24 @@ export async function POST(req: NextRequest) {
     const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
     const dni = formData.get('dni') as string;
+    const type = formData.get('type') as string; // 'rostro', 'vehiculo', or 'certificado'
 
     if (!file || !userId) {
       return NextResponse.json({ error: 'Missing file or userId' }, { status: 400 });
     }
 
-    // Check for credentials
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-
-    if (!clientId || !clientSecret || !refreshToken || !folderId) {
-      console.error("Missing Google Drive credentials in .env");
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    if (!folderId) {
+      return NextResponse.json({ error: 'Server configuration error: Missing Folder ID' }, { status: 500 });
     }
 
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
+    // Initialize Auth with Service Account
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(process.cwd(), 'service-account.json'),
+      scopes: ['https://www.googleapis.com/auth/drive.file'],
+    });
 
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    const drive = google.drive({ version: 'v3', auth });
 
     // Convert File to Buffer/Stream
     const arrayBuffer = await file.arrayBuffer();
@@ -42,8 +40,14 @@ export async function POST(req: NextRequest) {
     stream.push(buffer);
     stream.push(null);
 
+    // Dynamic Renaming based on type or generic
+    const extension = file.name.split('.').pop();
+    const fileName = type 
+        ? `${type.toUpperCase()}_${firstName}_${lastName}_${dni}.${extension}`
+        : `DOC_${firstName}_${lastName}_${dni}.${extension}`;
+
     const fileMetadata = {
-      name: `Certificado_${firstName}_${lastName}_${dni}.${file.name.split('.').pop()}`,
+      name: fileName,
       parents: [folderId],
     };
 

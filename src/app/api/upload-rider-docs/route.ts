@@ -1,13 +1,12 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
+import path from 'path';
 
 /**
- * API Route to upload Rider documents to Google Drive.
+ * API Route to upload Rider documents to Google Drive using a Service Account.
  * Creates a folder RIDER_[DNI]_[APELLIDO] and uploads face + vehicle photos.
- * Requires: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_DRIVE_FOLDER_ID
  */
-
 async function bufferToStream(buffer: Buffer): Promise<Readable> {
   const stream = new Readable();
   stream.push(buffer);
@@ -29,21 +28,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing userId or dni' }, { status: 400 });
     }
 
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
     const parentFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-
-    if (!clientId || !clientSecret || !refreshToken || !parentFolderId) {
-      console.error('Missing Google Drive credentials');
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    if (!parentFolderId) {
+      return NextResponse.json({ error: 'Server configuration error: Missing Parent Folder ID' }, { status: 500 });
     }
 
-    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-    oauth2Client.setCredentials({ refresh_token: refreshToken });
-    const drive = google.drive({ version: 'v3', auth: oauth2Client });
+    // Initialize Auth with Service Account
+    const auth = new google.auth.GoogleAuth({
+      keyFile: path.join(process.cwd(), 'service-account.json'),
+      scopes: ['https://www.googleapis.com/auth/drive.file'],
+    });
 
-    // 1. Create folder: RIDER_[DNI]_[APELLIDO]
+    const drive = google.drive({ version: 'v3', auth });
+
+    // 1. Create sub-folder: RIDER_[DNI]_[APELLIDO]
     const folderName = `RIDER_${dni}_${lastName.toUpperCase()}`;
     const folderRes = await drive.files.create({
       requestBody: {
@@ -56,7 +54,7 @@ export async function POST(req: NextRequest) {
 
     const folderId = folderRes.data.id;
     if (!folderId) {
-      return NextResponse.json({ error: 'Failed to create Drive folder' }, { status: 500 });
+      throw new Error('Failed to create Drive folder');
     }
 
     let fotoRostroLink = '';
