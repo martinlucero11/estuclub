@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ExternalLink, Loader2, CheckCircle, XCircle, Bike, AlertTriangle,
-  Mail, Building
+  Mail, Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera
 } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

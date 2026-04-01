@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useDocOnce } from '@/firebase';
+import { useFirestore, useDocOnce, useUser } from '@/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
 import { Product, SupplierProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -41,13 +41,15 @@ export default function ProductDetailPage() {
 
     const { data: supplier, isLoading: supplierLoading } = useDocOnce<SupplierProfile>(supplierRef);
 
+    const { roles } = useUser();
+
     React.useEffect(() => {
-        if (id && firestore) {
-            // Telemetry: track view intention
+        if (id && firestore && !roles?.includes('admin')) {
+            // Telemetry: track view intention, exclude admin tests
             const ref = doc(firestore, 'products', id);
             updateDoc(ref, { viewsCount: increment(1) }).catch(console.error);
         }
-    }, [id, firestore]);
+    }, [id, firestore, roles]);
 
     const isLoading = productLoading || (product && supplierLoading);
 

@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import { 
     Gift, Ticket, Users, Star, Heart, TrendingUp, Users2, 
     Award, GraduationCap, Activity, PieChart as PieIcon, ArrowUpRight, ChevronRight,
-    Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare
+    Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare, Package
 } from 'lucide-react';
 import { useAdmin } from '@/context/admin-context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { Benefit, BenefitRedemption, Appointment, UserProfile, SupplierProfile } from '@/types/data';
+import type { Benefit, BenefitRedemption, Appointment, UserProfile, SupplierProfile, Product } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { startOfMonth, subMonths, isAfter, isBefore, endOfMonth, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -87,6 +87,12 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
         query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()))
     );
 
+    const productsQuery = useMemo(() => 
+        query(collection(firestore, 'products').withConverter(createConverter<Product>()), where('supplierId', '==', supplierId)),
+        [firestore, supplierId]
+    );
+    const { data: products, isLoading: productsLoading } = useCollectionOnce<Product>(productsQuery);
+
     const usersQuery = useMemo(() => 
         query(collection(firestore, 'users').withConverter(createConverter<UserProfile>())),
         [firestore]
@@ -96,7 +102,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
     const supplierRef = useMemo(() => doc(firestore, 'roles_supplier', supplierId).withConverter(createConverter<any>()), [firestore, supplierId]);
     const { data: supplierDoc, isLoading: supplierLoading } = useDoc<any>(supplierRef);
 
-    const isLoading = benefitsLoading || redemptionsLoading || usersLoading || supplierLoading;
+    const isLoading = benefitsLoading || redemptionsLoading || usersLoading || supplierLoading || productsLoading;
 
     const stats = useMemo(() => {
         if (!benefits || !redemptions || !allUsers || !supplierDoc) return null;
@@ -230,12 +236,14 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
             oneTimeUsersCount,
             distribution,
             totalReviews,
+            phantomProducts: products?.filter(p => (p.viewsCount || 0) >= 10 && ((p.salesCount || 0) / (p.viewsCount || 1)) < 0.05) || [],
             allData: {
                 customers: myCustomers,
-                redemptions: redemptions
+                redemptions: redemptions,
+                products: products || []
             }
         };
-    }, [benefits, redemptions, allUsers, supplierDoc]);
+    }, [benefits, redemptions, allUsers, supplierDoc, products]);
 
     const openDetail = (type: string) => {
         if (!stats) return;
@@ -693,9 +701,15 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                                                             desc: `Tu pico de canjes es a las ${stats.peakHour}. Asegúrate de tener personal suficiente en esa franja.`,
                                                             icon: Zap,
                                                             color: "text-yellow-500"
-                                                        }
+                                                        },
+                                                        ...(stats.phantomProducts.length > 0 ? [{
+                                                            title: "📢 Productos Fantasma",
+                                                            desc: `Tienes ${stats.phantomProducts.length} productos con muchas visitas pero pocas ventas (ej: ${stats.phantomProducts[0].name}). ¡Prueba una Oferta Relámpago!`,
+                                                            icon: Package,
+                                                            color: "text-orange-500"
+                                                        }] : [])
                                                     ].map((rec, i) => (
-                                                        <div key={i} className="flex gap-8 p-8 rounded-[2rem] bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-primary/40 transition-all group">
+                                                        <div key={i} className={cn("flex gap-8 p-8 rounded-[2rem] bg-black/[0.02] dark:bg-white/5 border border-black/5 dark:border-white/5 hover:border-primary/40 transition-all group", i === 3 && "border-orange-500/20 bg-orange-500/5")}>
                                                             <div className={cn("p-5 rounded-2xl bg-black/5 dark:bg-white/10 h-fit group-hover:scale-110 transition-transform", rec.color)}>
                                                                 <rec.icon className="h-8 w-8" />
                                                             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Plus, Edit2, Trash2, Package, Search, MoreVertical, Check, X, ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, Search, MoreVertical, Check, X, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useProducts } from '@/hooks/use-products';
@@ -363,6 +363,23 @@ export function ProductManager({ supplierId }: ProductManagerProps) {
                                             <span className="text-[8px] font-black uppercase tracking-widest">Oferta Activa</span>
                                         </div>
                                     )}
+
+                                    {/* Phantom / Ghost Product Logic */}
+                                    {(() => {
+                                        const views = product.viewsCount || 0;
+                                        const sales = product.salesCount || 0;
+                                        const conversion = views > 0 ? (sales / views) : 0;
+                                        
+                                        if (views >= 10 && conversion < 0.05) {
+                                            return (
+                                                <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/10 text-orange-400 rounded-lg border border-orange-500/30 animate-pulse">
+                                                    <AlertTriangle className="h-3 w-3" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest">⚠️ Optimizar Conversión</span>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
                             </div>
                             

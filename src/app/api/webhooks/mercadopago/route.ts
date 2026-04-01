@@ -44,18 +44,41 @@ export async function POST(req: Request) {
                 if (metadata?.type === 'delivery_order') {
                     const orderId = metadata.order_id;
                     const orderRef = adminDb.collection('orders').doc(orderId);
+                    const orderDoc = await orderRef.get();
 
-                    await orderRef.update({
-                        status: 'searching_rider', // Payment confirmed -> Go to Map!
-                        payment_id: String(paymentId),
-                        paid_at: admin.firestore.FieldValue.serverTimestamp(),
-                        logistics_split: {
-                            cluber: metadata.cluber_net,
-                            rider: metadata.rider_net,
-                            estuclub: metadata.estuclub_net
+                    if (orderDoc.exists) {
+                        const orderData = orderDoc.data();
+                        
+                        // Prevent duplicate increments if payment_id already exists
+                        if (!orderData?.payment_id) {
+                            const items = orderData?.items || [];
+                            
+                            // Atomic increments for each product sold
+                            const productUpdates = items.map((item: any) => {
+                                if (!item.productId) return Promise.resolve();
+                                const productRef = adminDb.collection('products').doc(item.productId);
+                                return productRef.update({
+                                    salesCount: admin.firestore.FieldValue.increment(item.quantity || 1)
+                                }).catch(err => console.error(`Error updating salesCount for ${item.productId}:`, err));
+                            });
+
+                            await Promise.all(productUpdates);
+
+                            await orderRef.update({
+                                status: 'searching_rider', // Payment confirmed -> Go to Map!
+                                payment_id: String(paymentId),
+                                paid_at: admin.firestore.FieldValue.serverTimestamp(),
+                                logistics_split: {
+                                    cluber: metadata.cluber_net,
+                                    rider: metadata.rider_net,
+                                    estuclub: metadata.estuclub_net
+                                }
+                            });
+                            console.log(`🚀 [Webhook] Order ${orderId} is now LIVE. Sales counts updated.`);
+                        } else {
+                            console.log(`⚠️ [Webhook] Order ${orderId} already had a payment_id. Skipping duplicate increment.`);
                         }
-                    });
-                    console.log(`🚀 [Webhook] Order ${orderId} is now LIVE on the Rider Map.`);
+                    }
                 }
             }
         }

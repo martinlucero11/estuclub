@@ -382,6 +382,7 @@ export interface Product {
     stockAvailable: boolean;
     isActive: boolean;
     viewsCount?: number;
+    salesCount?: number;
     createdAt: Timestamp;
 }
 
