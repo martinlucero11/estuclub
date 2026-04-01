@@ -80,18 +80,18 @@ export default function SignupPage() {
 
             <div className="mobile-container z-10 py-10">
                 <header className="mb-12 flex flex-col items-center text-center space-y-4">
-                    <Link href="/" className="mb-2 transition-transform hover:scale-105 duration-300">
+                    <Link href="/" className="mb-2 transition-transform hover:scale-110 duration-500">
                          <Image 
                             src="/logo.svg" 
                             alt="EstuClub Logo" 
-                            width={160} 
-                            height={40} 
-                            className="h-10 w-auto filter-rosa"
+                            width={180} 
+                            height={45} 
+                            className="h-12 w-auto filter-rosa drop-shadow-[0_0_15px_rgba(255,0,127,0.3)]"
                         />
                     </Link>
                     <div className="space-y-1">
-                        <h1 className="text-3xl font-black tracking-tighter text-slate-900 uppercase italic font-montserrat">
-                            {view === 'choice' ? "¿Cómo querés" : "Crear mi"} <span className="text-[#d93b64]">{view === 'choice' ? "Unirte?" : "Cuenta"}</span>
+                        <h1 className="text-3xl font-black tracking-tighter text-slate-900 uppercase italic font-montserrat leading-tight">
+                            {view === 'choice' ? "¿Cómo querés" : "Crear mi"} <br/><span className="text-[#FF007F] text-4xl">{view === 'choice' ? "Unirte?" : "Cuenta"}</span>
                         </h1>
                         <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] opacity-70 italic">
                             {view === 'choice' ? "Elegí tu perfil para empezar" : "Solo te llevará 1 minuto"}

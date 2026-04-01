@@ -14,10 +14,13 @@ import {
     MapPin, 
     Loader2,
     ArrowLeft,
-    Building,
     Target,
-    Wallet
+    Wallet,
+    AtSign,
+    Lock
 } from 'lucide-react';
+import SignupForm from '@/components/auth/signup-form';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -156,24 +159,45 @@ export default function BeCluberPage() {
     if (!user) {
         return (
             <MainLayout>
-                <div className="min-h-[80dvh] flex items-center justify-center p-6 bg-[#FDFDFD]">
-                    <Card className="bg-white border-slate-100 rounded-[3rem] p-10 max-w-[400px] w-full text-center space-y-10 shadow-premium border-0 animate-in fade-in zoom-in duration-500">
-                        <div className="h-24 w-24 bg-[#d93b64]/5 rounded-[2.5rem] flex items-center justify-center mx-auto border border-[#d93b64]/10 shadow-inner">
-                            <Store className="h-12 w-12 text-[#d93b64]" />
+                <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter selection:bg-[#FF007F]/10">
+                    {/* Background Accents */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#FF007F]/5 blur-[100px] rounded-full opacity-10 -z-10" />
+
+                    <div className="mobile-container pt-20 pb-32">
+                        <header className="mb-12 flex flex-col items-center text-center space-y-6">
+                            <Link href="/" className="mb-2 transition-transform hover:scale-110 duration-500">
+                                <Image 
+                                    src="/logo.svg" 
+                                    alt="EstuClub Logo" 
+                                    width={160} 
+                                    height={40} 
+                                    className="h-10 w-auto filter-rosa drop-shadow-[0_0_15px_rgba(255,0,127,0.3)]"
+                                />
+                            </Link>
+                            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#FF007F]/5 rounded-full border border-[#FF007F]/10">
+                                <Store className="h-4 w-4 text-[#FF007F]" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F] italic">Inscripción Cluber</span>
+                            </div>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
+                                    Vende en <br/><span className="text-[#FF007F]">Estuclub</span>
+                                </h1>
+                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs opacity-70 mx-auto">Crea tu cuenta de Estuclub para postular tu marca.</p>
+                            </div>
+                        </header>
+
+                        <SignupForm initialRole="cluber" />
+
+                        <div className="mt-12 text-center flex flex-col items-center space-y-6">
+                            <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">
+                                ¿Ya sos Cluber?{' '}
+                                <Link href="/login" className="font-black text-[#FF007F] underline-offset-4 decoration-2 hover:underline tracking-widest ml-1">
+                                    INICIÁ SESIÓN
+                                </Link>
+                            </p>
                         </div>
-                        <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-slate-950 italic uppercase tracking-tighter leading-none font-montserrat">Únete <br/><span className="text-[#d93b64]">Hoy</span></h2>
-                            <p className="text-slate-400 font-bold text-[11px] uppercase tracking-[0.2em] leading-loose max-w-[240px] mx-auto italic">Necesitás una cuenta de Estuclub para postular tu marca.</p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <Button asChild className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-[#d93b64]/20">
-                                <Link href="/signup">CREAR MI CUENTA</Link>
-                            </Button>
-                            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-widest">
-                                <Link href="/login">Ya tengo cuenta (Ingresar)</Link>
-                            </Button>
-                        </div>
-                    </Card>
+                    </div>
                 </div>
             </MainLayout>
         );
@@ -184,18 +208,18 @@ export default function BeCluberPage() {
             <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter">
                 {/* Background Orbs */}
                 <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-blue-400/5 blur-[120px] rounded-full -z-10" />
-                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#d93b64]/5 blur-[100px] rounded-full -z-10" />
+                <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#FF007F]/5 blur-[100px] rounded-full -z-10" />
 
                 <div className="max-w-2xl mx-auto px-6 pt-32 pb-40">
                     {/* Header */}
                     <header className="mb-20 space-y-6">
-                        <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#d93b64]/5 rounded-3xl border border-[#d93b64]/10 shadow-sm">
-                            <Target className="h-4 w-4 text-[#d93b64]" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Corporate Onboarding</span>
+                        <div className="inline-flex items-center gap-3 px-6 py-2 bg-[#FF007F]/5 rounded-3xl border border-[#FF007F]/10 shadow-sm">
+                            <Target className="h-4 w-4 text-[#FF007F]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F]">Corporate Onboarding</span>
                         </div>
                         <div className="space-y-4">
                             <h1 className="text-6xl md:text-8xl font-black tracking-tighter italic uppercase leading-[0.8] text-[#1a1a1a] select-none font-montserrat">
-                                Impulsá tu <br/><span className="text-[#d93b64]">Negocio</span>
+                                Impulsá tu <br/><span className="text-[#FF007F]">Negocio</span>
                             </h1>
                             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-sm opacity-80 leading-loose">Unite a la red de beneficios que mueve a la comunidad universitaria.</p>
                         </div>
@@ -214,7 +238,7 @@ export default function BeCluberPage() {
                                                     value={formData.supplierName}
                                                     onChange={e => setFormData({...formData, supplierName: e.target.value})}
                                                     placeholder="Ej: Mismo Studio" 
-                                                    className="h-16 pl-14 bg-slate-50 border-0 rounded-3xl text-sm font-bold focus:ring-2 focus:ring-[#d93b64]/20 transition-all" 
+                                                    className="h-16 pl-14 bg-slate-50 border-0 rounded-3xl text-sm font-bold focus:ring-2 focus:ring-[#FF007F]/20 transition-all" 
                                                 />
                                             </div>
                                         </div>
@@ -234,7 +258,7 @@ export default function BeCluberPage() {
                                         <Button 
                                             disabled={!validateBusiness()} 
                                             onClick={() => setStep('contact')}
-                                            className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-3xl shadow-xl shadow-[#d93b64]/20"
+                                            className="w-full h-16 bg-[#FF007F] text-white font-black uppercase tracking-widest rounded-3xl shadow-xl shadow-[#FF007F]/20"
                                         >
                                             SIGUIENTE PASO <ChevronRight className="ml-2 h-4 w-4" />
                                         </Button>
@@ -295,7 +319,7 @@ export default function BeCluberPage() {
                                         { id: 'logo', label: 'Logo de la Marca', sub: 'Imagen cuadrada recomendada' },
                                         { id: 'fachada', label: 'Foto del Local', sub: 'Opcional (fachada o interior)' }
                                     ].map(doc => (
-                                        <div key={doc.id} className="relative group overflow-hidden bg-white rounded-3xl border border-slate-100 shadow-sm transition-all hover:border-[#d93b64]/30">
+                                        <div key={doc.id} className="relative group overflow-hidden bg-white rounded-3xl border border-slate-100 shadow-sm transition-all hover:border-[#FF007F]/30">
                                             <input 
                                                 type="file" 
                                                 accept="image/*" 
@@ -306,7 +330,7 @@ export default function BeCluberPage() {
                                                 <div className="flex items-center gap-5">
                                                     <div className={cn(
                                                         "h-14 w-14 rounded-2xl flex items-center justify-center transition-colors",
-                                                        files[doc.id as keyof typeof files] ? "bg-green-500/10 text-green-500" : "bg-slate-50 text-slate-300 group-hover:bg-[#d93b64]/5 group-hover:text-[#d93b64]"
+                                                        files[doc.id as keyof typeof files] ? "bg-green-500/10 text-green-500" : "bg-slate-50 text-slate-300 group-hover:bg-[#FF007F]/5 group-hover:text-[#FF007F]"
                                                     )}>
                                                         {files[doc.id as keyof typeof files] ? <CheckCircle2 className="h-6 w-6" /> : <ImageIcon className="h-6 w-6" />}
                                                     </div>
@@ -315,7 +339,7 @@ export default function BeCluberPage() {
                                                         <p className="text-[10px] font-bold text-slate-400 italic mt-0.5">{files[doc.id as keyof typeof files] ? files[doc.id as keyof typeof files]?.name : doc.sub}</p>
                                                     </div>
                                                 </div>
-                                                <Button variant="ghost" size="sm" className="font-black text-[10px] uppercase tracking-widest text-[#d93b64]">SELECCIONAR</Button>
+                                                <Button variant="ghost" size="sm" className="font-black text-[10px] uppercase tracking-widest text-[#FF007F]">SELECCIONAR</Button>
                                             </div>
                                         </div>
                                     ))}
@@ -328,7 +352,7 @@ export default function BeCluberPage() {
                                     <Button 
                                         disabled={!validateBranding() || isSubmitting} 
                                         onClick={() => setStep('payment')}
-                                        className="flex-1 h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-3xl shadow-xl shadow-[#d93b64]/30"
+                                        className="flex-1 h-16 bg-[#FF007F] text-white font-black uppercase tracking-widest rounded-3xl shadow-xl shadow-[#FF007F]/30"
                                     >
                                         VINCULAR PAGOS <ChevronRight className="ml-2 h-4 w-4" />
                                     </Button>
@@ -389,14 +413,14 @@ export default function BeCluberPage() {
                                 <div className="text-center space-y-12 max-w-md">
                                     <div className="relative mx-auto inline-block">
                                         <div className="h-32 w-32 bg-slate-900 rounded-[2.5rem] flex items-center justify-center animate-bounce-slow shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
-                                            <Building className="h-14 w-14 text-white" />
+                                            <Building2 className="h-14 w-14 text-white" />
                                         </div>
-                                        <div className="absolute -top-4 -right-4 h-12 w-12 bg-[#d93b64] rounded-full flex items-center justify-center text-white border-4 border-white shadow-lg">
+                                        <div className="absolute -top-4 -right-4 h-12 w-12 bg-[#FF007F] rounded-full flex items-center justify-center text-white border-4 border-white shadow-lg">
                                             <CheckCircle2 className="h-5 w-5" />
                                         </div>
                                     </div>
                                     <div className="space-y-5">
-                                        <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter text-[#1a1a1a] leading-none font-montserrat">Solicitud <br/><span className="text-[#d93b64]">Recibida</span></h2>
+                                        <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter text-[#1a1a1a] leading-none font-montserrat">Solicitud <br/><span className="text-[#FF007F]">Recibida</span></h2>
                                         <p className="text-slate-400 font-bold text-sm leading-relaxed max-w-[280px] mx-auto italic uppercase tracking-widest opacity-80">El equipo de expansión de Estuclub revisará tu perfil corporativo en breve.</p>
                                     </div>
                                     <Button asChild className="w-full h-16 bg-slate-900 text-white font-black uppercase tracking-widest rounded-3xl shadow-2xl">

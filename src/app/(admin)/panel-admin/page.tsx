@@ -154,11 +154,11 @@ export default function AdminControlCentralPage() {
                         {/* MODULE: COMERCIOS */}
                         <AdminModule 
                             title="COMERCIOS" 
-                            desc="Gestión de Suppliers (Aprobación/Shadow Access) y Auditoría de Menús."
+                            desc="Gestión integral de Clubers: Permisos, Visibilidad, Featured y Cinco Dos."
                             icon={Store}
-                            href="/panel-cluber"
-                            items={["Aprobar Comercios", "Shadow Access", "Inventory Audit"]}
-                            accent="#82FF00"
+                            href="/panel-admin/clubers"
+                            items={["Gestión de Permisos", "Toggles de Visibilidad", "Cinco Dos Control"]}
+                            accent="#FF007F"
                         />
 
                         {/* MODULE: ANALYTICS */}

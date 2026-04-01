@@ -84,6 +84,9 @@ export const metadata: Metadata = {
     shortcut: '/icon-192.png',     // El de 192px
     apple: '/icon-192.png',        // Apple se ve mejor con un PNG cuadrado
   },
+  other: {
+    "mobile-web-app-capable": "yes",
+  },
 };
 
 export default function RootLayout({

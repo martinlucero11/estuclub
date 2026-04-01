@@ -74,7 +74,7 @@ const formSchema = z.object({
     path: ["career"]
 });
 
-export default function SignupForm() {
+export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'user' | 'rider' | 'cluber' }) {
   const router = useRouter();
   const firestore = useFirestore();
   const auth = useAuthService();
@@ -199,7 +199,7 @@ export default function SignupForm() {
         phone: values.phone || '',
         gender: values.gender || 'Masculino',
         isStudent: values.isStudent,
-        studentStatus: values.isStudent ? (certificateFile ? 'submitted' : 'pending') : undefined,
+        studentStatus: values.isStudent ? (certificateFile ? 'submitted' : 'pending') : 'verified',
         certificateDeadline: (values.isStudent && !certificateFile) 
           ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
           : null,
@@ -210,7 +210,7 @@ export default function SignupForm() {
         studentCertificateUrl: certificateUrl,
         points: 0,
         photoURL: '',
-        role: 'user',
+        role: initialRole,
         isEmailVerified: false,
         wantsToBeCluber: !!values.requestCluber,
         createdAt: serverTimestamp(),
@@ -379,7 +379,7 @@ export default function SignupForm() {
                   <FormLabel className={labelClasses}>Contraseña</FormLabel>
                   <div className="relative group/input">
                     <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
-                    <FormControl><Input type="password" placeholder="••••••••" {...field} className={inputClasses} /></FormControl>
+                    <FormControl><Input type="password" placeholder="••••••••" autoComplete="new-password" {...field} className={inputClasses} /></FormControl>
                   </div>
                   <FormMessage className="text-[10px] font-bold" />
                 </FormItem>

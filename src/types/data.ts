@@ -137,6 +137,8 @@ export interface SupplierProfile {
   menuSections?: string[]; // Custom subcategories defined by the supplier
   mp_linked?: boolean;
   mp_grace_period_end?: Timestamp;
+  isCincoDos?: boolean; // PWA plus membership
+  commissionPercentage?: number; // Admin-controlled
   [key: string]: any;
 }
 

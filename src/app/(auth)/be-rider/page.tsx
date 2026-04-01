@@ -19,8 +19,11 @@ import {
     X,
     FlipHorizontal,
     Camera as CaptureIcon,
-    Wallet
+    Wallet,
+    AtSign,
+    Lock
 } from 'lucide-react';
+import SignupForm from '@/components/auth/signup-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -245,24 +248,45 @@ export default function BeRiderPage() {
     if (!user) {
         return (
             <MainLayout>
-                <div className="min-h-[85dvh] flex items-center justify-center p-6 bg-[#FDFDFD]">
-                    <Card className="bg-white border-slate-100 rounded-[3rem] p-10 max-w-[400px] w-full text-center space-y-10 shadow-premium border-0 animate-in fade-in zoom-in duration-500">
-                        <div className="h-24 w-24 bg-[#d93b64]/5 rounded-[2.5rem] flex items-center justify-center mx-auto border border-[#d93b64]/10 shadow-inner">
-                            <Bike className="h-12 w-12 text-[#d93b64]" />
+                <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter selection:bg-[#FF007F]/10">
+                    {/* Background Accents */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#FF007F]/5 blur-[100px] rounded-full opacity-10 -z-10" />
+
+                    <div className="mobile-container pt-20 pb-32">
+                        <header className="mb-12 flex flex-col items-center text-center space-y-6">
+                            <Link href="/" className="mb-2 transition-transform hover:scale-110 duration-500">
+                                <Image 
+                                    src="/logo.svg" 
+                                    alt="EstuClub Logo" 
+                                    width={160} 
+                                    height={40} 
+                                    className="h-10 w-auto filter-rosa drop-shadow-[0_0_15px_rgba(255,0,127,0.3)]"
+                                />
+                            </Link>
+                            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#FF007F]/5 rounded-full border border-[#FF007F]/10">
+                                <Bike className="h-4 w-4 text-[#FF007F]" />
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F] italic">Inscripción Rider</span>
+                            </div>
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
+                                    Sumate a la <br/><span className="text-[#FF007F]">Logística</span>
+                                </h1>
+                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs opacity-70 mx-auto">Crea tu cuenta de Estuclub para empezar tu postulación.</p>
+                            </div>
+                        </header>
+
+                        <SignupForm initialRole="rider" />
+
+                        <div className="mt-12 text-center flex flex-col items-center space-y-6">
+                            <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">
+                                ¿Ya sos Rider?{' '}
+                                <Link href="/login" className="font-black text-[#FF007F] underline-offset-4 decoration-2 hover:underline tracking-widest ml-1">
+                                    INICIÁ SESIÓN
+                                </Link>
+                            </p>
                         </div>
-                        <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-slate-950 italic uppercase tracking-tighter leading-[0.9] font-montserrat tracking-tighter">Únete <br/><span className="text-[#d93b64]">Rider</span></h2>
-                            <p className="text-slate-400 font-bold text-[11px] uppercase tracking-[0.2em] leading-loose max-w-[260px] mx-auto italic">Necesitás una cuenta de Estuclub para postularte como repartidor.</p>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <Button asChild className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[2rem] shadow-xl shadow-[#d93b64]/20">
-                                <Link href="/signup">COMENZAR AHORA</Link>
-                            </Button>
-                            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-widest">
-                                <Link href="/login">Ya tengo cuenta (Ingresar)</Link>
-                            </Button>
-                        </div>
-                    </Card>
+                    </div>
                 </div>
             </MainLayout>
         );
@@ -437,7 +461,7 @@ export default function BeRiderPage() {
                                                         <Button 
                                                             size="sm" 
                                                             onClick={() => setActiveCamera({ id: doc.id, label: doc.label })}
-                                                            className="bg-[#d93b64] text-white font-black text-[9px] uppercase tracking-widest rounded-xl px-4"
+                                                            className="bg-[#FF007F] text-white font-black text-[9px] uppercase tracking-widest rounded-xl px-4"
                                                         >
                                                             CÁMARA
                                                         </Button>
@@ -468,7 +492,7 @@ export default function BeRiderPage() {
                                         onClick={() => setStep('payment')}
                                         className="flex-1 h-14 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl shadow-[0_0_30px_rgba(217,59,100,0.3)] hover:scale-[1.02] transition-all"
                                     >
-                                        VINCULAR PAGOS <ChevronRight className="ml-2 h-4 w-4" />
+                                        <span className="text-[#FF007F]">Logística</span>
                                     </Button>
                                 </div>
                             </motion.div>
@@ -537,7 +561,7 @@ export default function BeRiderPage() {
                                         <div className="absolute inset-x-0 -bottom-6 h-12 w-full bg-[#d93b64]/20 blur-3xl rounded-full" />
                                     </div>
                                     <div className="space-y-4">
-                                        <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.8] font-montserrat">Postulación <br/><span className="text-[#d93b64]">Enviada</span></h2>
+                                        <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.8] font-montserrat">Postulación <br/><span className="text-[#FF007F]">Enviada</span></h2>
                                         <p className="text-zinc-500 font-medium text-sm leading-relaxed px-4">¡Listo! Nuestro equipo analizará tus datos y te contactará vía Whatsapp en menos de 24hs.</p>
                                     </div>
                                     <Button asChild className="w-full h-14 bg-white text-black font-black uppercase tracking-widest rounded-3xl shadow-2xl">
