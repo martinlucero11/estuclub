@@ -242,9 +242,28 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                             </div>
 
                                             <div className="flex flex-row md:flex-col gap-2 justify-end">
+                                                {order.status === 'pending' && (
+                                                    <div className="flex flex-col gap-2">
+                                                        <Button 
+                                                            onClick={() => handleUpdateStatus(order, 'accepted')}
+                                                            className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-10 px-8 bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(217,59,100,0.3)] animate-in zoom-in duration-500"
+                                                        >
+                                                            <Check className="mr-2 h-4 w-4" /> ACEPTAR PEDIDO
+                                                        </Button>
+                                                        <Button 
+                                                            variant="ghost"
+                                                            onClick={() => handleUpdateStatus(order, 'cancelled')}
+                                                            className="rounded-2xl font-black uppercase tracking-widest text-[9px] h-8 px-8 text-destructive hover:bg-destructive/10 border border-destructive/20 animate-in slide-in-from-right-4 duration-700"
+                                                        >
+                                                            <XCircle className="mr-2 h-3 w-3" /> RECHAZAR PEDIDO
+                                                        </Button>
+                                                    </div>
+                                                )}
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-10 px-6">Cambiar Estado <ChevronDown className="ml-2 h-4 w-4" /></Button>
+                                                        <Button variant={order.status === 'pending' ? "outline" : "default"} className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-10 px-6">
+                                                            {order.status === 'pending' ? 'Más opciones' : 'Cambiar Estado'} <ChevronDown className="ml-2 h-4 w-4" />
+                                                        </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent className="rounded-2xl border-white/5 glass glass-dark w-48">
                                                         {(['pending', 'accepted', 'searching_rider', 'assigned', 'shipped', 'completed', 'cancelled'] as const).map(s => (
@@ -252,7 +271,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                         ))}
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
-                                                <Button variant="outline" size="icon" className="rounded-2xl border-white/10 hover:bg-white/10 h-10 w-10" onClick={() => window.open(`https://wa.me/${order.userPhone?.replace(/\D/g, '')}`, '_blank')}><Phone className="h-4 w-4" /></Button>
+                                                <Button variant="outline" size="icon" className="rounded-2xl border-white/10 hover:bg-white/10 h-10 w-10 flex items-center justify-center shrink-0" onClick={() => window.open(`https://wa.me/${order.userPhone?.replace(/\D/g, '')}`, '_blank')}><Phone className="h-4 w-4" /></Button>
                                             </div>
                                         </div>
                                     </div>

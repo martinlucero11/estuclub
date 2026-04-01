@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Ticket, QrCode, CalendarDays, Building, Trophy, ShoppingCart, ShoppingBag, User, Search } from 'lucide-react';
+import { Home, Ticket, QrCode, CalendarDays, Building, Trophy, ShoppingCart, ShoppingBag, User, Search, ShieldCheck, Wallet, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/firebase';
 import { motion } from 'framer-motion';
@@ -20,6 +20,8 @@ export function BottomNav() {
   
   // Detect current context
   const isInDeliveryContext = pathname.startsWith('/delivery') || pathname.startsWith('/orders');
+    const isRider = roles.includes('rider');
+    const isInRiderContext = pathname.startsWith('/rider') || (isRider && pathname.startsWith('/verify'));
 
   // Determine Center Button for Benefits Context
   let benefitsCenterBtn;
@@ -34,7 +36,7 @@ export function BottomNav() {
     { href: '/', label: 'Inicio', icon: Home },
     { href: '/benefits', label: 'Beneficios', icon: Ticket },
     benefitsCenterBtn,
-    { href: '/profile', label: 'Perfil', icon: User },
+    { href: isPrivileged ? '/panel-cluber/supplier-profile' : '/profile', label: 'Perfil', icon: User },
     { href: '#cart', label: 'Carrito', icon: ShoppingCart },
   ];
 
@@ -43,11 +45,19 @@ export function BottomNav() {
     { href: '/delivery', label: 'Explorar', icon: Search },
     { href: '#cart', label: 'Carrito', icon: ShoppingCart, special: true },
     { href: '/orders', label: 'Pedidos', icon: CalendarDays },
+    { href: isPrivileged ? '/panel-cluber/supplier-profile' : '/profile', label: 'Perfil', icon: User },
+  ];
+
+  const riderNav = [
+    { href: '/rider', label: 'Inicio', icon: Home },
+    { href: '/rider/orders', label: 'Entregas', icon: ShoppingBag },
+    { href: '/rider', label: 'Mapa', icon: Navigation, special: true },
+    { href: '/rider/wallet', label: 'Billetera', icon: Wallet },
     { href: '/profile', label: 'Perfil', icon: User },
   ];
 
   // Determine which nav to show
-  let navItems = isInDeliveryContext ? deliveryNav : benefitsNav;
+  let navItems = isInRiderContext ? riderNav : (isInDeliveryContext ? deliveryNav : benefitsNav);
 
   // Add Switch Button for dual-role users
   if (isStudent && isPrivileged) {

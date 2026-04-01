@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
 import { doc, updateDoc, GeoPoint } from 'firebase/firestore';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { Save, Loader2, Camera, Truck } from 'lucide-react';
+import { Save, Loader2, Camera, Truck, Clock, MapPin } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 import { Skeleton } from '../ui/skeleton';
 import { SupplierProfile, cluberCategories, deliveryCategories } from '@/types/data';
@@ -27,6 +27,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 
 const LocationPicker = dynamic(() => import('@/components/maps/location-picker'), { 
@@ -49,6 +50,11 @@ const formSchema = z.object({
   minOrderAmount: z.number().optional(),
   deliveryCategory: z.string().optional(),
   coverUrl: z.string().url('URL de imagen de portada no válida').optional().or(z.literal('')),
+  operatingHours: z.record(z.object({
+    active: z.boolean(),
+    startTime: z.string(),
+    endTime: z.string()
+  })).optional(),
 });
 
 function slugify(text: string) {
@@ -102,6 +108,15 @@ export default function EditSupplierProfileForm() {
       minOrderAmount: 0,
       deliveryCategory: '',
       coverUrl: '',
+      operatingHours: {
+        monday: { active: true, startTime: '09:00', endTime: '18:00' },
+        tuesday: { active: true, startTime: '09:00', endTime: '18:00' },
+        wednesday: { active: true, startTime: '09:00', endTime: '18:00' },
+        thursday: { active: true, startTime: '09:00', endTime: '18:00' },
+        friday: { active: true, startTime: '09:00', endTime: '18:00' },
+        saturday: { active: false, startTime: '09:00', endTime: '18:00' },
+        sunday: { active: false, startTime: '09:00', endTime: '18:00' },
+      }
     },
   });
 
@@ -125,6 +140,15 @@ export default function EditSupplierProfileForm() {
             minOrderAmount: supplierProfile.minOrderAmount || 0,
             deliveryCategory: supplierProfile.deliveryCategory || '',
             coverUrl: supplierProfile.coverUrl || '',
+            operatingHours: supplierProfile.operatingHours?.schedule || {
+              monday: { active: true, startTime: '09:00', endTime: '18:00' },
+              tuesday: { active: true, startTime: '09:00', endTime: '18:00' },
+              wednesday: { active: true, startTime: '09:00', endTime: '18:00' },
+              thursday: { active: true, startTime: '09:00', endTime: '18:00' },
+              friday: { active: true, startTime: '09:00', endTime: '18:00' },
+              saturday: { active: false, startTime: '09:00', endTime: '18:00' },
+              sunday: { active: false, startTime: '09:00', endTime: '18:00' },
+            },
         });
     }
   }, [supplierProfile, form]);
@@ -193,6 +217,10 @@ export default function EditSupplierProfileForm() {
 
       if (values.locationCoords) {
           dataToSave.locationCoords = new GeoPoint(values.locationCoords.lat, values.locationCoords.lng);
+      }
+
+      if (values.operatingHours) {
+          dataToSave.operatingHours = { schedule: values.operatingHours };
       }
 
       await updateDoc(supplierRef, {
@@ -413,6 +441,59 @@ export default function EditSupplierProfileForm() {
             </FormItem>
           )}
         />
+        
+        <div className="space-y-6 pt-6 border-t border-border/50">
+            <h3 className="text-lg font-black uppercase tracking-widest text-[#d93b64] flex items-center gap-2">
+                <Clock className="h-5 w-5" /> Horarios de Atención
+            </h3>
+            <div className="grid gap-4">
+                {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day) => (
+                    <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/30 border border-border/50">
+                        <div className="flex items-center gap-4 min-w-[120px]">
+                            <Switch 
+                                checked={form.watch(`operatingHours.${day}.active`)} 
+                                onCheckedChange={(val) => form.setValue(`operatingHours.${day}.active`, val, { shouldDirty: true })}
+                            />
+                            <span className="font-black uppercase tracking-widest text-xs">
+                                {day === 'monday' ? 'Lunes' : 
+                                 day === 'tuesday' ? 'Martes' : 
+                                 day === 'wednesday' ? 'Miércoles' : 
+                                 day === 'thursday' ? 'Jueves' : 
+                                 day === 'friday' ? 'Viernes' : 
+                                 day === 'saturday' ? 'Sábado' : 'Domingo'}
+                            </span>
+                        </div>
+
+                        <div className={cn(
+                            "flex items-center gap-3 transition-opacity duration-300",
+                            !form.watch(`operatingHours.${day}.active`) && "opacity-20 pointer-events-none"
+                        )}>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold opacity-40 uppercase">Desde</span>
+                                <Input 
+                                    type="time" 
+                                    className="h-10 w-32 rounded-xl bg-white/50 dark:bg-black/50"
+                                    {...form.register(`operatingHours.${day}.startTime`)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold opacity-40 uppercase">Hasta</span>
+                                <Input 
+                                    type="time" 
+                                    className="h-10 w-32 rounded-xl bg-white/50 dark:bg-black/50"
+                                    {...form.register(`operatingHours.${day}.endTime`)}
+                                />
+                            </div>
+                        </div>
+
+                        {!form.watch(`operatingHours.${day}.active`) && (
+                            <span className="text-[10px] font-black uppercase tracking-widest text-destructive">Cerrado</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+            <p className="text-[10px] text-muted-foreground italic pl-2">Define tus horarios para que los alumnos sepan cuándo pueden visitarte o pedir delivery.</p>
+        </div>
         
          <div className="space-y-4 pt-6 border-t border-border/50">
             <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">

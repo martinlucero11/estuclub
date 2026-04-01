@@ -19,6 +19,9 @@ export interface FirebaseServicesAndUser extends Omit<FirebaseContextState, 'are
   userData: UserProfile | null;
   supplierData: SupplierData | null;
   userLocation: { lat: number; lng: number } | null;
+  isAdmin: boolean;
+  isSupplier: boolean;
+  isRider: boolean;
 }
 
 // Describes the simplified object for general use, returned by useUser
@@ -47,6 +50,10 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     throw new Error('Firebase core services not available. Check FirebaseProvider setup.');
   }
 
+  const isAdmin = context.roles.includes('admin');
+  const isSupplier = context.roles.includes('supplier');
+  const isRider = context.roles.includes('rider');
+
   return {
     firebaseApp: context.firebaseApp,
     firestore: context.firestore,
@@ -60,6 +67,9 @@ export const useFirebase = (): FirebaseServicesAndUser => {
     userError: context.userError,
     userLocation: context.userLocation,
     requestLocation: context.requestLocation,
+    isAdmin,
+    isSupplier,
+    isRider
   };
 };
 
@@ -67,7 +77,7 @@ export const useFirebase = (): FirebaseServicesAndUser => {
  * A convenience hook to get only the user state (user object, roles, loading status).
  */
 export const useUser = (): UserHookResult => {
-  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation } = useFirebase();
+  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation, isAdmin, isSupplier, isRider } = useFirebase();
   return useMemo(() => ({ 
     user, 
     roles, 
@@ -76,8 +86,11 @@ export const useUser = (): UserHookResult => {
     isUserLoading, 
     userError,
     userLocation,
-    requestLocation
-  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation]);
+    requestLocation,
+    isAdmin,
+    isSupplier,
+    isRider
+  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation, isAdmin, isSupplier, isRider]);
 };
 
 /**

@@ -188,11 +188,24 @@ const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message')
 const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
 
 import { ChevronLeft } from 'lucide-react';
+import { StoreMap } from '@/components/delivery/store-map';
 
 function DeliveryPageContent() {
     const searchParams = useSearchParams();
     const categoryFilter = searchParams.get('category');
     const router = useRouter();
+    const firestore = useFirestore();
+
+    const suppliersQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()),
+            where('deliveryEnabled', '==', true),
+            limit(20)
+        );
+    }, [firestore]);
+
+    const { data: suppliers } = useCollection(suppliersQuery);
 
     return (
         <MainLayout>
@@ -222,7 +235,14 @@ function DeliveryPageContent() {
                     </p>
                   </div>
                 ) : (
-                  <WelcomeMessage />
+                  <div className="space-y-8">
+                    <WelcomeMessage />
+                    {!categoryFilter && suppliers && suppliers.length > 0 && (
+                        <div className="animate-in fade-in duration-1000 delay-300">
+                             <StoreMap suppliers={suppliers as SupplierProfile[]} />
+                        </div>
+                    )}
+                  </div>
                 )}
                 
                 <Suspense fallback={<div className="space-y-8"><Skeleton className="h-48 w-full rounded-3xl" /></div>}>

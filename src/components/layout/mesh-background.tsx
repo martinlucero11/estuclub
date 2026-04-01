@@ -29,7 +29,7 @@ export default function MeshBackground() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
       {/* Mesh Gradients */}
-      <div className="absolute inset-0 bg-[#fafafa] dark:bg-[#0a0a0b]" />
+      <div className="absolute inset-0 bg-[#fafafa] dark:bg-[#0a0a0b] [.rider-night_&]:bg-[#050505]" />
       
       {/* Animated Blobs */}
       <motion.div 
@@ -38,7 +38,7 @@ export default function MeshBackground() {
       />
       <motion.div 
         style={{ x: blob2X, y: blob2Y }}
-        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] mix-blend-multiply dark:mix-blend-soft-light"
+        className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] mix-blend-multiply dark:mix-blend-soft-light [.rider-night_&]:opacity-5"
       />
       
       {/* Floating 3D Orbs (Level 3 Depth) */}
@@ -52,12 +52,12 @@ export default function MeshBackground() {
             style={{ animationDelay: '-3s' }}
          />
          <motion.div 
-            className="absolute top-[60%] left-[60%] w-24 h-24 rounded-full bg-pink-500/15 blur-2xl animate-float-orb"
+            className="absolute top-[60%] left-[60%] w-24 h-24 rounded-full bg-estuclub-rosa/15 blur-2xl animate-float-orb"
             style={{ animationDelay: '-7s' }}
          />
       </div>
 
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-pink-500/5 blur-[100px]" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full bg-estuclub-rosa/5 blur-[100px] [.rider-night_&]:opacity-10" />
     </div>
   );
 }

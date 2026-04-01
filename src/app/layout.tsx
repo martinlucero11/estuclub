@@ -22,7 +22,8 @@ const fontSans = Plus_Jakarta_Sans({
 const fontMontserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  weight: ["700", "900"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
 });
 
 const fontInter = Inter({
@@ -99,22 +100,22 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <StatusBarConfig />
-          <Suspense fallback={<Loading />}>
-            <FirebaseProvider>
-              <AdminProvider>
-                <VerificationGate>
-                  <CartProvider>
-                    <MessagingProvider>
+          <FirebaseProvider>
+            <AdminProvider>
+              <VerificationGate>
+                <CartProvider>
+                  <MessagingProvider>
+                    <Suspense fallback={<Loading />}>
+                      <StatusBarConfig />
                       {children}
                       <FloatingAdminMetrics />
-                    </MessagingProvider>
-                  </CartProvider>
-                </VerificationGate>
-              </AdminProvider>
-              <Toaster />
-            </FirebaseProvider>
-          </Suspense>
+                    </Suspense>
+                  </MessagingProvider>
+                </CartProvider>
+              </VerificationGate>
+            </AdminProvider>
+            <Toaster />
+          </FirebaseProvider>
         </ThemeProvider>
       </body>
     </html>

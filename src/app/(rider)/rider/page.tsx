@@ -11,7 +11,7 @@ import {
     ShoppingBag, CreditCard, Navigation, AlertCircle, ExternalLink,
     CheckCircle2, Wallet, Clock, MapPin, ArrowRight, Map as MapIcon,
     Bike, Mail, KeyRound, Loader2, User, Fingerprint, Phone, Car,
-    Camera, ShieldCheck, AlertTriangle, LogIn
+    Camera, ShieldCheck, AlertTriangle, LogIn, Trophy, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -25,16 +25,17 @@ import Link from 'next/link';
 import { setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
 import { createConverter } from '@/lib/firestore-converter';
+import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 
 // ─── MAP COMPONENT ──────────────────────────────────────────
 function RiderMap({ orders, onOrderSelect }: { orders: Order[], onOrderSelect: (order: Order) => void }) {
     return (
-        <div className="w-full h-[50vh] bg-slate-900 rounded-[2.5rem] border border-[#FF007F]/20 shadow-[0_0_50px_rgba(255,0,127,0.05)] relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#FF007F]/10 via-transparent to-transparent opacity-50 z-10" />
+        <div className="w-full h-[40vh] bg-[#0A0A0A] rounded-[2.5rem] border border-[#d93b64]/20 shadow-[0_0_50px_rgba(217,59,100,0.05)] relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#d93b64]/10 via-transparent to-transparent opacity-50 z-10 pointer-events-none" />
             <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center space-y-4">
-                    <MapIcon className="h-12 w-12 text-[#FF007F]/20 mx-auto animate-pulse" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#FF007F]/40">Visualizando {orders.length} pedidos cercanos</p>
+                    <MapIcon className="h-12 w-12 text-[#d93b64]/40 mx-auto animate-pulse" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d93b64]/60">Visualizando {orders.length} pedidos cercanos</p>
                 </div>
             </div>
             {orders.map((order, i) => (
@@ -49,10 +50,10 @@ function RiderMap({ orders, onOrderSelect }: { orders: Order[], onOrderSelect: (
                         top: `${30 + (i * 15) % 40}%`,
                         left: `${20 + (i * 20) % 60}%`
                     }}
-                    className="z-20 h-8 w-8 rounded-full bg-[#FF007F] flex items-center justify-center shadow-[0_0_20px_rgba(255,0,127,0.6)] border-2 border-black"
+                    className="z-20 h-8 w-8 rounded-full bg-[#d93b64] flex items-center justify-center shadow-[0_0_20px_rgba(217,59,100,0.6)] border-2 border-black"
                 >
                     <ShoppingBag className="h-4 w-4 text-black" />
-                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 backdrop-blur-md border border-[#FF007F]/20 text-[8px] px-2 py-0.5 rounded-full font-black text-[#FF007F] uppercase tracking-widest">
+                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 backdrop-blur-md border border-[#d93b64]/20 text-[8px] px-2 py-0.5 rounded-full font-black text-[#d93b64] uppercase tracking-widest">
                         ${order.deliveryCost}
                     </span>
                 </motion.button>
@@ -84,22 +85,22 @@ function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
         }
     };
 
-    const ic = "h-12 pl-12 rounded-xl bg-[#FF007F]/5 border-[#FF007F]/10 focus:border-[#FF007F]/30 focus:ring-[#FF007F]/10 transition-all font-medium text-slate-200 placeholder:text-slate-500";
+    const ic = "h-12 pl-12 rounded-xl bg-[#d93b64]/5 border-[#d93b64]/10 focus:border-[#d93b64]/30 focus:ring-[#d93b64]/10 transition-all font-medium text-slate-200 placeholder:text-slate-500";
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
-            <Card className="rounded-[2rem] bg-slate-900/80 border-[#FF007F]/10 backdrop-blur-xl">
+            <Card className="rounded-[2rem] bg-slate-900/80 border-[#d93b64]/10 backdrop-blur-xl">
                 <form onSubmit={handleLogin}>
                     <CardContent className="space-y-4 pt-8 px-6">
                         <div className="space-y-1.5">
-                            <Label className="font-black uppercase tracking-widest text-[10px] text-[#FF007F]/60 ml-1">Email</Label>
+                            <Label className="font-black uppercase tracking-widest text-[10px] text-[#d93b64]/60 ml-1">Email</Label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                 <Input type="email" placeholder="rider@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} />
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="font-black uppercase tracking-widest text-[10px] text-[#FF007F]/60 ml-1">Contraseña</Label>
+                            <Label className="font-black uppercase tracking-widest text-[10px] text-[#d93b64]/60 ml-1">Contraseña</Label>
                             <div className="relative">
                                 <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                                 <Input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className={ic} />
@@ -107,14 +108,14 @@ function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
                         </div>
                     </CardContent>
                     <CardFooter className="px-6 pb-6 pt-2 flex flex-col gap-3">
-                        <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#FF007F]/90 shadow-[0_0_30px_rgba(255,0,127,0.3)] disabled:opacity-30">
+                        <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#d93b64]/90 shadow-[0_0_30px_rgba(217,59,100,0.3)] disabled:opacity-30">
                             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><LogIn className="mr-2 h-5 w-5" />Ingresar</>}
                         </Button>
                     </CardFooter>
                 </form>
             </Card>
-            <button onClick={onSwitchToSignup} className="mt-6 block mx-auto text-xs font-bold text-slate-500 hover:text-[#FF007F] transition-colors">
-                ¿No tenés cuenta? <span className="font-black text-[#FF007F] uppercase tracking-widest text-[10px] ml-1">Registrate como Rider</span>
+            <button onClick={onSwitchToSignup} className="mt-6 block mx-auto text-xs font-bold text-slate-500 hover:text-[#d93b64] transition-colors">
+                ¿No tenés cuenta? <span className="font-black text-[#d93b64] uppercase tracking-widest text-[10px] ml-1">Registrate como Rider</span>
             </button>
         </motion.div>
     );
@@ -193,12 +194,12 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         }
     }
 
-    const ic = "h-11 pl-11 rounded-xl bg-[#FF007F]/5 border-[#FF007F]/10 focus:border-[#FF007F]/30 focus:ring-[#FF007F]/10 transition-all font-medium text-slate-200 placeholder:text-slate-500 text-sm";
-    const lc = "font-black uppercase tracking-widest text-[9px] ml-1 text-[#FF007F]/60";
+    const ic = "h-11 pl-11 rounded-xl bg-[#d93b64]/5 border-[#d93b64]/10 focus:border-[#d93b64]/30 focus:ring-[#d93b64]/10 transition-all font-medium text-slate-200 placeholder:text-slate-500 text-sm";
+    const lc = "font-black uppercase tracking-widest text-[9px] ml-1 text-[#d93b64]/60";
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
-            <Card className="rounded-[2rem] bg-slate-900/80 border-[#FF007F]/10 backdrop-blur-xl">
+            <Card className="rounded-[2rem] bg-slate-900/80 border-[#d93b64]/10 backdrop-blur-xl">
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-3.5 pt-6 px-5">
                         <div className="grid grid-cols-2 gap-2.5">
@@ -234,15 +235,15 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2.5">
-                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#FF007F]/20 rounded-xl bg-[#FF007F]/5 cursor-pointer hover:bg-[#FF007F]/10 transition-all">
+                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#d93b64]/20 rounded-xl bg-[#d93b64]/5 cursor-pointer hover:bg-[#d93b64]/10 transition-all">
                                 <input type="file" accept="image/*" capture="user" className="hidden" onChange={e => setFotoRostro(e.target.files?.[0] || null)} />
-                                <Camera className="h-5 w-5 text-[#FF007F] mb-1" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[#FF007F]/60">{fotoRostro ? '✅ Rostro' : 'Foto Rostro'}</span>
+                                <Camera className="h-5 w-5 text-[#d93b64] mb-1" />
+                                <span className="text-[8px] font-black uppercase tracking-widest text-[#d93b64]/60">{fotoRostro ? '✅ Rostro' : 'Foto Rostro'}</span>
                             </label>
-                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#FF007F]/20 rounded-xl bg-[#FF007F]/5 cursor-pointer hover:bg-[#FF007F]/10 transition-all">
+                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#d93b64]/20 rounded-xl bg-[#d93b64]/5 cursor-pointer hover:bg-[#d93b64]/10 transition-all">
                                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={e => setFotoVehiculo(e.target.files?.[0] || null)} />
-                                <Car className="h-5 w-5 text-[#FF007F] mb-1" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[#FF007F]/60">{fotoVehiculo ? '✅ Vehículo' : 'Foto Vehículo'}</span>
+                                <Car className="h-5 w-5 text-[#d93b64] mb-1" />
+                                <span className="text-[8px] font-black uppercase tracking-widest text-[#d93b64]/60">{fotoVehiculo ? '✅ Vehículo' : 'Foto Vehículo'}</span>
                             </label>
                         </div>
                         <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -252,20 +253,20 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                                 <p className="text-[8px] text-amber-500/70 font-medium leading-relaxed">Declaro bajo juramento no poseer antecedentes penales.</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#FF007F]/5 border border-[#FF007F]/10">
-                            <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} className="border-[#FF007F]/30 data-[state=checked]:bg-[#FF007F]" />
-                            <p className="text-[9px] font-bold text-slate-400">Acepto la <Link href="/politica-de-privacidad" className="text-[#FF007F] font-black uppercase tracking-widest text-[8px]" target="_blank">Privacidad</Link></p>
+                        <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#d93b64]/5 border border-[#d93b64]/10">
+                            <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} className="border-[#d93b64]/30 data-[state=checked]:bg-[#d93b64]" />
+                            <p className="text-[9px] font-bold text-slate-400">Acepto la <Link href="/politica-de-privacidad" className="text-[#d93b64] font-black uppercase tracking-widest text-[8px]" target="_blank">Privacidad</Link></p>
                         </div>
                     </CardContent>
                     <CardFooter className="pb-6 pt-2 px-5">
-                        <Button type="submit" disabled={!isValid || isSubmitting} className="w-full h-14 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#FF007F]/90 shadow-[0_0_30px_rgba(255,0,127,0.3)] disabled:opacity-30">
+                        <Button type="submit" disabled={!isValid || isSubmitting} className="w-full h-14 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#d93b64]/90 shadow-[0_0_30px_rgba(217,59,100,0.3)] disabled:opacity-30">
                             {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Bike className="mr-2 h-5 w-5" />Enviar Solicitud</>}
                         </Button>
                     </CardFooter>
                 </form>
             </Card>
-            <button onClick={onSwitchToLogin} className="mt-4 block mx-auto text-xs font-bold text-slate-500 hover:text-[#FF007F] transition-colors">
-                ¿Ya tenés cuenta? <span className="font-black text-[#FF007F] uppercase tracking-widest text-[10px] ml-1">Ingresar</span>
+            <button onClick={onSwitchToLogin} className="mt-4 block mx-auto text-xs font-bold text-slate-500 hover:text-[#d93b64] transition-colors">
+                ¿Ya tenés cuenta? <span className="font-black text-[#d93b64] uppercase tracking-widest text-[10px] ml-1">Ingresar</span>
             </button>
         </motion.div>
     );
@@ -299,12 +300,31 @@ export default function RiderPage() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isAccepting, setIsAccepting] = useState(false);
 
+    // ── ADMIN OVERLORD BYPASS ──
+    const isAdmin = roles.includes('admin');
+    const isApprovedRider = userData?.role === 'rider' || isAdmin;
+    const isPendingRider = userData?.role === 'rider_pending' && !isAdmin;
+
     const ordersQuery = useMemo(() => {
-        if (!firestore) return null;
+        if (!firestore || (!userData?.mp_linked && !isAdmin)) return null;
         return query(collection(firestore, 'orders').withConverter(createConverter<Order>()), where('status', '==', 'searching_rider'));
-    }, [firestore]);
+    }, [firestore, userData?.mp_linked, isAdmin]);
+
+    const myOrdersQuery = useMemo(() => {
+        if (!firestore || !user?.uid) return null;
+        return query(
+            collection(firestore, 'orders').withConverter(createConverter<Order>()), 
+            where('riderId', '==', user.uid),
+            where('status', 'in', ['assigned', 'at_store', 'on_the_way', 'delivered', 'completed'])
+        );
+    }, [firestore, user]);
 
     const { data: availableOrders, isLoading: ordersLoading } = useCollection(ordersQuery);
+    const { data: myOrders, isLoading: myOrdersLoading } = useCollection(myOrdersQuery);
+
+    const activeOrders = useMemo(() => myOrders?.filter(o => ['assigned', 'at_store', 'on_the_way'].includes(o.status)) || [], [myOrders]);
+    const historyOrders = useMemo(() => myOrders?.filter(o => ['delivered', 'completed'].includes(o.status)) || [], [myOrders]);
+    const totalEarnings = useMemo(() => historyOrders.reduce((sum, o) => sum + (o.deliveryCost || 0), 0), [historyOrders]);
 
     if (isUserLoading) return null;
 
@@ -312,23 +332,23 @@ export default function RiderPage() {
     if (!user) {
         return (
             <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#050505] p-6 overflow-hidden py-16">
-                <div className="absolute top-[-5%] right-[-10%] w-[50%] h-[50%] bg-[#FF007F]/5 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-5%] left-[-10%] w-[50%] h-[50%] bg-[#FF007F]/5 blur-[120px] rounded-full" />
+                <div className="absolute top-[-5%] right-[-10%] w-[50%] h-[50%] bg-[#d93b64]/5 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-5%] left-[-10%] w-[50%] h-[50%] bg-[#d93b64]/5 blur-[120px] rounded-full" />
 
                 <header className="mb-10 text-center space-y-4 z-10 flex flex-col items-center">
                     <div className="relative mb-2">
-                        <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#FF007F]/30 blur-md rounded-full" />
+                        <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#d93b64]/30 blur-md rounded-full" />
                         <Image 
                             src="/logo.svg" 
                             alt="EstuClub Logo" 
                             width={160} 
                             height={40} 
                             priority
-                            className="brightness-110 contrast-125 filter drop-shadow-[0_2px_15px_rgba(255,0,127,0.4)]"
+                            className="brightness-110 contrast-125 filter drop-shadow-[0_2px_15px_rgba(217,59,100,0.4)]"
                         />
                     </div>
                     <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic font-montserrat">
-                        RIDER <span className="text-[#FF007F]">MODE</span>
+                        MODO <span className="text-[#d93b64]">RIDER</span>
                     </h1>
                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Estuclub Logística</p>
                 </header>
@@ -343,19 +363,12 @@ export default function RiderPage() {
                     </AnimatePresence>
                 </div>
 
-                <Link href="/" className="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-[#FF007F] transition-colors z-10">
+                <Link href="/" className="mt-8 text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] hover:text-[#d93b64] transition-colors z-10">
                     ← Volver a EstuClub
                 </Link>
             </div>
         );
     }
-
-    // ── ADMIN OVERLORD BYPASS ──
-    const isAdmin = roles.includes('admin');
-    const isApprovedRider = userData?.role === 'rider' || isAdmin;
-    const isPendingRider = userData?.role === 'rider_pending' && !isAdmin;
-
-    // ── STATE 2: Logged in but pending approval ──
     if (isPendingRider) {
         return <RiderPending />;
     }
@@ -364,8 +377,8 @@ export default function RiderPage() {
     if (!isApprovedRider) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 px-6">
-                <div className="h-24 w-24 rounded-[3rem] bg-[#FF007F]/10 border border-[#FF007F]/20 flex items-center justify-center shadow-[0_0_40px_rgba(255,0,127,0.1)]">
-                    <AlertCircle className="h-12 w-12 text-[#FF007F]" />
+                <div className="h-24 w-24 rounded-[3rem] bg-[#d93b64]/10 border border-[#d93b64]/20 flex items-center justify-center shadow-[0_0_40px_rgba(217,59,100,0.1)]">
+                    <AlertCircle className="h-12 w-12 text-[#d93b64]" />
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-black tracking-tighter uppercase italic text-white font-montserrat">Sin Permisos</h2>
@@ -373,7 +386,7 @@ export default function RiderPage() {
                         Tu cuenta no tiene el rol de Rider habilitado. Contactá con soporte si crees que es un error.
                     </p>
                 </div>
-                <Button asChild className="h-14 px-10 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-widest hover:bg-[#FF007F]/90 shadow-[0_0_30px_rgba(255,0,127,0.3)] transition-all">
+                <Button asChild className="h-14 px-10 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-widest hover:bg-[#d93b64]/90 shadow-[0_0_30px_rgba(217,59,100,0.3)] transition-all">
                     <Link href="/">Volver al inicio</Link>
                 </Button>
             </div>
@@ -387,8 +400,8 @@ export default function RiderPage() {
     if (!isSubscribed || !isMpLinked) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="h-20 w-20 rounded-[2rem] bg-[#FF007F]/20 border border-[#FF007F]/40 flex items-center justify-center shadow-[0_0_30px_rgba(255,0,127,0.2)]">
-                    <AlertCircle className="h-10 w-10 text-[#FF007F]" />
+                <div className="h-20 w-20 rounded-[2rem] bg-[#d93b64]/20 border border-[#d93b64]/40 flex items-center justify-center shadow-[0_0_30px_rgba(217,59,100,0.2)]">
+                    <AlertCircle className="h-10 w-10 text-[#d93b64]" />
                 </div>
                 <div className="space-y-3">
                     <h1 className="text-3xl font-black tracking-tighter uppercase italic font-montserrat text-white">Acceso Restringido</h1>
@@ -398,7 +411,7 @@ export default function RiderPage() {
                 </div>
                 <div className="grid grid-cols-1 gap-4 w-full max-w-xs">
                     {!isMpLinked ? (
-                        <Button asChild className="h-14 bg-[#FF007F] text-white font-black uppercase tracking-widest hover:bg-[#FF007F]/90 rounded-2xl shadow-[0_0_20px_rgba(255,0,127,0.2)]">
+                        <Button asChild className="h-14 bg-[#d93b64] text-white font-black uppercase tracking-widest hover:bg-[#d93b64]/90 rounded-2xl shadow-[0_0_20px_rgba(217,59,100,0.2)]">
                             <Link href={`/api/auth/mercadopago?userId=${user?.uid}`}><CreditCard className="mr-2 h-5 w-5" /> Vincular Mercado Pago</Link>
                         </Button>
                     ) : (
@@ -407,7 +420,7 @@ export default function RiderPage() {
                         </div>
                     )}
                     {!isSubscribed && (
-                        <Button asChild className="h-14 bg-transparent border-2 border-[#FF007F] text-[#FF007F] font-black uppercase tracking-widest hover:bg-[#FF007F]/10 rounded-2xl">
+                        <Button asChild className="h-14 bg-transparent border-2 border-[#d93b64] text-[#d93b64] font-black uppercase tracking-widest hover:bg-[#d93b64]/10 rounded-2xl">
                             <Link href="/rider/subscribe"><Wallet className="mr-2 h-5 w-5" /> Activar Suscripción</Link>
                         </Button>
                     )}
@@ -433,65 +446,151 @@ export default function RiderPage() {
     };
 
     return (
-        <div className="space-y-8 pb-10">
-            <header className="grid grid-cols-2 gap-4">
-                <Card className="bg-slate-900/50 border-[#FF007F]/10 rounded-[2rem] overflow-hidden">
-                    <CardHeader className="p-4 bg-[#FF007F]/5 border-b border-[#FF007F]/10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F] opacity-60">Balance Semanal</CardTitle>
+        <div className="space-y-12 animate-in fade-in duration-700">
+            <MPRestrictionOverlay />
+            {/* KPI Section */}
+            <header className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="bg-white/[0.03] border-[#d93b64]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
+                    <CardHeader className="p-4 bg-[#d93b64]/5 border-b border-[#d93b64]/10">
+                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Billetera</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
+                    <CardContent className="p-5">
                         <div className="flex items-center gap-2">
-                            <span className="text-2xl font-black tracking-tighter text-[#FF007F] font-inter">$0,00</span>
-                            <div className="h-2 w-2 rounded-full bg-[#FF007F] animate-pulse shadow-[0_0_10px_rgba(255,0,127,1)]" />
+                            <span className="text-xl font-black tracking-tighter text-white font-inter">${totalEarnings.toLocaleString()}</span>
+                            <Wallet className="h-3.5 w-3.5 text-[#d93b64]/40" />
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-slate-900/50 border-[#FF007F]/10 rounded-[2rem] overflow-hidden">
-                    <CardHeader className="p-4 bg-[#FF007F]/5 border-b border-[#FF007F]/10">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F] opacity-60">Suscripción</CardTitle>
+                <Card className="bg-white/[0.03] border-[#d93b64]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
+                    <CardHeader className="p-4 bg-[#d93b64]/5 border-b border-[#d93b64]/10">
+                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Suscripción</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-6">
-                        <Badge className="bg-[#FF007F] text-white font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-full border-0">ACTIVA</Badge>
+                    <CardContent className="p-5 text-center flex items-center justify-center">
+                        <Badge className="bg-[#d93b64] text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-[#d93b64]/30">ACTIVA</Badge>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white/[0.03] border-[#d93b64]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
+                    <CardHeader className="p-4 bg-[#d93b64]/5 border-b border-[#d93b64]/10">
+                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Entregas</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl font-black tracking-tighter text-white font-inter">{historyOrders.length}</span>
+                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500/40" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="bg-white/[0.03] border-[#d93b64]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
+                    <CardHeader className="p-4 bg-[#d93b64]/5 border-b border-[#d93b64]/10">
+                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#d93b64]">Rango Rider</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-5">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl font-black tracking-tighter text-white font-inter">NIVEL {Math.floor((userData?.xp || 0) / 1000) + 1}</span>
+                            <Trophy className="h-3.5 w-3.5 text-amber-500/40" />
+                        </div>
                     </CardContent>
                 </Card>
             </header>
 
+            {/* Active Orders Section */}
+            {activeOrders.length > 0 && (
+                <section className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#d93b64] flex items-center gap-2 font-montserrat">
+                            <Bike className="h-4 w-4 animate-bounce" /> En Curso ({activeOrders.length})
+                        </h2>
+                    </div>
+                    <div className="grid gap-4">
+                        {activeOrders.map(order => (
+                            <Card key={order.id} className="bg-white/[0.03] border-[#d93b64]/30 rounded-[2rem] overflow-hidden">
+                                <CardContent className="p-6 flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-white/10 text-white font-black text-[8px] uppercase tracking-tighter">{order.status.replace('_', ' ')}</Badge>
+                                            <p className="text-sm font-black text-white uppercase italic">{order.supplierName}</p>
+                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-500">{order.deliveryAddress}</p>
+                                    </div>
+                                    <Button asChild size="sm" className="bg-[#d93b64] hover:bg-[#d93b64]/90 rounded-xl font-black text-[10px] uppercase tracking-widest px-6 shadow-xl shadow-[#d93b64]/20">
+                                        <Link href={`/rider/trip/${order.id}`}>Ver Ruta</Link>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
                     <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 font-montserrat">
-                        <Navigation className="h-4 w-4 animate-bounce text-[#FF007F]" /> Pedidos en Vivo
+                        <Navigation className="h-4 w-4 text-[#d93b64]" /> Mapa de Demanda
                     </h2>
-                    <Badge variant="outline" className="border-[#FF007F]/20 text-[#FF007F] font-black text-[9px]">RADIO 5KM</Badge>
+                    <Badge variant="outline" className="border-[#d93b64]/20 text-[#d93b64] font-black text-[9px]">DIRECCIÓN SUR</Badge>
                 </div>
                 <RiderMap orders={availableOrders || []} onOrderSelect={setSelectedOrder} />
             </section>
+
+            {/* History Section */}
+            {historyOrders.length > 0 && (
+                <section className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 font-montserrat">
+                            Historial Reciente
+                        </h2>
+                        <Button variant="link" className="text-[10px] font-black uppercase tracking-widest text-[#d93b64]">Ver Todo</Button>
+                    </div>
+                    <div className="space-y-3">
+                        {historyOrders.slice(0, 5).map(order => (
+                            <div key={order.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-white uppercase italic">{order.supplierName}</p>
+                                        <p className="text-[10px] text-slate-500 font-bold">
+                                            {order.createdAt instanceof Timestamp ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'Reciente'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-black text-[#d93b64] font-inter">+${order.deliveryCost}</p>
+                                    <p className="text-[8px] font-black uppercase tracking-widest text-slate-600">Completado</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <AnimatePresence>
                 {selectedOrder && (
                     <>
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]" />
-                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-[#0A0A0A] border-t border-[#FF007F]/30 rounded-t-[3rem] p-8 pb-12 shadow-[0_-20px_50px_rgba(255,0,127,0.1)]">
-                            <div className="w-12 h-1.5 bg-[#FF007F]/20 rounded-full mx-auto mb-8" />
+                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-[#0A0A0A] border-t border-[#d93b64]/30 rounded-t-[3rem] p-8 pb-12 shadow-[0_-20px_50px_rgba(217,59,100,0.1)]">
+                            <div className="w-12 h-1.5 bg-[#d93b64]/20 rounded-full mx-auto mb-8" />
                             <div className="space-y-6">
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-1">
-                                        <h3 className="text-2xl font-black tracking-tighter uppercase italic text-[#FF007F] font-montserrat">Detalles del Envío</h3>
+                                        <h3 className="text-2xl font-black tracking-tighter uppercase italic text-[#d93b64] font-montserrat">Detalles del Envío</h3>
                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">ID: {selectedOrder.id.slice(0, 8)}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Tu ganancia</p>
-                                        <p className="text-4xl font-black tracking-tighter text-[#FF007F] font-inter">${selectedOrder.deliveryCost}</p>
+                                        <p className="text-4xl font-black tracking-tighter text-[#d93b64] font-inter">${selectedOrder.deliveryCost}</p>
                                     </div>
                                 </div>
                                 <div className="space-y-4 pt-4 border-t border-white/5">
                                     <div className="flex items-center gap-2 text-slate-400">
-                                        <MapPin className="h-4 w-4 text-[#FF007F]" />
+                                        <MapPin className="h-4 w-4 text-[#d93b64]" />
                                         <span className="text-xs font-bold uppercase tracking-tight truncate flex-1">{selectedOrder.supplierName}</span>
                                         <ArrowRight className="h-3 w-3 opacity-30" />
                                         <span className="text-xs font-bold uppercase tracking-tight truncate flex-1">{selectedOrder.deliveryAddress}</span>
                                     </div>
                                 </div>
-                                <Button onClick={handleAcceptOrder} disabled={isAccepting} className="w-full h-16 bg-[#FF007F] text-white font-black text-lg uppercase tracking-[0.2em] hover:bg-[#FF007F]/90 rounded-[2rem] shadow-[0_0_30px_rgba(255,0,127,0.3)] mt-6 transition-all active:scale-95">
+                                <Button onClick={handleAcceptOrder} disabled={isAccepting} className="w-full h-16 bg-[#d93b64] text-white font-black text-lg uppercase tracking-[0.2em] hover:bg-[#d93b64]/90 rounded-[2rem] shadow-[0_0_30px_rgba(217,59,100,0.3)] mt-6 transition-all active:scale-95">
                                     {isAccepting ? "Procesando..." : "ACEPTAR ENVÍO"}
                                 </Button>
                             </div>

@@ -1,12 +1,13 @@
 
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useMemo, useEffect, useState } from 'react';
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
 import { ModeToggle } from '@/components/layout/mode-toggle';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useUser, useCollection, useFirestore } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -109,6 +110,26 @@ function HomeContent() {
 
 
 export default function HomePage() {
+    const { roles, isUserLoading } = useUser();
+    const router = useRouter();
+    const [hasRedirected, setHasRedirected] = useState(false);
+
+    useEffect(() => {
+        if (isUserLoading || hasRedirected) return;
+        
+        if (roles.includes('admin')) {
+            setHasRedirected(true);
+            router.replace('/panel-admin');
+            return;
+        }
+
+        if (roles.includes('supplier')) {
+            setHasRedirected(true);
+            router.replace('/panel-cluber');
+            return;
+        }
+    }, [roles, isUserLoading, router, hasRedirected]);
+
     return (
         <MainLayout>
             <HomeLoginPopup />

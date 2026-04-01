@@ -311,7 +311,14 @@ export default function AdminAnalyticsDashboard() {
             distribution,
             loyaltyCohorts,
             repeatUsersCount,
-            oneTimeUsersCount
+            oneTimeUsersCount,
+            avgRedemptionsPerUser: filteredUsers.length > 0 ? (filteredRedemptions.length / filteredUsers.length).toFixed(1) : '0',
+            totalXpDistributed: filteredRedemptions.length * 100, // Assuming 100xp per redemption
+            peakDay: Object.entries(filteredRedemptions.reduce((acc, r) => {
+                const day = r.redeemedAt?.toDate().toLocaleDateString('es-ES', { weekday: 'long' });
+                if (day) acc[day] = (acc[day] || 0) + 1;
+                return acc;
+            }, {} as Record<string, number>)).sort((a,b) => b[1] - a[1])[0]?.[0] || 'N/A'
         };
     }, [users, suppliers, benefits, redemptions, selectedSupplierId]);
 
@@ -480,7 +487,7 @@ export default function AdminAnalyticsDashboard() {
                 {/* Mesh Background */}
                 <div className="fixed inset-0 pointer-events-none opacity-20 dark:opacity-40">
                     <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/30 blur-[120px] rounded-full animate-pulse" />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-500/20 blur-[120px] rounded-full animate-pulse [animation-delay:2s]" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-estuclub-rosa/20 blur-[120px] rounded-full animate-pulse [animation-delay:2s]" />
                 </div>
 
                 {/* Command Center Bar - High Visibility */}
@@ -669,6 +676,24 @@ export default function AdminAnalyticsDashboard() {
                                         value={stats.totalSuppliers} 
                                         icon={Building} 
                                         onClick={() => openDetail('suppliers')}
+                                    />
+                                    <StatCard 
+                                        title="XP Distribuida" 
+                                        value={stats.totalXpDistributed.toLocaleString()} 
+                                        icon={Zap} 
+                                        description="Impacto en gamificación"
+                                    />
+                                    <StatCard 
+                                        title="Prom. Canjes/User" 
+                                        value={stats.avgRedemptionsPerUser} 
+                                        icon={Activity} 
+                                        description="Fidelidad promedio"
+                                    />
+                                    <StatCard 
+                                        title="Día de Mayor Pico" 
+                                        value={stats.peakDay} 
+                                        icon={Calendar} 
+                                        description="Máxima actividad"
                                     />
                                 </div>
 

@@ -143,7 +143,7 @@ export function CatRunner() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Stars/Distant Grid
-      ctx.fillStyle = 'rgba(236, 72, 153, 0.1)';
+      ctx.fillStyle = 'rgba(217, 59, 100, 0.1)';
       for(let j=0; j<20; j++) {
           const sx = (j * 100 - (gameData.current.frames * 0.5)) % canvas.width;
           ctx.beginPath();
@@ -163,7 +163,7 @@ export function CatRunner() {
       ctx.fill();
 
       // Floor Grid
-      ctx.strokeStyle = 'rgba(236, 72, 153, 0.08)';
+      ctx.strokeStyle = 'rgba(217, 59, 100, 0.08)';
       ctx.lineWidth = 1;
       const gridScroll = (gameData.current.frames * gameData.current.speed) % 40;
       for(let i=0; i<canvas.width + 40; i+=40) {
@@ -183,8 +183,8 @@ export function CatRunner() {
 
       // Neon Floor Line
       ctx.shadowBlur = 20;
-      ctx.shadowColor = '#ec4899';
-      ctx.strokeStyle = '#ec4899';
+      ctx.shadowColor = '#d93b64';
+      ctx.strokeStyle = '#d93b64';
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(0, groundY);
@@ -239,7 +239,7 @@ export function CatRunner() {
   return (
     <div className="relative flex flex-col items-center bg-[#0a0a0c] rounded-[2.5rem] p-4 sm:p-8 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden max-w-full sm:max-w-xl mx-auto transition-all">
       {/* Background Glow */}
-      <div className="absolute -top-24 -left-24 w-64 h-64 bg-pink-500/10 blur-[100px] rounded-full" />
+      <div className="absolute -top-24 -left-24 w-64 h-64 bg-estuclub-rosa/10 blur-[100px] rounded-full" />
       <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full" />
 
       <div className="w-full flex justify-between items-center mb-6 px-4 relative z-10">
@@ -251,8 +251,8 @@ export function CatRunner() {
             </div>
         </div>
         <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-pink-500 opacity-60 mb-0.5">PUNTOS</span>
-            <div className="text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-estuclub-rosa opacity-60 mb-0.5">PUNTOS</span>
+            <div className="text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_20px_rgba(217,59,100,0.3)]">
                 {score.toString().padStart(4, '0')}
             </div>
         </div>
@@ -270,7 +270,7 @@ export function CatRunner() {
         />
         
         {/* Glow Overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-pink-500/5 to-transparent" />
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-estuclub-rosa/5 to-transparent" />
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_0%,rgba(10,10,12,0.4)_100%)]" />
 
         <AnimatePresence>
@@ -288,7 +288,7 @@ export function CatRunner() {
                             rotate: [0, 2, -2, 0]
                         }}
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-20 h-20 relative drop-shadow-[0_0_30px_rgba(236,72,153,0.4)] mt-12"
+                        className="w-20 h-20 relative drop-shadow-[0_0_30px_rgba(217,59,100,0.4)] mt-12"
                     >
                         {catImage ? (
                             <Image src="/images/game/cat.png" alt="Cat" fill className="object-contain" priority />
@@ -299,7 +299,7 @@ export function CatRunner() {
                     
                     <div className="text-center px-4">
                         <h4 className="font-black uppercase tracking-[0.5em] text-lg text-white mb-3 italic">
-                             MISMUKi <span className="text-pink-500">:</span> JUEGO
+                             MISMUKi <span className="text-estuclub-rosa">:</span> JUEGO
                         </h4>
                         <div className="flex items-center justify-center gap-3 text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">
                             <span className="bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">ESPACIO PARA SALTAR</span>
@@ -308,7 +308,7 @@ export function CatRunner() {
                     </div>
 
                     <Button onClick={startGame} className="rounded-2xl gap-3 px-12 h-14 bg-white text-black hover:bg-neutral-200 border-none shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all hover:scale-105 active:scale-95 group overflow-hidden relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-estuclub-rosa/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Play className="h-4 w-4 fill-black relative z-10" /> 
                         <span className="font-black uppercase tracking-widest text-xs relative z-10">JUGAR AHORA</span>
                     </Button>
@@ -346,7 +346,7 @@ export function CatRunner() {
       <div className="mt-8 grid grid-cols-2 gap-4 w-full border-t border-white/5 pt-6 relative z-10">
         <div className="bg-white/5 p-4 rounded-2xl border border-white/5 text-center">
             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">DIFICULTAD</p>
-            <p className="text-xs font-black uppercase text-pink-500 tracking-wider">DINÁMICA</p>
+            <p className="text-xs font-black uppercase text-estuclub-rosa tracking-wider">DINÁMICA</p>
         </div>
         <div className="bg-white/5 p-4 rounded-2xl border border-white/5 text-center">
             <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/40 mb-1">RECOMPENSA</p>

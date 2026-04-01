@@ -24,6 +24,7 @@ import {
     Heart as HeartIcon,
     ShoppingBag,
     Crown,
+    ShieldCheck
 } from 'lucide-react';
 
 export const navConfig: NavConfig = {
@@ -62,7 +63,7 @@ export const navConfig: NavConfig = {
       title: "Anuncios",
       href: "/announcements",
       icon: Megaphone,
-      category: "Explorar", // Keep in explorrar for now
+      category: "Explorar",
     },
     {
       title: "Mis Turnos",
@@ -81,7 +82,7 @@ export const navConfig: NavConfig = {
     {
       title: "Favoritos",
       href: "/favorites",
-      icon: HeartIcon, // I'll need to import this
+      icon: HeartIcon,
       category: "Mi Actividad",
       role: ["user", "admin", "supplier"],
     },
@@ -93,7 +94,7 @@ export const navConfig: NavConfig = {
       category: "Mi Actividad",
     },
     {
-      title: "Panel de Control", // Renamed from Panel Cluber
+      title: "Panel de Control",
       href: "/panel-cluber",
       icon: LayoutDashboard,
       role: ["admin", "supplier"],
@@ -145,24 +146,11 @@ export const navConfig: NavConfig = {
           role: ["admin", "supplier"],
         },
         {
-          title: "Canjes",
-          href: "/panel-cluber/redemptions",
-          icon: Ticket,
-          role: ["admin", "supplier"],
-        },
-        {
-          title: "Anuncios",
-          href: "/panel-cluber/announcements",
-          icon: Megaphone,
+          title: "Turnos",
+          href: "/panel-cluber/appointments",
+          icon: CalendarClock,
           role: ["supplier"],
-          supplierCapability: "announcementsEnabled",
-        },
-        {
-            title: "Turnos",
-            href: "/panel-cluber/appointments",
-            icon: CalendarClock,
-            role: ["supplier"],
-            supplierCapability: "appointmentsEnabled",
+          supplierCapability: "appointmentsEnabled",
         },
         {
             title: "Pedidos",
@@ -181,83 +169,33 @@ export const navConfig: NavConfig = {
       ]
     },
     {
-        title: "Panel de Admin",
-        href: "/panel-admin",
-        icon: LayoutDashboard,
-        role: ["admin"],
-        items: [
-            {
-                title: "Analíticas Globales",
-                href: "/panel-cluber/analytics", // Changed from /panel-admin/analytics
-                icon: BarChart,
-                role: ["admin"],
-            },
-            {
-                title: "Solicitudes Cinco.Dos",
-                href: "/panel-cluber/cinco-dos",
-                icon: UtensilsCrossed,
-                role: ["admin"],
-            },
-            {
-                title: "Solicitudes de Clubers",
-                href: "/panel-cluber/supplier-requests",
-                icon: HelpCircle,
-                role: ["admin"],
-            },
-            {
-                title: "Gestión de Clubers",
-                href: "/panel-cluber/supplier-management",
-                icon: Users,
-                role: ["admin"],
-            },
-            {
-                title: "Diseño de Inicio",
-                href: "/panel-cluber/home-builder",
-                icon: LayoutTemplate,
-                role: ["admin"],
-            },
-            {
-                title: "Gestión de Banners",
-                href: "/panel-cluber/banners",
-                icon: Image,
-                role: ["admin"],
-            },
-            {
-                title: "Gestión de Categorías",
-                href: "/panel-cluber/categories",
-                icon: Shapes,
-                role: ["admin"],
-            },
-            {
-                title: "Mantenimiento Usuarios",
-                href: "/panel-cluber/supplier-management?tab=maintenance",
-                icon: AlertCircle,
-                role: ["admin"],
-            },
-            {
-                title: "Herramientas del Sistema",
-                href: "/panel-cluber/admin-tools",
-                icon: Settings,
-                role: ["admin"],
-            },
-        ]
-    },
-    {
         title: "👑 CONTROL CENTRAL",
         href: "/panel-admin",
         icon: Crown,
         role: ["admin"],
         items: [
             {
-                title: "Mapa Logística Global",
-                href: "/rider",
-                icon: Building,
+                title: "Dashboard Overlord",
+                href: "/panel-admin",
+                icon: LayoutDashboard,
                 role: ["admin"],
             },
             {
-                title: "Verificación de Socios",
+                title: "Verificación Global",
                 href: "/verify",
-                icon: Users,
+                icon: ShieldCheck,
+                role: ["admin"],
+            },
+            {
+                title: "Contenido Extremo",
+                href: "/panel-admin/content",
+                icon: Megaphone,
+                role: ["admin"],
+            },
+            {
+                title: "Mapa Logística",
+                href: "/rider",
+                icon: Building,
                 role: ["admin"],
             },
             {
@@ -267,9 +205,9 @@ export const navConfig: NavConfig = {
                 role: ["admin"],
             },
             {
-                title: "Gestión de Leads",
-                href: "/panel-cluber/supplier-requests",
-                icon: Megaphone,
+                title: "Herramientas Críticas",
+                href: "/panel-cluber/admin-tools",
+                icon: Settings,
                 role: ["admin"],
             }
         ]

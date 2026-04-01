@@ -42,8 +42,8 @@ export function CartSheet({ children }: CartSheetProps) {
                                 <SheetTitle className="text-4xl font-black italic tracking-tighter text-slate-900">Tu Carrito</SheetTitle>
                                 {supplierName && (
                                     <div className="flex items-center gap-2">
-                                        <div className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse" />
-                                        <p className="text-pink-500 font-black uppercase tracking-[0.2em] text-[10px]">Pidiendo a: {supplierName}</p>
+                                        <div className="h-1.5 w-1.5 rounded-full bg-estuclub-rosa animate-pulse" />
+                                        <p className="text-estuclub-rosa font-black uppercase tracking-[0.2em] text-[10px]">Pidiendo a: {supplierName}</p>
                                     </div>
                                 )}
                             </div>
@@ -99,7 +99,7 @@ export function CartSheet({ children }: CartSheetProps) {
                                                             $ {(item.originalPrice * item.quantity).toLocaleString()}
                                                         </span>
                                                     )}
-                                                    <p className="text-pink-500 font-black text-base tracking-tight">$ {(item.price * item.quantity).toLocaleString()}</p>
+                                                    <p className="text-estuclub-rosa font-black text-base tracking-tight">$ {(item.price * item.quantity).toLocaleString()}</p>
                                                 </div>
                                             </div>
                                             
@@ -110,7 +110,7 @@ export function CartSheet({ children }: CartSheetProps) {
                                                             haptic.vibrateSubtle();
                                                             updateQuantity(item.productId, item.quantity - 1);
                                                         }}
-                                                        className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-white hover:text-pink-500 shadow-sm transition-all active:scale-90 border border-transparent hover:border-slate-200"
+                                                        className="h-9 w-9 flex items-center justify-center rounded-xl hover:bg-white hover:text-estuclub-rosa shadow-sm transition-all active:scale-90 border border-transparent hover:border-slate-200"
                                                     >
                                                         <Minus className="h-3.5 w-3.5" />
                                                     </button>
@@ -122,7 +122,7 @@ export function CartSheet({ children }: CartSheetProps) {
                                                             haptic.vibrateSubtle();
                                                             updateQuantity(item.productId, item.quantity + 1);
                                                         }}
-                                                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-pink-500 text-white shadow-lg shadow-pink-500/20 transition-all active:scale-95"
+                                                        className="h-9 w-9 flex items-center justify-center rounded-xl bg-estuclub-rosa text-white shadow-lg shadow-estuclub-rosa/20 transition-all active:scale-95"
                                                     >
                                                         <Plus className="h-3.5 w-3.5" />
                                                     </button>
@@ -163,7 +163,7 @@ export function CartSheet({ children }: CartSheetProps) {
                         <Button 
                             onClick={handleConfirmOrder} 
                             disabled={items.length === 0}
-                            className="w-full h-24 rounded-[3rem] bg-pink-500 hover:bg-pink-600 text-white font-black text-2xl tracking-[0.1em] italic shadow-[0_25px_50px_-12px_rgba(236,72,153,0.4)] transition-all hover:scale-[1.01] active:scale-95 border-none group relative overflow-hidden"
+                            className="w-full h-24 rounded-[3rem] bg-estuclub-rosa hover:bg-estuclub-rosa text-white font-black text-2xl tracking-[0.1em] italic shadow-[0_25px_50px_-12px_rgba(217,59,100,0.4)] transition-all hover:scale-[1.01] active:scale-95 border-none group relative overflow-hidden"
                         >
                             <div className="relative z-10 flex items-center gap-4">
                                 PAGAR AHORA

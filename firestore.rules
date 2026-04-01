@@ -27,10 +27,6 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/roles_rider/$(request.auth.uid));
     }
 
-    function isIncrementedBy(field, amount) {
-      return request.resource.data[field] == resource.data[field] + amount;
-    }
-
     /* ================= USERS ================= */
 
     match /users/{userId} {
@@ -44,16 +40,14 @@ service cloud.firestore {
       }
     }
 
-    /* ================= ROLES (CRITICAL FIX) ================= */
+    /* ================= ROLES ================= */
 
     match /roles_admin/{uid} {
-      // Allow the user to check if they are an admin without triggering isAdmin check
       allow get: if signedIn() && request.auth.uid == uid;
       allow list, write: if isAdmin();
     }
 
     match /roles_supplier/{uid} {
-      // Allow the user to check if they are a supplier without triggering isAdmin check
       allow get: if signedIn() && request.auth.uid == uid;
       allow list: if true;
       allow write: if isAdmin();
@@ -64,7 +58,7 @@ service cloud.firestore {
       allow list, write: if isAdmin();
     }
 
-    /* ================= PERKS & PUBLIC CONTENT ================= */
+    /* ================= PUBLIC CONTENT ================= */
 
     match /perks/{id} {
       allow read: if true;
@@ -107,7 +101,19 @@ service cloud.firestore {
       allow create: if signedIn();
     }
 
-    /* ================= ADMIN TOOLS ================= */
+    /* ================= APPLICATIONS ================= */
+
+    match /supplier_requests/{id} {
+      allow create: if signedIn();
+      allow read, update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+    }
+    
+    match /rider_applications/{id} {
+      allow create: if signedIn();
+      allow read, update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    /* ================= LOGISTICS ================= */
 
     match /benefitRedemptions/{id} {
       allow list: if signedIn();
@@ -116,18 +122,6 @@ service cloud.firestore {
         resource.data.supplierId == request.auth.uid
       ));
     }
-
-    match /supplier_requests/{id} {
-      allow read, write: if isAdmin() || signedIn();
-    }
-    
-    match /rider_applications/{id} {
-      allow read, write: if isAdmin();
-      allow create: if signedIn();
-      allow get: if signedIn() && (request.auth.uid == resource.data.userId || isAdmin());
-    }
-
-    /* ================= REVIEWS ================= */
 
     match /reviews/{id} {
       allow read: if true;
@@ -139,7 +133,7 @@ service cloud.firestore {
 
     match /{document=**} {
       allow read, write: if isAdmin();
-      allow read: if true; // Fallback for public collections
+      allow read: if true;
     }
   }
 }

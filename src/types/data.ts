@@ -60,12 +60,27 @@ export interface UserProfile {
     educationLevel: string;
     career: string;
     studentCertificateUrl: string;
+    mp_linked?: boolean; // Mercado Pago account linked status for riders
+    mp_grace_period_end?: Timestamp; // Deadline to link MP before access is restricted
     // Rider & Subscription Info
     subscriptionStatus?: 'none' | 'pending' | 'active' | 'expired';
     subscriptionPaidAt?: Timestamp;
-    mp_linked?: boolean;
-    mp_user_id?: string;
+    addresses?: UserAddress[];
     createdAt: Timestamp;
+}
+
+/**
+ * Represents a saved location for a user (Home, Work, etc.)
+ */
+export interface UserAddress {
+  id: string;
+  label: string; // "Casa", "Trabajo", "Facu", etc.
+  address: string;
+  lat?: number;
+  lng?: number;
+  city?: string;
+  isDefault?: boolean;
+  notes?: string; // "Portero 2B", "Reja blanca", etc.
 }
 
 
@@ -118,7 +133,10 @@ export interface SupplierProfile {
     address: string;
     city?: string;
   };
+  operatingHours?: Availability;
   menuSections?: string[]; // Custom subcategories defined by the supplier
+  mp_linked?: boolean;
+  mp_grace_period_end?: Timestamp;
   [key: string]: any;
 }
 
@@ -410,6 +428,7 @@ export interface Order {
     status: 'pending_payment' | 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
     riderId?: string;
     deliveryAddress?: string;
+    deliveryAddressLabel?: string; // "Casa", "Trabajo", etc.
     deliveryNote?: string;
     type: 'delivery' | 'pickup';
     createdAt: Timestamp;

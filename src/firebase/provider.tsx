@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, ReactNode, useMemo, useState, useEffect } from 'react';
+import React, { createContext, ReactNode, useMemo, useState, useEffect, useRef } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore, doc, getDoc } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
@@ -8,26 +8,8 @@ import { FirebaseStorage } from 'firebase/storage';
 import { getFirebaseServices } from '@/firebase/services';
 import type { UserProfile } from '@/types/data';
 
-// --- TYPE DEFINITIONS ---
-
 export type SupplierData = Record<string, any>;
 
-interface AuthState {
-  user: User | null;
-  isAuthLoading: boolean;
-  authError: Error | null;
-}
-
-interface ProfileState {
-  roles: string[];
-  userData: UserProfile | null;
-  supplierData: SupplierData | null;
-  isProfileLoading: boolean;
-  profileError: Error | null;
-}
-
-// This interface defines the shape of the context value.
-// It is exported so that the hooks in hooks.tsx can be typed correctly.
 export interface FirebaseContextState {
   areServicesAvailable: boolean;
   firebaseApp: FirebaseApp | null;
@@ -44,32 +26,21 @@ export interface FirebaseContextState {
   requestLocation: () => void;
 }
 
-// Using unified singleton from services.ts
-
-// --- REACT CONTEXT ---
-
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
-
-// --- MAIN PROVIDER COMPONENT ---
 
 export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const services = useMemo(() => getFirebaseServices(), []);
 
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthLoading: true,
-    authError: null,
-  });
-
-  const [profileState, setProfileState] = useState<ProfileState>({
-    roles: [],
-    userData: null,
-    supplierData: null,
-    isProfileLoading: false,
-    profileError: null,
-  });
-
+  const [user, setUser] = useState<User | null>(null);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [userData, setUserData] = useState<UserProfile | null>(null);
+  const [supplierData, setSupplierData] = useState<SupplierData | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
+  const [userError, setUserError] = useState<Error | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Guard against double-fetch during StrictMode
+  const profileFetchId = useRef(0);
 
   const requestLocation = React.useCallback(() => {
     if (typeof window !== 'undefined' && navigator.geolocation) {
@@ -82,96 +53,92 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(services.auth, (firebaseUser) => {
-      setAuthState({ user: firebaseUser, isAuthLoading: false, authError: null });
-    });
-    return () => unsubscribe();
-  }, [services.auth]);
+    const unsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setRoles([]);
+        setUserData(null);
+        setSupplierData(null);
+        setIsUserLoading(false);
+        setUserError(null);
+        return;
+      }
 
-  useEffect(() => {
-    if (!authState.user) {
-      setProfileState({ roles: [], userData: null, supplierData: null, isProfileLoading: false, profileError: null });
-      return;
-    }
+      setUser(firebaseUser);
+      // Keep isUserLoading TRUE until profile fetch completes
+      setIsUserLoading(true);
 
-    const fetchUserRoles = async () => {
-      const uid = authState.user!.uid;
-      
+      const fetchId = ++profileFetchId.current;
+      const uid = firebaseUser.uid;
+
       try {
-        setProfileState(prev => ({ ...prev, isProfileLoading: true, profileError: null }));
-
-        // Fetch user data, admin role, and supplier role in parallel
-        const [userDoc, adminDoc, supplierDoc] = await Promise.all([
+        // Promise.allSettled: if any doc doesn't exist or rules block it, we don't crash
+        const [userResult, adminResult, supplierResult, riderResult, tokenResult] = await Promise.allSettled([
           getDoc(doc(services.firestore, 'users', uid)),
           getDoc(doc(services.firestore, 'roles_admin', uid)),
-          getDoc(doc(services.firestore, 'roles_supplier', uid))
+          getDoc(doc(services.firestore, 'roles_supplier', uid)),
+          getDoc(doc(services.firestore, 'roles_rider', uid)),
+          firebaseUser.getIdTokenResult(),
         ]);
 
-        const userRoles: string[] = ['user'];
-        let userData: UserProfile | null = null;
-        let supplierData: SupplierData | null = null;
+        // Abort if a newer fetch superseded us
+        if (fetchId !== profileFetchId.current) return;
 
-        if (userDoc.exists()) {
-          userData = userDoc.data() as any;
+        const resolvedRoles: string[] = ['user'];
+
+        // Admin: Firestore doc OR Custom Claim
+        const adminDoc = adminResult.status === 'fulfilled' ? adminResult.value : null;
+        const token = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
+        if (adminDoc?.exists() || token?.claims?.admin) {
+          resolvedRoles.push('admin');
         }
 
-        if (adminDoc.exists()) {
-          userRoles.push('admin');
+        // Supplier: Firestore doc
+        const supplierDoc = supplierResult.status === 'fulfilled' ? supplierResult.value : null;
+        if (supplierDoc?.exists()) {
+          resolvedRoles.push('supplier');
         }
 
-        if (supplierDoc.exists()) {
-          userRoles.push('supplier');
-          supplierData = { id: uid, ...supplierDoc.data() } as SupplierData;
+        // Rider: Firestore doc OR Custom Claim
+        const riderDoc = riderResult.status === 'fulfilled' ? riderResult.value : null;
+        if (riderDoc?.exists() || token?.claims?.rider) {
+          resolvedRoles.push('rider');
         }
 
-        setProfileState({
-          roles: Array.from(new Set(userRoles)),
-          userData,
-          supplierData,
-          isProfileLoading: false,
-          profileError: null,
-        });
+        const userDoc = userResult.status === 'fulfilled' ? userResult.value : null;
+
+        setRoles(Array.from(new Set(resolvedRoles)));
+        setUserData(userDoc?.exists() ? (userDoc.data() as any) : null);
+        setSupplierData(supplierDoc?.exists() ? ({ id: uid, ...supplierDoc.data() } as any) : null);
+        setUserError(null);
       } catch (error) {
-        console.error("Error fetching user profile:", error);
-        setProfileState({
-          roles: ['user'],
-          userData: null,
-          supplierData: null,
-          isProfileLoading: false,
-          profileError: error as Error,
-        });
+        if (fetchId !== profileFetchId.current) return;
+        console.error('Error loading profile:', error);
+        setUserError(error as Error);
+      } finally {
+        if (fetchId === profileFetchId.current) {
+          setIsUserLoading(false);
+        }
       }
-    };
+    });
 
-    fetchUserRoles();
-  }, [authState.user, services.firestore]);
+    return () => unsubscribe();
+  }, [services.auth, services.firestore]);
 
   const contextValue = useMemo(
     (): FirebaseContextState => ({
       areServicesAvailable: true,
       ...services,
-      user: authState.user,
-      roles: profileState.roles,
-      userData: profileState.userData,
-      supplierData: profileState.supplierData,
-      isUserLoading: authState.isAuthLoading || profileState.isProfileLoading,
-      userError: authState.authError || profileState.profileError,
+      user,
+      roles,
+      userData,
+      supplierData,
+      isUserLoading,
+      userError,
       userLocation,
       requestLocation,
     }),
-    [
-      services,
-      authState.user,
-      authState.isAuthLoading,
-      authState.authError,
-      profileState.roles,
-      profileState.userData,
-      profileState.supplierData,
-      profileState.isProfileLoading,
-      profileState.profileError,
-      userLocation,
-      requestLocation,
-    ]
+    [services, user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation]
   );
 
   return (

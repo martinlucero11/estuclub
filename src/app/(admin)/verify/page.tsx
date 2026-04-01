@@ -1,7 +1,7 @@
 'use client';
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, where, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 import Link from 'next/link';
@@ -12,7 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { 
   ExternalLink, Loader2,  CheckCircle, XCircle, Bike, AlertTriangle, User,
-  Mail, Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera
+  Mail, Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera,
+  ChevronRight, Zap
 } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,19 +46,19 @@ export default function VerifyPage() {
   // ── ADMIN OVERLORD BYPASS ────────────────────────────────
   if (!isUserLoading && !isAdmin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505] p-6 selection:bg-[#FF007F]/30">
-        <Card className="w-full max-w-md text-center rounded-[3rem] border-none shadow-[0_0_50px_rgba(255,0,127,0.1)] bg-slate-900/50 backdrop-blur-xl">
+      <div className="flex min-h-screen items-center justify-center bg-[#050505] p-6 selection:bg-[#d93b64]/30">
+        <Card className="w-full max-w-md text-center rounded-[3rem] border-none shadow-[0_0_50px_rgba(217,59,100,0.1)] bg-slate-900/50 backdrop-blur-xl">
           <CardContent className="pt-16 pb-12 space-y-6">
-            <div className="h-20 w-20 rounded-[2rem] bg-[#FF007F]/10 flex items-center justify-center mx-auto border border-[#FF007F]/20">
-               <ShieldX className="h-10 w-10 text-[#FF007F]" />
+            <div className="h-20 w-20 rounded-[2rem] bg-[#d93b64]/10 flex items-center justify-center mx-auto border border-[#d93b64]/20">
+               <ShieldX className="h-10 w-10 text-[#d93b64]" />
             </div>
             <div className="space-y-2">
                <h1 className="text-3xl font-black uppercase tracking-tighter text-white font-montserrat">ACCESO DENEGADO</h1>
                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
-                 Esta área está restringida a personal de <br/> <span className="text-[#FF007F]">Estuclub Central</span>
+                 Esta área está restringida a personal de <br/> <span className="text-[#d93b64]">Estuclub Central</span>
                </p>
             </div>
-            <Button asChild className="h-14 px-10 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-widest hover:bg-[#FF007F]/90 transition-all shrink-0">
+            <Button asChild className="h-14 px-10 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-widest hover:bg-[#d93b64]/90 transition-all shrink-0">
                <Link href="/">Volver al inicio</Link>
             </Button>
           </CardContent>
@@ -79,33 +80,32 @@ export default function VerifyPage() {
   const handleApprove = async (app: RiderApplication) => {
     setProcessingId(app.id);
     try {
-      // 1. Update rider application status
+      // 1. Mark application as approved
       await updateDoc(doc(firestore, 'rider_applications', app.id), {
         status: 'approved',
         approvedAt: serverTimestamp(),
       });
 
-      // 2. PROMOTE TO RIDER & CREATE ROLE ENTRY
+      // 2. Promote user to rider role
       await updateDoc(doc(firestore, 'users', app.userId), {
         role: 'rider',
         isVerified: true,
-        subscriptionStatus: 'active',
         approvedAt: serverTimestamp(),
       });
 
-      // Create the roles_rider document so isRider() rules pass
-      const { setDoc } = await import('firebase/firestore');
+      // 3. CREATE roles_rider document — this is what the provider reads
       await setDoc(doc(firestore, 'roles_rider', app.userId), {
+        active: true,
         userId: app.userId,
         userName: app.userName,
         email: app.email,
-        assignedAt: serverTimestamp()
+        assignedAt: serverTimestamp(),
       });
 
-      toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota oficial.` });
+      toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota.` });
     } catch (error) {
       console.error('Approve error:', error);
-      toast({ variant: 'destructive', title: 'Error Fatídico', description: 'No se pudo completar la activación.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la activación.' });
     } finally {
       setProcessingId(null);
     }
@@ -160,33 +160,48 @@ export default function VerifyPage() {
   const { data: pendingClubers, isLoading: isLoadingClubers } = useCollection<SupplierProfile>(pendingClubersQuery);
 
   return (
-    <div className="min-h-screen bg-[#050505] p-4 md:p-8 selection:bg-[#FF007F]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] p-4 md:p-8 selection:bg-[#d93b64]/30 overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-12">
         {/* ✨ PREMIUM HEADER ✨ */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 py-10 opacity-in">
-          <div className="space-y-4">
+        {/* ✨ PREMIUM OVERLORD HEADER ✨ */}
+        <header className="pt-12 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
+          <div className="space-y-5">
             <div className="flex items-center gap-4">
-               <div className="h-14 w-1 flex bg-[#FF007F] rounded-full shadow-[0_0_20px_rgba(255,0,127,0.5)]" />
-               <h1 className="text-6xl md:text-7xl font-black uppercase tracking-tighter leading-none text-white font-montserrat italic">
-                 CONTROL <span className="text-[#FF007F]">CENTRAL</span>
-               </h1>
+              <Button asChild variant="ghost" className="h-12 w-12 p-0 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#d93b64]/20 transition-all">
+                <Link href="/panel-admin"><ChevronRight className="h-6 w-6 rotate-180" /></Link>
+              </Button>
+              <div className="h-12 w-12 rounded-xl bg-[#d93b64] flex items-center justify-center shadow-[0_0_30px_#d93b64]">
+                <ShieldCheck className="h-6 w-6 text-white" />
+              </div>
+              <Badge className="bg-white/10 text-white border-white/20 uppercase font-black text-[10px] tracking-[0.3em] px-4 py-1.5 rounded-full">HQ Monitor</Badge>
             </div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.6em] ml-6">SISTEMA INTEGRAL DE VERIFICACIÓN</p>
+            <h1 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-[0.85] font-montserrat drop-shadow-2xl">
+              CENTRO DE <br/><span className="text-[#d93b64]">VERIFICACIÓN</span>
+            </h1>
+            <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.6em] ml-2 opacity-60">SISTEMA INTEGRAL DE FLOTA Y ESTUDIANTES</p>
           </div>
-          <div className="flex gap-4">
-            <div className="bg-slate-900/50 backdrop-blur-md border border-[#FF007F]/30 p-6 rounded-[2.5rem] flex flex-col items-center justify-center min-w-[140px] shadow-[0_0_30px_rgba(255,0,127,0.05)]">
-               <p className="text-[8px] font-black text-[#FF007F] uppercase tracking-widest mb-1">Pendientes</p>
-               <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + (pendingClubers?.length || 0)}</p>
-            </div>
+
+          <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/10">
+             <div className="h-12 w-12 rounded-2xl bg-[#d93b64]/20 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-[#d93b64] animate-pulse" />
+             </div>
+             <div className="pr-6">
+                <p className="text-[10px] font-black text-[#d93b64] uppercase tracking-widest leading-tight">Master Center</p>
+                <p className="text-sm font-bold text-white/80">Command Active</p>
+             </div>
+             <div className="bg-black/40 border border-[#d93b64]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(217,59,100,0.1)]">
+                <p className="text-[9px] font-black text-[#d93b64] uppercase tracking-widest mb-1">En Cola</p>
+                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + (pendingClubers?.length || 0)}</p>
+             </div>
           </div>
         </header>
 
         <Tabs defaultValue="riders" onValueChange={(v: any) => setActiveTab(v)} className="space-y-10">
           <TabsList className="bg-slate-900/50 border border-white/5 p-2 rounded-3xl w-full max-w-lg h-20 shadow-2xl">
-            <TabsTrigger value="riders" className="flex-1 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-full">
+            <TabsTrigger value="riders" className="flex-1 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] data-[state=active]:bg-[#d93b64] data-[state=active]:text-white transition-all duration-500 h-full">
               Riders
             </TabsTrigger>
-            <TabsTrigger value="clubers" className="flex-1 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-full">
+            <TabsTrigger value="clubers" className="flex-1 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] data-[state=active]:bg-[#d93b64] data-[state=active]:text-white transition-all duration-500 h-full">
             Clubers
             </TabsTrigger>
           </TabsList>

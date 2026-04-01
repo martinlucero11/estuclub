@@ -16,18 +16,22 @@ import {
   Clock, AlertCircle, CheckCircle2, ChevronRight, ShieldCheck
 } from 'lucide-react';
 import { ProductManager } from '@/components/delivery/product-manager';
+import SupplierSelect from '@/components/admin/SupplierSelect';
 import { cn } from '@/lib/utils';
+import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 
 export default function PanelCluberPage() {
+    // ... rest of the code
   const { userData, roles, supplierData } = useUser();
-  const { isAdmin, impersonatedSupplierId } = useAdmin();
+  // Shop ID: Either the user's own supplier ID or the impersonated one for admins
+  const { isAdmin, impersonatedSupplierId, impersonatedSupplierData } = useAdmin();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Shop ID: Either the user's own supplier ID or the impersonated one for admins
+  const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
   const shopId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : userData?.uid;
-  const isOpen = supplierData?.isOpen ?? false;
+  const isOpen = effectiveSupplierData?.isOpen ?? false;
 
   const toggleStoreStatus = async () => {
     if (!shopId) return;
@@ -54,11 +58,11 @@ export default function PanelCluberPage() {
 
   if (!roles.includes('supplier') && !roles.includes('cluber') && !isAdmin) {
     return (
-      <div className="min-h-screen bg-[#FF007F] flex items-center justify-center p-6 selection:bg-black/20">
-        <Card className="w-full max-w-md rounded-[3rem] border-none shadow-[0_20px_60px_rgba(0,0,0,0.2)] bg-white text-[#FF007F] animate-in fade-in zoom-in duration-700">
+      <div className="min-h-screen bg-[#d93b64] flex items-center justify-center p-6 selection:bg-black/20">
+        <Card className="w-full max-w-md rounded-[3rem] border-none shadow-[0_20px_60px_rgba(0,0,0,0.2)] bg-white text-[#d93b64] animate-in fade-in zoom-in duration-700">
           <CardContent className="pt-16 pb-12 text-center space-y-8">
-            <div className="h-20 w-20 rounded-[2.5rem] bg-[#FF007F]/10 flex items-center justify-center mx-auto border border-[#FF007F]/20">
-              <AlertCircle className="h-10 w-10 text-[#FF007F]" />
+            <div className="h-20 w-20 rounded-[2.5rem] bg-[#d93b64]/10 flex items-center justify-center mx-auto border border-[#d93b64]/20">
+              <AlertCircle className="h-10 w-10 text-[#d93b64]" />
             </div>
             <div className="space-y-2">
               <h1 className="text-3xl font-black uppercase tracking-tighter font-montserrat">ACCESO DENEGADO</h1>
@@ -66,7 +70,7 @@ export default function PanelCluberPage() {
                 Esta área está reservada para <br/> <span className="font-black">Comercios Aliados</span>
               </p>
             </div>
-            <Button asChild className="h-14 px-10 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-widest hover:bg-[#FF007F]/90 transition-all shadow-[0_10px_30px_rgba(255,0,127,0.3)]">
+            <Button asChild className="h-14 px-10 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-widest hover:bg-[#d93b64]/90 transition-all shadow-[0_10px_30px_rgba(217,59,100,0.3)]">
               <Link href="/">Volver al inicio</Link>
             </Button>
           </CardContent>
@@ -76,7 +80,13 @@ export default function PanelCluberPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FF007F] pb-24 transition-colors duration-500 selection:bg-black/20">
+    <div className="min-h-screen bg-background pb-24 transition-colors duration-500 selection:bg-black/20">
+      <MPRestrictionOverlay />
+      {/* Dynamic Background Accents */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#d93b64]/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#d93b64]/5 blur-[120px] rounded-full" />
+      </div>
       <div className="max-w-7xl mx-auto px-6 md:px-12 pt-12 space-y-12">
         
         {/* Header Section: Branding + Role */}
@@ -87,42 +97,56 @@ export default function PanelCluberPage() {
                   <Store className="h-8 w-8 text-white" />
                </div>
                <div className="space-y-1">
-                 <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-white italic font-montserrat drop-shadow-2xl">
-                   Cluber <span className="text-black">Panel</span>
+                 <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none text-foreground italic font-montserrat drop-shadow-sm">
+                   Cluber <span className="text-[#d93b64]">Panel</span>
                  </h1>
                  <p className="text-[10px] font-black text-white/80 uppercase tracking-[0.5em] ml-2">
                    {isAdmin ? "Admin Overlord Active" : "Gestor Logístico Integral"}
                  </p>
                </div>
              </div>
+             
+             {/* Admin Tool: Supplier Switcher */}
+             {isAdmin && (
+               <div className="pt-4 flex items-center gap-6">
+                 <SupplierSelect />
+                 <div className="h-1 w-20 bg-[#d93b64]/30 rounded-full" />
+                 <Badge variant="outline" className="h-10 px-4 rounded-xl border-[#d93b64]/30 text-[#d93b64] font-black text-[10px] uppercase tracking-widest shadow-lg">MODO SUPERVISOR</Badge>
+               </div>
+             )}
           </div>
 
           {/* Shop Switcher Card: White */}
           <Card className={cn(
             "rounded-[2.5rem] border-none shadow-[0_20px_50px_rgba(0,0,0,0.15)] transition-all duration-700 overflow-hidden min-w-[320px]",
-            isOpen ? "bg-white text-[#FF007F]" : "bg-black text-white"
+            isOpen ? "bg-white text-[#d93b64]" : "bg-black text-white",
+            !userData?.mp_linked && !isAdmin && "opacity-80 border-2 border-dashed border-[#d93b64]/30"
           )}>
             <CardContent className="p-8 flex items-center justify-between gap-8">
                <div className="flex items-center gap-5">
                  <div className={cn(
                    "h-14 w-14 rounded-2xl flex items-center justify-center animate-pulse shadow-inner",
-                   isOpen ? "bg-[#FF007F]/10" : "bg-white/10"
+                   isOpen ? "bg-[#d93b64]/10" : "bg-white/10"
                  )}>
                    {isOpen ? <UtensilsCrossed className="h-7 w-7" /> : <Clock className="h-7 w-7" />}
                  </div>
                  <div>
                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Local Status</p>
                    <h3 className="font-black text-2xl uppercase tracking-tighter leading-none font-inter">
-                     {isOpen ? "ABIERTO" : "CERRADO"}
+                     {(!userData?.mp_linked && !isAdmin) ? "VINCULACIÓN PENDIENTE" : (isOpen ? "ABIERTO" : "CERRADO")}
                    </h3>
                  </div>
                </div>
-               <Switch 
-                 checked={isOpen} 
-                 onCheckedChange={toggleStoreStatus}
-                 disabled={isUpdating}
-                 className="data-[state=checked]:bg-[#FF007F] data-[state=unchecked]:bg-slate-700 h-10 w-16"
-               />
+               {(!userData?.mp_linked && !isAdmin) ? (
+                 <Badge variant="outline" className="h-10 px-4 rounded-xl border-[#d93b64] text-[#d93b64] font-black text-[9px] uppercase tracking-widest animate-pulse">MP REQUERIDO</Badge>
+               ) : (
+                 <Switch 
+                   checked={isOpen} 
+                   onCheckedChange={toggleStoreStatus}
+                   disabled={isUpdating}
+                   className="data-[state=checked]:bg-[#d93b64] data-[state=unchecked]:bg-slate-700 h-10 w-16"
+                 />
+               )}
             </CardContent>
           </Card>
         </header>
@@ -130,12 +154,12 @@ export default function PanelCluberPage() {
         {/* Action Grid: Pure White Cards */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
           {[
-            { label: "ESCANEAR", icon: QrCode, href: "/panel-cluber/scan", color: "bg-blue-500" },
-            { label: "PRODUCTOS", icon: Package, href: "/panel-cluber/products", color: "bg-[#FF007F]" },
+            { label: "ESCANEAR", icon: QrCode, href: "/panel-cluber/scanner", color: "bg-blue-500" },
+            { label: "PRODUCTOS", icon: Package, href: "/panel-cluber/products", color: "bg-[#d93b64]" },
             { label: "PEDIDOS", icon: Bell, href: "/panel-cluber/orders", color: "bg-orange-500" },
             { label: "MÉTRICAS", icon: BarChart3, href: "/panel-cluber/analytics", color: "bg-emerald-500" },
-            { label: "PERFIL", icon: Settings, href: "/profile", color: "bg-slate-800" },
-            { label: "EQUIPO", icon: Users, href: "/panel-cluber/team", color: "bg-indigo-500" },
+            { label: "PERFIL", icon: Settings, href: "/panel-cluber/supplier-profile", color: "bg-slate-800" },
+            { label: "EQUIPO", icon: Users, href: "/panel-cluber/equipo", color: "bg-indigo-500" },
           ].map((action) => (
             <Link key={action.label} href={action.href}>
               <Card className="rounded-[2.5rem] border-none shadow-[0_15px_35px_rgba(0,0,0,0.1)] bg-white hover:translate-y-[-8px] transition-all duration-500 active:scale-95 group overflow-hidden h-full"> 
@@ -143,7 +167,7 @@ export default function PanelCluberPage() {
                   <div className={cn("p-4 rounded-2xl text-white shadow-lg group-hover:scale-110 transition-transform", action.color)}>
                     <action.icon className="h-6 w-6" />
                   </div>
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-800 group-hover:text-[#FF007F] transition-colors">{action.label}</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-800 group-hover:text-[#d93b64] transition-colors">{action.label}</span>
                 </CardContent>
               </Card>
             </Link>
@@ -168,11 +192,11 @@ export default function PanelCluberPage() {
         {isAdmin && (
            <div className="p-8 rounded-[3rem] bg-black/90 backdrop-blur-2xl text-white border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-8 shadow-2xl animate-in slide-in-from-bottom-10 duration-1000">
               <div className="flex items-center gap-6">
-                <div className="h-14 w-14 rounded-2xl bg-[#FF007F]/20 flex items-center justify-center border border-[#FF007F]/40">
-                   <ShieldCheck className="h-7 w-7 text-[#FF007F]" />
+                <div className="h-14 w-14 rounded-2xl bg-[#d93b64]/20 flex items-center justify-center border border-[#d93b64]/40">
+                   <ShieldCheck className="h-7 w-7 text-[#d93b64]" />
                 </div>
                 <div>
-                   <p className="text-[12px] font-black uppercase tracking-[0.2em] text-[#FF007F]">ADMIN OVERLORD MODE</p>
+                   <p className="text-[12px] font-black uppercase tracking-[0.2em] text-[#d93b64]">ADMIN OVERLORD MODE</p>
                    <p className="text-xs font-medium text-white/60">Gestionando local ID: <span className="text-white font-mono">{shopId}</span></p>
                 </div>
               </div>

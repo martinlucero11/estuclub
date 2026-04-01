@@ -1,30 +1,66 @@
-
 rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
     function isOwner(uid) {
-      return request.auth != null && request.auth.uid == uid;
+      return signedIn() && request.auth.uid == uid;
     }
 
     function isAdmin() {
-      return request.auth != null &&
+      return signedIn() &&
         firestore.exists(/databases/(default)/documents/roles_admin/$(request.auth.uid));
     }
 
-    // More specific rule for supplier assets.
-    // Publicly readable, but only the owner or an admin can write.
+    /* ================= PUBLIC CONTENT ================= */
+    
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    /* ================= USER ASSETS ================= */
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    /* ================= APPLICATIONS (NEW) ================= */
+
+    match /rider_applications/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /supplier_requests/{userId}/{allPaths=**} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    /* ================= SUPPLIER ASSETS ================= */
+
     match /suppliers/{userId}/{allPaths=**} {
       allow read: if true;
       allow write: if isOwner(userId) || isAdmin();
     }
 
-    // Fallback rule for any other path. 
-    // This is intentionally restrictive. Add more specific match blocks above this one as needed.
+    /* ================= PRODUCTS ================= */
+
+    match /products/{supplierId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || isOwner(supplierId);
+    }
+
+    /* ================= FALLBACK ================= */
+
     match /{path=**} {
-        allow read: if true; // Allow public read for now, can be restricted later.
-        allow write: if isAdmin(); // Only admins can write to other paths by default.
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

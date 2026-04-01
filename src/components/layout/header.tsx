@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, LayoutGrid, LogIn, Heart, ChevronDown, ChevronRight, Crown, ShieldCheck } from 'lucide-react';
+import { User, LogOut, LayoutGrid, LogIn, Heart, ChevronDown, ChevronRight, Crown, ShieldCheck, Search } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,43 +23,27 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useAuthService, useUser, useFirestore, useCollectionOnce } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
-import { createConverter } from '@/lib/firestore-converter';
-import { SupplierProfile } from '@/types/data';
+import { useAuthService, useUser, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { cn, hasRequiredRole } from '@/lib/utils';
-import { AdminProvider, useAdmin } from "@/context/admin-context";
 import { CommerceSelector } from './commerce-selector';
 import { BrandSkeleton } from '@/components/ui/brand-skeleton';
 import NotificationBell from '@/components/layout/notification-bell';
 import { haptic } from '@/lib/haptics';
 import { motion } from 'framer-motion';
 import { navConfig } from '@/config/nav-menu';
-import { SearchBar } from '@/components/layout/search-bar';
 import { MagneticButton } from '../ui/magnetic-button';
 import { getAvatarUrl } from '@/lib/utils';
 import { AvatarFallbackFachero } from '@/components/profile/avatar-selector';
 import { usePlatform } from '@/hooks/use-platform';
-import { ModeToggle } from './mode-toggle';
-import { Suspense } from 'react';
 
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
-  const firestore = useFirestore();
-  const isSupplier = roles.includes('supplier');
   const auth = useAuthService();
   const router = useRouter();
   const { toast } = useToast();
-
-  const activeRole = useMemo(() => {
-    if (roles.includes('admin')) return 'ADMIN';
-    if (roles.includes('rider')) return 'RIDER';
-    if (roles.includes('supplier') || roles.includes('cluber')) return 'CLUBER';
-    return 'USER';
-  }, [roles]);
 
   const handleSignOut = async () => {
     try {
@@ -72,11 +56,6 @@ function UserMenu() {
     } catch (error) {
       console.error("Error signing out: ", error);
       haptic.vibrateError();
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo cerrar la sesión. Por favor, inténtalo de nuevo.",
-      });
     }
   };
 
@@ -86,41 +65,25 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20 hover:text-white" aria-label="Iniciar Sesión">
+      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20" aria-label="Iniciar Sesión">
         <Link href="/login">
             <LogIn className="h-6 w-6" />
-            <span className="sr-only">Iniciar Sesión</span>
         </Link>
       </Button>
     );
   }
 
-  const avatarUrl = useMemo(() => {
-    if (isSupplier) {
-      if (userData?.useAvatar) return getAvatarUrl(userData?.avatarSeed);
-      return user?.photoURL || userData?.photoURL;
-    }
-    return getAvatarUrl(userData?.avatarSeed);
-  }, [user?.photoURL, userData?.avatarSeed, userData?.photoURL, userData?.useAvatar, isSupplier]);
+  const avatarUrl = getAvatarUrl(userData?.avatarSeed);
 
   return (
     <div className="flex items-center gap-2">
-        <div className={cn(
-            "hidden xs:flex items-center px-3 py-1 rounded-full border text-[10px] font-black tracking-widest uppercase",
-            activeRole === 'ADMIN' ? "bg-primary/20 border-primary shadow-[0_0_15px_rgba(255,0,127,0.3)] text-white" :
-            activeRole === 'RIDER' ? "bg-black border-primary text-primary" :
-            "bg-white border-primary text-primary"
-        )}>
-            {activeRole === 'ADMIN' && <Crown className="h-3 w-3 mr-1.5 text-yellow-400" />}
-            {activeRole}
-        </div>
         <DropdownMenu>
             <MagneticButton>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="Menú de usuario">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="User Menu">
                     <Avatar className="h-9 w-9 bg-background">
                         {avatarUrl ? (
-                            <AvatarImage src={avatarUrl} alt={user.displayName || 'Avatar de usuario'} className="object-cover" />
+                            <AvatarImage src={avatarUrl} alt={user.displayName || 'User'} className="object-cover" />
                         ) : (
                             <AvatarFallbackFachero className="w-full h-full text-lg" />
                         )}
@@ -131,12 +94,8 @@ function UserMenu() {
         <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">
-                {user.displayName || 'Estudiante'}
-                </p>
-                <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
-                </p>
+                <p className="text-sm font-medium leading-none">{user.displayName || 'Estudiante'}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
             </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -163,62 +122,60 @@ function AppSidebar() {
     const { roles, supplierData } = useUser();
     const allRoles = ['user', ...roles];
     const pathname = usePathname();
-    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>(() => {
-        if (typeof window === 'undefined') return {};
-        const saved = localStorage.getItem('sidebar-collapsed-groups');
-        return saved ? JSON.parse(saved) : {};
-    });
+    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({});
 
     const toggleGroup = (group: string) => {
         haptic.vibrateSubtle();
-        const newCollapsed = { ...collapsedGroups, [group]: !collapsedGroups[group] };
-        setCollapsedGroups(newCollapsed);
-        localStorage.setItem('sidebar-collapsed-groups', JSON.stringify(newCollapsed));
+        setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     };
 
     return (
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()} aria-label="Abrir menú principal">
+                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
                         <LayoutGrid className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
-                        <span className="sr-only">Abrir menú</span>
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
-            <SheetContent side="left" className="flex flex-col p-0 w-[320px] glass-sidebar border-r-0 overflow-hidden">
-                <SheetHeader className="p-8 border-b border-border/20 relative">
-                    <div className="flex justify-center mb-4 mt-2">
-                        <div className="relative">
-                           <div className="absolute -inset-4 bg-primary/20 blur-2xl rounded-full opacity-50" />
-                           <div
-                               className="relative z-10 h-10 w-[140px] bg-primary [mask-image:url(/logo.svg)] [mask-size:contain] [mask-repeat:no-repeat] [mask-position:center]"
-                               aria-label="EstuClub Logo"
+            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-primary/10 overflow-hidden">
+                <SheetHeader className="p-10 border-b border-primary/5 relative bg-white">
+                    <div className="flex justify-center mb-4">
+                           <Image 
+                                src="/logo.svg" 
+                                alt="Estuclub" 
+                                width={140} 
+                                height={35} 
+                                className="filter-rosa" 
                            />
-                        </div>
                     </div>
-                    <SheetTitle className="text-center text-[10px] font-black uppercase tracking-[0.3em] text-primary/80">
-                        Plataforma Estudiantil
-                    </SheetTitle>
-                    <SheetDescription className="sr-only">Menú principal de navegación</SheetDescription>
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-premium pr-2">
-                    <nav className="flex flex-col gap-4">
-                        {/* Admin Overlord Section */}
-                        {roles.includes('admin') && navConfig.sidebarNav.filter(s => s.title === "👑 CONTROL CENTRAL").map(section => (
-                            <div key="admin-overlord" className="space-y-2 mb-4">
-                                <h3 className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2">
-                                    <Crown className="h-3 w-3 shadow-primary/20" /> {section.title}
+                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium">
+                    <nav className="flex flex-col gap-6">
+                        {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => (
+                            <div key={section.title} className="space-y-4 mb-2">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-muted-foreground/50 px-5 italic">
+                                    {section.title}
                                 </h3>
-                                <div className="flex flex-col gap-1">
+                                <div className="grid gap-1.5 px-1">
                                     {section.items?.map(item => {
                                         const Icon = item.icon;
+                                        const isCurrent = pathname === item.href;
                                         return (
                                             <SheetClose asChild key={item.href}>
                                                 <Link href={item.href}>
-                                                    <Button variant="ghost" className="w-full justify-start text-[11px] font-black uppercase tracking-widest py-4 h-auto hover:bg-primary/5 hover:text-primary rounded-xl transition-all">
-                                                        <div className="mr-3 p-1.5 rounded-lg bg-primary/10 text-primary">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        className={cn(
+                                                            "w-full justify-start text-[11px] font-black uppercase tracking-widest h-14 rounded-2xl transition-all",
+                                                            isCurrent ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-primary/5"
+                                                        )}
+                                                    >
+                                                        <div className={cn(
+                                                            "mr-4 p-2 rounded-xl transition-all",
+                                                            isCurrent ? "bg-primary text-white" : "bg-muted"
+                                                        )}>
                                                             {Icon && <Icon className="h-3.5 w-3.5" />}
                                                         </div>
                                                         {item.title}
@@ -228,92 +185,40 @@ function AppSidebar() {
                                         )
                                     })}
                                 </div>
-                                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent my-4" />
                             </div>
                         ))}
 
                         {Array.from(new Set(navConfig.mainNav.map(i => i.category || 'Otros'))).map((category) => {
-                            const categoryItems = navConfig.mainNav.filter(i => (i.category || 'Otros') === category);
-                            const visibleItems = categoryItems.filter(item => {
-                                const roleMatch = hasRequiredRole(allRoles, item.role);
-                                if (!roleMatch) return false;
-                                
-                                // Check for supplier capabilities (e.g., deliveryEnabled)
-                                if (item.supplierCapability && (!supplierData || !supplierData[item.supplierCapability])) {
-                                    return false;
-                                }
-                                
-                                return true;
-                            });
-                            
+                            const visibleItems = navConfig.mainNav.filter(i => (i.category || 'Otros') === category && hasRequiredRole(allRoles, i.role));
                             if (visibleItems.length === 0) return null;
                             const isCollapsed = collapsedGroups[category];
 
                             return (
-                                <div key={category} className="space-y-2">
-                                    <button 
-                                        onClick={() => toggleGroup(category)}
-                                        className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/5 rounded-xl transition-colors group/header"
-                                    >
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 group-hover/header:text-primary transition-colors">
-                                            {category}
-                                        </h3>
-                                        {isCollapsed ? (
-                                            <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover/header:text-primary transition-colors" />
-                                        ) : (
-                                            <ChevronDown className="h-3 w-3 text-muted-foreground/30 group-hover/header:text-primary transition-colors" />
-                                        )}
+                                <div key={category} className="space-y-3">
+                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-muted-foreground/30">
+                                        {category}
+                                        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                     </button>
-                                    
-                                    <div className={cn(
-                                        "flex flex-col gap-1 overflow-hidden transition-all duration-300",
-                                        isCollapsed ? "max-h-0 opacity-0" : "max-h-[1000px] opacity-100"
-                                    )}>
-                                        {visibleItems.map((item) => {
-                                            const Icon = item.icon;
-                                            const isActive = pathname === item.href;
-                                            
-                                            return (
+                                    {!isCollapsed && (
+                                        <div className="grid gap-1.5">
+                                            {visibleItems.map((item) => (
                                                 <SheetClose asChild key={item.href}>
                                                     <Link href={item.href}>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            className={cn(
-                                                                "w-full justify-start text-sm py-5 h-auto transition-all duration-300 group rounded-2xl relative",
-                                                                isActive ? "bg-primary/10 text-primary" : "hover:bg-white/5 opacity-70 hover:opacity-100"
-                                                            )}
-                                                        >
-                                                            <div className={cn(
-                                                                "mr-3 p-2 rounded-xl transition-all duration-300",
-                                                                isActive ? "bg-primary text-white shadow-lg shadow-primary/25" : "bg-white/5 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                                                            )}>
-                                                                {Icon && <Icon className="h-4 w-4" />}
+                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-bold", pathname === item.href ? "bg-primary/10 text-primary" : "text-muted-foreground")}>
+                                                            <div className={cn("mr-4 p-2.5 rounded-xl", pathname === item.href ? "bg-primary text-white" : "bg-muted")}>
+                                                                {item.icon && <item.icon className="h-4 w-4" />}
                                                             </div>
-                                                            <span className="font-bold tracking-tight">{item.title}</span>
-                                                            
-                                                            {isActive && (
-                                                                <motion.div 
-                                                                    layoutId="active-pill"
-                                                                    className="absolute right-4 w-1 h-1 rounded-full bg-primary shadow-[0_0_10px_rgba(236,72,153,0.8)]"
-                                                                />
-                                                            )}
+                                                            {item.title}
                                                         </Button>
                                                     </Link>
                                                 </SheetClose>
-                                            )
-                                        })}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
                     </nav>
-                </div>
-
-                <div className="p-8 mt-auto pb-8">
-                    <div className="flex flex-col items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/40">
-                        <span>Con amor para Mela {"<3"}</span>
-                        <span>Estuclub - 2026</span>
-                    </div>
                 </div>
             </SheetContent>
         </Sheet>
@@ -321,52 +226,36 @@ function AppSidebar() {
 }
 
 export default function Header() {
-  const { user, roles, isUserLoading } = useUser();
-  const { isMobile, isWeb } = usePlatform();
+  const { user, isUserLoading } = useUser();
+  const { isMobile } = usePlatform();
 
   return (
-    <>
-    <header 
-      className={cn(
-        "fixed top-0 left-0 right-0 z-50 w-full shadow-premium transition-all duration-300 pt-safe header-mesh overflow-hidden",
-        isMobile ? "min-h-[80px]" : "min-h-[70px]"
-      )}
-    >
+    <header className="fixed top-0 left-0 right-0 z-50 w-full min-h-[70px] pt-safe header-mesh flex items-center">
       <div className="absolute inset-0 glass-header z-[-1]" />
-      <div className={cn(
-        "container relative flex h-full justify-between items-center px-4 py-4",
-      )}>
-        {/* Left Side: Menu + Logo */}
-        <div className="flex items-center gap-2">
+      <div className="container relative flex justify-between items-center px-4">
+        <div className="flex items-center">
           <AppSidebar />
-          <Link href="/" aria-label="Homepage" className="flex items-center">
-                <Image 
-                    src="/logo.svg" 
-                    alt="EstuClub Logo" 
-                    width={110} 
-                    height={28} 
-                    priority
-                    className="h-7 sm:h-8 brightness-110 contrast-125 filter drop-shadow-[0_2px_10px_rgba(255,255,255,0.3)]"
-                    style={{ width: 'auto' }}
-                />
-          </Link>
         </div>
 
-        {/* Right Slot: Actions */}
-        <div className="flex items-center gap-1 sm:gap-4">
-          {roles.includes('admin') && <CommerceSelector />}
-          {isWeb && <SearchBar />}
+        <Link href="/" className="absolute left-1/2 -translate-x-1/2">
+            <Image 
+                src="/logo.svg" 
+                alt="EstuClub Logo" 
+                width={110} 
+                height={28} 
+                priority
+                className="h-8 w-auto brightness-0 invert"
+            />
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+            <Search className="h-6 w-6" />
+          </Button>
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />
         </div>
       </div>
-      
-      {/* Subtle bottom glow */}
-      <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-      
     </header>
-    {/* Spacer to prevent content from jumping under the fixed header */}
-    <div className={cn("w-full shrink-0", isMobile ? "h-[80px]" : "h-[70px]")} />
-    </>
   );
 }

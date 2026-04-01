@@ -14,7 +14,7 @@ export interface LevelInfo {
 const LEVEL_TIERS = [
   { threshold: 0, label: 'Novato', color: 'text-slate-500 bg-slate-100' },
   { threshold: 50, label: 'Ahorrador', color: 'text-blue-600 bg-blue-100' },
-  { threshold: 200, label: 'Fanático', color: 'text-pink-600 bg-pink-100' },
+  { threshold: 200, label: 'Fanático', color: 'text-estuclub-rosa bg-pink-100' },
   { threshold: 500, label: 'Leyenda', color: 'text-amber-600 bg-amber-100' },
   { threshold: 1000, label: 'Mítico', color: 'text-purple-600 bg-purple-100' },
 ];

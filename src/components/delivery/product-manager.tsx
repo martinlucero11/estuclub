@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useProducts } from '@/hooks/use-products';
 import { Product, Category, SupplierProfile } from '@/types/data';
-import { useFirestore, useCollectionOnce, useDoc } from '@/firebase';
+import { useFirestore, useUser, useCollectionOnce, useDoc } from '@/firebase';
 import { doc, setDoc, deleteDoc, serverTimestamp, updateDoc, collection, query, where } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,8 +37,13 @@ interface ProductManagerProps {
     supplierId: string;
 }
 
-export function ProductManager({ supplierId }: ProductManagerProps) {
-    const { data: products, isLoading } = useProducts(supplierId, false);
+export function ProductManager({ supplierId: initialSupplierId }: ProductManagerProps) {
+    const { userData, user, roles } = useUser();
+    
+    // Force reactive ID capture: Prop -> User Context -> Nothing
+    const supplierId = initialSupplierId || userData?.uid || user?.uid;
+    
+    const { data: products, isLoading } = useProducts(supplierId || '', false);
     const [searchTerm, setSearchTerm] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);

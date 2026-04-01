@@ -15,18 +15,18 @@ import OfflineWarmer from '@/firebase/firestore/offline-warmer';
 
 const MeshBackground = dynamic(() => import('@/components/layout/mesh-background'), { ssr: false });
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+import Footer from '@/components/layout/footer';
 
+export default function MainLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isMounted, setIsMounted] = useState(false);
     const { isMobile, isWeb } = usePlatform();
 
-    // Check for upcoming appointments and show reminders
+    // ... exists hooks
     useAppointmentReminders();
     
     useEffect(() => {
         setIsMounted(true);
-        // Request FCM permissions on load
         requestNotificationPermission();
     }, []);
 
@@ -50,26 +50,18 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                         ease: [0.22, 1, 0.36, 1], // Custom "breathable" ease
                     }}
                     className={cn(
-                        "flex-1 w-full z-0",
-                        isMobile ? "pb-[130px]" : "pb-32"
+                        "flex-1 w-full z-0 px-4 md:px-0",
+                        "pt-24", // Buffer for fixed header
+                        "pb-12" // Spacing before footer
                     )}
                 >
-                    {children}
+                    <div className="max-w-7xl mx-auto w-full">
+                        {children}
+                    </div>
                 </motion.main>
             </AnimatePresence>
             
-            {isWeb && (
-                <footer className="w-full text-center py-10 pb-32 text-xs text-muted-foreground/60 z-10">
-                    <div className="flex justify-center gap-6 flex-wrap px-4 font-medium uppercase tracking-widest text-[10px]">
-                        <a href="/politica-de-privacidad" className="hover:text-primary transition-colors">Privacidad</a>
-                        <span>•</span>
-                        <a href="/seguridad-infantil" className="hover:text-primary transition-colors">Seguridad</a>
-                    </div>
-                    <p className="mt-4 opacity-40 font-bold tracking-tighter italic uppercase text-xs">
-                        © {new Date().getFullYear()} EstuClub. <span className="text-primary tracking-normal not-italic font-medium opacity-100">Mismo Boutique Creativa</span>
-                    </p>
-                </footer>
-            )}
+            {isWeb && <Footer />}
 
             <BottomNav />
         </div>
