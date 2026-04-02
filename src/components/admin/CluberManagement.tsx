@@ -117,7 +117,7 @@ export default function CluberManagement() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
-        <Loader2 className="h-12 w-12 text-[#FF007F] animate-spin opacity-40" />
+        <Loader2 className="h-12 w-12 text-[#d93b64] animate-spin opacity-40" />
         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 animate-pulse">Enganche de Datos...</p>
       </div>
     );
@@ -128,12 +128,12 @@ export default function CluberManagement() {
       {/* Search & Stats Header */}
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="relative w-full max-w-xl group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-[#FF007F] transition-colors" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-[#d93b64] transition-colors" />
           <Input 
             placeholder="BUSCAR CLUBER POR NOMBRE, ID O DIRECCIÓN..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-16 pl-16 rounded-2xl bg-white/5 border-white/5 focus:ring-[#FF007F]/20 focus:border-[#FF007F]/40 text-sm font-bold uppercase tracking-widest text-white transition-all shadow-2xl"
+            className="h-16 pl-16 rounded-2xl bg-white/5 border-white/5 focus:ring-[#d93b64]/20 focus:border-[#d93b64]/40 text-sm font-bold uppercase tracking-widest text-white transition-all shadow-2xl"
           />
         </div>
         <div className="flex gap-4">
@@ -141,7 +141,7 @@ export default function CluberManagement() {
                 <Hash className="h-3 w-3" />
                 Totales: {clubers?.length || 0}
             </Badge>
-            <Badge className="bg-[#FF007F]/10 text-[#FF007F] border-[#FF007F]/20 px-4 py-2 rounded-xl flex items-center gap-2">
+            <Badge className="bg-[#d93b64]/10 text-[#d93b64] border-[#d93b64]/20 px-4 py-2 rounded-xl flex items-center gap-2">
                 <Star className="h-3 w-3" />
                 Destacados: {clubers?.filter(c => c.isFeatured).length || 0}
             </Badge>
@@ -151,15 +151,15 @@ export default function CluberManagement() {
       {/* Cluber Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {filteredClubers.map((cluber) => (
-          <Card key={cluber.id} className="bg-slate-900/40 border-white/5 rounded-[3rem] overflow-hidden group hover:border-[#FF007F]/30 transition-all duration-500 relative shadow-2xl">
+          <Card key={cluber.id} className="bg-slate-900/40 border-white/5 rounded-[3rem] overflow-hidden group hover:border-[#d93b64]/30 transition-all duration-500 relative shadow-2xl">
             {/* Background Decoration */}
-            <Building className="absolute -right-8 -bottom-8 h-48 w-48 text-white/[0.02] -rotate-12 group-hover:text-[#FF007F]/[0.03] transition-colors" />
+            <Building className="absolute -right-8 -bottom-8 h-48 w-48 text-white/[0.02] -rotate-12 group-hover:text-[#d93b64]/[0.03] transition-colors" />
             
             <CardContent className="p-10 space-y-10 relative z-10">
               {/* Top Info Section */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div className="flex items-center gap-6">
-                  <div className="h-20 w-20 rounded-3xl bg-black border border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-2xl group-hover:border-[#FF007F]/40 transition-colors">
+                  <div className="h-20 w-20 rounded-3xl bg-black border border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-2xl group-hover:border-[#d93b64]/40 transition-colors">
                     {cluber.logoUrl ? (
                       <img src={cluber.logoUrl} alt={cluber.name} className="w-full h-full object-cover" />
                     ) : (
@@ -177,7 +177,7 @@ export default function CluberManagement() {
                     <div className="flex flex-wrap items-center gap-3">
                        <p className="text-[10px] font-black uppercase tracking-widest text-white/30 italic">{cluber.address || 'Sin dirección'}</p>
                        <div className="h-1 w-1 rounded-full bg-white/20" />
-                       <p className="text-[10px] font-black uppercase tracking-widest text-[#FF007F]/60">ID: {cluber.id.slice(0, 8)}...</p>
+                       <p className="text-[10px] font-black uppercase tracking-widest text-[#d93b64]/60">ID: {cluber.id.slice(0, 8)}...</p>
                     </div>
                   </div>
                 </div>
@@ -185,7 +185,7 @@ export default function CluberManagement() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="rounded-2xl bg-white/5 border border-white/5 hover:bg-[#FF007F]/10 hover:text-[#FF007F] transition-all"
+                      className="rounded-2xl bg-white/5 border border-white/5 hover:bg-[#d93b64]/10 hover:text-[#d93b64] transition-all"
                       onClick={() => setEditingCluber(cluber)}
                     >
                       <Edit3 className="h-5 w-5" />
@@ -240,7 +240,7 @@ export default function CluberManagement() {
                 <div className={cn(
                   "flex items-center justify-between p-4 rounded-2xl border transition-all duration-500",
                   cluber.isCincoDos 
-                    ? "bg-gradient-to-br from-amber-400/20 to-[#FF007F]/20 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
+                    ? "bg-gradient-to-br from-amber-400/20 to-[#d93b64]/20 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
                     : "bg-white/5 border-white/5 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0"
                 )}>
                   <div className="flex items-center gap-3">
@@ -273,7 +273,7 @@ export default function CluberManagement() {
                     <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Active Core</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <TrendingDown className="h-3 w-3 text-[#FF007F]/40" />
+                    <TrendingDown className="h-3 w-3 text-[#d93b64]/40" />
                     <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Fee: {cluber.commissionPercentage || 0}%</span>
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function CluberManagement() {
             </div>
             <div className="space-y-2">
                 <p className="text-xl font-bold text-white uppercase italic tracking-tighter">No se encontraron Clubers</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#FF007F]/40">Refina tu búsqueda maestro</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#d93b64]/40">Refina tu búsqueda maestro</p>
             </div>
             <Button variant="outline" onClick={() => setSearchQuery('')} className="rounded-2xl border-white/10 text-white font-black uppercase text-[10px] px-8">Resetear Filtros</Button>
         </div>
@@ -298,17 +298,17 @@ export default function CluberManagement() {
 
       {/* Edit Profile Dialog */}
       <Dialog open={!!editingCluber} onOpenChange={(open) => !open && setEditingCluber(null)}>
-        <DialogContent className="bg-slate-950 border-white/10 rounded-[3rem] p-12 max-w-xl shadow-[0_0_100px_rgba(255,0,127,0.15)] selection:bg-[#FF007F]/30">
+        <DialogContent className="bg-slate-950 border-white/10 rounded-[3rem] p-12 max-w-xl shadow-[0_0_100px_rgba(255,0,127,0.15)] selection:bg-[#d93b64]/30">
           <DialogHeader className="space-y-4 mb-8">
-             <div className="h-16 w-16 rounded-2xl bg-[#FF007F]/10 border border-[#FF007F]/20 flex items-center justify-center">
-                <Settings2 className="h-7 w-7 text-[#FF007F]" />
+             <div className="h-16 w-16 rounded-2xl bg-[#d93b64]/10 border border-[#d93b64]/20 flex items-center justify-center">
+                <Settings2 className="h-7 w-7 text-[#d93b64]" />
              </div>
              <div>
                 <DialogTitle className="text-4xl font-black text-white italic tracking-tighter uppercase font-montserrat">
                     Editar Perfil
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold text-white/30 uppercase tracking-[0.3em] font-inter">
-                    Ajustando parámetros de <span className="text-[#FF007F]">{editingCluber?.name}</span>
+                    Ajustando parámetros de <span className="text-[#d93b64]">{editingCluber?.name}</span>
                 </DialogDescription>
              </div>
           </DialogHeader>
@@ -320,7 +320,7 @@ export default function CluberManagement() {
                    <Input 
                       value={editingCluber?.name || ''} 
                       onChange={(e) => editingCluber && setEditingCluber({...editingCluber, name: e.target.value})}
-                      className="h-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#FF007F]/50 text-base font-bold text-white"
+                      className="h-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#d93b64]/50 text-base font-bold text-white"
                    />
                 </div>
 
@@ -331,7 +331,7 @@ export default function CluberManagement() {
                        <Input 
                           value={editingCluber?.address || ''} 
                           onChange={(e) => editingCluber && setEditingCluber({...editingCluber, address: e.target.value})}
-                          className="h-16 pl-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#FF007F]/50 text-base font-bold text-white"
+                          className="h-16 pl-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#d93b64]/50 text-base font-bold text-white"
                        />
                    </div>
                 </div>
@@ -339,13 +339,13 @@ export default function CluberManagement() {
                 <div className="space-y-3">
                     <Label className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] ml-2">Comisión de Venta (%)</Label>
                     <div className="relative">
-                        <TrendingDown className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#FF007F]" />
+                        <TrendingDown className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-[#d93b64]" />
                         <Input 
                             type="number"
                             step="0.1"
                             value={editingCluber?.commissionPercentage || 0} 
                             onChange={(e) => editingCluber && setEditingCluber({...editingCluber, commissionPercentage: Number(e.target.value)})}
-                            className="h-16 pl-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#FF007F]/50 text-2xl font-black text-white transition-all shadow-inner"
+                            className="h-16 pl-16 rounded-2xl bg-white/5 border-white/10 focus:border-[#d93b64]/50 text-2xl font-black text-white transition-all shadow-inner"
                         />
                         <div className="absolute right-6 top-1/2 -translate-y-1/2 font-black text-white/20 text-xl">%</div>
                     </div>
@@ -365,7 +365,7 @@ export default function CluberManagement() {
                 <Button 
                     type="submit" 
                     disabled={isUpdating}
-                    className="h-16 px-12 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-widest shadow-[0_0_30px_rgba(255,0,127,0.3)] hover:bg-[#FF007F]/90 transition-all flex-1"
+                    className="h-16 px-12 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-widest shadow-[0_0_30px_rgba(255,0,127,0.3)] hover:bg-[#d93b64]/90 transition-all flex-1"
                 >
                     {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : "GUARDAR CAMBIOS"}
                 </Button>
@@ -381,12 +381,12 @@ function ManagementToggle({ icon, label, value, onChange }: { icon: any, label: 
     return (
         <div className={cn(
             "flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border",
-            value ? "bg-[#FF007F]/10 border-[#FF007F]/20" : "bg-white/5 border-white/5 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0"
+            value ? "bg-[#d93b64]/10 border-[#d93b64]/20" : "bg-white/5 border-white/5 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0"
         )}>
             <div className="flex items-center gap-3">
                 <div className={cn(
                     "h-9 w-9 rounded-xl flex items-center justify-center transition-colors",
-                    value ? "bg-[#FF007F] text-white" : "bg-white/10 text-white/20"
+                    value ? "bg-[#d93b64] text-white" : "bg-white/10 text-white/20"
                 )}>
                     {icon}
                 </div>
@@ -398,7 +398,7 @@ function ManagementToggle({ icon, label, value, onChange }: { icon: any, label: 
             <Switch 
                 checked={value} 
                 onCheckedChange={onChange} 
-                className="data-[state=checked]:bg-[#FF007F]"
+                className="data-[state=checked]:bg-[#d93b64]"
             />
         </div>
     );

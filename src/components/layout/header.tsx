@@ -146,7 +146,7 @@ function AppSidebar() {
                                 alt="Estuclub" 
                                 width={140} 
                                 height={35} 
-                                className="filter-rosa" 
+                                className="w-auto h-auto" 
                            />
                     </div>
                 </SheetHeader>
@@ -233,8 +233,11 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 w-full min-h-[70px] pt-safe header-mesh flex items-center">
       <div className="absolute inset-0 glass-header z-[-1]" />
       <div className="container relative flex justify-between items-center px-4">
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
           <AppSidebar />
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 h-10 w-10">
+            <Search className="h-5 w-5" />
+          </Button>
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
@@ -244,14 +247,11 @@ export default function Header() {
                 width={110} 
                 height={28} 
                 priority
-                className="h-8 w-auto brightness-0 invert"
+                className="h-8 w-auto"
             />
         </Link>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-            <Search className="h-6 w-6" />
-          </Button>
           {!isUserLoading && user && <NotificationBell />}
           <UserMenu />
         </div>

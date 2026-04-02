@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { OrderItem } from '@/types/data';
+import { useUser } from '@/firebase';
 
 interface CartContextType {
     items: OrderItem[];
@@ -19,16 +20,31 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+    const { user, isUserLoading } = useUser();
+    const hasLoadedForUser = useRef<string | null>(null);
     const [items, setItems] = useState<OrderItem[]>([]);
     const [supplierId, setSupplierId] = useState<string | null>(null);
     const [supplierName, setSupplierName] = useState<string | null>(null);
     const [supplierPhone, setSupplierPhone] = useState<string | null>(null);
 
+    // Dynamic keys based on user UID
+    const cartKey = user ? `estuclub_cart_${user.uid}` : 'estuclub_cart_anon';
+    const sidKey = user ? `estuclub_cart_sid_${user.uid}` : 'estuclub_cart_sid_anon';
+    const snameKey = user ? `estuclub_cart_sname_${user.uid}` : 'estuclub_cart_sname_anon';
+    const sphoneKey = user ? `estuclub_cart_sphone_${user.uid}` : 'estuclub_cart_sphone_anon';
+
+    // Clear state on UID change to avoid data leakage
     useEffect(() => {
-        const savedCart = localStorage.getItem('estuclub_cart');
-        const savedSupplierId = localStorage.getItem('estuclub_cart_sid');
-        const savedSupplierName = localStorage.getItem('estuclub_cart_sname');
-        const savedSupplierPhone = localStorage.getItem('estuclub_cart_sphone');
+        hasLoadedForUser.current = null;
+    }, [user?.uid]);
+
+    useEffect(() => {
+        if (isUserLoading) return;
+
+        const savedCart = localStorage.getItem(cartKey);
+        const savedSupplierId = localStorage.getItem(sidKey);
+        const savedSupplierName = localStorage.getItem(snameKey);
+        const savedSupplierPhone = localStorage.getItem(sphoneKey);
         
         if (savedCart) {
             try {
@@ -38,21 +54,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 setSupplierPhone(savedSupplierPhone);
             } catch (e) {
                 console.error('Error parsing cart from localStorage', e);
+                setItems([]);
+                setSupplierId(null);
+                setSupplierName(null);
+                setSupplierPhone(null);
             }
+        } else {
+            setItems([]);
+            setSupplierId(null);
+            setSupplierName(null);
+            setSupplierPhone(null);
         }
-    }, []);
+        hasLoadedForUser.current = user?.uid || 'anon';
+    }, [user?.uid, isUserLoading, cartKey, sidKey, snameKey, sphoneKey]);
 
     useEffect(() => {
-        localStorage.setItem('estuclub_cart', JSON.stringify(items));
-        if (supplierId) localStorage.setItem('estuclub_cart_sid', supplierId);
-        else localStorage.removeItem('estuclub_cart_sid');
-        
-        if (supplierName) localStorage.setItem('estuclub_cart_sname', supplierName);
-        else localStorage.removeItem('estuclub_cart_sname');
+        if (isUserLoading || hasLoadedForUser.current !== (user?.uid || 'anon')) return;
 
-        if (supplierPhone) localStorage.setItem('estuclub_cart_sphone', supplierPhone);
-        else localStorage.removeItem('estuclub_cart_sphone');
-    }, [items, supplierId, supplierName, supplierPhone]);
+        localStorage.setItem(cartKey, JSON.stringify(items));
+        if (supplierId) localStorage.setItem(sidKey, supplierId);
+        else localStorage.removeItem(sidKey);
+        
+        if (supplierName) localStorage.setItem(snameKey, supplierName);
+        else localStorage.removeItem(snameKey);
+
+        if (supplierPhone) localStorage.setItem(sphoneKey, supplierPhone);
+        else localStorage.removeItem(sphoneKey);
+    }, [items, supplierId, supplierName, supplierPhone, cartKey, sidKey, snameKey, sphoneKey, isUserLoading]);
 
     const addItem = (newItem: OrderItem, supplier: { id: string, name: string, phone: string }) => {
         if (supplierId && supplierId !== supplier.id) {

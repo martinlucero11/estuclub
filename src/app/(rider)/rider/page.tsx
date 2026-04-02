@@ -579,9 +579,28 @@ export default function RiderPage() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Tu ganancia</p>
-                                        <p className="text-4xl font-black tracking-tighter text-[#d93b64] font-inter">${selectedOrder.deliveryCost}</p>
+                                        <p className="text-4xl font-black tracking-tighter text-[#d93b64] font-inter">${selectedOrder.deliveryFee || selectedOrder.deliveryCost}</p>
                                     </div>
                                 </div>
+
+                                {/* GIANT DOOR PAYMENT BANNER FOR RIDER */}
+                                {selectedOrder.deliveryPaymentStatus === 'pending' && (
+                                    <motion.div 
+                                        initial={{ scale: 0.95 }}
+                                        animate={{ scale: [0.95, 1.05, 1] }}
+                                        transition={{ duration: 0.5 }}
+                                        className="bg-[#d93b64] rounded-[2rem] p-6 border-4 border-black shadow-[0_0_40px_rgba(217,59,100,0.4)] text-center relative overflow-hidden group"
+                                    >
+                                        <div className="absolute top-0 right-0 p-4 opacity-20"><CreditCard className="h-12 w-12 text-black" /></div>
+                                        <div className="space-y-1 relative z-10">
+                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white">💰 MONTO A COBRAR EN PUERTA</p>
+                                            <h2 className="text-4xl font-black italic tracking-tighter text-black">
+                                                $ {(selectedOrder.deliveryFee || selectedOrder.deliveryCost).toLocaleString()}
+                                            </h2>
+                                            <p className="text-[8px] font-bold text-black/60 uppercase tracking-widest">Cobrar en efectivo al entregar</p>
+                                        </div>
+                                    </motion.div>
+                                )}
                                 <div className="space-y-4 pt-4 border-t border-white/5">
                                     <div className="flex items-center gap-2 text-slate-400">
                                         <MapPin className="h-4 w-4 text-[#d93b64]" />

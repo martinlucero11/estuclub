@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { useCart } from '@/context/cart-context';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Minus, Plus, Trash2, ShoppingBag, MessageCircle, CreditCard, Sparkles } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, MessageCircle, CreditCard, Sparkles, X } from 'lucide-react';
 import { optimizeImage } from '@/lib/utils';
 import Image from 'next/image';
 import { haptic } from '@/lib/haptics';
@@ -47,16 +47,23 @@ export function CartSheet({ children }: CartSheetProps) {
                                     </div>
                                 )}
                             </div>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all"
-                                onClick={() => {
-                                    if (confirm('¿Vaciar el carrito?')) clearCart();
-                                }}
-                            >
-                                <Trash2 className="h-5 w-5" />
-                            </Button>
+                            <div className="flex items-center gap-3">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50/50 transition-all"
+                                    onClick={() => {
+                                        if (confirm('¿Vaciar el carrito?')) clearCart();
+                                    }}
+                                >
+                                    <Trash2 className="h-5 w-5" />
+                                </Button>
+                                <SheetClose asChild>
+                                    <Button variant="ghost" size="icon" className="rounded-full bg-slate-50 border border-slate-100 text-slate-400">
+                                        <X className="h-5 w-5" />
+                                    </Button>
+                                </SheetClose>
+                            </div>
                         </div>
                     </SheetHeader>
 

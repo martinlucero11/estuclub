@@ -186,35 +186,39 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
       await new Promise(resolve => setTimeout(resolve, 800));
 
       // 3. Prepare Firestore Profile
+      // 3. Prepare Firestore Profile - SANITIZED
       const batch = writeBatch(firestore);
       const userDocRef = doc(firestore, 'users', user.uid);
-      batch.set(userDocRef, {
+      
+      const sanitizedData = {
         id: user.uid,
         uid: user.uid,
-        email: values.email,
-        username: values.username.toLowerCase(),
-        dni: values.dni,
-        firstName: values.firstName || '',
-        lastName: values.lastName || '',
-        phone: values.phone || '',
+        email: values.email || null,
+        username: values.username?.toLowerCase() || null,
+        dni: values.dni || null,
+        firstName: values.firstName || null,
+        lastName: values.lastName || null,
+        phone: values.phone || null,
         gender: values.gender || 'Masculino',
-        isStudent: values.isStudent,
+        isStudent: Boolean(values.isStudent),
         studentStatus: values.isStudent ? (certificateFile ? 'submitted' : 'pending') : 'verified',
         certificateDeadline: (values.isStudent && !certificateFile) 
           ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) 
           : null,
-        educationLevel: values.isStudent ? values.educationLevel : '',
-        educationYear: values.isStudent ? values.educationYear || '' : '',
-        institution: values.isStudent ? values.institution || '' : '',
-        career: values.isStudent ? values.career || '' : '',
-        studentCertificateUrl: certificateUrl,
+        educationLevel: values.educationLevel || null,
+        educationYear: values.educationYear || null,
+        institution: values.institution || null,
+        career: values.career || null,
+        studentCertificateUrl: certificateUrl || null,
         points: 0,
         photoURL: '',
-        role: initialRole,
+        role: initialRole || 'user',
         isEmailVerified: false,
-        wantsToBeCluber: !!values.requestCluber,
+        wantsToBeCluber: Boolean(values.requestCluber),
         createdAt: serverTimestamp(),
-      });
+      };
+
+      batch.set(userDocRef, sanitizedData);
       
       const newUsernameRef = doc(firestore, 'usernames', values.username.toLowerCase());
       batch.set(newUsernameRef, { userId: user.uid });
@@ -574,7 +578,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl bg-primary/5 p-4 border border-primary/5">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className="text-[11px] font-bold text-muted-foreground/80 cursor-pointer">He leído y acepto la <Link href="/politica-de-privacidad" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline" target="_blank">Política de Privacidad</Link></FormLabel>
+                    <FormLabel className="text-[11px] font-bold text-muted-foreground/80 cursor-pointer">He leído y acepto la <Link href="/privacidad" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline" target="_blank">Política de Privacidad</Link></FormLabel>
                     <FormMessage className="text-[10px] font-bold" />
                   </div>
                 </FormItem>
@@ -597,8 +601,12 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
             />
           </CardContent>
           <CardFooter className="pb-10 pt-4 px-8">
-            <Button type="submit" disabled={isSubmitting} className="w-full h-12 rounded-xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98]">
-              {isSubmitting ? 'Registrando...' : <><UserPlus className="mr-2 h-4 w-4" />Registrarse</>}
+            <Button 
+                type="submit" 
+                disabled={isSubmitting} 
+                className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98] bg-[#d93b64] hover:bg-[#d93b64]/90 text-white shadow-lg shadow-[#d93b64]/20"
+            >
+              {isSubmitting ? 'Registrando...' : 'Soy estudiante'}
             </Button>
           </CardFooter>
         </form>

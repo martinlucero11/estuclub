@@ -12,25 +12,35 @@ import { mpClient } from '@/lib/mercadopago';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { orderId } = body;
+        const { orderId, items, totalSubtotal } = body;
 
         const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
+
+        // Calculate 5% service fee for MP payment
+        const serviceFee = Math.round(totalSubtotal * 0.05);
 
         const preference = new Preference(mpClient);
 
         const response = await preference.create({
             body: {
                 items: [
+                    ...items.map((item: any) => ({
+                        id: item.id || 'product',
+                        title: item.name || 'Producto EstuClub',
+                        quantity: Number(item.quantity) || 1,
+                        unit_price: Number(item.price),
+                        currency_id: 'ARS'
+                    })),
                     {
-                        id: 'test_estuclub',
-                        title: 'Pedido EstuClub (Test)',
+                        id: 'service_fee',
+                        title: 'Tarifa de Servicio (EstuClub)',
                         quantity: 1,
-                        unit_price: 100,
+                        unit_price: serviceFee,
                         currency_id: 'ARS'
                     }
                 ],
                 back_urls: {
-                    success: `${baseUrl}/delivery`,
+                    success: `${baseUrl}/orders/${orderId}`,
                     failure: `${baseUrl}/delivery`,
                     pending: `${baseUrl}/delivery`,
                 },

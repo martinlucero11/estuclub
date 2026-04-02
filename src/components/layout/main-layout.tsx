@@ -32,7 +32,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     if (!isMounted) return null;
 
-    const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/be-cluber' || pathname === '/be-rider';
+    const isAuthPage = pathname === '/login' || pathname === '/be-cluber' || pathname === '/be-rider';
 
     return (
         <div className="min-h-[100dvh] flex flex-col relative overflow-x-hidden overscroll-none bg-background selection:bg-[#d93b64]/10">

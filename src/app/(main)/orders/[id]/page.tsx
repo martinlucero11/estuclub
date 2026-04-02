@@ -17,7 +17,8 @@ import {
     MessageCircle,
     ChevronLeft,
     ShieldCheck,
-    Search
+    Search,
+    Bike
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -245,6 +246,24 @@ export default function OrderTrackingPage() {
                         </div>
                         <p className="text-[9px] text-center text-slate-500 font-bold uppercase tracking-widest pt-2">Pago Verificado • Estuclub Secure Express</p>
                     </div>
+
+                    {/* DOOR PAYMENT REMINDER */}
+                    {order.type === 'delivery' && order.deliveryPaymentStatus === 'pending' && (
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            whileInView={{ scale: 1, opacity: 1 }}
+                            className="bg-[#d93b64] p-6 rounded-[2.5rem] border-4 border-black shadow-[0_20px_40px_rgba(217,59,100,0.3)] text-center space-y-2"
+                        >
+                            <div className="flex justify-center gap-2">
+                                <Bike className="h-6 w-6 text-black" />
+                                <h3 className="text-xl font-black italic uppercase tracking-tighter text-black">Abonar Repartidor</h3>
+                            </div>
+                            <p className="text-sm font-black text-white uppercase tracking-widest">
+                                Tené listos <span className="text-2xl text-black ml-1">$ {order.deliveryFee?.toLocaleString() || order.deliveryCost?.toLocaleString()}</span>
+                            </p>
+                            <p className="text-[10px] font-bold text-black/60 uppercase tracking-tighter">Costo del envío a pagar en mano al recibir</p>
+                        </motion.div>
+                    )}
                 </div>
 
                 {/* Footer Actions */}

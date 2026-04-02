@@ -91,8 +91,13 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     }, [address, type, supplierProfile]);
 
     const deliveryCost = type === 'delivery' ? (shippingDetails?.rate || 0) : 0;
+    // Fee is 5% of (Subtotal + Delivery)
     const serviceFee = Math.round((subtotal + deliveryCost) * SERVICE_FEE_PERCENTAGE);
-    const totalWithService = subtotal + deliveryCost + serviceFee;
+    // User pays Subtotal + Service Fee online
+    const totalPaidOnline = subtotal + serviceFee;
+    // User pays Delivery Cost at door
+    const totalAtDoor = deliveryCost;
+    
     const canPlaceOrder = subtotal >= (supplierProfile?.minOrderAmount || 0);
 
     // ── ACTIONS ───────────────────────────────────────────
@@ -137,10 +142,18 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                 supplierId,
                 supplierName: supplierName || 'Commerce',
                 items: items.map(i => ({ ...i })),
-                subtotal: Math.round(subtotal),
-                deliveryCost: Math.round(deliveryCost),
+                
+                // NEW STRUCTURE for Door Payment
+                itemsTotal: Math.round(subtotal),
                 serviceFee: Math.round(serviceFee),
-                totalAmount: Math.round(totalWithService),
+                totalPaidOnline: Math.round(totalPaidOnline),
+                deliveryFee: Math.round(deliveryCost),
+                deliveryPaymentStatus: 'pending',
+
+                subtotal: Math.round(subtotal), // legacy support
+                deliveryCost: Math.round(deliveryCost), // legacy support
+                totalAmount: Math.round(totalPaidOnline + deliveryCost), // legacy support
+                
                 status: 'pending_payment',
                 type,
                 deliveryAddress: type === 'delivery' ? address : 'Retiro en local',
@@ -292,33 +305,32 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                     {/* Order Summary */}
                     <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl space-y-3">
                         <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <span>Subtotal</span>
+                            <span>Subtotal Comida</span>
                             <span className="text-slate-900">$ {subtotal.toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <span>Envío</span>
-                            <span className={cn("font-black", deliveryCost === 0 ? "text-green-500" : "text-slate-900")}>
-                                {calculatingLogistics ? '---' : (deliveryCost === 0 ? '¡GRATIS!' : `$ ${deliveryCost.toLocaleString()}`)}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                            <span>✨ FEE PLATAFORMA</span>
+                            <span>Tarifa de Servicio (5%)</span>
                             <span className="text-slate-900">$ {serviceFee.toLocaleString()}</span>
                         </div>
                         <Separator className="bg-slate-200" />
-                        <div className="flex justify-between items-end">
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-estuclub-rosa italic mb-1">Costo Final</p>
-                                <span className={cn("text-3xl font-black tracking-tighter text-slate-900 italic", calculatingLogistics && "opacity-30")}>
-                                    $ {totalWithService.toLocaleString()}
-                                </span>
+                        
+                        <div className="flex justify-between items-center">
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900">Total a Pagar Ahora</p>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase">Procesado por Mercado Pago</p>
                             </div>
-                            <div className="flex gap-1">
-                                <div className="h-1.5 w-1.5 rounded-full bg-estuclub-rosa" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
-                                <div className="h-1.5 w-1.5 rounded-full bg-slate-200" />
-                            </div>
+                            <span className="text-xl font-black tracking-tighter text-slate-900">$ {totalPaidOnline.toLocaleString()}</span>
                         </div>
+
+                        {type === 'delivery' && (
+                            <div className="mt-4 p-4 rounded-xl bg-[#d93b64]/5 border border-[#d93b64]/20 flex justify-between items-center animate-pulse">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#d93b64]">🛵 ENVÍO AL REPARTIDOR</p>
+                                    <p className="text-[8px] font-bold text-[#d93b64]/60 uppercase">Pagar en mano al recibir</p>
+                                </div>
+                                <span className="text-xl font-black tracking-tighter text-[#d93b64]">$ {deliveryCost.toLocaleString()}</span>
+                            </div>
+                        )}
                     </div>
 
                     {!canPlaceOrder && (

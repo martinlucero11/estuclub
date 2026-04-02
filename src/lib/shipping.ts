@@ -3,7 +3,7 @@
  * Calculates real-time shipping rates using Google Distance Matrix API
  */
 
-const BASE_RATE = 1600; // $1.600 Base
+const BASE_RATE = 1400; // $1.400 Base
 const PER_KM_RATE = 500; // $500 per additional km
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
@@ -41,7 +41,7 @@ export async function getLiveShippingRate(origin: string, destination: string): 
         const distanceKm = distanceValue / 1000;
         const durationMin = Math.ceil(durationValue / 60);
 
-        // Formula: $1.600 + ($500 * (km - 1)) if km > 1
+        // Formula: $1.400 + ($500 * (km - 1)) if km > 1
         let rate = BASE_RATE;
         if (distanceKm > 1) {
             rate += (distanceKm - 1) * PER_KM_RATE;

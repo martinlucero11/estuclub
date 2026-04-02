@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useAuthService } from '@/firebase';
+import { collection, doc, writeBatch, serverTimestamp, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
     Bike, 
@@ -21,9 +22,10 @@ import {
     Camera as CaptureIcon,
     Wallet,
     AtSign,
-    Lock
+    Lock,
+    Mail
 } from 'lucide-react';
-import SignupForm from '@/components/auth/signup-form';
+import NextImage from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,9 +33,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import MainLayout from '@/components/layout/main-layout';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { haptic } from '@/lib/haptics';
 
 // ─── TYPES ────────────────────────────────────────────────
-type RiderStep = 'info' | 'vehicle' | 'docs' | 'payment' | 'success';
+type RiderStep = 'account' | 'info' | 'vehicle' | 'docs' | 'payment' | 'success';
 
 // ─── CAMERA COMPONENT ──────────────────────────────────────
 function CameraCapture({ onCapture, onClose, title }: { onCapture: (file: File) => void, onClose: () => void, title: string }) {
@@ -141,21 +145,28 @@ function CameraCapture({ onCapture, onClose, title }: { onCapture: (file: File) 
     );
 }
 
-import { useSearchParams } from 'next/navigation';
-
 // ─── MAIN COMPONENT ───────────────────────────────────────
 export default function BeRiderPage() {
-    const { user, isUserLoading } = useUser();
+    const { user: currentUser, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const auth = useAuthService();
     const searchParams = useSearchParams();
+    const router = useRouter();
 
-    const [step, setStep] = useState<RiderStep>((searchParams.get('step') as RiderStep) || 'info');
+    const [step, setStep] = useState<RiderStep>(() => {
+        if (searchParams.get('step')) return searchParams.get('step') as RiderStep;
+        return currentUser ? 'info' : 'account';
+    });
+
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [activeCamera, setActiveCamera] = useState<{ id: string, label: string } | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
-        displayName: '',
+        email: '',
+        password: '',
+        fullName: '',
         phone: '',
         vehicleType: 'bici' as 'bici' | 'moto' | 'auto',
         patente: '',
@@ -184,22 +195,52 @@ export default function BeRiderPage() {
         }
     };
 
-    const validateInfo = () => formData.displayName.length > 3 && formData.phone.length > 7;
+    const validateAccount = () => formData.email.includes('@') && formData.password.length >= 6 && formData.fullName.length >= 3;
+    const validateInfo = () => formData.fullName.length > 3 && formData.phone.length > 7;
     const validateVehicle = () => formData.vehicleType === 'bici' || formData.patente.length > 4;
     const validateDocs = () => files.dni && files.selfie && (formData.vehicleType === 'bici' || files.license);
 
+    const handleAccountCreation = async () => {
+        if (!validateAccount() || !auth || !firestore) return;
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const user = userCredential.user;
+            await updateProfile(user, { displayName: formData.fullName });
+            
+            await setDoc(doc(firestore, 'users', user.uid), {
+                uid: user.uid,
+                email: formData.email,
+                firstName: formData.fullName.split(' ')[0],
+                lastName: formData.fullName.split(' ').slice(1).join(' ') || '',
+                role: 'rider_pending',
+                createdAt: serverTimestamp(),
+            });
+
+            haptic.vibrateSuccess();
+            setStep('info');
+        } catch (err: any) {
+            console.error(err);
+            setError('Error al crear la cuenta. Verificá los datos.');
+            haptic.vibrateError();
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleSubmit = async () => {
+        const user = currentUser || auth?.currentUser;
         if (!validateDocs() || !user || !firestore) return;
         setIsSubmitting(true);
 
         try {
-            // 1. Get Auth Token for API
+            const batch = writeBatch(firestore);
             const token = await user.getIdToken();
 
-            // 2. Upload Files to Drive API
+            // Upload Files
             const uploadPromises = Object.entries(files).map(async ([key, file]) => {
                 if (!file) return null;
-                
                 const formDataUpload = new FormData();
                 formDataUpload.append('file', file);
                 formDataUpload.append('folder', 'rider');
@@ -210,7 +251,7 @@ export default function BeRiderPage() {
                     body: formDataUpload
                 });
 
-                if (!res.ok) throw new Error('Error al subir archivo a Drive');
+                if (!res.ok) throw new Error('Error al subir a Drive');
                 const data = await res.json();
                 return { key, url: data.url };
             });
@@ -221,23 +262,27 @@ export default function BeRiderPage() {
                 return acc;
             }, {} as Record<string, string>);
 
-            // 3. Save Application in Firestore (with Drive links and 7-day grace period)
             const gracePeriodEnd = new Date();
             gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
 
-            await addDoc(collection(firestore, 'rider_applications'), {
+            await setDoc(doc(collection(firestore, 'rider_applications')), {
                 userId: user.uid,
-                ...formData,
+                displayName: formData.fullName,
+                phone: formData.phone,
+                vehicleType: formData.vehicleType,
+                patente: formData.patente,
                 ...imageUrls,
                 status: 'pending',
                 appliedAt: serverTimestamp(),
                 mp_grace_period_end: gracePeriodEnd
             });
 
+            batch.update(doc(firestore, 'users', user.uid), { role: 'rider_pending' });
+            await batch.commit();
             setStep('success');
         } catch (error) {
-            console.error('Error submitting application (Drive):', error);
-            alert('Error al enviar la postulación. Por favor reintenta.');
+            console.error(error);
+            alert('Error al enviar la postulación.');
         } finally {
             setIsSubmitting(false);
         }
@@ -245,57 +290,9 @@ export default function BeRiderPage() {
 
     if (isUserLoading) return null;
 
-    if (!user) {
-        return (
-            <MainLayout>
-                <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter selection:bg-[#FF007F]/10">
-                    {/* Background Accents */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
-                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#FF007F]/5 blur-[100px] rounded-full opacity-10 -z-10" />
-
-                    <div className="mobile-container pt-20 pb-32">
-                        <header className="mb-12 flex flex-col items-center text-center space-y-6">
-                            <Link href="/" className="mb-2 transition-transform hover:scale-110 duration-500">
-                                <Image 
-                                    src="/logo.svg" 
-                                    alt="EstuClub Logo" 
-                                    width={160} 
-                                    height={40} 
-                                    className="h-10 w-auto filter-rosa drop-shadow-[0_0_15px_rgba(255,0,127,0.3)]"
-                                />
-                            </Link>
-                            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#FF007F]/5 rounded-full border border-[#FF007F]/10">
-                                <Bike className="h-4 w-4 text-[#FF007F]" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF007F] italic">Inscripción Rider</span>
-                            </div>
-                            <div className="space-y-2">
-                                <h1 className="text-4xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
-                                    Sumate a la <br/><span className="text-[#FF007F]">Logística</span>
-                                </h1>
-                                <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs opacity-70 mx-auto">Crea tu cuenta de Estuclub para empezar tu postulación.</p>
-                            </div>
-                        </header>
-
-                        <SignupForm initialRole="rider" />
-
-                        <div className="mt-12 text-center flex flex-col items-center space-y-6">
-                            <p className="text-[10px] font-black text-slate-400 tracking-[0.3em] uppercase">
-                                ¿Ya sos Rider?{' '}
-                                <Link href="/login" className="font-black text-[#FF007F] underline-offset-4 decoration-2 hover:underline tracking-widest ml-1">
-                                    INICIÁ SESIÓN
-                                </Link>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </MainLayout>
-        );
-    }
-
     return (
         <MainLayout>
             <div className="min-h-screen bg-[#FDFDFD] text-slate-900 relative overflow-hidden font-inter selection:bg-[#d93b64]/10">
-                {/* Camera Overlay */}
                 <AnimatePresence>
                     {activeCamera && (
                         <CameraCapture 
@@ -306,64 +303,113 @@ export default function BeRiderPage() {
                     )}
                 </AnimatePresence>
 
-                {/* Background Accents */}
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] rounded-full -z-10" />
                 <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-[#d93b64]/5 blur-[100px] rounded-full opacity-10 -z-10" />
 
                 <div className="mobile-container pt-32 pb-32">
-                    {/* Header */}
-                    <header className="mb-12 space-y-4">
+                    <header className="mb-12 flex flex-col items-center text-center space-y-6">
+                        <Link href="/" className="mb-2 transition-transform hover:scale-110 duration-500">
+                            <NextImage 
+                                src="/logo.svg" 
+                                alt="EstuClub Logo" 
+                                width={160} 
+                                height={40} 
+                                className="h-10 w-auto" 
+                                style={{ filter: 'invert(34%) sepia(87%) saturate(3474%) hue-rotate(325deg) brightness(88%) contrast(92%)' }}
+                            />
+                        </Link>
                         <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-[#d93b64]/5 rounded-full border border-[#d93b64]/10">
-                            <ShieldCheck className="h-4 w-4 text-[#d93b64]" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64] italic">Rider Onboarding</span>
+                            <Bike className="h-4 w-4 text-[#d93b64]" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d93b64] italic">Inscripción Rider</span>
                         </div>
-                        <h1 className="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
-                            Sé un <br/><span className="text-[#d93b64]">Rider</span>
-                        </h1>
-                        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs opacity-70">Sumate a la logística de beneficios más grande del país.</p>
                     </header>
 
-                    {/* Main Action Area */}
                     <AnimatePresence mode="wait">
-                        {step === 'info' && (
-                            <motion.div 
-                                key="info" 
-                                initial={{ opacity: 0, x: 20 }} 
-                                animate={{ opacity: 1, x: 0 }} 
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-8"
-                            >
+                        {step === 'account' && (
+                            <motion.div key="account" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                <div className="text-center space-y-2 mb-8">
+                                    <h1 className="text-4xl font-black tracking-tighter italic uppercase leading-[0.8] font-montserrat text-slate-950">
+                                        Creá tu <br/><span className="text-[#d93b64]">Perfil Rider</span>
+                                    </h1>
+                                    <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] italic max-w-xs mx-auto">Empezá con tus datos de acceso.</p>
+                                </div>
                                 <Card className="bg-white border-slate-100 rounded-[2.5rem] p-10 shadow-premium border-0">
                                     <div className="space-y-6">
                                         <div className="space-y-2">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Nombre Completo</Label>
                                             <div className="relative group/input">
-                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64] transition-colors" />
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64]" />
                                                 <Input 
-                                                    value={formData.displayName}
-                                                    onChange={e => setFormData({...formData, displayName: e.target.value})}
-                                                    placeholder="Ej: Juan Pérez" 
-                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64] transition-all font-medium" 
+                                                    value={formData.fullName}
+                                                    onChange={e => setFormData({...formData, fullName: e.target.value})}
+                                                    placeholder="Ej: Pedro González" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64]" 
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Teléfono Whatsapp</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Email</Label>
                                             <div className="relative group/input">
-                                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64] transition-colors" />
+                                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64]" />
+                                                <Input 
+                                                    type="email"
+                                                    value={formData.email}
+                                                    onChange={e => setFormData({...formData, email: e.target.value})}
+                                                    placeholder="rider@email.com" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64]" 
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Contraseña</Label>
+                                            <div className="relative group/input">
+                                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64]" />
+                                                <Input 
+                                                    type="password"
+                                                    value={formData.password}
+                                                    onChange={e => setFormData({...formData, password: e.target.value})}
+                                                    placeholder="••••••••" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64]" 
+                                                />
+                                            </div>
+                                        </div>
+                                        {error && <p className="text-[10px] font-bold text-red-500 uppercase text-center">{error}</p>}
+                                        <Button 
+                                            disabled={!validateAccount() || isSubmitting} 
+                                            onClick={handleAccountCreation}
+                                            className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl"
+                                        >
+                                            {isSubmitting ? <Loader2 className="animate-spin" /> : 'CONTINUAR'}
+                                        </Button>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        )}
+
+                        {step === 'info' && (
+                            <motion.div key="info" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+                                <Card className="bg-white border-slate-100 rounded-[2.5rem] p-10 shadow-premium border-0">
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Nombre Completo</Label>
+                                            <div className="relative group/input">
+                                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
+                                                <Input value={formData.fullName} disabled className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">WhatsApp</Label>
+                                            <div className="relative group/input">
+                                                <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within/input:text-[#d93b64]" />
                                                 <Input 
                                                     value={formData.phone}
                                                     onChange={e => setFormData({...formData, phone: e.target.value})}
                                                     placeholder="+54 11 1234 5678" 
-                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64] transition-all font-medium" 
+                                                    className="h-14 pl-12 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64]" 
                                                 />
                                             </div>
                                         </div>
-                                        <Button 
-                                            disabled={!validateInfo()} 
-                                            onClick={() => setStep('vehicle')}
-                                            className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-[#d93b64]/20 active:scale-95 transition-all"
-                                        >
+                                        <Button disabled={!validateInfo()} onClick={() => setStep('vehicle')} className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-[1.5rem] shadow-xl shadow-[#d93b64]/20">
                                             CONTINUAR <ChevronRight className="ml-2 h-4 w-4" />
                                         </Button>
                                     </div>
@@ -372,13 +418,7 @@ export default function BeRiderPage() {
                         )}
 
                         {step === 'vehicle' && (
-                            <motion.div 
-                                key="vehicle" 
-                                initial={{ opacity: 0, x: 20 }} 
-                                animate={{ opacity: 1, x: 0 }} 
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-8"
-                            >
+                            <motion.div key="vehicle" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                                 <div className="grid grid-cols-3 gap-4">
                                     {[
                                         { id: 'bici', icon: Bike, label: 'Bici' },
@@ -390,36 +430,30 @@ export default function BeRiderPage() {
                                             onClick={() => setFormData({...formData, vehicleType: v.id as any})}
                                             className={cn(
                                                 "flex flex-col items-center justify-center gap-3 h-32 rounded-3xl border-2 transition-all",
-                                                formData.vehicleType === v.id ? "bg-[#d93b64] border-[#d93b64] text-white shadow-lg" : "bg-zinc-900 border-white/5 text-zinc-500"
+                                                formData.vehicleType === v.id ? "bg-[#d93b64] border-[#d93b64] text-white shadow-lg" : "bg-white border-slate-100 text-slate-400"
                                             )}
                                         >
-                                            <v.icon className={cn("h-8 w-8", formData.vehicleType === v.id ? "text-white" : "text-zinc-600")} />
+                                            <v.icon className={cn("h-8 w-8", formData.vehicleType === v.id ? "text-white" : "text-slate-300")} />
                                             <span className="text-[10px] font-black uppercase tracking-widest">{v.label}</span>
                                         </button>
                                     ))}
                                 </div>
-
                                 {formData.vehicleType !== 'bici' && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Patente del Vehículo</Label>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] ml-1">Patente</Label>
                                         <Input 
                                             value={formData.patente}
                                             onChange={e => setFormData({...formData, patente: e.target.value})}
                                             placeholder="AA 123 BB" 
-                                            className="h-14 bg-zinc-900 border-white/5 rounded-2xl focus:border-[#d93b64]" 
+                                            className="h-14 bg-slate-50 border-slate-100 rounded-2xl focus:border-[#d93b64]" 
                                         />
-                                    </motion.div>
+                                    </div>
                                 )}
-
                                 <div className="flex gap-4">
-                                    <Button variant="ghost" onClick={() => setStep('info')} className="h-14 w-20 rounded-2xl border border-white/5 text-zinc-500">
+                                    <Button variant="ghost" onClick={() => setStep('info')} className="h-14 w-20 rounded-2xl border border-slate-100 text-slate-300">
                                         <ArrowLeft className="h-5 w-5" />
                                     </Button>
-                                    <Button 
-                                        disabled={!validateVehicle()} 
-                                        onClick={() => setStep('docs')}
-                                        className="flex-1 h-14 bg-white text-black font-black uppercase tracking-widest rounded-2xl shadow-xl hover:bg-neutral-200"
-                                    >
+                                    <Button disabled={!validateVehicle()} onClick={() => setStep('docs')} className="flex-1 h-14 bg-slate-900 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl">
                                         FOTOS <ChevronRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </div>
@@ -427,72 +461,40 @@ export default function BeRiderPage() {
                         )}
 
                         {step === 'docs' && (
-                            <motion.div 
-                                key="docs" 
-                                initial={{ opacity: 0, x: 20 }} 
-                                animate={{ opacity: 1, x: 0 }} 
-                                exit={{ opacity: 0, x: -20 }}
-                                className="space-y-6"
-                            >
-                                <div className="grid gap-6">
+                            <motion.div key="docs" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                                <div className="grid gap-4">
                                     {[
-                                        { id: 'dni', label: 'Foto del DNI' },
-                                        { id: 'selfie', label: 'Selfie del rostro' },
-                                        { id: 'license', label: 'Licencia de conducir' }
+                                        { id: 'dni', label: 'DNI (Frente)' },
+                                        { id: 'selfie', label: 'Selfie con fondo blanco' },
+                                        { id: 'license', label: 'Licencia de Conducir' }
                                     ].map(doc => (
                                         (doc.id !== 'license' || formData.vehicleType !== 'bici') && (
-                                            <div key={doc.id} className="relative group">
-                                                <div className={cn(
-                                                    "h-24 rounded-2xl border-2 border-dashed flex items-center justify-between px-6 transition-all",
-                                                    files[doc.id as keyof typeof files] ? "bg-green-500/10 border-green-500/30" : "bg-zinc-900/50 border-white/10 group-hover:border-[#d93b64]/40"
-                                                )}>
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center", files[doc.id as keyof typeof files] ? "bg-green-500/20" : "bg-zinc-800")}>
-                                                            {files[doc.id as keyof typeof files] ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <Camera className="h-6 w-6 text-zinc-500" />}
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white">{doc.label}</p>
-                                                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter truncate max-w-[150px]">
-                                                                {files[doc.id as keyof typeof files] ? files[doc.id as keyof typeof files]?.name : 'Pendiente de captura'}
-                                                            </p>
-                                                        </div>
+                                            <div key={doc.id} className={cn(
+                                                "h-24 rounded-2xl border-2 border-dashed flex items-center justify-between px-6 transition-all",
+                                                files[doc.id as keyof typeof files] ? "bg-green-50/10 border-green-500/30" : "bg-slate-50/50 border-slate-100"
+                                            )}>
+                                                <div className="flex items-center gap-4">
+                                                    <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center", files[doc.id as keyof typeof files] ? "bg-green-500/20" : "bg-slate-100 text-slate-300")}>
+                                                        {files[doc.id as keyof typeof files] ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <Camera className="h-6 w-6" />}
                                                     </div>
-                                                    <div className="flex gap-2">
-                                                        <Button 
-                                                            size="sm" 
-                                                            onClick={() => setActiveCamera({ id: doc.id, label: doc.label })}
-                                                            className="bg-[#FF007F] text-white font-black text-[9px] uppercase tracking-widest rounded-xl px-4"
-                                                        >
-                                                            CÁMARA
-                                                        </Button>
-                                                        <div className="relative">
-                                                            <input 
-                                                                type="file" 
-                                                                accept="image/*" 
-                                                                onChange={e => handleFileChange(e, doc.id as any)}
-                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                            />
-                                                            <Button size="sm" variant="outline" className="border-white/10 bg-white/5 text-white font-black text-[9px] uppercase tracking-widest rounded-xl px-4 pointer-events-none">
-                                                                SUBIR
-                                                            </Button>
-                                                        </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">{doc.label}</p>
+                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate max-w-[120px]">
+                                                            {files[doc.id as keyof typeof files] ? files[doc.id as keyof typeof files]?.name : 'Pendiente'}
+                                                        </p>
                                                     </div>
                                                 </div>
+                                                <Button size="sm" onClick={() => setActiveCamera({ id: doc.id, label: doc.label })} className="bg-[#d93b64] text-white font-black text-[9px] uppercase tracking-widest rounded-xl">CÁMARA</Button>
                                             </div>
                                         )
                                     ))}
                                 </div>
-
                                 <div className="flex gap-4">
-                                    <Button variant="ghost" onClick={() => setStep('vehicle')} className="h-14 w-20 rounded-2xl border border-white/5 text-zinc-500">
+                                    <Button variant="ghost" onClick={() => setStep('vehicle')} className="h-14 w-20 rounded-2xl border border-slate-100 text-slate-300">
                                         <ArrowLeft className="h-5 w-5" />
                                     </Button>
-                                    <Button 
-                                        disabled={!validateDocs() || isSubmitting} 
-                                        onClick={() => setStep('payment')}
-                                        className="flex-1 h-14 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl shadow-[0_0_30px_rgba(217,59,100,0.3)] hover:scale-[1.02] transition-all"
-                                    >
-                                        <span className="text-[#FF007F]">Logística</span>
+                                    <Button disabled={!validateDocs() || isSubmitting} onClick={() => setStep('payment')} className="flex-1 h-14 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl shadow-xl">
+                                        PAGOS <ChevronRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </div>
                             </motion.div>
@@ -500,71 +502,42 @@ export default function BeRiderPage() {
 
                         {step === 'payment' && (
                             <motion.div key="payment" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-10">
-                                <Card className="bg-zinc-900/50 backdrop-blur-3xl border-white/5 rounded-[2.5rem] p-10 overflow-hidden relative">
-                                    <div className="absolute top-0 right-0 p-10 opacity-[0.03]">
-                                        <Wallet className="h-48 w-48 text-[#d93b64]" />
-                                    </div>
+                                <Card className="bg-white border-slate-100 rounded-[2.5rem] p-10 shadow-premium border-0 relative">
                                     <div className="space-y-8 relative z-10">
                                         <div className="space-y-3">
-                                            <div className="h-14 w-14 bg-[#d93b64]/10 rounded-2xl flex items-center justify-center border border-[#d93b64]/20">
-                                                <Wallet className="h-7 w-7 text-[#d93b64]" />
+                                            <div className="h-14 w-14 bg-blue-500/10 rounded-2xl flex items-center justify-center border border-blue-500/20">
+                                                <Wallet className="h-7 w-7 text-blue-600" />
                                             </div>
-                                            <div className="space-y-1">
-                                                <h3 className="text-xl font-black uppercase tracking-tight italic">Vincular Mercado Pago</h3>
-                                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Necesario para cobrar tus comisiones al instante.</p>
-                                            </div>
+                                            <h3 className="text-xl font-black uppercase tracking-tight italic">Cobrá vía Mercado Pago</h3>
                                         </div>
-
-                                        <div className="p-8 rounded-[2rem] bg-white/5 border border-white/10 text-center space-y-6">
-                                            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-loose">
-                                                Conectá tu cuenta ahora para recibir los pagos de tus entregas automáticamente.
-                                            </p>
-                                            <Button 
-                                                asChild
-                                                className="w-full h-16 bg-[#d93b64] hover:bg-[#d93b64]/90 text-white font-black uppercase tracking-widest rounded-2xl shadow-[0_0_40px_rgba(217,59,100,0.3)] transition-all"
-                                            >
-                                                <a href={`https://auth.mercadopago.com.ar/authorization?client_id=YOUR_CLIENT_ID&response_type=code&platform_id=mp&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/mercadopago/callback?role=rider&uid=' + user.uid)}`}>
-                                                    VINCULAR MI CUENTA
-                                                </a>
+                                        <div className="p-8 rounded-[2rem] bg-blue-50/50 border border-blue-100 text-center space-y-6">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest leading-loose">Necesitamos tu cuenta de Mercado Pago para depositarte el pago de tus entregas.</p>
+                                            <Button asChild className="w-full h-16 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl">
+                                                <a href={`https://auth.mercadopago.com.ar/authorization?client_id=${process.env.NEXT_PUBLIC_MP_APP_ID}&response_type=code&platform_id=mp&redirect_uri=${encodeURIComponent(window.location.origin + '/api/mp/callback')}&state=${currentUser?.uid || auth?.currentUser?.uid}`}>VINCULAR CUENTA</a>
                                             </Button>
                                         </div>
-
                                         <div className="flex gap-4">
-                                            <Button variant="ghost" onClick={() => setStep('docs')} className="h-14 w-20 rounded-2xl border border-white/5 text-zinc-500">
+                                            <Button variant="ghost" onClick={() => setStep('docs')} className="h-14 w-20 rounded-2xl border border-slate-100 text-slate-300">
                                                 <ArrowLeft className="h-5 w-5" />
                                             </Button>
-                                            <Button 
-                                                onClick={handleSubmit}
-                                                className="flex-1 h-14 bg-white/5 text-zinc-500 font-black uppercase tracking-widest rounded-2xl"
-                                            >
-                                                SALTEAR
-                                            </Button>
+                                            <Button onClick={handleSubmit} className="flex-1 h-14 bg-slate-900/10 text-slate-400 font-black uppercase tracking-widest rounded-2xl">SALTEAR</Button>
                                         </div>
                                     </div>
                                 </Card>
-                                <p className="text-[10px] text-center font-bold text-zinc-600 italic px-10">Al vincular tu cuenta, aceptás que Estuclub realice los pagos de tus comisiones y bonos vía Mercado Pago.</p>
                             </motion.div>
                         )}
 
                         {step === 'success' && (
-                            <motion.div 
-                                key="success" 
-                                initial={{ scale: 0.9, opacity: 0 }} 
-                                animate={{ scale: 1, opacity: 1 }} 
-                                className="fixed inset-0 bg-black z-[250] flex items-center justify-center p-10"
-                            >
+                            <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="fixed inset-0 bg-[#FDFDFD] z-[250] flex items-center justify-center p-10">
                                 <div className="text-center space-y-10 max-w-sm">
-                                    <div className="relative mx-auto">
-                                        <div className="h-32 w-32 bg-[#d93b64] rounded-full flex items-center justify-center animate-bounce-slow">
-                                            <CheckCircle2 className="h-16 w-16 text-white" />
-                                        </div>
-                                        <div className="absolute inset-x-0 -bottom-6 h-12 w-full bg-[#d93b64]/20 blur-3xl rounded-full" />
+                                    <div className="h-32 w-32 bg-[#d93b64] mx-auto rounded-full flex items-center justify-center animate-bounce-slow shadow-2xl">
+                                        <CheckCircle2 className="h-16 w-16 text-white" />
                                     </div>
                                     <div className="space-y-4">
-                                        <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-white leading-[0.8] font-montserrat">Postulación <br/><span className="text-[#FF007F]">Enviada</span></h2>
-                                        <p className="text-zinc-500 font-medium text-sm leading-relaxed px-4">¡Listo! Nuestro equipo analizará tus datos y te contactará vía Whatsapp en menos de 24hs.</p>
+                                        <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-slate-900 leading-[0.8] font-montserrat">Postulación <br/><span className="text-[#d93b64]">Enviada</span></h2>
+                                        <p className="text-slate-400 font-bold text-sm italic opacity-80">Nuestro equipo analizará tus datos y te contactará en menos de 24hs.</p>
                                     </div>
-                                    <Button asChild className="w-full h-14 bg-white text-black font-black uppercase tracking-widest rounded-3xl shadow-2xl">
+                                    <Button asChild className="w-full h-14 bg-slate-900 text-white font-black uppercase tracking-widest rounded-3xl shadow-2xl">
                                         <Link href="/">VOLVER AL INICIO</Link>
                                     </Button>
                                 </div>
