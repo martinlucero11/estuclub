@@ -13,15 +13,20 @@ import { useCart } from '@/context/cart-context';
 export function BottomNav() {
   const pathname = usePathname();
   const { roles, userData } = useUser();
-  const { totalItems } = useCart();
   
+  const { totalItems } = useCart();
   const isStudent = userData?.isStudent || false;
   const isPrivileged = roles.includes('admin') || roles.includes('supplier');
-  
-  // Detect current context
+
+  // ─── CONTEXT DETECTION ──────────────────────────────────
   const isInDeliveryContext = pathname.startsWith('/delivery') || pathname.startsWith('/orders');
-    const isRider = roles.includes('rider');
-    const isInRiderContext = pathname.startsWith('/rider') || (isRider && pathname.startsWith('/verify'));
+  const isRider = roles.includes('rider');
+  const isInRiderContext = pathname.startsWith('/rider') || (isRider && pathname.startsWith('/verify'));
+  const isInTurneroView = pathname.includes('/turnos') || pathname.includes('/mis-turnos');
+  const isSignup = pathname === '/signup';
+
+  if (isSignup) return null;
+
 
   // Determine Center Button for Benefits Context
   let benefitsCenterBtn;
@@ -58,6 +63,11 @@ export function BottomNav() {
 
   // Determine which nav to show
   let navItems = isInRiderContext ? riderNav : (isInDeliveryContext ? deliveryNav : benefitsNav);
+
+  // ─── CART RESTRICTION ───────────────────────────────────
+  if (isInTurneroView) {
+    navItems = navItems.filter(item => item.href !== '#cart');
+  }
 
   // Add Switch Button for dual-role users
   if (isStudent && isPrivileged) {

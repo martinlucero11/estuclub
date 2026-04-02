@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "742876183164",
+    "project_id": "studio-7814845508-d173f",
+    "storage_bucket": "studio-7814845508-d173f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:742876183164:android:b632ddca304cb4dd9ea7f9",
+        "android_client_info": {
+          "package_name": "com.mismo.estuclub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "742876183164-ir7cni089ul53gspmgasjljd5bm47qf7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCcdZGahEhyF6-LCfpuBlFHVt6cFWqDLLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "742876183164-5eaqfjhk11vnn556lebortoarkdpr402.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "742876183164-897t3md9j6n0tbd6nv6993v2nh5utm91.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.mismo.estuclubios"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

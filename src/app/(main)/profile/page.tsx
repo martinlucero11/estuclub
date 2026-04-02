@@ -37,7 +37,11 @@ import {
 } from "@/components/ui/accordion";
 import { getAvatarUrl, cn } from '@/lib/utils';
 import { StudentVerificationCard } from '@/components/profile/student-verification-card';
-import { Timestamp } from 'firebase/firestore';
+import { AddressBook } from '@/components/profile/address-book';
+import { Timestamp, addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
+import { Soup, Utensils, Info, ShieldCheck, Heart, Sparkles, CheckCircle2, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const UserQRCodeDialog = dynamic(() => import('@/components/profile/user-qr-code-dialog'), { ssr: false });
 
@@ -290,6 +294,10 @@ export default function ProfilePage() {
 
                 <StudentVerificationCard userProfile={userProfile} />
 
+                <AddressBook />
+
+                <CincoDosSection userProfile={userProfile} />
+
                 <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Información Personal</CardTitle>
@@ -505,5 +513,138 @@ export default function ProfilePage() {
                 </Card>
             </div>
         </MainLayout>
+    );
+}
+
+function CincoDosSection({ userProfile }: { userProfile: any }) {
+    const { status, isLoading } = useCincoDosStatus();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [requesting, setRequesting] = React.useState(false);
+
+    const handleRequest = async () => {
+        if (!firestore || !userProfile || requesting) return;
+        setRequesting(true);
+        try {
+            await addDoc(collection(firestore, 'comedor_applications'), {
+                userId: userProfile.id,
+                userName: `${userProfile.firstName} ${userProfile.lastName}`,
+                status: 'pending',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            });
+            toast({
+                title: "Solicitud Enviada",
+                description: "El equipo de Cinco.Dos revisará tu perfil estudiantil.",
+            });
+            window.location.reload();
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: "Error",
+                description: "No se pudo procesar la solicitud. Reintenta más tarde.",
+            });
+        } finally {
+            setRequesting(false);
+        }
+    };
+
+    if (isLoading) return <Skeleton className="h-40 w-full rounded-[2rem]" />;
+
+    return (
+        <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
+            <CardHeader className="pb-2">
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <Utensils className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Proyecto Cinco.Dos</CardTitle>
+                </div>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
+                {status === 'none' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div className="space-y-2">
+                            <p className="text-2xl font-black tracking-tighter italic">Comedor Estudiantil Gratuito</p>
+                            <p className="text-xs font-bold text-muted-foreground leading-relaxed">
+                                El Proyecto Cinco.Dos es una iniciativa social de Alem que provee almuerzos nutritivos y gratuitos a estudiantes en situación de vulnerabilidad.
+                            </p>
+                        </div>
+                        <Button 
+                            onClick={handleRequest} 
+                            disabled={requesting}
+                            className="w-full h-14 rounded-2xl bg-primary hover:bg-primary font-black text-xs uppercase tracking-widest italic shadow-lg shadow-primary/20"
+                        >
+                            {requesting ? "PROCESANDO..." : "SOLICITAR INGRESO AL PROYECTO 🍴"}
+                        </Button>
+                    </div>
+                )}
+
+                {status === 'pending' && (
+                    <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col items-center text-center gap-4 animate-in zoom-in-95 duration-500">
+                        <div className="h-14 w-14 rounded-full bg-amber-500/20 flex items-center justify-center">
+                            <Clock className="h-8 w-8 text-amber-500 animate-pulse" />
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm font-black uppercase tracking-widest text-amber-600">Solicitud en Revisión</p>
+                            <p className="text-[10px] font-bold text-amber-600/70 uppercase">Estamos validando tu situación con la organización.</p>
+                        </div>
+                    </div>
+                )}
+
+                {status === 'approved' && (
+                    <div className="space-y-8 animate-in fade-in duration-1000">
+                        {/* Credencial Digital */}
+                        <div className="relative overflow-hidden rounded-3xl bg-slate-900 p-8 shadow-2xl border border-white/5">
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <Utensils className="h-40 w-40 text-primary rotate-12" />
+                            </div>
+                            
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <Badge className="bg-primary/20 text-primary border-primary/20 font-black text-[8px] tracking-[0.2em] px-2 py-0.5">
+                                            ESTUDIANTE ACTIVO
+                                        </Badge>
+                                        <h4 className="text-2xl font-black tracking-tighter text-white uppercase italic">Proyecto Cinco.Dos</h4>
+                                    </div>
+                                    <ShieldCheck className="h-8 w-8 text-primary shadow-glow" />
+                                </div>
+
+                                <div className="pt-4 border-t border-white/10 flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 shrink-0">
+                                        <Heart className="h-6 w-6 text-primary fill-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-bold text-lg leading-none">{userProfile.firstName} {userProfile.lastName}</p>
+                                        <p className="text-white/40 font-black text-[8px] uppercase tracking-widest mt-1">Beneficiario Comedor Alem</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center pt-2">
+                                    <div className="flex gap-1.5">
+                                        {[...Array(5)].map((_, i) => (
+                                            <div key={i} className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                                        <span className="text-[8px] font-black tracking-[0.3em] text-white/40 uppercase">Aprobado EstuClub</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 px-2">
+                            <Info className="h-4 w-4 text-primary" />
+                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
+                                Presenta esta credencial en la sede de la Iglesia para acceder al comedor.
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }

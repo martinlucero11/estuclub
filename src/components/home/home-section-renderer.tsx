@@ -10,6 +10,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { useSearchParams } from 'next/navigation';
+import { isStoreOpen } from '@/lib/utils';
 
 import { PerksGrid, SuppliersGrid, AnnouncementsGrid, ProductsGrid } from '@/components/home/grids';
 import { CategoryGrid } from '@/components/home/category-grid';
@@ -215,7 +216,12 @@ function SectionContent({ section }: { section: HomeSection }) {
              props.items = safeItems.map(makeBenefitSerializable);
              Component = PerksCarousel;
         } else {
-             props.items = items;
+             // Filter closed stores if applicable
+             const isDeliverySupplierType = ['delivery_suppliers', 'minisuppliers', 'supplierpromo'].includes(block.contentType);
+             props.items = isDeliverySupplierType 
+                ? (items as SupplierProfile[]).filter(isStoreOpen)
+                : items;
+                
              if (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers') Component = SuppliersCarousel;
              if (block.contentType === 'minisuppliers') Component = MiniSuppliersCarousel;
              if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
@@ -235,7 +241,12 @@ function SectionContent({ section }: { section: HomeSection }) {
                 : (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos')
                     ? ProductsGrid
                     : AnnouncementsGrid;
-            props.items = items;
+            
+            // Filter closed stores for grid too
+            const isDeliverySupplierType = ['delivery_suppliers', 'minisuppliers', 'supplierpromo'].includes(block.contentType);
+            props.items = isDeliverySupplierType 
+               ? (items as SupplierProfile[]).filter(isStoreOpen)
+               : items;
         }
     }
 

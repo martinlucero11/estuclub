@@ -13,6 +13,8 @@ import VerificationGate from "@/components/auth/verification-gate";
 import { CartProvider } from "@/context/cart-context";
 import { AdminProvider } from "@/context/admin-context";
 import { FloatingAdminMetrics } from "@/components/analytics/FloatingAdminMetrics";
+import { GlobalErrorBoundary } from "@/components/errors/global-error-boundary";
+import Script from "next/script";
 
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
@@ -96,7 +98,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={cn("min-h-screen mesh-gradient animate-mesh font-sans antialiased overflow-x-hidden", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+                  if (!theme && supportDarkMode) theme = 'dark';
+                  if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.style.backgroundColor = '#050505';
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className={cn("min-h-screen bg-[#050505] mesh-gradient font-sans antialiased", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -108,11 +129,13 @@ export default function RootLayout({
               <VerificationGate>
                 <CartProvider>
                   <MessagingProvider>
-                    <Suspense fallback={<Loading />}>
-                      <StatusBarConfig />
-                      {children}
-                      <FloatingAdminMetrics />
-                    </Suspense>
+                    <GlobalErrorBoundary>
+                      <Suspense fallback={<Loading />}>
+                        <StatusBarConfig />
+                        {children}
+                        <FloatingAdminMetrics />
+                      </Suspense>
+                    </GlobalErrorBoundary>
                   </MessagingProvider>
                 </CartProvider>
               </VerificationGate>
@@ -120,6 +143,10 @@ export default function RootLayout({
             <Toaster />
           </FirebaseProvider>
         </ThemeProvider>
+        <Script 
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`} 
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

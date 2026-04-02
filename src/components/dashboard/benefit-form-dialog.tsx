@@ -457,7 +457,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                                             <SelectItem value="level_1">Nivel 1+</SelectItem>
                                             <SelectItem value="level_2">Nivel 2+</SelectItem>
                                             <SelectItem value="level_3">Nivel 3+</SelectItem>
-                                            <SelectItem value="cinco_dos">Cinco Dos (Exclusivo)</SelectItem>
+                                            <SelectItem value="cinco_dos">Proyecto Social Cinco.Dos (Comedor)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormDescription>Define a quién va dirigido.</FormDescription>

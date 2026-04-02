@@ -59,14 +59,14 @@ export function FloatingAdminMetrics() {
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
                         className="w-72"
                     >
-                        <Card className="glass-premium border-cyan-500/30 shadow-[0_0_50px_rgba(0,245,255,0.15)] overflow-hidden">
-                            <div className="p-4 bg-cyan-500/10 border-b border-cyan-500/20 flex justify-between items-center">
+                        <Card className="glass-premium border-estuclub-rosa/30 shadow-[0_0_50px_rgba(217,59,100,0.15)] overflow-hidden">
+                            <div className="p-4 bg-estuclub-rosa/10 border-b border-estuclub-rosa/20 flex justify-between items-center">
                                 <div className="flex items-center gap-2">
-                                    <Activity className="h-4 w-4 text-cyan-400 animate-pulse" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400">Telemetría Live (24h)</span>
+                                    <Activity className="h-4 w-4 text-estuclub-rosa animate-pulse" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-estuclub-rosa">Telemetría Live (24h)</span>
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-cyan-500/20" onClick={() => setIsOpen(false)}>
-                                    <X className="h-3 w-3 text-cyan-400" />
+                                <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-estuclub-rosa/20" onClick={() => setIsOpen(false)}>
+                                    <X className="h-3 w-3 text-estuclub-rosa" />
                                 </Button>
                             </div>
                             <CardContent className="p-4 space-y-4">
@@ -96,12 +96,12 @@ export function FloatingAdminMetrics() {
 
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-6 w-6 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-400">
+                                            <div className="h-6 w-6 rounded-lg bg-estuclub-rosa/10 flex items-center justify-center text-estuclub-rosa">
                                                 <TrendingUp className="h-3 w-3" />
                                             </div>
                                             <span className="text-[10px] font-bold text-slate-300">Conversión Plataforma</span>
                                         </div>
-                                        <span className="text-xs font-black text-cyan-400">{stats.conversionRate.toFixed(1)}%</span>
+                                        <span className="text-xs font-black text-estuclub-rosa">{stats.conversionRate.toFixed(1)}%</span>
                                     </div>
                                 </div>
 
@@ -121,9 +121,9 @@ export function FloatingAdminMetrics() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(!isOpen)}
-                className="h-14 w-14 rounded-[2rem] bg-[#0A0A0A] border border-cyan-500/50 shadow-[0_0_30px_rgba(0,245,255,0.3)] flex items-center justify-center text-cyan-400 hover:border-cyan-400 transition-all group overflow-hidden relative"
+                className="h-14 w-14 rounded-[2rem] bg-[#0A0A0A] border border-estuclub-rosa/50 shadow-[0_0_30px_rgba(217,59,100,0.3)] flex items-center justify-center text-estuclub-rosa hover:border-estuclub-rosa transition-all group overflow-hidden relative"
             >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/20 via-transparent to-transparent opacity-50" />
+                <div className="absolute inset-0 bg-gradient-to-br from-estuclub-rosa/20 via-transparent to-transparent opacity-50" />
                 {isOpen ? <X className="h-6 w-6 relative z-10" /> : <Activity className="h-6 w-6 relative z-10 animate-pulse" />}
             </motion.button>
         </div>

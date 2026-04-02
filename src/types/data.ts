@@ -45,7 +45,7 @@ export interface UserProfile {
     favoriteSuppliers?: string[];
     xp?: number;
     level?: number;
-    isCincoDos?: boolean; // PWA plus membership
+    isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
     location?: {
       address: string;
       city?: string;
@@ -134,6 +134,14 @@ export interface SupplierProfile {
     city?: string;
   };
   operatingHours?: Availability;
+  deliverySchedule?: {
+    [day: string]: {
+      active: boolean;
+      intervals: { start: string; end: string }[];
+    };
+  };
+  isDeliveryPaused?: boolean;
+  avgPrepTime?: number; // In minutes
   menuSections?: string[]; // Custom subcategories defined by the supplier
   mp_linked?: boolean;
   mp_grace_period_end?: Timestamp;
@@ -438,6 +446,7 @@ export interface Order {
     deliveryAddress?: string;
     deliveryAddressLabel?: string; // "Casa", "Trabajo", etc.
     deliveryNote?: string;
+    deliveryPin?: string; // 4-digit code for validation
     type: 'delivery' | 'pickup';
     createdAt: Timestamp;
     updatedAt: Timestamp;

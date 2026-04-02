@@ -16,15 +16,22 @@ import Link from 'next/link';
 
 interface ProductCardProps {
     product: Product;
+    supplier?: SupplierProfile;
     onAdd?: () => void;
     variant?: 'default' | 'carousel';
     previewMode?: boolean;
 }
 
-export function ProductCard({ product, onAdd, variant = 'default', previewMode = false }: ProductCardProps) {
+export const ProductCard = React.memo(({ product, supplier: initialSupplier, onAdd, variant = 'default', previewMode = false }: ProductCardProps) => {
     const firestore = useFirestore();
     const { addItem } = useCart();
-    const { data: supplier } = useDoc<SupplierProfile>(product.supplierId ? doc(firestore, 'roles_supplier', product.supplierId) : null);
+    
+    // Solo hacemos el fetch si no nos pasaron el supplier por prop
+    const { data: fetchedSupplier } = useDoc<SupplierProfile>(
+        (!initialSupplier && product.supplierId) ? doc(firestore, 'roles_supplier', product.supplierId) : null
+    );
+
+    const supplier = initialSupplier || fetchedSupplier;
 
     const handleAdd = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -116,4 +123,6 @@ export function ProductCard({ product, onAdd, variant = 'default', previewMode =
             </motion.div>
         </Link>
     );
-}
+});
+
+ProductCard.displayName = 'ProductCard';

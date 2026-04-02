@@ -27,11 +27,11 @@ import { Badge } from '@/components/ui/badge';
 
 const STATUS_CONFIG = {
     'pending_payment': { label: 'Esperando Pago', icon: Clock, color: 'text-amber-400', bg: 'bg-amber-400/10', step: 0 },
-    'searching_rider': { label: 'Buscando Rider Estuclub', icon: Search, color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 1, pulse: true },
+    'searching_rider': { label: 'Buscando Rider Estuclub', icon: Search, color: 'text-pink-400', bg: 'bg-pink-400/10', step: 1, pulse: true },
     'accepted': { label: 'Preparando Pedido', icon: Store, color: 'text-pink-400', bg: 'bg-pink-400/10', step: 2 },
-    'assigned': { label: 'Rider Asignado', icon: ShieldCheck, color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 2 },
-    'at_store': { label: 'Rider en el Local', icon: Store, color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 3 },
-    'on_the_way': { label: 'En camino a tu ubicación', icon: Truck, color: 'text-cyan-400', bg: 'bg-cyan-400/10', step: 4, pulse: true },
+    'assigned': { label: 'Rider Asignado', icon: ShieldCheck, color: 'text-pink-400', bg: 'bg-pink-400/10', step: 2 },
+    'at_store': { label: 'Rider en el Local', icon: Store, color: 'text-pink-400', bg: 'bg-pink-400/10', step: 3 },
+    'on_the_way': { label: 'En camino a tu ubicación', icon: Truck, color: 'text-pink-400', bg: 'bg-pink-400/10', step: 4, pulse: true },
     'delivered': { label: 'Entregado', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-400/10', step: 5 },
     'completed': { label: 'Finalizado', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-400/10', step: 5 },
     'cancelled': { label: 'Cancelado', icon: CheckCircle2, color: 'text-red-400', bg: 'bg-red-400/10', step: -1 },
@@ -162,16 +162,16 @@ export default function OrderTrackingPage() {
                         <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-cyan-400/5 border border-cyan-400/20 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group shadow-[0_20px_40px_rgba(6,182,212,0.05)]"
+                            className="bg-pink-400/5 border border-pink-400/20 rounded-[2.5rem] p-8 space-y-6 relative overflow-hidden group shadow-[0_20px_40px_rgba(236,72,153,0.05)]"
                         >
-                            <div className="absolute -top-12 -right-12 h-32 w-32 bg-cyan-400/10 rounded-full blur-3xl group-hover:bg-cyan-400/20 transition-all duration-1000" />
+                            <div className="absolute -top-12 -right-12 h-32 w-32 bg-pink-400/10 rounded-full blur-3xl group-hover:bg-pink-400/20 transition-all duration-1000" />
                             
                             <div className="flex items-center gap-6 relative z-10">
-                                <div className="h-16 w-16 rounded-[1.5rem] bg-cyan-400/10 flex items-center justify-center border border-cyan-400/20 group-hover:border-cyan-400/40 transition-colors">
-                                    <Truck className={cn("h-8 w-8 text-cyan-400", order.status === 'searching_rider' && "animate-bounce")} />
+                                <div className="h-16 w-16 rounded-[1.5rem] bg-pink-400/10 flex items-center justify-center border border-pink-400/20 group-hover:border-pink-400/40 transition-colors">
+                                    <Truck className={cn("h-8 w-8 text-pink-400", order.status === 'searching_rider' && "animate-bounce")} />
                                 </div>
                                 <div className="flex-1 space-y-1">
-                                    <h3 className="text-[11px] font-black uppercase tracking-widest text-cyan-400/80">Logística Estuclub</h3>
+                                    <h3 className="text-[11px] font-black uppercase tracking-widest text-pink-400/80">Logística Estuclub</h3>
                                     <p className="text-lg font-black tracking-tight leading-none">
                                         {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando Repartidor...' : 'Asignando Rider...')}
                                     </p>
@@ -185,7 +185,7 @@ export default function OrderTrackingPage() {
                                 <div className="flex gap-3 pt-2 relative z-10">
                                     <Button size="lg" className="flex-1 rounded-2xl bg-[#0a0a0a] border border-white/5 font-black uppercase tracking-widest text-[10px] h-12 shadow-xl hover:bg-white/5" asChild>
                                         <a href={`tel:${rider.phone}`} className="flex items-center justify-center gap-2">
-                                            <Phone className="h-3 w-3 text-cyan-400" />
+                                            <Phone className="h-3 w-3 text-pink-400" />
                                             Llamar Rider
                                         </a>
                                     </Button>
@@ -200,6 +200,28 @@ export default function OrderTrackingPage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+
+                {/* PIN DE SEGURIDAD - TRANSACCIÓN PROTEGIDA */}
+                {order.status !== 'delivered' && order.status !== 'completed' && order.deliveryPin && (
+                    <motion.div 
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-white rounded-[2.5rem] p-8 border-4 border-black shadow-[0_30px_60px_rgba(0,0,0,0.4)] text-center relative overflow-hidden group"
+                    >
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <ShieldCheck className="h-20 w-20 text-black rotate-12" />
+                        </div>
+                        <div className="space-y-1 relative z-10">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">PIN de Seguridad</p>
+                            <h2 className="text-6xl font-black italic tracking-tighter text-black tabular-nums">
+                                {order.deliveryPin}
+                            </h2>
+                            <p className="text-[9px] font-black text-black/60 uppercase tracking-widest pt-2">
+                                Dale este código al Rider para confirmar la recepción
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Details Section */}
                 <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl">

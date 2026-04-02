@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   ExternalLink, Loader2,  CheckCircle, User,
   Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera,
-  ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Crown, Gift
+  ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Utensils, Gift
 } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -344,7 +344,7 @@ export default function VerifyPage() {
                                         <div className="flex items-center gap-3">
                                             <h3 className="text-2xl font-black uppercase tracking-tighter leading-none">{cluber.name}</h3>
                                             {cluber.verified && <ShieldCheck className="h-5 w-5 text-blue-400" />}
-                                            {cluber.isCincoDos && <Crown className="h-5 w-5 text-amber-400 fill-amber-400/20" />}
+                                            {cluber.isCincoDos && <Utensils className="h-5 w-5 text-amber-400 fill-amber-400/20" />}
                                         </div>
                                         <p className="text-[10px] font-bold text-muted-foreground opacity-60 uppercase tracking-widest">ID: {cluber.id}</p>
                                     </div>
@@ -445,14 +445,14 @@ function CincoDosToggle({ value, onChange }: { value: boolean, onChange: (v: boo
                     "h-10 w-10 rounded-xl flex items-center justify-center transition-all",
                     value ? "bg-amber-400 shadow-[0_0_15px_#fbbf24] rotate-6" : "bg-white/5"
                 )}>
-                    <Crown className={cn("h-5 w-5", value ? "text-black" : "text-white/20")} />
+                    <Utensils className={cn("h-5 w-5", value ? "text-black" : "text-white/20")} />
                 </div>
                 <div>
                      <Label className={cn(
                         "text-[10px] font-black uppercase tracking-[0.2em] leading-none block",
                         value ? "text-amber-400" : "text-white/40"
                     )}>Cinco Dos</Label>
-                    <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">Status Plus</span>
+                    <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">Proyecto Social</span>
                 </div>
             </div>
             <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-amber-400" />

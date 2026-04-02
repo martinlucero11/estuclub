@@ -230,9 +230,9 @@ export default function Header() {
   const { isMobile } = usePlatform();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full min-h-[70px] pt-safe header-mesh flex items-center">
-      <div className="absolute inset-0 glass-header z-[-1]" />
-      <div className="container relative flex justify-between items-center px-4">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500">
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-xl border-none shadow-none z-[-1]" />
+      <div className="container relative flex justify-between items-center px-6">
         <div className="flex items-center gap-1">
           <AppSidebar />
           <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 h-10 w-10">

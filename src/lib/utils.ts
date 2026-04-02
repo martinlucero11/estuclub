@@ -1,9 +1,34 @@
 
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { SupplierProfile } from "@/types/data"
  
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Checks if a store is currently open for delivery based on schedule and manual pause.
+ */
+export function isStoreOpen(supplier: SupplierProfile): boolean {
+  if (supplier.isDeliveryPaused) return false;
+  if (!supplier.deliverySchedule) return true; // Default to open if no schedule configured
+
+  const now = new Date();
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const currentDay = days[now.getDay()];
+  const schedule = supplier.deliverySchedule[currentDay];
+
+  if (!schedule || !schedule.active) return false;
+  if (!schedule.intervals || schedule.intervals.length === 0) return true;
+
+  const currentTime = now.getHours() * 100 + now.getMinutes();
+
+  return schedule.intervals.some(interval => {
+    const start = parseInt(interval.start.replace(':', ''));
+    const end = parseInt(interval.end.replace(':', ''));
+    return currentTime >= start && currentTime <= end;
+  });
 }
 
 /**

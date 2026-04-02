@@ -1,4 +1,5 @@
 'use client';
+import React, { useMemo } from 'react';
 import Link from "next/link";
 import { doc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
@@ -22,13 +23,13 @@ import { makeAnnouncementSerializable } from "@/lib/data";
 import { MapPin, Star, Plus, Clock, Truck, ShoppingCart } from "lucide-react";
 import { formatDistance, calculateDistance } from "@/lib/geo-utils";
 import { useUser } from "@/firebase";
-import { useMemo } from "react";
 import { useDoc } from "@/firebase/firestore/use-doc";
 import { useCart } from "@/context/cart-context";
 import { Button } from "../ui/button";
 
 // --- SUPPLIER CARD ---
-const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
+// --- SUPPLIER CARD ---
+const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
     const { userLocation } = useUser();
     
     const distance = useMemo(() => {
@@ -88,7 +89,8 @@ const SupplierCard = ({ supplier, priority = false }: { supplier: SupplierProfil
             </div>
         </Link>
     );
-};
+});
+SupplierCard.displayName = 'SupplierCard';
 
 // --- MINI SUPPLIER CARD (CIRCULAR LOGOS) ---
 const MiniSupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
@@ -325,9 +327,12 @@ export function ProductsCarousel({ items: products }: { items: any[] }) {
 }
 
 // --- PRODUCT WITH SUPPLIER CARD (PREMIUM DESIGN) ---
-const ProductWithSupplierCard = ({ product }: { product: Product }) => {
+const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier }: { product: Product, supplier?: SupplierProfile }) => {
     const firestore = useFirestore();
-    const { data: supplier } = useDoc<SupplierProfile>(product.supplierId ? doc(firestore, 'roles_supplier', product.supplierId) : null);
+    const { data: fetchedSupplier } = useDoc<SupplierProfile>(
+        (!initialSupplier && product.supplierId) ? doc(firestore, 'roles_supplier', product.supplierId) : null
+    );
+    const supplier = initialSupplier || fetchedSupplier;
     const { addItem } = useCart();
 
     const handleAddToCart = (e: React.MouseEvent) => {
@@ -428,7 +433,8 @@ const ProductWithSupplierCard = ({ product }: { product: Product }) => {
             </div>
         </Link>
     );
-};
+});
+ProductWithSupplierCard.displayName = 'ProductWithSupplierCard';
 
 export function ProductsWithSupplierCarousel({ items: products }: { items: any[] }) {
     if (!products || products.length === 0) return (

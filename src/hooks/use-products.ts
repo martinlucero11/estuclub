@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { useFirestore, useCollection } from '@/firebase';
 import { Product } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
@@ -20,7 +20,8 @@ export function useProducts(supplierId?: string, activeOnly: boolean = true) {
         const baseQuery = query(
             collection(firestore, 'products').withConverter(createConverter<Product>()),
             where('supplierId', '==', supplierId),
-            orderBy('createdAt', 'desc')
+            orderBy('createdAt', 'desc'),
+            limit(100)
         );
 
         if (activeOnly) {

@@ -1,9 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, ReactNode } from 'react';
-import { getMessaging, onMessage, isSupported } from 'firebase/messaging';
+import { isSupported } from 'firebase/messaging';
 import { useFirebase } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { onMessageListener } from '@/lib/fcm';
 
 const MessagingContext = createContext<undefined>(undefined);
 
@@ -22,21 +23,20 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         const setupMessaging = async () => {
             try {
-                if (typeof window !== 'undefined' && 'serviceWorker' in navigator && firebaseApp) {
+                if (typeof window !== 'undefined' && firebaseApp) {
                     const supported = await isSupported();
-                    if (!supported) {
-                        console.log('Firebase Messaging is not supported in this browser/environment');
-                        return;
-                    }
+                    if (!supported) return;
 
-                    const messaging = getMessaging(firebaseApp);
-
-                    // Handle messages when app is in foreground
-                    const unsubscribe = onMessage(messaging, (payload) => {
+                    // Unified listener for both Web and Native
+                    const unsubscribe = await onMessageListener((payload) => {
                         console.log('Message received in foreground. ', payload);
+                        
+                        const title = payload.notification?.title || payload.title;
+                        const body = payload.notification?.body || payload.body;
+
                         toast({
-                            title: payload.notification?.title,
-                            description: payload.notification?.body,
+                            title: title,
+                            description: body,
                         });
                     });
 
@@ -47,13 +47,14 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
-        let unsubscribe: (() => void) | undefined;
-        setupMessaging().then(unsub => {
-            if (unsub) unsubscribe = unsub;
-        });
-
+        const cleanup = setupMessaging();
+        
         return () => {
-            if (unsubscribe) unsubscribe();
+            cleanup.then(unsub => {
+                if (typeof unsub === 'function') {
+                    unsub();
+                }
+            });
         };
     }, [firebaseApp, toast]);
 

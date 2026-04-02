@@ -1,23 +1,61 @@
 import { NextResponse } from 'next/server';
 import { Preference } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
+import { adminAuth, adminFirestore } from '@/lib/firebase-admin';
 
 /**
- * CHECKOUT API — BYPASS MODE (Temporary)
- * Simple preference, no splits, no marketplace_fee.
- * Direct payment to collector_id 3304086909.
- * TODO: Re-enable split logic after MP sandbox validation.
+ * CHECKOUT API — SECURE MODE
+ * Validates user session and fetches order data from Firestore.
  */
 
 export async function POST(req: Request) {
     try {
+        // 1. Validar Autenticación (Bearer Token)
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'No autorizado: Token faltante' }, { status: 401 });
+        }
+
+        const token = authHeader.split('Bearer ')[1];
+        let decodedToken;
+        try {
+            decodedToken = await adminAuth.verifyIdToken(token);
+        } catch (authError) {
+            console.error('Auth verification failed:', authError);
+            return NextResponse.json({ error: 'No autorizado: Token inválido' }, { status: 401 });
+        }
+
         const body = await req.json();
-        const { orderId, items, totalSubtotal } = body;
+        const { orderId } = body;
+
+        if (!orderId) {
+            return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
+        }
+
+        // 2. Recuperar la orden de Firestore para evitar manipulación de precios
+        const orderDoc = await adminFirestore.collection('orders').doc(orderId).get();
+        if (!orderDoc.exists) {
+            return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
+        }
+
+        const orderData = orderDoc.data();
+        
+        // 3. Verificar que la orden pertenezca al usuario autenticado
+        if (orderData?.userId !== decodedToken.uid) {
+            return NextResponse.json({ error: 'No tienes permiso para pagar esta orden' }, { status: 403 });
+        }
+
+        const { items } = orderData as { items: any[] };
+
+        // 4. Recalcular totalSubtotal desde la base de datos
+        const recalculatedSubtotal = items.reduce((acc: number, item: any) => {
+            return acc + (Number(item.price) * (Number(item.quantity) || 1));
+        }, 0);
 
         const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
 
-        // Calculate 5% service fee for MP payment
-        const serviceFee = Math.round(totalSubtotal * 0.05);
+        // Calculate 5% service fee based on DB data
+        const serviceFee = Math.round(recalculatedSubtotal * 0.05);
 
         const preference = new Preference(mpClient);
 
@@ -46,9 +84,10 @@ export async function POST(req: Request) {
                 },
                 auto_return: 'approved',
                 notification_url: `${baseUrl}/api/webhooks/mercadopago`,
-                external_reference: orderId || 'test_order',
+                external_reference: orderId,
                 metadata: {
-                    order_id: orderId || 'test_order',
+                    order_id: orderId,
+                    userId: decodedToken.uid,
                     type: 'delivery_order'
                 }
             }
@@ -61,10 +100,10 @@ export async function POST(req: Request) {
         });
 
     } catch (error: any) {
-        console.error('Checkout Bypass Error:', error);
+        console.error('Checkout Secure Error:', error);
         return NextResponse.json({ 
-            error: error.message || 'Payment error',
-            detail: error.cause || error.stack 
+            error: 'Error procesando el pago',
+            detail: process.env.NODE_ENV === 'development' ? error.message : undefined
         }, { status: 500 });
     }
 }

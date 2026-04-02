@@ -44,8 +44,23 @@ export const getBenefitColumns = (
       header: 'Visible',
       cell: ({ row }) => {
         const isVisible = row.getValue('isVisible');
-        return isVisible ? <Badge>Sí</Badge> : <Badge variant="outline">No</Badge>;
+        return isVisible ? <Badge className="bg-emerald-500 hover:bg-emerald-600">Sí</Badge> : <Badge variant="outline">No</Badge>;
       }
+    },
+    {
+        accessorKey: 'targetAudience',
+        header: 'Público',
+        cell: ({ row }) => {
+            const audience = row.getValue('targetAudience') as string;
+            if (audience === 'cinco_dos') {
+                return (
+                    <Badge className="bg-primary hover:bg-primary/90 gap-1 uppercase text-[10px] py-1 px-3">
+                        Social
+                    </Badge>
+                );
+            }
+            return <Badge variant="secondary" className="uppercase text-[9px] opacity-60">General</Badge>;
+        }
     },
     {
       id: 'actions',

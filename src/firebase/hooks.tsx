@@ -7,6 +7,7 @@ import { FirebaseStorage } from 'firebase/storage';
 import { FirebaseApp } from 'firebase/app';
 import { FirebaseContext, FirebaseContextState, SupplierData } from '@/firebase/provider';
 import type { UserProfile } from '@/types/data';
+import { useAdmin } from '@/context/admin-context';
 
 // --- TYPE DEFINITIONS FOR HOOKS ---
 
@@ -77,20 +78,40 @@ export const useFirebase = (): FirebaseServicesAndUser => {
  * A convenience hook to get only the user state (user object, roles, loading status).
  */
 export const useUser = (): UserHookResult => {
-  const { user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation, isAdmin, isSupplier, isRider } = useFirebase();
-  return useMemo(() => ({ 
-    user, 
-    roles, 
-    userData, 
-    supplierData, 
-    isUserLoading, 
-    userError,
-    userLocation,
-    requestLocation,
-    isAdmin,
-    isSupplier,
-    isRider
-  }), [user, roles, userData, supplierData, isUserLoading, userError, userLocation, requestLocation, isAdmin, isSupplier, isRider]);
+  const firebase = useFirebase();
+  const admin = useAdmin();
+
+  return useMemo(() => {
+    // If Admin is impersonating another user
+    if (firebase.isAdmin && admin.impersonatedUserId) {
+      const isImpersonatedSupplier = admin.impersonatedRoles.includes('supplier');
+      const isImpersonatedRider = admin.impersonatedRoles.includes('rider');
+
+      return {
+        ...firebase,
+        roles: admin.impersonatedRoles,
+        userData: admin.impersonatedUserData,
+        supplierData: admin.impersonatedSupplierData,
+        isSupplier: isImpersonatedSupplier,
+        isRider: isImpersonatedRider,
+        isAdmin: false, // In impersonation mode, they aren't 'admin' in the UI
+      };
+    }
+
+    return {
+      user: firebase.user,
+      roles: firebase.roles,
+      userData: firebase.userData,
+      supplierData: firebase.supplierData,
+      isUserLoading: firebase.isUserLoading,
+      userError: firebase.userError,
+      userLocation: firebase.userLocation,
+      requestLocation: firebase.requestLocation,
+      isAdmin: firebase.isAdmin,
+      isSupplier: firebase.isSupplier,
+      isRider: firebase.isRider
+    };
+  }, [firebase, admin]);
 };
 
 /**

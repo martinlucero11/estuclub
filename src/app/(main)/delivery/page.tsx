@@ -12,7 +12,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { createConverter } from '@/lib/firestore-converter';
 import { Button } from '@/components/ui/button';
 import { haptic } from '@/lib/haptics';
-import { cn } from '@/lib/utils';
+import { cn, isStoreOpen } from '@/lib/utils';
 import { ModeToggle } from '@/components/layout/mode-toggle';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,7 +65,9 @@ function DeliveryList() {
 
     const sortedSuppliers = useMemo(() => {
         if (!suppliers) return [];
-        return [...suppliers].sort((a, b) => a.name.localeCompare(b.name));
+        // Filter out closed stores
+        const openSuppliers = suppliers.filter(isStoreOpen);
+        return [...openSuppliers].sort((a, b) => a.name.localeCompare(b.name));
     }, [suppliers]);
 
     return (
