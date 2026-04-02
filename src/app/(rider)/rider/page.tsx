@@ -183,7 +183,7 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                 ddjjAntecedentes: true, status: 'pending', createdAt: serverTimestamp(),
             });
             await batch.commit();
-            try { await sendEmailVerification(user, { url: `${window.location.origin}/rider` }); } catch (e) {}
+            try { await sendEmailVerification(user, { url: `${window.location.origin}/rider` }); } catch (e) { }
             haptic.vibrateSuccess();
             toast({ title: '✅ Solicitud enviada', description: 'Te notificaremos cuando seas aprobado.' });
         } catch (error: any) {
@@ -314,7 +314,7 @@ export default function RiderPage() {
     const myOrdersQuery = useMemo(() => {
         if (!firestore || !user?.uid) return null;
         return query(
-            collection(firestore, 'orders').withConverter(createConverter<Order>()), 
+            collection(firestore, 'orders').withConverter(createConverter<Order>()),
             where('riderId', '==', user.uid),
             where('status', 'in', ['assigned', 'at_store', 'on_the_way', 'delivered', 'completed'])
         );
@@ -339,11 +339,11 @@ export default function RiderPage() {
                 <header className="mb-10 text-center space-y-4 z-10 flex flex-col items-center">
                     <div className="relative mb-2">
                         <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#d93b64]/30 blur-md rounded-full" />
-                        <Image 
-                            src="/logo.svg" 
-                            alt="EstuClub Logo" 
-                            width={160} 
-                            height={40} 
+                        <Image
+                            src="/logo.svg"
+                            alt="EstuClub Logo"
+                            width={160}
+                            height={40}
                             priority
                             className="brightness-110 contrast-125 filter drop-shadow-[0_2px_15px_rgba(217,59,100,0.4)]"
                         />
@@ -586,7 +586,7 @@ export default function RiderPage() {
 
                                 {/* GIANT DOOR PAYMENT BANNER FOR RIDER */}
                                 {selectedOrder.deliveryPaymentStatus === 'pending' && (
-                                    <motion.div 
+                                    <motion.div
                                         initial={{ scale: 0.95 }}
                                         animate={{ scale: [0.95, 1.05, 1] }}
                                         transition={{ duration: 0.5 }}
