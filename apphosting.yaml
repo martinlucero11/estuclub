@@ -3,4 +3,4 @@ schemaVersion: "v1"
 
 env:
   - variable: FIREBASE_SERVICE_ACCOUNT
-    availability: ["RUNTIME"]
+    value: "FIREBASE_SERVICE_ACCOUNT"
