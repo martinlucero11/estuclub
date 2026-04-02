@@ -208,7 +208,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
             if (orderRef) {
                 try {
                     await deleteDoc(orderRef);
-                    console.log("Orphaned order deleted:", orderRef.id);
+                    // Orphaned order deleted: orderRef.id
                 } catch (delError) {
                     console.error("Failed to delete orphaned order:", delError);
                 }

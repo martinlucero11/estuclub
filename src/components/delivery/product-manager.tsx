@@ -75,8 +75,8 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
 
     const handleSaveProduct = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Saving product. Supplier ID:", supplierId);
-        console.log("Selected Product:", selectedProduct);
+        // Saving product. Supplier ID: supplierId
+        // Selected Product: selectedProduct
 
         if (!firestore || !selectedProduct?.name || !selectedProduct?.price) {
             console.error("Missing required fields or firestore:", { firestore, name: selectedProduct?.name, price: selectedProduct?.price });

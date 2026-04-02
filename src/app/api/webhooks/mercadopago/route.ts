@@ -37,7 +37,7 @@ export async function POST(req: Request) {
                         subscriptionPaidAt: admin.firestore.FieldValue.serverTimestamp(),
                         mp_linked: true // Assuming they paid, MP is linked or known
                     });
-                    console.log(`✅ [Webhook] Rider ${riderId} activated via subscription.`);
+
                 }
 
                 // 2. Delivery Order Activation
@@ -74,9 +74,9 @@ export async function POST(req: Request) {
                                     estuclub: metadata.estuclub_net
                                 }
                             });
-                            console.log(`🚀 [Webhook] Order ${orderId} is now LIVE. Sales counts updated.`);
+
                         } else {
-                            console.log(`⚠️ [Webhook] Order ${orderId} already had a payment_id. Skipping duplicate increment.`);
+
                         }
                     }
                 }

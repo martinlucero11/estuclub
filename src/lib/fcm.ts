@@ -49,7 +49,7 @@ export async function requestNotificationPermission() {
   // --- WEB ---
   const supported = await isMessagingSupported();
   if (!supported) {
-      console.log('Messaging not supported in this browser');
+
       return null;
   }
 

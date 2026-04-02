@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import React from 'react';
 import CluberManagement from '@/components/admin/CluberManagement';
 import { Badge } from '@/components/ui/badge';

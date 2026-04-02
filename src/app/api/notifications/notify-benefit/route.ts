@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         };
 
         const response = await admin.messaging().send(message as any);
-        console.log('Successfully sent push notification:', response);
+
 
         return NextResponse.json({ success: true, messageId: response });
     } catch (error: any) {

@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import React from 'react';
 import RiderManagement from '@/components/admin/RiderManagement';
 import { Badge } from '@/components/ui/badge';

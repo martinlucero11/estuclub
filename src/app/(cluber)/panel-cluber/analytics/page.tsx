@@ -1,4 +1,7 @@
 'use client';
+
+export const dynamic = 'force-dynamic';
+
 import { useUser } from '@/firebase';
 import BackButton from '@/components/layout/back-button';
 import { Skeleton } from '@/components/ui/skeleton';

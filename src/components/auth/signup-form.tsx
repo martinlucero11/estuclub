@@ -147,7 +147,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
       const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
       setCreatedUser(user);
-      console.log("Auth user created successfully:", user.uid);
+      // Auth user created successfully: user.uid
 
       // 2. Upload certificate to Google Drive via API
       let certificateUrl = '';
@@ -172,7 +172,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
 
               const uploadData = await uploadRes.json();
               certificateUrl = uploadData.webViewLink || uploadData.fileId;
-              console.log("Certificate uploaded successfully:", certificateUrl);
+              // Certificate uploaded successfully: certificateUrl
           } catch (uploadError: any) {
               console.error("Error uploading certificate:", uploadError);
               // Rollback Auth user if upload fails
@@ -182,7 +182,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
       }
 
       // ADDED: Small delay to ensure Auth state propagates to Security Rules
-      console.log("Waiting for auth state to propagate...");
+      // Waiting for auth state to propagate...
       await new Promise(resolve => setTimeout(resolve, 800));
 
       // 3. Prepare Firestore Profile
@@ -236,7 +236,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
           });
       }
 
-      console.log("Committing Firestore batch...");
+      // Committing Firestore batch...
       await batch.commit();
 
       // 4. Update Auth Profile

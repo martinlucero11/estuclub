@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { adminAuth, adminFirestore } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import { getMPOAuthUrl } from '@/lib/mercadopago';
 import { randomUUID } from 'crypto';
 
 /**
@@ -22,17 +23,14 @@ export async function POST(req: Request) {
         const state = randomUUID();
 
         // 3. Guardar Estado en Firestore
-        await adminFirestore.collection('mp_oauth_states').doc(state).set({
+        await adminDb.collection('mp_oauth_states').doc(state).set({
             userId,
             createdAt: new Date(),
             used: false
         });
 
         // 4. Construir URL de Mercado Pago
-        const client_id = process.env.MP_CLIENT_ID;
-        const redirect_uri = encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL}/api/mp/callback`);
-        
-        const authUrl = `https://auth.mercadopago.com.ar/authorization?client_id=${client_id}&response_type=code&platform_id=mp&redirect_uri=${redirect_uri}&state=${state}`;
+        const authUrl = getMPOAuthUrl(state);
 
         return NextResponse.json({ url: authUrl });
 

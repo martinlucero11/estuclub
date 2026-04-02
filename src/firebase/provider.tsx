@@ -46,7 +46,7 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        (err) => console.log('Geolocation not allowed or failed', err),
+        (err) => {}, // Geolocation not allowed or failed
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 600000 }
       );
     }

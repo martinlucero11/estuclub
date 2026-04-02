@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Preference } from 'mercadopago';
 import { mpClient } from '@/lib/mercadopago';
-import { adminAuth, adminFirestore } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 /**
  * CHECKOUT API — SECURE MODE
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
         }
 
         // 2. Recuperar la orden de Firestore para evitar manipulación de precios
-        const orderDoc = await adminFirestore.collection('orders').doc(orderId).get();
+        const orderDoc = await adminDb.collection('orders').doc(orderId).get();
         if (!orderDoc.exists) {
             return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 });
         }

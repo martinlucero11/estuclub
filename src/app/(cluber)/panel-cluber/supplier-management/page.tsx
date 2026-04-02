@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { Skeleton } from "@/components/ui/skeleton";
 import BackButton from '@/components/layout/back-button';

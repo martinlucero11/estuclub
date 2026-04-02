@@ -15,11 +15,11 @@ if (!admin.apps.length) {
     if (fs.existsSync && fs.existsSync(serviceAccountPath)) {
       const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
       config.credential = admin.credential.cert(serviceAccount);
-      console.log('Firebase Admin initialized with local service account.');
+
     }
   } catch (e) {
     // We ignore errors here as it might be a serverless environment with no FS access
-    console.log('Note: Local service account not loaded (normal in cloud environment)');
+
   }
 
   admin.initializeApp(config);

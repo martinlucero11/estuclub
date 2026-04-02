@@ -1,4 +1,7 @@
 'use client';
+
+export const dynamic = 'force-dynamic';
+
 /**
  * ESTUCLUB OVERLORD - CONTENT COMMAND CENTER (DIFUSIÓN)
  * Management of Benefits, Announcements and Global Content.

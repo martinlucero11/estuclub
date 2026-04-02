@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
         // Subscribe the token to the topic
         await admin.messaging().subscribeToTopic(token, topic);
-        console.log(`Successfully subscribed token to topic: ${topic}`);
+
 
         return NextResponse.json({ success: true, message: `Subscribed to ${topic}` });
     } catch (error: any) {

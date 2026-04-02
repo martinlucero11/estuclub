@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import { useAdmin } from '@/firebase/auth/use-admin';
 import AdminAccessDenied from '@/components/admin/admin-access-denied';
 import { ApplicationsTable } from '@/components/admin/cinco-dos/applications-table';

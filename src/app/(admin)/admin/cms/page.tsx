@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Megaphone, Layout, Image as ImageIcon, Plus } from 'lucide-react';

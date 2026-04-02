@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 
 import BackButton from '@/components/layout/back-button';
 

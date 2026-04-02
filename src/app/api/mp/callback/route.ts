@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminFirestore } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 
 /**
  * Mercado Pago OAuth Callback
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 2. Validate State (Nonce) against Firestore using Admin SDK
-    const stateRef = adminFirestore.collection('mp_oauth_states').doc(state);
+    const stateRef = adminDb.collection('mp_oauth_states').doc(state);
     const stateDoc = await stateRef.get();
 
     if (!stateDoc.exists) {
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
     const { access_token, public_key, refresh_token, user_id: mp_user_id } = credentials;
 
     // 5. Update User Document in Firestore using Admin SDK
-    await adminFirestore.collection('users').doc(userId).update({
+    await adminDb.collection('users').doc(userId).update({
       mp_credentials: {
         access_token,
         public_key,
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       mercadopago_linked: true
     });
 
-    console.log(`Mercado Pago successfully linked for user: ${userId}`);
+
 
     // 6. Success Redirect
     // Determinamos el panel según el flujo (podríamos guardar el origen en el state si fuera necesario)

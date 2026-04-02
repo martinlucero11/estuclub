@@ -29,7 +29,7 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
 
                     // Unified listener for both Web and Native
                     const unsubscribe = await onMessageListener((payload) => {
-                        console.log('Message received in foreground. ', payload);
+                        // Message received in foreground.
                         
                         const title = payload.notification?.title || payload.title;
                         const body = payload.notification?.body || payload.body;

@@ -1,5 +1,8 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
+
 import React from 'react';
 import OrdersDashboard from '@/components/supplier/orders-dashboard';
 import { Package } from 'lucide-react';
