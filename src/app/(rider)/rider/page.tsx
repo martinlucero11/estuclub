@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useAuthService } from '@/firebase';
@@ -623,3 +621,4 @@ export default function RiderPage() {
         </div>
     );
 }
+

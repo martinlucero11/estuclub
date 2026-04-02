@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import BackButton from '@/components/layout/back-button';
 import EditSupplierProfileForm from '@/components/supplier/edit-supplier-profile-form';
@@ -35,3 +33,4 @@ export default function SupplierProfilePage() {
     </div>
   );
 }
+

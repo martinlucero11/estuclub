@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import RiderManagement from '@/components/admin/RiderManagement';
@@ -26,3 +24,4 @@ export default function AdminRidersPage() {
         </div>
     );
 }
+

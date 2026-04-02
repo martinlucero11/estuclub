@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import { useState } from 'react';
 import { useFirestore, useUser } from '@/firebase';
@@ -140,3 +138,4 @@ export default function SeedPage() {
         </MainLayout>
     );
 }
+

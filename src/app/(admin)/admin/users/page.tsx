@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import UserManagement from '@/components/admin/UserManagement';
@@ -26,3 +24,4 @@ export default function AdminUsersPage() {
         </div>
     );
 }
+

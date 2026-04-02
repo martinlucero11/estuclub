@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, documentId, Timestamp } from 'firebase/firestore';
@@ -144,3 +142,4 @@ export default function SubscribersPage() {
         </div>
     );
 }
+

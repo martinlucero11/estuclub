@@ -1,5 +1,4 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
 
 import { useAdmin } from '@/firebase/auth/use-admin';
@@ -40,3 +39,4 @@ export default function AdminAnalyticsPage() {
         </div>
     );
 }
+

@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React, { useMemo } from 'react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -148,3 +146,4 @@ export default function RiderOrdersPage() {
         </div>
     );
 }
+

@@ -1,20 +1,18 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  Store, 
-  Truck, 
-  Users, 
-  BarChart3, 
-  Settings, 
-  Layers,
-  ArrowRight,
-  TrendingUp,
-  Megaphone
+import {
+    Store,
+    Truck,
+    Users,
+    BarChart3,
+    Settings,
+    Layers,
+    ArrowRight,
+    TrendingUp,
+    Megaphone
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -59,10 +57,10 @@ export default function AdminControlCentralPage() {
                     <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Módulos de Gestión</h2>
                     <div className="h-[1px] flex-1 bg-white/5" />
                 </div>
-                
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AdminModule 
-                        title="Comercios" 
+                    <AdminModule
+                        title="Comercios"
                         desc="Control total de locales, feature toggles y métricas de venta por sede."
                         icon={Store}
                         href="/admin/clubers"
@@ -70,8 +68,8 @@ export default function AdminControlCentralPage() {
                         accent="primary"
                     />
 
-                    <AdminModule 
-                        title="Logística" 
+                    <AdminModule
+                        title="Logística"
                         desc="Onboarding de Riders, monitor de actividad y tracking de viajes activos."
                         icon={Truck}
                         href="/admin/riders"
@@ -79,8 +77,8 @@ export default function AdminControlCentralPage() {
                         accent="blue"
                     />
 
-                    <AdminModule 
-                        title="Marketing" 
+                    <AdminModule
+                        title="Marketing"
                         desc="Gestión de Banners, Categorías y envío de Push Notifications."
                         icon={Megaphone}
                         href="/admin/cms"
@@ -88,8 +86,8 @@ export default function AdminControlCentralPage() {
                         accent="orange"
                     />
 
-                    <AdminModule 
-                        title="Usuarios" 
+                    <AdminModule
+                        title="Usuarios"
                         desc="Base de datos de personas, verificación de estudiantes y simulación de sesión."
                         icon={Users}
                         href="/admin/users"
@@ -97,8 +95,8 @@ export default function AdminControlCentralPage() {
                         accent="emerald"
                     />
 
-                    <AdminModule 
-                        title="Analytics" 
+                    <AdminModule
+                        title="Analytics"
                         desc="Estadísticas avanzadas, ticket promedio y mapas de calor de pedidos."
                         icon={BarChart3}
                         href="/admin/analytics"
@@ -106,8 +104,8 @@ export default function AdminControlCentralPage() {
                         accent="purple"
                     />
 
-                    <AdminModule 
-                        title="Sistema" 
+                    <AdminModule
+                        title="Sistema"
                         desc="Configuración técnica del servidor, mantenimiento de DB y logs de MP."
                         icon={Settings}
                         href="/admin/settings"
@@ -142,7 +140,7 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
                         </div>
                         <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-[-10px] group-hover:translate-x-0" />
                     </div>
-                    
+
                     <div className="space-y-2">
                         <h3 className="text-2xl font-black italic tracking-tighter uppercase font-montserrat">{title}</h3>
                         <p className="text-[10px] font-bold text-muted-foreground leading-relaxed line-clamp-2">{desc}</p>
@@ -160,3 +158,4 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
         </Link>
     );
 }
+

@@ -1,5 +1,4 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
 
 /**
@@ -470,3 +469,4 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
         </Card>
     );
 }
+

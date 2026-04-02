@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useAdmin } from '@/firebase/auth/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,3 +66,4 @@ export default function BannersPage() {
         </div>
     );
 }
+

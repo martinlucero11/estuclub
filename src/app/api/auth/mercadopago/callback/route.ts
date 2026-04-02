@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { MP_CLIENT_SECRET, MP_APP_ID, MP_REDIRECT_URI } from '@/lib/mercadopago';
 import { adminDb } from '@/lib/firebase-admin';

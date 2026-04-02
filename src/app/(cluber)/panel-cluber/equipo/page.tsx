@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import { useUser } from '@/firebase';
@@ -86,3 +84,4 @@ export default function TeamManagementPage() {
         </div>
     );
 }
+

@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import Link from 'next/link';
@@ -159,3 +157,4 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
         </Link>
     );
 }
+

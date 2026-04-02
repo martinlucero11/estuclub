@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import { useUser } from "@/firebase";
 import { ProductManager } from "@/components/delivery/product-manager";
@@ -34,3 +32,4 @@ export default function CluberProductsPage() {
         </div>
     );
 }
+

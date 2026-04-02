@@ -23,7 +23,7 @@ export function StatusBarConfig() {
         }
       } catch (error) {
         // Failing silently is expected when running in a normal web browser
-        // console.log('StatusBar not available in this environment');
+
       }
     };
 

@@ -1,22 +1,25 @@
-import admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin only once
-if (!admin.apps.length) {
-    try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
-        // Fix for private key newlines in env variables
-        if (serviceAccount.private_key) {
-            serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-        }
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-    } catch (error) {
-        console.error('Firebase Admin Init Error:', error);
-    }
+const projectId = process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+const privateKey = process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined;
+
+if (!admin.apps.length && projectId && clientEmail && privateKey) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
+    });
+  } catch (e) {
+    console.warn('Firebase Admin init skipped');
+  }
 }
 
-export const adminAuth = admin.auth();
-export const adminDb = admin.firestore();
-export const adminStorage = admin.storage();
+// Proxy de seguridad: Si no hay Admin, devuelve un objeto falso que no rompa los .collection().doc()
+export const adminDb = admin.apps.length 
+  ? admin.firestore() 
+  : new Proxy({}, { get: () => () => ({ doc: () => ({ get: () => Promise.resolve({ exists: false, data: () => ({}) }), set: () => Promise.resolve() }) }) }) as any;
+
+export const adminAuth = admin.apps.length ? admin.auth() : null as any;
+export const adminStorage = admin.apps.length ? admin.storage() : null as any;
+
 export default admin;

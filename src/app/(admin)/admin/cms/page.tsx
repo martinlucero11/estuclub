@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -56,3 +54,4 @@ export default function AdminCMSPage() {
         </div>
     );
 }
+

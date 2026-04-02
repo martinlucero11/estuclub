@@ -1,5 +1,4 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
 
 import { useUser } from '@/firebase';
@@ -78,3 +77,4 @@ export default function SupplierAnalyticsPage() {
         </div>
     );
 }
+

@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import QrScanner from '@/components/supplier/qr-scanner';
 import { useAdmin } from '@/firebase/auth/use-admin';
@@ -22,3 +20,4 @@ export default function ScannerPage() {
         </div>
     );
 }
+

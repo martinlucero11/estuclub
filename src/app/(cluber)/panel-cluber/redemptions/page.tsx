@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useUser } from '@/firebase';
 import RedemptionList from '@/components/dashboard/redemption-list';
@@ -38,3 +36,4 @@ export default function PanelCluberRedemptionsPage() {
     </div>
   );
 }
+

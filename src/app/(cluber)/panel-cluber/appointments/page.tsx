@@ -1,7 +1,5 @@
-export const dynamic = 'force-dynamic';
-
-
 'use client';
+export const dynamic = 'force-dynamic';
 
 import BackButton from '@/components/layout/back-button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -80,3 +78,4 @@ export default function PanelCluberAppointmentsPage() {
     </div>
   );
 }
+

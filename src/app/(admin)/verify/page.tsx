@@ -1,7 +1,5 @@
 'use client';
-
 export const dynamic = 'force-dynamic';
-
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy } from 'firebase/firestore';
@@ -462,3 +460,4 @@ function CincoDosToggle({ value, onChange }: { value: boolean, onChange: (v: boo
         </div>
     );
 }
+

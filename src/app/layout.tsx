@@ -16,6 +16,8 @@ import { FloatingAdminMetrics } from "@/components/analytics/FloatingAdminMetric
 import { GlobalErrorBoundary } from "@/components/errors/global-error-boundary";
 import Script from "next/script";
 
+export const dynamic = 'force-dynamic';
+
 const fontSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
   variable: "--font-sans",
