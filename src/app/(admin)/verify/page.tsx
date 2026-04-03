@@ -39,12 +39,25 @@ interface RiderApplication {
   createdAt: any;
 }
 
+interface ComedorApplication {
+  id: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  institution: string;
+  courseYear: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: any;
+}
+
 export default function VerifyPage() {
   const { userData, roles, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'riders' | 'pending-clubers' | 'management'>('riders');
+  const [activeTab, setActiveTab] = useState<'riders' | 'pending-clubers' | 'management' | 'cinco-dos'>('riders');
   const [searchQuery, setSearchQuery] = useState('');
 
   const isAdmin = roles.includes('admin');
@@ -89,8 +102,17 @@ export default function VerifyPage() {
     );
   }, [firestore]);
 
+  const pendingComedorQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'comedor_applications').withConverter(createConverter<ComedorApplication>()),
+      where('status', '==', 'pending')
+    );
+  }, [firestore]);
+
   const { data: applications, isLoading: isLoadingRiders } = useCollection<RiderApplication>(pendingRiderQuery);
   const { data: allClubers, isLoading: isLoadingManagement } = useCollection<SupplierProfile>(allClubersQuery);
+  const { data: comedorApps, isLoading: isLoadingComedor } = useCollection<ComedorApplication>(pendingComedorQuery);
 
   const pendingClubers = useMemo(() => {
     return allClubers?.filter(c => !c.verified) || [];
@@ -168,6 +190,25 @@ export default function VerifyPage() {
     }
   };
 
+  const handleApproveComedor = async (app: ComedorApplication) => {
+    setProcessingId(app.id);
+    try {
+      await updateDoc(doc(firestore, 'comedor_applications', app.id), {
+        status: 'approved',
+        approvedAt: serverTimestamp(),
+      });
+      await updateDoc(doc(firestore, 'users', app.userId), {
+        isCincoDos: true,
+      });
+      toast({ title: '✅ AFILIADO ACTIVADO', description: `${app.firstName} ya es parte de Cinco.Dos.` });
+    } catch (error) {
+      console.error('Approve error:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la afiliación.' });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleVerifyCluber = async (cluberId: string, name: string) => {
     setProcessingId(cluberId);
     try {
@@ -187,14 +228,18 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#cb465a]/30 overflow-x-hidden">
-      <div className="max-w-5xl mx-auto space-y-12">
-        <header className="pt-12 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
+    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#cb465a]/30">
+      <div className="mb-8 mt-4 relative z-[60]">
+          <Button asChild variant="ghost" className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#cb465a]/20 transition-all font-black uppercase text-[10px] tracking-widest gap-3">
+            <Link href="/admin" className="flex items-center gap-3">
+                <ChevronRight className="h-5 w-5 rotate-180" /> Volver al Panel
+            </Link>
+          </Button>
+      </div>
+      <div className="max-w-7xl mx-auto space-y-12">
+        <header className="pt-4 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <Button asChild variant="ghost" className="h-12 w-12 p-0 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#cb465a]/20 transition-all">
-                <Link href="/panel-admin"><ChevronRight className="h-6 w-6 rotate-180" /></Link>
-              </Button>
               <div className="h-12 w-12 rounded-xl bg-[#cb465a] flex items-center justify-center shadow-[0_0_30px_#cb465a]">
                 <ShieldCheck className="h-6 w-6 text-white" />
               </div>
@@ -216,21 +261,24 @@ export default function VerifyPage() {
              </div>
              <div className="bg-black/40 border border-[#cb465a]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(255,0,127,0.1)]">
                 <p className="text-[9px] font-black text-[#cb465a] uppercase tracking-widest mb-1">En Cola</p>
-                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + pendingClubers.length}</p>
+                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + pendingClubers.length + (comedorApps?.length || 0)}</p>
              </div>
           </div>
         </header>
 
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-10">
           <TabsList className="bg-background/50 border border-white/5 p-2 rounded-3xl w-full h-auto flex flex-wrap gap-2 shadow-2xl overflow-hidden">
-            <TabsTrigger value="riders" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="riders" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
               Riders ({applications?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
-              Pendientes ({pendingClubers.length})
+            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
+              Clubers ({pendingClubers.length})
             </TabsTrigger>
-            <TabsTrigger value="management" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
-              Gestión Clubers
+            <TabsTrigger value="cinco-dos" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-amber-500 data-[state=active]:text-black transition-all duration-500 h-14">
+              Cinco.Dos ({comedorApps?.length || 0})
+            </TabsTrigger>
+            <TabsTrigger value="management" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-white data-[state=active]:text-black transition-all duration-500 h-14">
+              Gestión Total
             </TabsTrigger>
           </TabsList>
 
@@ -276,6 +324,52 @@ export default function VerifyPage() {
                   </div>
                 ))}
               </div>
+            )}
+          </TabsContent>
+
+          {/* CINCO DOS TAB */}
+          <TabsContent value="cinco-dos" className="space-y-10 focus-visible:outline-none">
+            {isLoadingComedor ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+              </div>
+            ) : (!comedorApps || comedorApps.length === 0) ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
+                  <Utensils className="h-16 w-16 text-amber-500 mb-4 opacity-20" />
+                  <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin alumnos para Cinco.Dos</p>
+              </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {comedorApps.map((app) => (
+                        <Card key={app.id} className="rounded-[3rem] border-white/5 bg-[#000000]/40 backdrop-blur-xl p-8 space-y-6 hover:border-amber-500/20 transition-all shadow-premium group">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_20px_rgba(251,191,36,0.1)]">
+                                        <User className="h-6 w-6 text-amber-500" />
+                                    </div>
+                                    <Badge className="bg-amber-400 text-black font-black text-[8px] uppercase tracking-widest">{app.courseYear}° Año</Badge>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black uppercase tracking-tighter leading-none">{app.firstName} {app.lastName}</h3>
+                                    <p className="text-[10px] font-bold text-foreground opacity-40 uppercase tracking-widest mt-1">{app.institution}</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 text-white/60">
+                                    <Phone className="h-3 w-3" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{app.phone}</span>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => handleApproveComedor(app)}
+                                disabled={processingId === app.id}
+                                className="w-full h-12 rounded-2xl bg-amber-400 text-black font-black uppercase tracking-widest text-[9px] hover:bg-amber-500 transition-all border-none"
+                            >
+                                {processingId === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "APROBAR AFILIACIÓN"}
+                            </Button>
+                        </Card>
+                    ))}
+                </div>
             )}
           </TabsContent>
 

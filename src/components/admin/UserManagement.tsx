@@ -10,8 +10,18 @@ import {
   Zap, 
   MoreVertical,
   Loader2,
-  Filter
+  Filter,
+  Edit,
+  Trash2
 } from 'lucide-react';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { deleteDoc, updateDoc, doc } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -138,9 +148,41 @@ export default function UserManagement() {
                   <Zap className="h-4 w-4" />
                   Simular Sesión
                </Button>
-               <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 opacity-40 hover:opacity-100 transition-all">
-                  <MoreVertical className="h-5 w-5" />
-               </Button>
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 opacity-40 hover:opacity-100 transition-all">
+                      <MoreVertical className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-card border-white/10 z-[100] rounded-2xl p-2 shadow-2xl">
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        const newRole = prompt('Nuevo Rol (estudiante, rider, admin, cluber):', user.role || 'estudiante');
+                        if (newRole && firestore) {
+                          updateDoc(doc(firestore, 'users', user.uid), { role: newRole })
+                            .then(() => toast({ title: 'Usuario Actualizado', description: `Nuevo rol: ${newRole}` }))
+                            .catch(e => toast({ variant: 'destructive', title: 'Error', description: e.message }));
+                        }
+                      }}
+                      className="rounded-xl font-black uppercase text-[10px] tracking-widest gap-3 py-3 cursor-pointer"
+                    >
+                      <Edit className="h-4 w-4" /> Editar Rol
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="bg-white/5" />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (confirm(`¿Estás SEGURO de eliminar a ${user.username || user.uid}?`) && firestore) {
+                          deleteDoc(doc(firestore, 'users', user.uid))
+                            .then(() => toast({ title: 'Usuario Eliminado', description: 'Se ha borrado el registro permanentemente.' }))
+                            .catch(e => toast({ variant: 'destructive', title: 'Error', description: e.message }));
+                        }
+                      }}
+                      className="rounded-xl font-black uppercase text-[10px] tracking-widest gap-3 py-3 cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" /> Borrar Usuario
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+               </DropdownMenu>
             </div>
           </div>
         ))}

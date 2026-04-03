@@ -119,7 +119,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={cn("min-h-screen bg-background font-sans antialiased selection:bg-primary/20 overflow-x-hidden", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
+      <body className={cn("min-h-screen flex flex-col bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -146,7 +146,7 @@ export default function RootLayout({
           </FirebaseProvider>
         </ThemeProvider>
         <Script 
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`} 
+          src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyCybt-ydw4Cdr1cHFO7W2h9zcuNILlp-50&libraries=places,geometry`} 
           strategy="lazyOnload"
         />
       </body>

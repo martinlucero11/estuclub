@@ -12,7 +12,7 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background py-10 px-4 md:px-8">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-4 md:px-8">
       <div className="w-full max-w-2xl animate-in fade-in duration-500">
         {children}
       </div>

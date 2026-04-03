@@ -41,7 +41,7 @@ export function AdminSidebar() {
   return (
     <div 
       className={cn(
-        "relative flex flex-col bg-card border-r border-white/5 transition-all duration-300 z-50 h-screen sticky top-0",
+        "flex flex-col bg-card border-r border-white/5 transition-all duration-300 z-50",
         isCollapsed ? "w-[80px]" : "w-[280px]"
       )}
     >
