@@ -33,3 +33,4 @@ export const columns: ColumnDef<SerializableBenefitRedemption>[] = [
   },
   // Admin-only columns for userName and supplierName are added dynamically in the main component
 ];
+

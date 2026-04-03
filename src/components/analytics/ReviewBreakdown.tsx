@@ -44,7 +44,7 @@ export function ReviewBreakdown({ avgRating, totalReviews, distribution, recentR
                                         <Star key={s} className={cn("h-4 w-4", s <= Math.round(avgRating) ? "text-yellow-500 fill-yellow-500" : "text-black/10 dark:text-white/10")} />
                                     ))}
                                 </div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground">
                                     Basado en {totalReviews} reseñas
                                 </p>
                             </div>
@@ -56,7 +56,7 @@ export function ReviewBreakdown({ avgRating, totalReviews, distribution, recentR
                                 const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
                                 return (
                                     <div key={rating} className="flex items-center gap-4 group">
-                                        <span className="text-xs font-black text-muted-foreground w-4">{rating}</span>
+                                        <span className="text-xs font-black text-foreground w-4">{rating}</span>
                                         <div className="flex-1 h-3 bg-black/5 dark:bg-white/5 rounded-full overflow-hidden border border-black/5 dark:border-white/10">
                                             <div 
                                                 className="h-full bg-yellow-500 dark:bg-yellow-400 group-hover:bg-primary transition-all duration-700 rounded-full" 
@@ -88,14 +88,14 @@ export function ReviewBreakdown({ avgRating, totalReviews, distribution, recentR
                                                 ))}
                                             </div>
                                         </div>
-                                        <span className="text-[8px] font-black text-muted-foreground uppercase">{new Date(r.date).toLocaleDateString()}</span>
+                                        <span className="text-[8px] font-black text-foreground uppercase">{new Date(r.date).toLocaleDateString()}</span>
                                     </div>
                                     <p className="text-[11px] text-foreground/70 dark:text-white/60 italic leading-relaxed">
                                         "{r.comment}"
                                     </p>
                                 </div>
                             )) : (
-                                <div className="h-40 flex items-center justify-center text-muted-foreground text-[10px] font-black uppercase tracking-widest border-2 border-dashed border-black/5 dark:border-white/5 rounded-3xl">
+                                <div className="h-40 flex items-center justify-center text-foreground text-[10px] font-black uppercase tracking-widest border-2 border-dashed border-black/5 dark:border-white/5 rounded-3xl">
                                     No hay comentarios todavía
                                 </div>
                             )}
@@ -106,3 +106,4 @@ export function ReviewBreakdown({ avgRating, totalReviews, distribution, recentR
         </Card>
     );
 }
+

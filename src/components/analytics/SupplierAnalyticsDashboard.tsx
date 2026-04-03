@@ -388,7 +388,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                         <div className="space-y-1">
                             <h2 className="text-3xl font-black tracking-tight text-foreground italic">Partner <span className="text-primary">Analytics</span></h2>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground dark:text-white/50">Performance & Customer Insights</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground dark:text-white/50">Performance & Customer Insights</p>
                         </div>
 
                         <TabsList className="bg-white/40 dark:bg-white/5 border border-black/10 dark:border-white/10 p-1.5 rounded-[2rem] h-14 backdrop-blur-2xl shadow-xl">
@@ -402,7 +402,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                                 <TabsTrigger 
                                     key={t.id} 
                                     value={t.id} 
-                                    className="rounded-[1.5rem] px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all duration-500 gap-2 text-muted-foreground"
+                                    className="rounded-[1.5rem] px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-widest text-[10px] transition-all duration-500 gap-2 text-foreground"
                                 >
                                     <t.icon className="h-4 w-4" />
                                     {t.label}
@@ -500,7 +500,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                                     <Card className="border-black/10 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[2.5rem] p-8 flex flex-col justify-center items-center text-center shadow-xl cursor-pointer hover:border-primary/40 transition-colors" onClick={() => openDetail('loyalty')}>
                                         <Sparkles className="h-12 w-12 text-primary mb-4 opacity-50" />
                                         <h3 className="text-lg font-black text-foreground dark:text-white mb-2">Potencial Estudiantil</h3>
-                                        <p className="text-[10px] text-muted-foreground dark:text-white/40 font-black uppercase tracking-widest leading-relaxed">
+                                        <p className="text-[10px] text-foreground dark:text-white/40 font-black uppercase tracking-widest leading-relaxed">
                                             Analiza tu tasa de recurrencia para optimizar campañas.
                                         </p>
                                     </Card>
@@ -526,7 +526,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                                                         </div>
                                                         <div className="flex items-center gap-8">
                                                             <div className="text-right">
-                                                                <p className="text-[10px] uppercase font-black text-muted-foreground">Volumen</p>
+                                                                <p className="text-[10px] uppercase font-black text-foreground">Volumen</p>
                                                                 <p className="text-sm font-black text-foreground dark:text-white">{u.value}</p>
                                                             </div>
                                                             <div className="w-16 h-1 w-24 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
@@ -750,3 +750,4 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
         </div>
     );
 }
+

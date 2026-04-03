@@ -16,7 +16,7 @@ export default function NotFound() {
         <div className="text-center mb-10 space-y-4">
             <h1 className="text-8xl font-black italic tracking-tighter text-primary/20 leading-none">404</h1>
             <h2 className="text-3xl font-black uppercase tracking-tight text-foreground">Página Perdida en el Espacio</h2>
-            <p className="text-sm font-medium text-muted-foreground italic max-w-sm mx-auto">
+            <p className="text-sm font-medium text-foreground italic max-w-sm mx-auto">
                 No pudimos encontrar lo que buscabas. Pero no te vayas, ¡tenemos el desafío de Mismuki esperándote!
             </p>
         </div>
@@ -42,3 +42,4 @@ export default function NotFound() {
     </MainLayout>
   );
 }
+

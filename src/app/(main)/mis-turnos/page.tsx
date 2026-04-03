@@ -24,7 +24,7 @@ export default function MyTurnosPage() {
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Mis Turnos" />
-                <p className="text-muted-foreground -mt-8 mb-8">
+                <p className="text-foreground -mt-8 mb-8">
                     Aquí puedes ver todas tus reservas de turnos.
                 </p>
 
@@ -35,3 +35,4 @@ export default function MyTurnosPage() {
         </MainLayout>
     );
 }
+

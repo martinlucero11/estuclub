@@ -36,7 +36,7 @@ export function LevelProgress({ points, className }: LevelProgressProps) {
       <CardContent className="pt-4 space-y-4">
         <div className="space-y-2">
           <div className="flex justify-between text-sm font-bold">
-            <span className="text-muted-foreground uppercase tracking-wider">Progreso</span>
+            <span className="text-foreground uppercase tracking-wider">Progreso</span>
             <span className="text-primary">{Math.floor(progress)}%</span>
           </div>
           <Progress value={progress} className="h-3 bg-primary/10" />
@@ -44,11 +44,11 @@ export function LevelProgress({ points, className }: LevelProgressProps) {
         
         <div className="flex justify-between items-end">
             <div className="space-y-0.5">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-tighter text-left">Puntos Actuales</p>
+                <p className="text-xs text-foreground font-medium uppercase tracking-tighter text-left">Puntos Actuales</p>
                 <p className="text-lg font-black text-foreground">{points} XP</p>
             </div>
             <div className="text-right space-y-0.5">
-                <p className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">Siguiente Nivel</p>
+                <p className="text-xs text-foreground font-medium uppercase tracking-tighter">Siguiente Nivel</p>
                 <p className="text-sm font-bold text-primary">{levelInfo.maxXp} XP</p>
             </div>
         </div>
@@ -56,3 +56,4 @@ export function LevelProgress({ points, className }: LevelProgressProps) {
     </Card>
   );
 }
+

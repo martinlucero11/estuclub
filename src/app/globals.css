@@ -5,13 +5,11 @@
 html,
 body {
   font-family: var(--font-inter), sans-serif;
-  overflow-x: hidden !important;
   max-width: 100vw;
   width: 100%;
   position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior-y: none !important;
 }
 
 h1, h2, h3, h4, .font-branding {
@@ -20,61 +18,61 @@ h1, h2, h3, h4, .font-branding {
 
 @layer base {
   :root {
-    --background: 210 20% 98%; /* slate-50 equivalent */
-    --foreground: 222.2 47.4% 11.2%; /* slate-900 */
+    --background: 0 0% 100%; /* Pure White */
+    --foreground: 0 0% 0%;   /* Pure Black */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
-    --primary: 345 65% 54%; /* #d93b64 */
-    --primary-foreground: 353 40% 99%;
-    --secondary: 353 30% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 345 65% 96%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 351 56% 54%; /* Rosa Estuclub #cb465a */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 100%;
+    --muted-foreground: 0 0% 0%;
+    --accent: 0 0% 0%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 345 65% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    --ring: 351 56% 54%;
     --radius: 1rem;
 
     /* Estuclub Original Colors */
-    --brand-pink: #d93b64;
-    --brand-pink-rgb: 217, 59, 100;
+    --brand-pink: #cb465a;
+    --brand-pink-rgb: 203, 70, 90;
   }
   .dark {
-    --background: 0 0% 2%; /* #050505 */
-    --foreground: 210 40% 98%;
-    --card: 0 0% 7%; /* #121212 */
-    --card-foreground: 210 40% 98%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 345 65% 54%; /* #d93b64 */
-    --primary-foreground: 353 40% 99%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 345 65% 15%;
-    --accent-foreground: 210 40% 98%;
+    --background: 0 0% 0%;   /* Pure Black */
+    --foreground: 0 0% 100%; /* Pure White */
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 351 56% 54%; /* Rosa Estuclub #cb465a */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 0%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 0%;
+    --muted-foreground: 0 0% 100%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 345 65% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 100%;
+    --input: 0 0% 100%;
+    --ring: 351 56% 54%;
 
     /* Estuclub Original Colors */
-    --brand-pink: #d93b64;
-    --brand-pink-rgb: 217, 59, 100;
+    --brand-pink: #cb465a;
+    --brand-pink-rgb: 203, 70, 90;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-foreground;
   }
   body {
     @apply bg-background text-foreground;
@@ -111,7 +109,7 @@ h1, h2, h3, h4, .font-branding {
 
 /* Glassmorphism */
 .glass {
-  @apply bg-background/50 backdrop-blur-xl border-border/40;
+  @apply bg-background/50 backdrop-blur-xl border-foreground/40;
 }
 
 .glass-dark {
@@ -126,22 +124,22 @@ h1, h2, h3, h4, .font-branding {
 }
 
 .text-glow {
-  text-shadow: 0 0 10px rgba(217, 59, 100, 0.4);
+  text-shadow: 0 0 10px rgba(203, 70, 90, 0.4);
 }
 
 /* Dynamic Mesh (Subtle) */
 .mesh-gradient {
   background-color: var(--background);
   background-image: 
-    radial-gradient(at 0% 0%, rgba(217, 59, 100, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(217, 59, 100, 0.03) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(203, 70, 90, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(203, 70, 90, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
 .dark .mesh-gradient {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(217, 59, 100, 0.08) 0px, transparent 40%),
-    radial-gradient(at 100% 100%, rgba(217, 59, 100, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(203, 70, 90, 0.08) 0px, transparent 40%),
+    radial-gradient(at 100% 100%, rgba(203, 70, 90, 0.05) 0px, transparent 50%);
 }
 
 @layer utilities {
@@ -150,9 +148,6 @@ h1, h2, h3, h4, .font-branding {
   }
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
-  }
-  .filter-rosa {
-    filter: invert(13%) sepia(99%) saturate(7403%) hue-rotate(330deg) brightness(101%) contrast(108%);
   }
   .mobile-container {
     @apply w-full max-w-[450px] mx-auto px-5;
@@ -164,4 +159,5 @@ h1, h2, h3, h4, .font-branding {
   .z-modal { z-index: 300; }
   .z-toast { z-index: 400; }
 }
+
 

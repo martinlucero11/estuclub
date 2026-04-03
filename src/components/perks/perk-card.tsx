@@ -153,3 +153,4 @@ export default function PerkCard({ perk, className, variant = 'grid', priority =
     </RedeemPerkDialog>
   );
 }
+

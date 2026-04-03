@@ -36,3 +36,4 @@ export const iconList = Object.keys(iconMap);
 export const getIcon = (name: string): LucideIcon => {
     return iconMap[name] || Smile; // Return a default icon if not found
 };
+

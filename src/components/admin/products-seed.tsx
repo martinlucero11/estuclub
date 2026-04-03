@@ -206,7 +206,7 @@ export function ProductsSeed() {
         <PackageOpen className="w-8 h-8 text-primary" />
         <div>
           <h3 className="text-xl font-black uppercase tracking-tighter text-primary">Seed de Productos Delivery</h3>
-          <p className="text-xs text-muted-foreground">Crea 25 productos repartidos en 3 comercios con Delivery.</p>
+          <p className="text-xs text-foreground">Crea 25 productos repartidos en 3 comercios con Delivery.</p>
         </div>
       </div>
       <Button 
@@ -220,3 +220,4 @@ export function ProductsSeed() {
     </div>
   );
 }
+

@@ -45,7 +45,7 @@ export function CommerceSelector() {
                         aria-expanded={open}
                         className={cn(
                             "group h-9 rounded-xl border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10 transition-all duration-300 gap-2 px-3",
-                            impersonatedSupplierId ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"
+                            impersonatedSupplierId ? "border-primary bg-primary/10 text-primary" : "text-foreground"
                         )}
                     >
                         <Store className={cn("h-4 w-4 transition-transform group-hover:scale-110", impersonatedSupplierId ? "text-primary" : "opacity-40")} />
@@ -62,7 +62,7 @@ export function CommerceSelector() {
                             <CommandInput placeholder="Buscar comercio..." className="h-12 bg-transparent text-xs font-bold" />
                         </div>
                         <CommandList className="max-h-[300px] scrollbar-premium">
-                            <CommandEmpty className="py-6 text-center text-xs font-medium text-muted-foreground italic">
+                            <CommandEmpty className="py-6 text-center text-xs font-medium text-foreground italic">
                                 No se encontraron comercios.
                             </CommandEmpty>
                             <CommandGroup heading="Comercios Disponibles" className="p-2">
@@ -90,7 +90,7 @@ export function CommerceSelector() {
                                             setOpen(false);
                                         }}
                                     >
-                                        <div className="w-6 h-6 rounded-md overflow-hidden bg-muted flex items-center justify-center border border-white/10">
+                                        <div className="w-6 h-6 rounded-md overflow-hidden bg-background flex items-center justify-center border border-white/10">
                                             {supplier.logoUrl ? (
                                                 <img src={supplier.logoUrl} alt={supplier.name} className="w-full h-full object-cover" />
                                             ) : (
@@ -124,3 +124,4 @@ export function CommerceSelector() {
         </div>
     );
 }
+

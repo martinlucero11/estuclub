@@ -118,14 +118,14 @@ function CluberListPage() {
                         return (
                             <Link key={cluber.id} href={`/proveedores/view?slug=${cluber.slug}${cluber.deliveryEnabled ? '&tab=catalog' : ''}`} className="group block">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
-                                    <Avatar className="h-24 w-24 border-2 border-border group-hover:border-primary transition-colors">
+                                    <Avatar className="h-24 w-24 border-2 border-foreground group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
-                                        <AvatarFallback className="bg-muted text-3xl font-semibold text-muted-foreground">
+                                        <AvatarFallback className="bg-background text-3xl font-semibold text-foreground">
                                             {cluberInitials}
                                         </AvatarFallback>
                                     </Avatar>
                                     <h3 className="mt-4 font-bold text-lg text-foreground">{cluber.name}</h3>
-                                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                                    <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
                                         <TypeIcon className="h-4 w-4" />
                                         <p className="capitalize">{cluber.type}</p>
                                     </div>
@@ -146,7 +146,7 @@ export default function ClubersPage() {
             <BackButton />
             <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Clubers" />
-                <p className="text-muted-foreground -mt-8 mb-8">
+                <p className="text-foreground -mt-8 mb-8">
                     Explora los comercios, profesionales y empresas asociadas.
                 </p>
 
@@ -157,3 +157,4 @@ export default function ClubersPage() {
         </MainLayout>
     )
 }
+

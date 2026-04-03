@@ -28,7 +28,7 @@ const WelcomeMessage = () => {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                 Hola, <span className="text-primary">{displayName}</span> 👋
             </h1>
-            <p className="text-muted-foreground font-medium text-base md:text-lg mt-1">
+            <p className="text-foreground font-medium text-base md:text-lg mt-1">
                 {isShowingDelivery 
                     ? "Encuentra lo que necesites y recíbelo en tu puerta."
                     : "Descubre los beneficios exclusivos que tenemos para vos."}
@@ -38,3 +38,4 @@ const WelcomeMessage = () => {
 };
 
 export default WelcomeMessage;
+

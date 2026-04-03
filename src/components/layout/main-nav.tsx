@@ -39,7 +39,7 @@ export function MainNav({ items }: MainNavProps) {
               href={item.href}
               className={cn(
                 'flex items-center text-sm font-medium transition-colors hover:text-primary',
-                pathname.startsWith(item.href) ? 'text-foreground' : 'text-muted-foreground'
+                pathname.startsWith(item.href) ? 'text-foreground' : 'text-foreground'
               )}
             >
               {item.title}
@@ -50,3 +50,4 @@ export function MainNav({ items }: MainNavProps) {
     </nav>
   );
 }
+

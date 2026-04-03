@@ -76,7 +76,7 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
             <div className="p-6 rounded-[2rem] bg-card border border-white/5 space-y-6">
                 <div className="space-y-2">
                     <h2 className="text-xl font-black tracking-tighter">Gestionar Secciones del Menú</h2>
-                    <p className="text-sm text-muted-foreground font-medium">
+                    <p className="text-sm text-foreground font-medium">
                         Crea categorías personalizadas para agrupar tus productos (ej. Hamburguesas, Bebidas).
                     </p>
                 </div>
@@ -100,7 +100,7 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
 
                 <div className="space-y-3 pt-4">
                     {sections.length === 0 ? (
-                        <div className="text-center py-8 text-muted-foreground italic text-sm">
+                        <div className="text-center py-8 text-foreground italic text-sm">
                             <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
                             Aún no has creado ninguna sección personalizada.
                         </div>
@@ -159,7 +159,7 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
 
                 {unassignedProducts.length > 0 && (
                     <div className="space-y-6">
-                        <h3 className="text-xl font-black uppercase tracking-[0.2em] text-muted-foreground border-b border-white/5 pb-2">
+                        <h3 className="text-xl font-black uppercase tracking-[0.2em] text-foreground border-b border-white/5 pb-2">
                             {sections.length > 0 ? "Más Productos" : "Productos"}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -173,3 +173,4 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
         </div>
     );
 }
+

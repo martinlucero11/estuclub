@@ -51,7 +51,7 @@ export default function SupplierAnalyticsPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-8">
                     <div>
                         <h1 className="text-4xl font-black tracking-tight text-foreground">Mis Analíticas</h1>
-                        <p className="text-sm font-bold text-muted-foreground mt-2 uppercase tracking-widest italic">
+                        <p className="text-sm font-bold text-foreground mt-2 uppercase tracking-widest italic">
                             Reporte Financiero y Operativo
                         </p>
                     </div>
@@ -77,4 +77,5 @@ export default function SupplierAnalyticsPage() {
         </div>
     );
 }
+
 

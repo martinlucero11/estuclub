@@ -41,3 +41,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Logistics failed", rate: BASE_RATE, success: false }, { status: 500 });
   }
 }
+

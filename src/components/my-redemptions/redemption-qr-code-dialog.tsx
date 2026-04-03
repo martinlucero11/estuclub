@@ -31,7 +31,7 @@ const Barcode = () => (
     <div className="flex h-8 w-full items-center justify-center gap-px overflow-hidden">
         {[...Array(60)].map((_, i) => {
             const height = Math.random() * 70 + 30; // Random height between 30% and 100%
-            return <div key={i} className="w-px bg-muted-foreground/50" style={{ height: `${height}%` }} />
+            return <div key={i} className="w-px bg-background-foreground/50" style={{ height: `${height}%` }} />
         })}
     </div>
 );
@@ -66,8 +66,8 @@ export default function RedemptionQRCodeDialog({
 
     // Detect theme for QR code colors
     const isDark = document.documentElement.classList.contains('dark');
-    const qrDarkColor = isDark ? '#FFFFFF' : '#020817'; // text-foreground
-    const qrLightColor = isDark ? '#020817' : '#FFFFFF'; // background
+    const qrDarkColor = isDark ? '#FFFFFF' : '#000000'; // text-foreground
+    const qrLightColor = isDark ? '#000000' : '#FFFFFF'; // background
 
     QRCode.toDataURL(qrCodeValue, {
         errorCorrectionLevel: 'H',
@@ -112,7 +112,7 @@ export default function RedemptionQRCodeDialog({
             
             {/* --- Top Part --- */}
             <div className="z-10 w-full flex-1 flex flex-col items-center justify-center text-center space-y-2 pb-6">
-                <p className="text-sm uppercase tracking-widest text-muted-foreground">Beneficio Exclusivo</p>
+                <p className="text-sm uppercase tracking-widest text-foreground">Beneficio Exclusivo</p>
                 <h2 className="text-2xl font-bold leading-tight">{benefitTitle}</h2>
                 <p className="text-primary">de {supplierName}</p>
             </div>
@@ -129,7 +129,7 @@ export default function RedemptionQRCodeDialog({
                     )}
                 </div>
                  <p className="mt-4 text-lg font-semibold uppercase tracking-wider">Escanéame</p>
-                 <p className="text-xs text-muted-foreground font-mono mt-2">ID: {redemptionId}</p>
+                 <p className="text-xs text-foreground font-mono mt-2">ID: {redemptionId}</p>
                 <div className='flex-grow' />
                  <Barcode />
             </div>
@@ -144,3 +144,4 @@ export default function RedemptionQRCodeDialog({
     </Dialog>
   );
 }
+

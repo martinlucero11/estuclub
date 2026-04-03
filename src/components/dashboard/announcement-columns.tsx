@@ -74,3 +74,4 @@ export const columns = ({ onEdit, onDelete }: CreateColumnsProps): ColumnDef<Ann
         },
     },
 ];
+

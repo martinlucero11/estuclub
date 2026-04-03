@@ -176,7 +176,7 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
         {/* Custom Dark Theme Overlay */}
         <style dangerouslySetInnerHTML={{ __html: `
             .leaflet-container {
-                background: ${resolvedTheme === 'dark' ? '#0b0e14' : '#f8f9fa'} !important;
+                background: ${resolvedTheme === 'dark' ? '#000000' : '#f8f9fa'} !important;
                 font-family: inherit;
             }
             .estuclub-custom-popup .leaflet-popup-content-wrapper {
@@ -266,12 +266,12 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
                 border: 1px solid ${resolvedTheme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} !important;
             }
         ` }} />
-        <div ref={mapContainerRef} className="h-full w-full bg-[#0b0e14]" />
+        <div ref={mapContainerRef} className="h-full w-full bg-[#000000]" />
         
         {/* Branded Logo Overlay */}
         <div className="absolute bottom-4 left-6 z-[1000] pointer-events-none select-none flex flex-col items-start gap-1">
             <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-                <img src="/logo.svg" alt="Estuclub" className="h-4 w-auto brightness-200 contrast-125" />
+                <img src="/logo-rosa.svg" alt="Estuclub" className="h-4 w-auto" />
                 <div className="w-[1px] h-3 bg-white/20 mx-1"></div>
                 <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Map Explorer</span>
             </div>
@@ -279,3 +279,4 @@ export default function LeafletMap({ center, zoom = 14, markers = [], className 
     </div>
   );
 }
+

@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
     <MainLayout>
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Política de Privacidad de EstuClub</h1>
-        <p className="text-sm text-muted-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
+        <p className="text-sm text-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
         
         <div className="space-y-6 text-foreground/80 leading-relaxed">
           <p>Bienvenido/a a EstuClub. En esta Política de Privacidad te explicamos cómo recopilamos, usamos, compartimos y protegemos tu información personal cuando utilizas nuestra aplicación y sitio web (https://estuclub.com.ar). Al registrarte y usar nuestros servicios, aceptas las prácticas descritas en este documento.</p>
@@ -80,3 +80,4 @@ export default function PrivacyPolicyPage() {
     </MainLayout>
   );
 }
+

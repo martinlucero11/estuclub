@@ -101,7 +101,7 @@ export default function RiderTripPage() {
     };
 
     if (!order) return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="min-h-screen bg-[#000000] flex items-center justify-center">
             <Loader2 className="h-10 w-10 text-pink-500 animate-spin" />
         </div>
     );
@@ -109,14 +109,14 @@ export default function RiderTripPage() {
     const isDelivered = order.status === 'delivered' || order.status === 'completed';
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-pink-500/30 pb-32">
+        <div className="min-h-screen bg-[#000000] text-white selection:bg-pink-500/30 pb-32">
             {/* HEADER */}
-            <header className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+            <header className="sticky top-0 z-50 bg-[#000000]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-white/5">
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
                 <div className="text-center">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Hoja de Ruta</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Hoja de Ruta</h2>
                     <p className="text-sm font-black italic tracking-tighter text-pink-500">#{order.id.slice(-6).toUpperCase()}</p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center border border-pink-500/20">
@@ -136,7 +136,7 @@ export default function RiderTripPage() {
                         <div className="flex gap-2">
                              {order.userPhone && (
                                 <>
-                                    <Button size="icon" className="h-12 w-12 rounded-2xl bg-white text-black hover:bg-slate-200" asChild>
+                                    <Button size="icon" className="h-12 w-12 rounded-2xl bg-white text-black hover:bg-background" asChild>
                                         <a href={`tel:${order.userPhone}`}><Phone className="h-6 w-6" /></a>
                                     </Button>
                                     <Button size="icon" className="h-12 w-12 rounded-2xl bg-green-500 text-white hover:bg-green-600 shadow-xl shadow-green-500/20" asChild>
@@ -144,7 +144,7 @@ export default function RiderTripPage() {
                                     </Button>
                                 </>
                              )}
-                             <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 text-slate-400">
+                             <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl border-white/10 text-foreground">
                                 <AlertCircle className="h-6 w-6" />
                              </Button>
                         </div>
@@ -156,7 +156,7 @@ export default function RiderTripPage() {
                     <motion.div 
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="bg-[#d93b64] p-8 rounded-[3rem] border-8 border-black shadow-[0_30px_60px_rgba(217,59,100,0.4)] text-center relative overflow-hidden"
+                        className="bg-[#cb465a] p-8 rounded-[3rem] border-8 border-black shadow-[0_30px_60px_rgba(203, 70, 90,0.4)] text-center relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-6 opacity-20">
                             <CreditCard className="h-24 w-24 text-black rotate-12" />
@@ -172,7 +172,7 @@ export default function RiderTripPage() {
                 )}
 
                 {/* MAP PLACEHOLDER */}
-                <div className="relative h-[30vh] w-full rounded-[3rem] bg-[#111111] border border-white/5 overflow-hidden shadow-inner group">
+                <div className="relative h-[30vh] w-full rounded-[3rem] bg-[#000000] border border-white/5 overflow-hidden shadow-inner group">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="relative">
@@ -185,7 +185,7 @@ export default function RiderTripPage() {
                             <p className="text-[10px] font-black text-pink-500 uppercase tracking-widest">Punto de Entrega</p>
                             <p className="text-sm font-black tracking-tight leading-none truncate max-w-[200px]">{order.deliveryAddress}</p>
                         </div>
-                        <Button className="h-14 px-6 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 shadow-2xl" asChild>
+                        <Button className="h-14 px-6 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[10px] hover:bg-background shadow-2xl" asChild>
                              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress || '')}`} target="_blank" rel="noreferrer">
                                 Abrir GPS
                              </a>
@@ -202,7 +202,7 @@ export default function RiderTripPage() {
                             onClick={() => handleUpdateStatus('at_store')}
                             className={cn(
                                 "h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-white/10",
-                                order.status === 'at_store' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-white/5 text-slate-400"
+                                order.status === 'at_store' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-white/5 text-foreground"
                             )}
                         >
                              <StoreIcon className="mr-2 h-4 w-4" /> Llegué al Local
@@ -213,7 +213,7 @@ export default function RiderTripPage() {
                             onClick={() => handleUpdateStatus('on_the_way')}
                             className={cn(
                                 "h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-white/10",
-                                order.status === 'on_the_way' ? "bg-blue-500/10 border-blue-500/20 text-blue-500" : "bg-white/5 text-slate-400"
+                                order.status === 'on_the_way' ? "bg-blue-500/10 border-blue-500/20 text-blue-500" : "bg-white/5 text-foreground"
                             )}
                         >
                              <Truck className="mr-2 h-4 w-4" /> Lo tengo / Voy
@@ -226,13 +226,13 @@ export default function RiderTripPage() {
                     <div className="flex gap-4">
                         <MapPin className="h-5 w-5 text-pink-500" />
                         <div className="space-y-1">
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500">Dirección</h4>
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground">Dirección</h4>
                             <p className="text-base font-black italic">{order.deliveryAddress}</p>
                         </div>
                     </div>
                     {order.deliveryNote && (
                          <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
-                            <p className="text-sm font-bold text-slate-400 italic">"{order.deliveryNote}"</p>
+                            <p className="text-sm font-bold text-foreground italic">"{order.deliveryNote}"</p>
                          </div>
                     )}
                 </div>
@@ -244,17 +244,17 @@ export default function RiderTripPage() {
                             haptic.vibrateMedium();
                             setShowPinModal(true);
                         }}
-                        className="w-full h-20 bg-[#d93b64] text-white font-black text-2xl uppercase tracking-[0.2em] italic rounded-[2rem] shadow-[0_20px_50px_rgba(217,59,100,0.3)] hover:scale-[1.02] active:scale-95 transition-all fixed bottom-8 left-4 right-4 max-w-md mx-auto"
+                        className="w-full h-20 bg-[#cb465a] text-white font-black text-2xl uppercase tracking-[0.2em] italic rounded-[2rem] shadow-[0_20px_50px_rgba(203, 70, 90,0.3)] hover:scale-[1.02] active:scale-95 transition-all fixed bottom-8 left-4 right-4 max-w-md mx-auto"
                     >
                         FINALIZAR ENTREGA 🎁
                     </Button>
                 ) : (
                     <div className="bg-green-500/10 border border-green-500/20 p-10 rounded-[3rem] text-center space-y-4 animate-in zoom-in-95 duration-500">
-                        <div className="h-24 w-24 bg-green-500 rounded-full mx-auto flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.3)] border-8 border-[#050505]">
+                        <div className="h-24 w-24 bg-green-500 rounded-full mx-auto flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.3)] border-8 border-[#000000]">
                             <CheckCircle2 className="h-12 w-12 text-black" />
                         </div>
                         <h2 className="text-4xl font-black italic uppercase tracking-tighter text-green-500">¡Completado!</h2>
-                        <Button variant="ghost" onClick={() => router.push('/rider')} className="text-slate-500 font-black uppercase tracking-widest text-[10px]">
+                        <Button variant="ghost" onClick={() => router.push('/rider')} className="text-foreground font-black uppercase tracking-widest text-[10px]">
                             Volver al Listado
                         </Button>
                     </div>
@@ -276,20 +276,20 @@ export default function RiderTripPage() {
                             initial={{ y: '100%' }}
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
-                            className="fixed inset-x-0 bottom-0 z-[110] p-4 flex flex-col items-center justify-end h-screen"
+                            className="fixed inset-x-0 bottom-0 z-[110] p-4 flex flex-col items-center justify-end min-h-[100dvh] pointer-events-none"
                         >
-                            <div className="w-full max-w-md bg-white rounded-[3rem] p-10 space-y-10 shadow-2xl relative overflow-hidden">
+                            <div className="w-full max-w-md bg-white rounded-[3rem] p-10 space-y-10 shadow-2xl relative overflow-hidden pointer-events-auto max-h-[90dvh] overflow-y-auto no-scrollbar">
                                  <div className="text-center space-y-2">
                                      <div className="h-20 w-20 bg-pink-500/5 rounded-full mx-auto flex items-center justify-center">
                                          <ShieldCheck className="h-10 w-10 text-pink-500" />
                                      </div>
                                      <h2 className="text-4xl font-black italic uppercase tracking-tighter text-black leading-none">Validación Requerida</h2>
-                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Entrega Biometrizada Estuclub</p>
+                                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Entrega Biometrizada Estuclub</p>
                                  </div>
 
                                  <div className="space-y-6">
                                      <div className="text-center">
-                                         <p className="text-sm font-bold text-slate-600 mb-4 px-4">Pedile al cliente el código de 4 dígitos que figura en su app.</p>
+                                         <p className="text-sm font-bold text-foreground mb-4 px-4">Pedile al cliente el código de 4 dígitos que figura en su app.</p>
                                          <motion.div
                                             animate={pinError ? { x: [-10, 10, -10, 10, 0] } : {}}
                                          >
@@ -305,22 +305,22 @@ export default function RiderTripPage() {
                                                 }}
                                                 className={cn(
                                                     "h-24 text-center text-6xl font-black italic tabular-nums tracking-[0.2em] rounded-[2rem] border-4 focus:ring-0 transition-all",
-                                                    pinError ? "border-red-500 text-red-500 bg-red-50" : "border-slate-100 bg-slate-50 text-black focus:border-pink-500/30"
+                                                    pinError ? "border-red-500 text-red-500 bg-red-50" : "border-foreground bg-background text-black focus:border-pink-500/30"
                                                 )}
                                             />
                                          </motion.div>
-                                         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 mt-4">Transacción Protegida</p>
+                                         <p className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground mt-4">Transacción Protegida</p>
                                      </div>
 
                                      <Button 
                                         onClick={handleValidatePin}
                                         disabled={pinEntry.length < 4 || isValidating}
-                                        className="w-full h-20 bg-black text-white font-black text-xl uppercase tracking-widest rounded-2xl shadow-2xl hover:bg-slate-900 transition-all"
+                                        className="w-full h-20 bg-black text-white font-black text-xl uppercase tracking-widest rounded-2xl shadow-2xl hover:bg-background transition-all"
                                      >
                                          {isValidating ? <Loader2 className="h-6 w-6 animate-spin" /> : "VALIDAR Y ENTREGAR 🔥"}
                                      </Button>
 
-                                     <Button variant="ghost" onClick={() => setShowPinModal(false)} className="w-full text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+                                     <Button variant="ghost" onClick={() => setShowPinModal(false)} className="w-full text-foreground font-bold uppercase tracking-widest text-[10px]">
                                          Quizás más tarde
                                      </Button>
                                  </div>

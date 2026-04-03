@@ -74,3 +74,4 @@ export function useCollectionOnce<T extends DocumentData>(
 
   return { data, isLoading, error };
 }
+

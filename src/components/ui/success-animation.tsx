@@ -45,3 +45,4 @@ export const triggerSuccessEffect = () => {
     startVelocity: 45,
   });
 };
+

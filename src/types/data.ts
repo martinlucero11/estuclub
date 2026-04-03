@@ -456,3 +456,4 @@ export type SerializableOrder = Omit<Order, 'createdAt' | 'updatedAt'> & {
     createdAt: string;
     updatedAt: string;
 };
+

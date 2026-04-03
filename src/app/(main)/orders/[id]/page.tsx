@@ -70,7 +70,7 @@ export default function OrderTrackingPage() {
     const { data: rider } = useDoc<UserProfile>(riderRef);
 
     if (!order) return (
-        <div className="min-h-screen bg-[#050505] flex items-center justify-center">
+        <div className="min-h-screen bg-[#000000] flex items-center justify-center">
             <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }}>
                 <Clock className="h-10 w-10 text-pink-500/50" />
             </motion.div>
@@ -81,14 +81,14 @@ export default function OrderTrackingPage() {
     const Icon = currentStatus.icon;
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white pb-24 selection:bg-pink-500/30">
+        <div className="min-h-screen bg-[#000000] text-white pb-24 selection:bg-pink-500/30">
             {/* Header */}
-            <header className="sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
+            <header className="sticky top-0 z-50 bg-[#000000]/80 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between">
                 <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-white/5">
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
                 <div className="text-center">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Estado del Pedido</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Estado del Pedido</h2>
                     <p className="text-sm font-black italic tracking-tighter">#{id?.toString().slice(-6).toUpperCase()}</p>
                 </div>
                 <div className="w-10" /> {/* Spacer */}
@@ -120,7 +120,7 @@ export default function OrderTrackingPage() {
                     <h1 className="text-3xl font-black italic uppercase tracking-tighter mb-2">
                         {currentStatus.label}
                     </h1>
-                    <p className="text-[12px] font-black text-slate-200 uppercase tracking-widest opacity-80">
+                    <p className="text-[12px] font-black text-foreground uppercase tracking-widest opacity-80">
                         {supplier?.name || order.supplierName}
                     </p>
                 </motion.div>
@@ -140,13 +140,13 @@ export default function OrderTrackingPage() {
                                 <div key={step.key} className="relative z-10 flex flex-col items-center gap-3">
                                     <div className={cn(
                                         "h-10 w-10 rounded-full border-2 flex items-center justify-center transition-all duration-500",
-                                        isPast ? "bg-pink-500 border-pink-400 text-black shadow-[0_0_20px_rgba(236,72,153,0.4)]" : "bg-[#050505] border-white/5 text-slate-700"
+                                        isPast ? "bg-pink-500 border-pink-400 text-black shadow-[0_0_20px_rgba(236,72,153,0.4)]" : "bg-[#000000] border-white/5 text-foreground"
                                     )}>
                                         {isPast ? <CheckCircle2 className="h-5 w-5" /> : <div className="h-2 w-2 rounded-full bg-current" />}
                                     </div>
                                     <span className={cn(
                                         "text-[9px] font-black uppercase tracking-[0.2em] transition-colors",
-                                        isPast ? "text-white" : "text-slate-700"
+                                        isPast ? "text-white" : "text-foreground"
                                     )}>
                                         {step.label}
                                     </span>
@@ -176,14 +176,14 @@ export default function OrderTrackingPage() {
                                         {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando Repartidor...' : 'Asignando Rider...')}
                                     </p>
                                     {order.status === 'searching_rider' && (
-                                        <p className="text-[10px] font-bold text-slate-400 italic">Un Rider oficial tomará tu pedido en unos segundos.</p>
+                                        <p className="text-[10px] font-bold text-foreground italic">Un Rider oficial tomará tu pedido en unos segundos.</p>
                                     )}
                                 </div>
                             </div>
 
                             {rider?.phone && (
                                 <div className="flex gap-3 pt-2 relative z-10">
-                                    <Button size="lg" className="flex-1 rounded-2xl bg-[#0a0a0a] border border-white/5 font-black uppercase tracking-widest text-[10px] h-12 shadow-xl hover:bg-white/5" asChild>
+                                    <Button size="lg" className="flex-1 rounded-2xl bg-[#000000] border border-white/5 font-black uppercase tracking-widest text-[10px] h-12 shadow-xl hover:bg-white/5" asChild>
                                         <a href={`tel:${rider.phone}`} className="flex items-center justify-center gap-2">
                                             <Phone className="h-3 w-3 text-pink-400" />
                                             Llamar Rider
@@ -212,7 +212,7 @@ export default function OrderTrackingPage() {
                             <ShieldCheck className="h-20 w-20 text-black rotate-12" />
                         </div>
                         <div className="space-y-1 relative z-10">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">PIN de Seguridad</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">PIN de Seguridad</p>
                             <h2 className="text-6xl font-black italic tracking-tighter text-black tabular-nums">
                                 {order.deliveryPin}
                             </h2>
@@ -228,12 +228,12 @@ export default function OrderTrackingPage() {
                     <div className="space-y-6">
                         <div className="flex items-start gap-6 group">
                             <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-pink-500/10 group-hover:border-pink-500/20 transition-all">
-                                <MapPin className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
+                                <MapPin className="h-6 w-6 text-foreground group-hover:text-pink-500 transition-colors" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Dirección de Entrega</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground mb-1">Dirección de Entrega</h4>
                                 <p className="text-base font-black tracking-tight">{order.deliveryAddress}</p>
-                                {order.deliveryNote && <p className="text-[11px] text-slate-400 mt-2 italic bg-white/5 p-3 rounded-xl border border-white/5 leading-relaxed">"{order.deliveryNote}"</p>}
+                                {order.deliveryNote && <p className="text-[11px] text-foreground mt-2 italic bg-white/5 p-3 rounded-xl border border-white/5 leading-relaxed">"{order.deliveryNote}"</p>}
                             </div>
                         </div>
 
@@ -241,23 +241,23 @@ export default function OrderTrackingPage() {
 
                         <div className="flex items-start gap-6 group">
                             <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5 group-hover:bg-pink-500/10 group-hover:border-pink-500/20 transition-all">
-                                <Store className="h-6 w-6 text-slate-400 group-hover:text-pink-500 transition-colors" />
+                                <Store className="h-6 w-6 text-foreground group-hover:text-pink-500 transition-colors" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Comercio</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground mb-1">Comercio</h4>
                                 <p className="text-base font-black tracking-tight">{supplier?.name || order.supplierName}</p>
-                                <p className="text-[11px] text-slate-400 italic">{supplier?.location?.address || 'Estuclub Official Point'}</p>
+                                <p className="text-[11px] text-foreground italic">{supplier?.location?.address || 'Estuclub Official Point'}</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-gradient-to-b from-white/[0.03] to-transparent rounded-[2.5rem] p-8 space-y-4 border border-white/5 shadow-inner">
-                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4 flex items-center gap-2">
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-foreground mb-4 flex items-center gap-2">
                             <Package className="h-3 w-3" /> Detalle
                         </h4>
                         {order.items.map((item, idx) => (
                             <div key={idx} className="flex justify-between text-xs font-bold tracking-tight">
-                                <span className="text-slate-300">{item.quantity}x {item.name}</span>
+                                <span className="text-foreground">{item.quantity}x {item.name}</span>
                                 <span className="text-white">$ {(item.price * item.quantity).toLocaleString()}</span>
                             </div>
                         ))}
@@ -266,7 +266,7 @@ export default function OrderTrackingPage() {
                             <span className="text-pink-500">Monto Final</span>
                             <span className="text-white">$ {order.totalAmount.toLocaleString()}</span>
                         </div>
-                        <p className="text-[9px] text-center text-slate-500 font-bold uppercase tracking-widest pt-2">Pago Verificado • Estuclub Secure Express</p>
+                        <p className="text-[9px] text-center text-foreground font-bold uppercase tracking-widest pt-2">Pago Verificado • Estuclub Secure Express</p>
                     </div>
 
                     {/* DOOR PAYMENT REMINDER */}
@@ -274,7 +274,7 @@ export default function OrderTrackingPage() {
                         <motion.div 
                             initial={{ scale: 0.9, opacity: 0 }}
                             whileInView={{ scale: 1, opacity: 1 }}
-                            className="bg-[#d93b64] p-6 rounded-[2.5rem] border-4 border-black shadow-[0_20px_40px_rgba(217,59,100,0.3)] text-center space-y-2"
+                            className="bg-[#cb465a] p-6 rounded-[2.5rem] border-4 border-black shadow-[0_20px_40px_rgba(203, 70, 90,0.3)] text-center space-y-2"
                         >
                             <div className="flex justify-center gap-2">
                                 <Bike className="h-6 w-6 text-black" />
@@ -292,14 +292,14 @@ export default function OrderTrackingPage() {
                 <div className="space-y-3 pt-4">
                     <Button 
                         onClick={() => router.push('/delivery')}
-                        className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-slate-200 transition-all shadow-2xl"
+                        className="w-full h-16 rounded-[1.5rem] bg-white text-black font-black uppercase tracking-widest text-xs hover:bg-background transition-all shadow-2xl"
                     >
                         Volver a la Tienda
                     </Button>
                     <Button 
                         variant="ghost" 
                         onClick={() => router.push('/orders')}
-                        className="w-full h-14 rounded-[1.5rem] bg-white/5 border border-white/5 font-black uppercase tracking-widest text-[10px] text-slate-400 hover:text-white"
+                        className="w-full h-14 rounded-[1.5rem] bg-white/5 border border-white/5 font-black uppercase tracking-widest text-[10px] text-foreground hover:text-white"
                     >
                         Ver todos mis pedidos
                     </Button>

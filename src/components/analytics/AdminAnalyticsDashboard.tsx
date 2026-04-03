@@ -503,7 +503,7 @@ export default function AdminAnalyticsDashboard() {
                                 </h2>
                                 <div className="flex items-center gap-2">
                                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-foreground">
                                         Monitorizando {selectedSupplierId === 'all' ? 'Plataforma Global' : 'Socio Específico'}
                                     </span>
                                 </div>
@@ -512,14 +512,14 @@ export default function AdminAnalyticsDashboard() {
 
                         <div className="flex gap-4 items-center">
                             <div className="relative min-w-[350px] group">
-                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors z-10" />
+                                <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors z-10" />
                                 <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
                                     <SelectTrigger className={cn(
                                         "w-full bg-white dark:bg-white/5 border-2 border-black/10 dark:border-white/10 rounded-[2rem] h-16 pl-14 pr-6 text-xs font-black uppercase tracking-widest hover:border-primary transition-all shadow-xl shadow-black/5 ring-0",
                                         selectedSupplierId !== 'all' && "border-primary bg-primary/5 shadow-primary/10"
                                     )}>
                                         <div className="flex flex-col items-start text-left">
-                                            <span className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.2em] mb-1">
+                                            <span className="text-[9px] text-foreground font-black uppercase tracking-[0.2em] mb-1">
                                                 {selectedSupplierId === 'all' ? 'Seleccionar Socio para Analizar' : 'Analizando Socio Específico'}
                                             </span>
                                             <div className="truncate max-w-[200px]">
@@ -537,7 +537,7 @@ export default function AdminAnalyticsDashboard() {
                                             </div>
                                         </SelectItem>
                                         <div className="h-[1px] bg-black/5 dark:bg-white/5 my-2" />
-                                        <div className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Lista de Socios</div>
+                                        <div className="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-foreground opacity-50">Lista de Socios</div>
                                         {suppliers?.map(s => (
                                             <SelectItem key={s.id} value={s.id} className="font-black uppercase text-[11px] py-4 rounded-2xl focus:bg-primary focus:text-white transition-colors">
                                                 <div className="flex items-center gap-3">
@@ -573,7 +573,7 @@ export default function AdminAnalyticsDashboard() {
                                 {selectedSupplierId === 'all' ? 'Analytics Globales' : 'Detalle de Partner'}
                             </h1>
                         </div>
-                        <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-muted-foreground dark:text-white/40 ml-6">
+                        <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-foreground dark:text-white/40 ml-6">
                             Estuclub Business Intelligence v2.5
                         </p>
                     </div>
@@ -590,7 +590,7 @@ export default function AdminAnalyticsDashboard() {
                                 <TabsTrigger 
                                     key={t.id} 
                                     value={t.id} 
-                                    className="rounded-[1.8rem] px-10 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all duration-700 gap-3 text-muted-foreground shadow-sm data-[state=active]:shadow-primary/40"
+                                    className="rounded-[1.8rem] px-10 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all duration-700 gap-3 text-foreground shadow-sm data-[state=active]:shadow-primary/40"
                                 >
                                     <t.icon className="h-4.5 w-4.5" />
                                     {t.label}
@@ -741,12 +741,12 @@ export default function AdminAnalyticsDashboard() {
                                                                     {s.name}
                                                                     <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                                 </span>
-                                                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Click para analizar</span>
+                                                                <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">Click para analizar</span>
                                                             </div>
                                                         </span>
                                                         <div className="text-right">
                                                             <span className="text-primary font-black text-lg">{s.redemptions}</span>
-                                                            <p className="text-[8px] font-black text-muted-foreground uppercase">Canjes</p>
+                                                            <p className="text-[8px] font-black text-foreground uppercase">Canjes</p>
                                                         </div>
                                                     </div>
                                                     <Progress value={(s.redemptions / (stats.totalRedemptions || 1)) * 100} className="h-2 bg-black/5 dark:bg-white/5 rounded-full" />
@@ -778,7 +778,7 @@ export default function AdminAnalyticsDashboard() {
                                             title="Identidad de Usuario" 
                                             data={stats.genderData} 
                                             type="pie"
-                                            colors={['#ec4899', '#3b82f6', '#10b981', '#8b5cf6']}
+                                            colors={['#ec4899', '#3b82f6', '#000000', '#8b5cf6']}
                                         />
                                     </div>
                                     <div className="md:col-span-2 lg:col-span-3 cursor-pointer transition-transform hover:scale-[1.02]" onClick={() => openDetail('demographics')}>
@@ -810,7 +810,7 @@ export default function AdminAnalyticsDashboard() {
                                                         </div>
                                                         <div className="flex items-center gap-8">
                                                             <div className="text-right">
-                                                                <p className="text-[10px] uppercase font-black text-muted-foreground">Alumnos</p>
+                                                                <p className="text-[10px] uppercase font-black text-foreground">Alumnos</p>
                                                                 <p className="text-sm font-black text-foreground dark:text-white">{u.value}</p>
                                                             </div>
                                                             <div className="w-16 h-1 w-24 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
@@ -885,7 +885,7 @@ export default function AdminAnalyticsDashboard() {
                                                 <TrendingUp className="h-8 w-8 text-primary" />
                                             </div>
                                             <h3 className="text-3xl font-black text-foreground dark:text-white leading-tight">Optimización <br/><span className="text-primary italic">de Recursos</span></h3>
-                                            <p className="text-muted-foreground dark:text-white/50 font-medium leading-relaxed max-w-sm">
+                                            <p className="text-foreground dark:text-white/50 font-medium leading-relaxed max-w-sm">
                                                 Las métricas de red sugieren aumentar las activaciones de marketing entre las <span className="text-primary font-black">14:00 y 18:00</span> para capturar el pico de afinidad universitaria.
                                             </p>
                                         </div>
@@ -1028,3 +1028,4 @@ export default function AdminAnalyticsDashboard() {
         </div>
     );
 }
+

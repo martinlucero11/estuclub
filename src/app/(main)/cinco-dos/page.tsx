@@ -66,7 +66,7 @@ export default function CincoDosPage() {
     const isLoading = userLoading || appsLoading;
 
     return (
-        <div className="w-full min-h-screen font-sans bg-[#09090b] text-zinc-50 relative selection:bg-white/30">
+        <div className="w-full min-h-screen font-sans bg-[#000000] text-foreground relative selection:bg-white/30">
             {/* Absolute Back Button to bypass MainLayout header */}
             <div className="absolute top-4 left-4 z-50">
                 <Button 
@@ -79,7 +79,7 @@ export default function CincoDosPage() {
             </div>
 
             {/* Ultra Premium Tech Background */}
-            <div className="fixed inset-0 bg-[#060608]">
+            <div className="fixed inset-0 bg-[#000000]">
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800A_1px,transparent_1px),linear-gradient(to_bottom,#8080800A_1px,transparent_1px)] bg-[size:24px_24px]"></div>
                 <div className="absolute inset-0 bg-black [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,transparent_0%,#000_100%)] opacity-50"></div>
                 <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white/[0.04] blur-[120px] rounded-[100%] pointer-events-none"></div>
@@ -163,3 +163,4 @@ export default function CincoDosPage() {
         </div>
     );
 }
+

@@ -87,18 +87,18 @@ function CluberList() {
                         return (
                             <Link key={cluber.id} href={`/proveedores/view?slug=${cluber.slug}`} className="group block h-full">
                                 <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
-                                    <Avatar className="h-20 w-20 border-2 border-border group-hover:border-primary transition-colors">
+                                    <Avatar className="h-20 w-20 border-2 border-foreground group-hover:border-primary transition-colors">
                                         <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
-                                        <AvatarFallback className="bg-muted text-xl font-semibold text-muted-foreground">
+                                        <AvatarFallback className="bg-background text-xl font-semibold text-foreground">
                                             {cluberInitials}
                                         </AvatarFallback>
                                     </Avatar>
                                     <h3 className="mt-4 font-bold text-lg text-foreground">{cluber.name}</h3>
-                                    <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
+                                    <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
                                         <TypeIcon className="h-4 w-4" />
                                         <p className="capitalize">{cluber.type}</p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{cluber.description}</p>
+                                    <p className="text-xs text-foreground mt-2 line-clamp-2">{cluber.description}</p>
                                 </Card>
                             </Link>
                         );
@@ -122,7 +122,7 @@ export default function TurnosPage() {
                         </Link>
                     </Button>
                 </PageHeader>
-                <p className="text-muted-foreground -mt-8 mb-8">
+                <p className="text-foreground -mt-8 mb-8">
                     Selecciona un Cluber para ver sus servicios y reservar un turno.
                 </p>
                 <CluberList />
@@ -130,3 +130,4 @@ export default function TurnosPage() {
         </MainLayout>
     )
 }
+

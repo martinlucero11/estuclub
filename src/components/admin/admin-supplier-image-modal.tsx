@@ -60,7 +60,7 @@ export function AdminSupplierImageModal({ supplier, children }: AdminSupplierIma
                 <div className="space-y-6 mt-2">
                     {/* Logo Section */}
                     <div className="space-y-3">
-                        <Label className="font-bold text-xs tracking-widest uppercase text-muted-foreground">URL del Logotipo</Label>
+                        <Label className="font-bold text-xs tracking-widest uppercase text-foreground">URL del Logotipo</Label>
                         <div className="flex gap-4 items-center">
                             <Avatar className="h-16 w-16 ring-2 ring-background shadow-md">
                                 <AvatarImage src={logoUrl} className="object-cover" />
@@ -76,15 +76,15 @@ export function AdminSupplierImageModal({ supplier, children }: AdminSupplierIma
                     </div>
 
                     {/* Cover Section */}
-                    <div className="space-y-3 pt-4 border-t border-border/50">
-                        <Label className="font-bold text-xs tracking-widest uppercase text-muted-foreground">URL de la Portada</Label>
+                    <div className="space-y-3 pt-4 border-t border-foreground/50">
+                        <Label className="font-bold text-xs tracking-widest uppercase text-foreground">URL de la Portada</Label>
                         <div className="space-y-3">
                             <Input 
                                 value={coverUrl} 
                                 onChange={(e) => setCoverUrl(e.target.value)} 
                                 placeholder="https://ejemplo.com/portada.jpg" 
                             />
-                            <div className="w-full aspect-[16/10] overflow-hidden rounded-xl border border-primary/10 bg-muted/30 flex items-center justify-center">
+                            <div className="w-full aspect-[16/10] overflow-hidden rounded-xl border border-primary/10 bg-background/30 flex items-center justify-center">
                                 {coverUrl ? (
                                     <img 
                                         src={coverUrl} 
@@ -93,7 +93,7 @@ export function AdminSupplierImageModal({ supplier, children }: AdminSupplierIma
                                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                     />
                                 ) : (
-                                    <div className="text-muted-foreground/50 flex flex-col items-center">
+                                    <div className="text-foreground/50 flex flex-col items-center">
                                         <ImageIcon className="h-6 w-6 mb-1" />
                                         <span className="text-[10px] uppercase font-bold tracking-widest">Sin Portada</span>
                                     </div>
@@ -114,3 +114,4 @@ export function AdminSupplierImageModal({ supplier, children }: AdminSupplierIma
         </Dialog>
     );
 }
+

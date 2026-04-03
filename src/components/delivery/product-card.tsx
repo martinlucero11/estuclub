@@ -90,16 +90,16 @@ export const ProductCard = React.memo(({ product, supplier: initialSupplier, onA
                         <AvatarImage src={supplier?.logoUrl} />
                         <AvatarFallback className="text-[5px]">{getInitials(supplier?.name || 'S')}</AvatarFallback>
                     </Avatar>
-                    <span className="text-[8px] font-bold truncate text-muted-foreground uppercase tracking-wider">{supplier?.name || 'Cargando...'}</span>
+                    <span className="text-[8px] font-bold truncate text-foreground uppercase tracking-wider">{supplier?.name || 'Cargando...'}</span>
                 </div>
 
-                <p className="text-[9px] text-muted-foreground font-medium italic line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">{product.description}</p>
+                <p className="text-[9px] text-foreground font-medium italic line-clamp-1 opacity-70 group-hover:opacity-100 transition-opacity">{product.description}</p>
             </div>
 
             <div className="mt-2.5 flex items-center justify-between gap-1.5">
                 <div className="flex flex-col">
                     {product.originalPrice && product.originalPrice > product.price && (
-                        <p className="text-[9px] text-muted-foreground line-through decoration-primary/40 leading-none mb-0.5">$ {product.originalPrice.toLocaleString()}</p>
+                        <p className="text-[9px] text-foreground line-through decoration-primary/40 leading-none mb-0.5">$ {product.originalPrice.toLocaleString()}</p>
                     )}
                     <p className="font-black text-primary text-[13px] tracking-tighter">$ {product.price.toLocaleString()}</p>
                 </div>
@@ -126,3 +126,4 @@ export const ProductCard = React.memo(({ product, supplier: initialSupplier, onA
 });
 
 ProductCard.displayName = 'ProductCard';
+

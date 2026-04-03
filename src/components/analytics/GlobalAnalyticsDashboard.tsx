@@ -62,7 +62,7 @@ export default function GlobalAnalyticsDashboard() {
         const funnelData = [
             { name: 'Visitas (Catálogo)', value: totalVisits > 0 ? totalVisits : 1, fill: 'hsl(var(--primary))' },
             { name: 'Carritos a Checkout', value: checkoutsInitiated, fill: '#f59e0b' },
-            { name: 'Pagos Exitosos', value: successfulCount, fill: '#10b981' }
+            { name: 'Pagos Exitosos', value: successfulCount, fill: '#000000' }
         ];
 
         // 2. Retention Rate (Usuarios que compran más de 1 vez en este periodo)
@@ -91,13 +91,13 @@ export default function GlobalAnalyticsDashboard() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                     <h2 className="text-3xl font-black italic tracking-tighter">Global <span className="text-primary">Conversion</span></h2>
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Admin Funnel Dashboard</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-foreground">Admin Funnel Dashboard</p>
                 </div>
 
                 <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl glass glass-dark">
-                    <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>Hoy</button>
-                    <button onClick={() => setDateFilter('7days')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === '7days' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>7 Días</button>
-                    <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>Este Mes</button>
+                    <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>Hoy</button>
+                    <button onClick={() => setDateFilter('7days')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === '7days' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>7 Días</button>
+                    <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>Este Mes</button>
                 </div>
             </div>
 
@@ -107,11 +107,11 @@ export default function GlobalAnalyticsDashboard() {
                         <div className="p-3 bg-primary/10 rounded-2xl w-fit mb-4">
                             <Target className="h-6 w-6 text-primary" />
                         </div>
-                        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tasa de Retención (Recurrentes)</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-foreground">Tasa de Retención (Recurrentes)</p>
                         <h3 className="text-6xl font-black text-foreground tracking-tighter">
                             {stats.retentionRate.toFixed(1)}<span className="text-primary text-4xl">%</span>
                         </h3>
-                        <p className="text-sm font-bold text-muted-foreground leading-relaxed mt-4">
+                        <p className="text-sm font-bold text-foreground leading-relaxed mt-4">
                             De los <span className="text-foreground">{stats.totalShoppers}</span> usuarios que compraron en este periodo, <span className="text-primary">{Math.round(stats.retentionRate)}%</span> volvieron a realizar un pedido.
                         </p>
                     </div>
@@ -131,7 +131,7 @@ export default function GlobalAnalyticsDashboard() {
                                         if (active && payload && payload.length) {
                                             return (
                                                 <div className="glass glass-dark p-3 rounded-xl border border-white/10 shadow-xl">
-                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{payload[0].payload.name}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground mb-1">{payload[0].payload.name}</p>
                                                     <p className="text-xl font-black text-primary">{payload[0].value}</p>
                                                 </div>
                                             );
@@ -157,3 +157,4 @@ export default function GlobalAnalyticsDashboard() {
         </div>
     );
 }
+

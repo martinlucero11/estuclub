@@ -128,10 +128,10 @@ export function KPIWidgets() {
               ) : (
                 <h3 className="text-3xl font-black tracking-tighter leading-none">{w.value}</h3>
               )}
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{w.label}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-foreground">{w.label}</p>
             </div>
             <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-              <p className="text-[9px] font-bold text-muted-foreground italic uppercase tracking-widest opacity-60">{w.subtext}</p>
+              <p className="text-[9px] font-bold text-foreground italic uppercase tracking-widest opacity-60">{w.subtext}</p>
               <div className="h-1.5 w-1.5 rounded-full bg-primary/40 animate-pulse" />
             </div>
           </CardContent>
@@ -140,3 +140,4 @@ export function KPIWidgets() {
     </div>
   );
 }
+

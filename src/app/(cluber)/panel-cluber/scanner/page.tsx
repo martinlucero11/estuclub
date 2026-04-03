@@ -11,7 +11,7 @@ export default function ScannerPage() {
     return (
         <div className="space-y-4 p-4 md:p-8">
             <PageHeader title="Escanear QR" />
-             <p className="text-muted-foreground -mt-8 mb-8 text-center">
+             <p className="text-foreground -mt-8 mb-8 text-center">
                 Valida un canje o ingresa el ID manualmente.
             </p>
             <div className="flex justify-center pt-4">
@@ -20,4 +20,5 @@ export default function ScannerPage() {
         </div>
     );
 }
+
 

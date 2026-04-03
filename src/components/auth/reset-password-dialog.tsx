@@ -95,7 +95,7 @@ export default function ResetPasswordDialog({ children }: ResetPasswordDialogPro
                 <FormItem>
                   <FormLabel>Correo Electrónico</FormLabel>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                     <FormControl>
                       <Input placeholder="tu@email.com" {...field} className="pl-10" />
                     </FormControl>
@@ -120,3 +120,4 @@ export default function ResetPasswordDialog({ children }: ResetPasswordDialogPro
     </Dialog>
   );
 }
+

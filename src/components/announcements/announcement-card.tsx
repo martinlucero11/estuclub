@@ -65,7 +65,7 @@ export default function AnnouncementCard({
           </h3>
         </div>
         <div className="flex-grow">
-          <p className="text-sm text-muted-foreground/90 line-clamp-3 font-medium leading-relaxed tracking-tight">
+          <p className="text-sm text-foreground/90 line-clamp-3 font-medium leading-relaxed tracking-tight">
             {announcement.content}
           </p>
         </div>
@@ -82,7 +82,7 @@ export default function AnnouncementCard({
                 <Link2 className="h-4 w-4" />
               </Link>
             )}
-            <span className="text-muted-foreground/40">{formatTime(announcement.createdAt)}</span>
+            <span className="text-foreground/40">{formatTime(announcement.createdAt)}</span>
           </div>
         </div>
       </div>
@@ -137,3 +137,4 @@ export default function AnnouncementCard({
     </AnnouncementDialog>
   );
 }
+

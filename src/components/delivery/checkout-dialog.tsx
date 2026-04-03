@@ -225,14 +225,14 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[400px] max-h-[90vh] overflow-y-auto bg-white border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-[2rem] p-0 selection:bg-pink-100">
+            <DialogContent className="sm:max-w-[400px] max-h-[90vh] overflow-y-auto bg-white border-foreground shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-[2rem] p-0 selection:bg-pink-100">
                 <DialogHeader className="px-6 pt-6 pb-2 flex flex-row items-center gap-3">
                     <div className="h-10 w-10 rounded-xl bg-pink-50 flex items-center justify-center border border-pink-100 shrink-0">
                         <ShoppingBag className="h-5 w-5 text-estuclub-rosa" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-slate-900 leading-none">Confirmar Pedido</DialogTitle>
+                            <DialogTitle className="text-xl font-black italic uppercase tracking-tighter text-foreground leading-none">Confirmar Pedido</DialogTitle>
                             {supplierProfile?.avgPrepTime && (
                                 <Badge className="bg-primary/10 text-primary border-primary/20 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg flex items-center gap-1 shrink-0">
                                     <Timer className="h-3 w-3" />
@@ -240,7 +240,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                                 </Badge>
                             )}
                         </div>
-                        <DialogDescription className="font-bold text-slate-400 uppercase tracking-[0.15em] text-[8px]">Logística Segura Estuclub ✨</DialogDescription>
+                        <DialogDescription className="font-bold text-foreground uppercase tracking-[0.15em] text-[8px]">Logística Segura Estuclub ✨</DialogDescription>
                     </div>
                 </DialogHeader>
 
@@ -249,16 +249,16 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                     <RadioGroup value={type} onValueChange={(v: any) => setType(v)} className="grid grid-cols-2 gap-2">
                         <div className="relative">
                             <RadioGroupItem value="delivery" id="delivery" className="peer sr-only" />
-                            <Label htmlFor="delivery" className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-50 bg-slate-50 p-3 cursor-pointer transition-all peer-data-[state=checked]:border-estuclub-rosa/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
-                                <Truck className={cn("h-4 w-4", type === 'delivery' ? "text-estuclub-rosa" : "text-slate-300")} />
-                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'delivery' ? "text-slate-900" : "text-slate-400")}>Envío</span>
+                            <Label htmlFor="delivery" className="flex items-center justify-center gap-2 rounded-xl border-2 border-foreground bg-background p-3 cursor-pointer transition-all peer-data-[state=checked]:border-estuclub-rosa/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
+                                <Truck className={cn("h-4 w-4", type === 'delivery' ? "text-estuclub-rosa" : "text-foreground")} />
+                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'delivery' ? "text-foreground" : "text-foreground")}>Envío</span>
                             </Label>
                         </div>
                         <div className="relative">
                             <RadioGroupItem value="pickup" id="pickup" className="peer sr-only" />
-                            <Label htmlFor="pickup" className="flex items-center justify-center gap-2 rounded-xl border-2 border-slate-50 bg-slate-50 p-3 cursor-pointer transition-all peer-data-[state=checked]:border-estuclub-rosa/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
-                                <ShoppingBag className={cn("h-4 w-4", type === 'pickup' ? "text-estuclub-rosa" : "text-slate-300")} />
-                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'pickup' ? "text-slate-900" : "text-slate-400")}>Retiro</span>
+                            <Label htmlFor="pickup" className="flex items-center justify-center gap-2 rounded-xl border-2 border-foreground bg-background p-3 cursor-pointer transition-all peer-data-[state=checked]:border-estuclub-rosa/20 peer-data-[state=checked]:bg-white peer-data-[state=checked]:shadow-sm">
+                                <ShoppingBag className={cn("h-4 w-4", type === 'pickup' ? "text-estuclub-rosa" : "text-foreground")} />
+                                <span className={cn("font-black text-[10px] uppercase tracking-widest", type === 'pickup' ? "text-foreground" : "text-foreground")}>Retiro</span>
                             </Label>
                         </div>
                     </RadioGroup>
@@ -268,7 +268,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                             {/* Saved Addresses List */}
                             {profile?.addresses && profile.addresses.length > 0 && !isAddingNew && (
                                 <div className="space-y-2">
-                                    <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">Tus Direcciones</Label>
+                                    <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-foreground">Tus Direcciones</Label>
                                     <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
                                         {profile.addresses.map((addr) => {
                                             const isSelected = selectedAddressId === addr.id;
@@ -282,8 +282,8 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                                                         setNote(addr.notes || '');
                                                     }}
                                                     className={cn(
-                                                        "h-10 px-4 rounded-xl border-slate-100 flex items-center gap-2 transition-all shrink-0",
-                                                        isSelected ? "bg-pink-50 border-estuclub-rosa/20 text-estuclub-rosa" : "bg-white text-slate-500"
+                                                        "h-10 px-4 rounded-xl border-foreground flex items-center gap-2 transition-all shrink-0",
+                                                        isSelected ? "bg-pink-50 border-estuclub-rosa/20 text-estuclub-rosa" : "bg-white text-foreground"
                                                     )}
                                                 >
                                                     {addr.label.toLowerCase().includes('casa') ? <Home className="h-3.5 w-3.5" /> : <Briefcase className="h-3.5 w-3.5" />}
@@ -294,7 +294,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                                         <Button
                                             variant="outline"
                                             onClick={() => setIsAddingNew(true)}
-                                            className="h-10 w-10 p-0 rounded-xl border-slate-100 flex items-center justify-center shrink-0 bg-white text-slate-400"
+                                            className="h-10 w-10 p-0 rounded-xl border-foreground flex items-center justify-center shrink-0 bg-white text-foreground"
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>
@@ -305,9 +305,9 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                             {isAddingNew && (
                                 <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
                                     <div className="flex items-center justify-between">
-                                        <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400">Nueva Ubicación</Label>
+                                        <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-foreground">Nueva Ubicación</Label>
                                         {profile?.addresses && profile.addresses.length > 0 && (
-                                            <Button variant="ghost" size="sm" onClick={() => setIsAddingNew(false)} className="h-6 text-[8px] font-black uppercase text-slate-400 hover:text-primary transition-colors">
+                                            <Button variant="ghost" size="sm" onClick={() => setIsAddingNew(false)} className="h-6 text-[8px] font-black uppercase text-foreground hover:text-primary transition-colors">
                                                 VOLVER A MIS DIRECCIONES
                                             </Button>
                                         )}
@@ -326,18 +326,18 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                             <div className="space-y-1.5">
                                 <Label className={cn(
                                     "text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1",
-                                    isNoteMissing ? "text-primary" : "text-slate-400"
+                                    isNoteMissing ? "text-primary" : "text-foreground"
                                 )}>
                                     Piso / Depto / Referencias {isNoteMissing && <span className="text-[7px] animate-pulse">(OBILIGATORIO)</span>}
                                 </Label>
                                 <div className="relative group/input">
                                     <Target className={cn(
                                         "absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors",
-                                        isNoteMissing ? "text-primary" : "text-slate-300 group-focus-within/input:text-primary"
+                                        isNoteMissing ? "text-primary" : "text-foreground group-focus-within/input:text-primary"
                                     )} />
                                     <Input 
                                         className={cn(
-                                            "h-12 pl-12 text-sm bg-slate-50 border-slate-100 rounded-xl font-bold placeholder:text-slate-300 focus:bg-white transition-all shadow-sm",
+                                            "h-12 pl-12 text-sm bg-background border-foreground rounded-xl font-bold placeholder:text-foreground focus:bg-white transition-all shadow-sm",
                                             isNoteMissing && "border-primary/20 bg-primary/5"
                                         )}
                                         placeholder="Ej: Piso 2 B / Rejas blancas" 
@@ -350,32 +350,32 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                     )}
 
                     {/* Order Summary */}
-                    <div className="bg-slate-50 border border-slate-100 p-5 rounded-2xl space-y-3">
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                    <div className="bg-background border border-foreground p-5 rounded-2xl space-y-3">
+                        <div className="flex justify-between items-center text-[10px] font-black text-foreground uppercase tracking-widest leading-none">
                             <span>Subtotal Comida</span>
-                            <span className="text-slate-900">$ {subtotal.toLocaleString()}</span>
+                            <span className="text-foreground">$ {subtotal.toLocaleString()}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                        <div className="flex justify-between items-center text-[10px] font-black text-foreground uppercase tracking-widest leading-none">
                             <span>Tarifa de Servicio (5%)</span>
-                            <span className="text-slate-900">$ {serviceFee.toLocaleString()}</span>
+                            <span className="text-foreground">$ {serviceFee.toLocaleString()}</span>
                         </div>
-                        <Separator className="bg-slate-200" />
+                        <Separator className="bg-background" />
                         
                         <div className="flex justify-between items-center">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-900">Total a Pagar Ahora</p>
-                                <p className="text-[8px] font-bold text-slate-400 uppercase">Procesado por Mercado Pago</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.1em] text-foreground">Total a Pagar Ahora</p>
+                                <p className="text-[8px] font-bold text-foreground uppercase">Procesado por Mercado Pago</p>
                             </div>
-                            <span className="text-xl font-black tracking-tighter text-slate-900">$ {totalPaidOnline.toLocaleString()}</span>
+                            <span className="text-xl font-black tracking-tighter text-foreground">$ {totalPaidOnline.toLocaleString()}</span>
                         </div>
 
                         {type === 'delivery' && (
-                            <div className="mt-4 p-4 rounded-xl bg-[#d93b64]/5 border border-[#d93b64]/20 flex justify-between items-center animate-pulse">
+                            <div className="mt-4 p-4 rounded-xl bg-[#cb465a]/5 border border-[#cb465a]/20 flex justify-between items-center animate-pulse">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#d93b64]">🛵 ENVÍO AL REPARTIDOR</p>
-                                    <p className="text-[8px] font-bold text-[#d93b64]/60 uppercase">Pagar en mano al recibir</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.1em] text-[#cb465a]">🛵 ENVÍO AL REPARTIDOR</p>
+                                    <p className="text-[8px] font-bold text-[#cb465a]/60 uppercase">Pagar en mano al recibir</p>
                                 </div>
-                                <span className="text-xl font-black tracking-tighter text-[#d93b64]">$ {deliveryCost.toLocaleString()}</span>
+                                <span className="text-xl font-black tracking-tighter text-[#cb465a]">$ {deliveryCost.toLocaleString()}</span>
                             </div>
                         )}
                     </div>
@@ -399,11 +399,12 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                         {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : "CONFIRMAR PAGO 🚀"}
                     </Button>
                     <div className="flex items-center justify-center gap-2 opacity-40">
-                        <ShieldCheck className="h-3.5 w-3.5 text-slate-900" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-900">Pasarela Protegida</span>
+                        <ShieldCheck className="h-3.5 w-3.5 text-foreground" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Pasarela Protegida</span>
                     </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
 }
+

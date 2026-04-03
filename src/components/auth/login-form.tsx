@@ -175,14 +175,14 @@ export default function LoginForm() {
                 name="identifier"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-black uppercase tracking-widest text-[10px] ml-1 opacity-70">Email o Usuario</FormLabel>
+                    <FormLabel className="font-black uppercase tracking-widest text-[10px] ml-1 text-foreground">Email o Usuario</FormLabel>
                     <div className="relative group/input">
-                      <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                      <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
                         <Input 
                             placeholder="tu@email.com" 
                             {...field} 
-                            className="h-12 pl-12 rounded-xl bg-primary/5 border-primary/5 focus:border-primary/20 focus:ring-primary/10 transition-all font-medium" 
+                            className="h-12 pl-12 rounded-xl bg-background border-2 border-foreground focus:border-primary focus:ring-primary/20 transition-all font-bold" 
                         />
                       </FormControl>
                     </div>
@@ -196,21 +196,21 @@ export default function LoginForm() {
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between ml-1">
-                      <FormLabel className="font-black uppercase tracking-widest text-[10px] opacity-70">Contraseña</FormLabel>
+                      <FormLabel className="font-black uppercase tracking-widest text-[10px] text-foreground">Contraseña</FormLabel>
                       <ResetPasswordDialog>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-primary/70 hover:text-primary transition-colors cursor-pointer">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline transition-all cursor-pointer">
                             ¿Olvidaste tu contraseña?
                           </span>
                       </ResetPasswordDialog>
                     </div>
                     <div className="relative group/input">
-                      <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within/input:text-primary transition-colors" />
+                      <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground group-focus-within/input:text-primary transition-colors" />
                       <FormControl>
                         <Input 
                             type="password" 
                             placeholder="••••••••" 
                             {...field} 
-                            className="h-12 pl-12 rounded-xl bg-primary/5 border-primary/5 focus:border-primary/20 focus:ring-primary/10 transition-all font-medium" 
+                            className="h-12 pl-12 rounded-xl bg-background border-2 border-foreground focus:border-primary focus:ring-primary/20 transition-all font-bold" 
                         />
                       </FormControl>
                     </div>
@@ -230,7 +230,7 @@ export default function LoginForm() {
                         className="rounded-md border-primary/20 data-[state=checked]:bg-primary"
                       />
                     </FormControl>
-                    <FormLabel className="text-xs font-bold text-muted-foreground/80 cursor-pointer select-none">
+                    <FormLabel className="text-xs font-black text-foreground cursor-pointer select-none uppercase tracking-wide">
                         Mantener sesión iniciada
                     </FormLabel>
                   </FormItem>
@@ -253,3 +253,4 @@ export default function LoginForm() {
     </>
   );
 }
+

@@ -4,12 +4,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SplashScreen from '@/components/layout/splash-screen';
 
-export default function SignupChoicePage() {
+export default function SignupRiderPage() {
     const router = useRouter();
 
     useEffect(() => {
-        router.replace('/signup');
+        router.replace('/signup?role=rider');
     }, [router]);
 
     return <SplashScreen />;
 }
+

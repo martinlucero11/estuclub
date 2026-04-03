@@ -45,7 +45,7 @@ export default function AdminControlCentralPage() {
             <div className="space-y-6">
                 <div className="flex items-center gap-4 px-2">
                     <TrendingUp className="h-4 w-4 text-primary" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Métricas de Impacto</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">Métricas de Impacto</h2>
                 </div>
                 <KPIWidgets />
             </div>
@@ -54,7 +54,7 @@ export default function AdminControlCentralPage() {
             <div className="space-y-8">
                 <div className="flex items-center gap-6 px-2">
                     <Layers className="h-4 w-4 text-primary" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground">Módulos de Gestión</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">Módulos de Gestión</h2>
                     <div className="h-[1px] flex-1 bg-white/5" />
                 </div>
 
@@ -125,7 +125,7 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
         orange: "text-orange-500 border-orange-500/20 bg-orange-500/5 hover:border-orange-500/50",
         emerald: "text-emerald-500 border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/50",
         purple: "text-purple-500 border-purple-500/20 bg-purple-500/5 hover:border-purple-500/50",
-        slate: "text-slate-500 border-slate-500/20 bg-slate-500/5 hover:border-slate-500/50",
+        slate: "text-foreground border-foreground/20 bg-background/5 hover:border-foreground/50",
     };
 
     const colorClass = accentColors[accent as keyof typeof accentColors] || accentColors.primary;
@@ -143,12 +143,12 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
 
                     <div className="space-y-2">
                         <h3 className="text-2xl font-black italic tracking-tighter uppercase font-montserrat">{title}</h3>
-                        <p className="text-[10px] font-bold text-muted-foreground leading-relaxed line-clamp-2">{desc}</p>
+                        <p className="text-[10px] font-bold text-foreground leading-relaxed line-clamp-2">{desc}</p>
                     </div>
 
                     <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2">
                         {items.map((item: string) => (
-                            <span key={item} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-background/30 text-muted-foreground group-hover:text-foreground transition-colors">
+                            <span key={item} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-background/30 text-foreground group-hover:text-foreground transition-colors">
                                 {item}
                             </span>
                         ))}
@@ -158,4 +158,5 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
         </Link>
     );
 }
+
 

@@ -52,15 +52,15 @@ export default function VerifyPage() {
   // ── ADMIN OVERLORD BYPASS ────────────────────────────────
   if (!isUserLoading && !isAdmin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505] p-6 selection:bg-[#FF007F]/30">
-        <Card className="w-full max-w-md text-center rounded-[3rem] border-none shadow-[0_0_50px_rgba(255,0,127,0.1)] bg-slate-900/50 backdrop-blur-xl">
+      <div className="flex min-h-screen items-center justify-center bg-[#000000] p-6 selection:bg-[#FF007F]/30">
+        <Card className="w-full max-w-md text-center rounded-[3rem] border-none shadow-[0_0_50px_rgba(255,0,127,0.1)] bg-background/50 backdrop-blur-xl">
           <CardContent className="pt-16 pb-12 space-y-6">
             <div className="h-20 w-20 rounded-[2rem] bg-[#FF007F]/10 flex items-center justify-center mx-auto border border-[#FF007F]/20">
                <ShieldX className="h-10 w-10 text-[#FF007F]" />
             </div>
             <div className="space-y-2">
                <h1 className="text-3xl font-black uppercase tracking-tighter text-white font-montserrat">ACCESO DENEGADO</h1>
-               <p className="text-xs font-bold text-slate-500 uppercase tracking-widest leading-relaxed">
+               <p className="text-xs font-bold text-foreground uppercase tracking-widest leading-relaxed">
                  Esta área está restringida a personal de <br/> <span className="text-[#FF007F]">Estuclub Central</span>
                </p>
             </div>
@@ -187,7 +187,7 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] p-4 md:p-8 selection:bg-[#FF007F]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#FF007F]/30 overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-12">
         <header className="pt-12 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
           <div className="space-y-5">
@@ -222,7 +222,7 @@ export default function VerifyPage() {
         </header>
 
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-10">
-          <TabsList className="bg-slate-900/50 border border-white/5 p-2 rounded-3xl w-full h-auto flex flex-wrap gap-2 shadow-2xl overflow-hidden">
+          <TabsList className="bg-background/50 border border-white/5 p-2 rounded-3xl w-full h-auto flex flex-wrap gap-2 shadow-2xl overflow-hidden">
             <TabsTrigger value="riders" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-14">
               Riders ({applications?.length || 0})
             </TabsTrigger>
@@ -243,7 +243,7 @@ export default function VerifyPage() {
             ) : (!applications || applications.length === 0) ? (
               <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
                   <CheckCircle className="h-16 w-16 text-green-500 mb-4 opacity-20" />
-                  <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">Sin solicitudes de Riders</p>
+                  <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin solicitudes de Riders</p>
               </div>
             ) : (
               <div className="grid gap-8">
@@ -266,7 +266,7 @@ export default function VerifyPage() {
                     <div className="p-8 flex flex-col md:flex-row justify-between items-center gap-6">
                         <div className="space-y-1">
                             <h3 className="text-xl font-black uppercase tracking-tighter">{app.userName}</h3>
-                            <p className="text-[10px] font-bold text-muted-foreground opacity-70">Patente: {app.patente} | DNI: {app.dni}</p>
+                            <p className="text-[10px] font-bold text-foreground opacity-70">Patente: {app.patente} | DNI: {app.dni}</p>
                         </div>
                         <div className="flex gap-3">
                             <Button variant="ghost" onClick={() => handleRejectRider(app)} disabled={!!processingId} className="rounded-xl font-black uppercase text-[10px] tracking-widest text-destructive">Rechazar</Button>
@@ -284,7 +284,7 @@ export default function VerifyPage() {
              {pendingClubers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
                     <Building className="h-16 w-16 text-[#FF007F] mb-4 opacity-20" />
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/40">Sin comercios pendientes</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin comercios pendientes</p>
                 </div>
              ) : (
                 <div className="grid gap-6">
@@ -296,7 +296,7 @@ export default function VerifyPage() {
                         </div>
                         <div>
                         <h3 className="text-xl font-black uppercase tracking-tighter">{cluber.name}</h3>
-                        <p className="text-[10px] font-bold text-muted-foreground opacity-70 mb-2 italic">{cluber.address}</p>
+                        <p className="text-[10px] font-bold text-foreground opacity-70 mb-2 italic">{cluber.address}</p>
                         <Badge className="bg-[#FF007F]/10 text-[#FF007F] border-[#FF007F]/20 font-black text-[8px] uppercase tracking-widest">{cluber.type}</Badge>
                         </div>
                     </div>
@@ -332,7 +332,7 @@ export default function VerifyPage() {
              ) : (
                 <div className="grid gap-6">
                     {filteredManagementClubers.map((cluber) => (
-                        <Card key={cluber.id} className="rounded-[3rem] border-white/5 bg-slate-950/40 p-8 space-y-8 hover:border-[#FF007F]/20 transition-all group overflow-hidden relative">
+                        <Card key={cluber.id} className="rounded-[3rem] border-white/5 bg-background/40 p-8 space-y-8 hover:border-[#FF007F]/20 transition-all group overflow-hidden relative">
                              {/* Decorative Background Icon */}
                              <Building className="absolute -right-10 -bottom-10 h-64 w-64 text-white/[0.02] -rotate-12 pointer-events-none group-hover:text-[#FF007F]/[0.03] transition-colors" />
 
@@ -347,7 +347,7 @@ export default function VerifyPage() {
                                             {cluber.verified && <ShieldCheck className="h-5 w-5 text-blue-400" />}
                                             {cluber.isCincoDos && <Utensils className="h-5 w-5 text-amber-400 fill-amber-400/20" />}
                                         </div>
-                                        <p className="text-[10px] font-bold text-muted-foreground opacity-60 uppercase tracking-widest">ID: {cluber.id}</p>
+                                        <p className="text-[10px] font-bold text-foreground opacity-60 uppercase tracking-widest">ID: {cluber.id}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -460,4 +460,5 @@ function CincoDosToggle({ value, onChange }: { value: boolean, onChange: (v: boo
         </div>
     );
 }
+
 

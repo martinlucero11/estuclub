@@ -51,17 +51,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
     if (!isMounted) return null;
 
-    const isAuthPage = pathname === '/login' || pathname === '/signup' || pathname === '/be-cluber' || pathname === '/be-rider';
-
     return (
-        <div className={cn(
-            "min-h-[100dvh] flex flex-col relative overflow-x-hidden overscroll-none selection:bg-[#d93b64]/10",
-            isAuthPage ? "bg-[#050505]" : "bg-background"
-        )}>
+        <div className="min-h-screen flex flex-col relative selection:bg-primary/10 bg-background">
             <OfflineWarmer />
             <MeshBackground />
-            
-            {!isAuthPage && <Header />}
             
             <AnimatePresence mode="wait">
                 <motion.main 
@@ -71,25 +64,16 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ 
                         duration: 0.4, 
-                        ease: [0.22, 1, 0.36, 1], // Custom "breathable" ease
+                        ease: [0.22, 1, 0.36, 1],
                     }}
-                    className={cn(
-                        "flex-1 w-full z-0 px-0",
-                        !isAuthPage && "pt-[70px] pb-[100px]"
-                    )}
+                    className="flex-1 w-full z-0 px-0 pt-20 pb-20 md:pt-24 md:pb-24"
                 >
-                    <div className={cn(
-                        "w-full h-full", 
-                        !isAuthPage ? "max-w-7xl mx-auto px-4 md:px-0" : "mobile-container"
-                    )}>
+                    <div className="w-full max-w-7xl mx-auto px-4 md:px-0">
                         {children}
                     </div>
                 </motion.main>
             </AnimatePresence>
-            
-            {isWeb && !isAuthPage && <Footer />}
-
-            {!isAuthPage && <BottomNav />}
         </div>
     );
 }
+

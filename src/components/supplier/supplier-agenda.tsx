@@ -124,8 +124,8 @@ export default function SupplierAgenda() {
                                                         {format(startTime, 'HH:mm')} hs
                                                     </Badge>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground font-medium">{apt.serviceName}</p>
-                                                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground">
+                                                <p className="text-sm text-foreground font-medium">{apt.serviceName}</p>
+                                                <div className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-foreground">
                                                     <div className="flex items-center gap-1">
                                                         <UserIcon className="h-3 w-3" />
                                                         DNI: {apt.userDni}
@@ -152,3 +152,4 @@ export default function SupplierAgenda() {
         </div>
     );
 }
+

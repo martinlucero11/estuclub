@@ -83,10 +83,10 @@ export function AdminSidebar() {
                   "flex items-center gap-4 px-4 h-12 rounded-2xl transition-all duration-200 group relative",
                   isActive 
                     ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    : "text-foreground hover:bg-white/5 hover:text-foreground"
                 )}
               >
-                <item.icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(217,59,100,0.5)]")} />
+                <item.icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(203, 70, 90,0.5)]")} />
                 {!isCollapsed && (
                   <span className="font-black text-[10px] uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">
                     {item.label}
@@ -131,13 +131,13 @@ export function AdminSidebar() {
       {/* Footer Info */}
       <div className="p-6 border-t border-white/5">
         <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
-           <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center">
+           <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center">
              <ShieldCheck className="h-4 w-4 text-emerald-500" />
            </div>
            {!isCollapsed && (
              <div className="overflow-hidden">
                <p className="font-black text-[10px] uppercase truncate">Master Admin</p>
-               <p className="text-[8px] text-muted-foreground uppercase tracking-tighter">Acceso Total</p>
+               <p className="text-[8px] text-foreground uppercase tracking-tighter">Acceso Total</p>
              </div>
            )}
         </div>
@@ -145,3 +145,4 @@ export function AdminSidebar() {
     </div>
   );
 }
+

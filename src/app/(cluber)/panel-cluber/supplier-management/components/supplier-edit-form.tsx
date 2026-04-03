@@ -278,3 +278,4 @@ export function SupplierEditForm({ user, supplierProfile, onSuccess }: SupplierE
         </Form>
     );
 }
+

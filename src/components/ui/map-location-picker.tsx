@@ -42,7 +42,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                         {
                             "featureType": "all",
                             "elementType": "labels.text.stroke",
-                            "stylers": [{ "visibility": "on" }, { "color": "#050505" }, { "lightness": 16 }]
+                            "stylers": [{ "visibility": "on" }, { "color": "#000000" }, { "lightness": 16 }]
                         },
                         {
                             "featureType": "all",
@@ -62,7 +62,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                         {
                             "featureType": "landscape",
                             "elementType": "geometry",
-                            "stylers": [{ "color": "#111111" }]
+                            "stylers": [{ "color": "#000000" }]
                         },
                         {
                             "featureType": "poi",
@@ -72,12 +72,12 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                         {
                             "featureType": "road.highway",
                             "elementType": "geometry.fill",
-                            "stylers": [{ "color": "#1c1c1c" }]
+                            "stylers": [{ "color": "#000000" }]
                         },
                         {
                             "featureType": "road.highway",
                             "elementType": "geometry.stroke",
-                            "stylers": [{ "color": "#121212" }, { "weight": 0.2 }]
+                            "stylers": [{ "color": "#000000" }, { "weight": 0.2 }]
                         },
                         {
                             "featureType": "road.arterial",
@@ -150,13 +150,13 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
 
     return (
         <div className={cn("relative w-full h-[300px] rounded-[2rem] overflow-hidden border border-white/10 shadow-premium group", className)}>
-            <div ref={mapRef} className="w-full h-full bg-slate-900" />
+            <div ref={mapRef} className="w-full h-full bg-background" />
             
             {/* Center Pin overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 transition-transform group-active:scale-95">
                 <div className="relative -mt-8 flex flex-col items-center">
                     <div className="absolute bottom-0 w-1 h-1 bg-black/40 blur-sm rounded-full scale-150" />
-                    <MapPin className="h-10 w-10 text-[#d93b64] filter drop-shadow-[0_0_10px_rgba(217,59,100,0.5)] fill-current" />
+                    <MapPin className="h-10 w-10 text-[#cb465a] filter drop-shadow-[0_0_10px_rgba(203, 70, 90,0.5)] fill-current" />
                 </div>
             </div>
 
@@ -165,12 +165,12 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                 <div className="bg-background/80 backdrop-blur-xl p-3 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
                     <div className={cn(
                         "h-8 w-8 rounded-xl flex items-center justify-center shrink-0",
-                        isGeocoding ? "bg-primary/10" : "bg-slate-100 dark:bg-white/5"
+                        isGeocoding ? "bg-primary/10" : "bg-background dark:bg-white/5"
                     )}>
                         {isGeocoding ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <MapPin className="h-4 w-4 text-primary" />}
                     </div>
                     <div className="flex-1 overflow-hidden">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60 mb-0.5">Ubicación del Pin</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-foreground/60 mb-0.5">Ubicación del Pin</p>
                         <p className="text-[10px] font-bold truncate text-foreground">{address || (isLoaded ? 'Ajustando ubicación...' : 'Cargando mapa...')}</p>
                     </div>
                 </div>
@@ -189,11 +189,12 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
             </div>
 
             {!isLoaded && (
-                <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-3">
-                    <Loader2 className="h-8 w-8 animate-spin text-[#d93b64]" />
+                <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-[#cb465a]" />
                     <span className="text-[10px] font-black uppercase tracking-widest text-white italic">Inicializando Mapa...</span>
                 </div>
             )}
         </div>
     );
 }
+

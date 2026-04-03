@@ -93,3 +93,4 @@ export default function AnnouncementList({ user }: AnnouncementListProps) {
         </div>
     );
 }
+

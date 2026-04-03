@@ -15,12 +15,12 @@ export default function CluberProductsPage() {
     return (
         <div className="container max-w-7xl py-12 px-6 space-y-10">
             <header className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-2xl bg-[#d93b64]/10 flex items-center justify-center border border-[#d93b64]/20">
-                    <Package className="h-8 w-8 text-[#d93b64]" />
+                <div className="h-16 w-16 rounded-2xl bg-[#cb465a]/10 flex items-center justify-center border border-[#cb465a]/20">
+                    <Package className="h-8 w-8 text-[#cb465a]" />
                 </div>
                 <div>
                     <h1 className="text-4xl font-black font-montserrat uppercase italic tracking-tighter">Gestión de <span className="text-primary">Productos</span></h1>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Administrá tu catálogo de delivery</p>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest">Administrá tu catálogo de delivery</p>
                 </div>
             </header>
 
@@ -32,4 +32,5 @@ export default function CluberProductsPage() {
         </div>
     );
 }
+
 

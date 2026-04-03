@@ -14,3 +14,4 @@ interface HomeSectionDialogProps {
 export function HomeSectionDialog({ isOpen, onOpenChange, section }: HomeSectionDialogProps) {
     return null;
 }
+

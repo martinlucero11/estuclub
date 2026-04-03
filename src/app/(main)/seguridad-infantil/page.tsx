@@ -9,7 +9,7 @@ export default function ChildSafetyPolicyPage() {
     <MainLayout>
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6">Política de Estándares de Seguridad Infantil</h1>
-        <p className="text-sm text-muted-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
+        <p className="text-sm text-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
         
         <div className="space-y-6 text-foreground/80 leading-relaxed">
           <p>En EstuClub nos tomamos muy en serio la seguridad de todos nuestros usuarios, especialmente la de los niños y adolescentes. Nos comprometemos firmemente a mantener nuestra plataforma como un entorno seguro y libre de cualquier forma de explotación o abuso sexual infantil (CSAE, por sus siglas en inglés).</p>
@@ -49,7 +49,7 @@ export default function ChildSafetyPolicyPage() {
           <section>
             <h2 className="text-xl font-semibold text-foreground mt-8 mb-4">5. Punto de contacto para la seguridad de los niños</h2>
             <p>Para consultas, reportes urgentes o comunicación oficial de entidades policiales o de protección al menor con respecto a incidentes CSAM / CSAE, hemos designado a los siguientes Oficiales de Contacto de Seguridad (Safety Points of Contact):</p>
-            <div className="bg-muted/50 p-6 rounded-xl mt-4 border border-border">
+            <div className="bg-background/50 p-6 rounded-xl mt-4 border border-foreground">
               <ul className="space-y-3">
                 <li><strong>Departamento de Seguridad y Moderación (EstuClub)</strong></li>
                 <li><strong>Email principal para reportes:</strong> <a href="mailto:seguridad@estuclub.com.ar" className="text-primary hover:underline">seguridad@estuclub.com.ar</a></li>
@@ -63,3 +63,4 @@ export default function ChildSafetyPolicyPage() {
     </MainLayout>
   );
 }
+

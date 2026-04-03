@@ -49,10 +49,10 @@ export function ReviewList({ supplierId }: { supplierId: string }) {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="text-center py-12 bg-muted/20 rounded-3xl border-2 border-dashed flex flex-col items-center">
-        <MessageSquare className="h-10 w-10 text-muted-foreground/30 mb-2" />
-        <p className="text-muted-foreground font-medium">Aún no hay reseñas para este Cluber.</p>
-        <p className="text-xs text-muted-foreground mt-1">¡Sé el primero en calificar un beneficio!</p>
+      <div className="text-center py-12 bg-background/20 rounded-3xl border-2 border-dashed flex flex-col items-center">
+        <MessageSquare className="h-10 w-10 text-foreground/30 mb-2" />
+        <p className="text-foreground font-medium">Aún no hay reseñas para este Cluber.</p>
+        <p className="text-xs text-foreground mt-1">¡Sé el primero en calificar un beneficio!</p>
       </div>
     );
   }
@@ -73,7 +73,7 @@ export function ReviewList({ supplierId }: { supplierId: string }) {
               </div>
             </div>
             <div className="text-right">
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                <div className="flex items-center gap-1 text-[10px] text-foreground font-medium uppercase tracking-wider">
                     <Calendar className="h-3 w-3" />
                     {review.createdAt?.toDate ? format(review.createdAt.toDate(), 'd MMM, yyyy', { locale: es }) : 'Reciente'}
                 </div>
@@ -90,3 +90,4 @@ export function ReviewList({ supplierId }: { supplierId: string }) {
     </div>
   );
 }
+

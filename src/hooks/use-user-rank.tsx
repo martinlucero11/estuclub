@@ -56,3 +56,4 @@ export function useUserRank(userId?: string, userPoints?: number) {
 
   return { rank, isLoading };
 }
+

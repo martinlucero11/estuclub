@@ -5,3 +5,4 @@ export default function Loading() {
   // acting as our main splash screen.
   return <SplashScreen />;
 }
+

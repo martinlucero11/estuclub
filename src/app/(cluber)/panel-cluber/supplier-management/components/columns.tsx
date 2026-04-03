@@ -116,3 +116,4 @@ export const getSupplierColumns = ({ onToggle, onDelete, onEdit, loadingStates }
     },
   },
 ];
+

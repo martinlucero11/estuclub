@@ -17,9 +17,9 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
 
   if (!carouselItems || carouselItems.length === 0) {
     return (
-         <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center h-48">
+         <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-foreground p-12 text-center h-48">
             <h3 className="text-xl font-semibold">No hay nada destacado</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-foreground">
             Vuelve más tarde para ver las últimas novedades.
             </p>
       </div>
@@ -53,3 +53,4 @@ export default function PerksCarousel({ carouselItems }: { carouselItems: Carous
     </Carousel>
   );
 }
+

@@ -44,7 +44,7 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
     <Card className="w-full max-w-sm">
         <CardHeader className="text-center space-y-2">
             {supplier && (
-                <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <div className="flex items-center justify-center gap-2 text-foreground">
                     <Building className="h-4 w-4" />
                     <p className="font-semibold">{supplier.name}</p>
                 </div>
@@ -66,8 +66,8 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
                 )}
             </div>
             <div className="text-center">
-                <p className="text-sm text-muted-foreground">Hora: <span className="font-bold text-foreground">{startTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs</span></p>
-                <p className="text-xs text-muted-foreground font-mono mt-2">ID: {appointment.id}</p>
+                <p className="text-sm text-foreground">Hora: <span className="font-bold text-foreground">{startTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs</span></p>
+                <p className="text-xs text-foreground font-mono mt-2">ID: {appointment.id}</p>
             </div>
         </CardContent>
         <CardFooter>
@@ -78,3 +78,4 @@ export default function AppointmentReceiptCard({ appointment, supplier }: Appoin
     </Card>
   );
 }
+

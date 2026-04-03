@@ -121,3 +121,4 @@ export default function BenefitList({ user }: BenefitListProps) {
     </>
   );
 }
+

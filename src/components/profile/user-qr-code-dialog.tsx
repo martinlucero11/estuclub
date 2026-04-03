@@ -90,3 +90,4 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
     </Dialog>
   );
 }
+

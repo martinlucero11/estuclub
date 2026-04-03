@@ -30,7 +30,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="fixed inset-0 z-[9999] bg-[#050505] flex items-center justify-center p-6 text-center">
+        <div className="fixed inset-0 z-[9999] bg-[#000000] flex items-center justify-center p-6 text-center">
           <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-500">
             <div className="relative mx-auto w-24 h-24">
               <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
@@ -43,7 +43,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white font-montserrat">
                 ¡Ups! Algo salió <span className="text-primary">de ruta</span>
               </h1>
-              <p className="text-slate-400 font-medium text-sm leading-relaxed px-4">
+              <p className="text-foreground font-medium text-sm leading-relaxed px-4">
                 La aplicación encontró un error inesperado. No te preocupes, tus datos están a salvo.
               </p>
             </div>
@@ -58,7 +58,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
               <Button 
                 variant="ghost"
                 onClick={() => window.location.href = '/'}
-                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-slate-400 font-black uppercase tracking-widest hover:bg-white/10"
+                className="h-14 rounded-2xl bg-white/5 border border-white/10 text-foreground font-black uppercase tracking-widest hover:bg-white/10"
               >
                 <Home className="mr-2 h-5 w-5" /> Volver al Inicio
               </Button>
@@ -75,3 +75,4 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     return this.props.children;
   }
 }
+

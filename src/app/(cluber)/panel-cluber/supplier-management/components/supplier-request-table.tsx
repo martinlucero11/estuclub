@@ -84,7 +84,7 @@ export function SupplierRequestTable() {
       cell: ({ row }: any) => (
         <div className="flex flex-col">
           <span className="font-bold">{row.original.userName}</span>
-          <span className="text-xs text-muted-foreground">{row.original.userEmail}</span>
+          <span className="text-xs text-foreground">{row.original.userEmail}</span>
         </div>
       ),
     },
@@ -136,3 +136,4 @@ export function SupplierRequestTable() {
     />
   );
 }
+

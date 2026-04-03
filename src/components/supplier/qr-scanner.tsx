@@ -62,7 +62,7 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
 
     return (
         <Card className="w-full max-w-md mx-auto overflow-hidden border-2 border-primary/20">
-            <CardHeader className="text-center pb-6 bg-muted/30">
+            <CardHeader className="text-center pb-6 bg-background/30">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 mb-4 shadow-inner">
                     {type === 'redemption' ? <Tag className="h-8 w-8 text-primary" /> : 
                      type === 'appointment' ? <CheckCircle className="h-8 w-8 text-primary" /> : 
@@ -72,7 +72,7 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
                     {type === 'redemption' ? (alreadyUsed ? 'Canje Ya Usado' : 'Canje Validado') :
                      type === 'appointment' ? 'Turno Verificado' : 'Identidad Verificada'}
                 </CardTitle>
-                <CardDescription className="font-medium text-muted-foreground/80">
+                <CardDescription className="font-medium text-foreground/80">
                     {type === 'redemption' ? (alreadyUsed ? 'Este beneficio ya fue utilizado.' : 'El beneficio se marcó como usado.') :
                      type === 'appointment' ? 'El turno del estudiante es válido.' : 'Estudiante verificado en el sistema.'}
                 </CardDescription>
@@ -93,12 +93,12 @@ function ValidationResult({ data, onScanAgain, alreadyUsed }: { data: Validation
                     </div>
 
                     <div className="grid grid-cols-1 w-full gap-3 pt-4">
-                        <div className="flex items-center gap-4 p-3 rounded-2xl bg-muted/50 border border-border/50">
+                        <div className="flex items-center gap-4 p-3 rounded-2xl bg-background/50 border border-foreground/50">
                             <div className="h-8 w-8 rounded-lg bg-background flex items-center justify-center shadow-sm">
-                                <University className="h-4 w-4 text-muted-foreground" />
+                                <University className="h-4 w-4 text-foreground" />
                             </div>
                             <div className="text-left">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 leading-none mb-1">Institución</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60 leading-none mb-1">Institución</p>
                                 <p className="text-sm font-bold">{profile.university || 'No especificada'}</p>
                             </div>
                         </div>
@@ -372,7 +372,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                     <CardDescription>Apunta la cámara al código del estudiante para validarlo.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-4 relative aspect-square flex items-center justify-center">
-                    <div id="qr-reader" className="w-full h-full rounded-lg overflow-hidden bg-muted" />
+                    <div id="qr-reader" className="w-full h-full rounded-lg overflow-hidden bg-background" />
                     {scanError ? (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/90 p-4 text-center">
                             <Alert variant="destructive">
@@ -422,3 +422,4 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
         </div>
     );
 }
+

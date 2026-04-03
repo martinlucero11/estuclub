@@ -118,7 +118,7 @@ export default function AddServiceForm() {
             <FormItem>
               <FormLabel>Duración (en minutos)</FormLabel>
               <div className="relative">
-                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                 <FormControl>
                     <Input type="number" placeholder="Ej: 30" {...field} className="pl-10" />
                 </FormControl>
@@ -142,3 +142,4 @@ export default function AddServiceForm() {
     </Form>
   );
 }
+

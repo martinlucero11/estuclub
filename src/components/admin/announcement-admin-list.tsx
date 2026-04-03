@@ -57,8 +57,8 @@ function AnnouncementAdminListItem({ announcement }: { announcement: Announcemen
                     />
                     <div className="flex-1">
                         <p className="font-medium">{announcement.title}</p>
-                        <p className="text-sm text-muted-foreground line-clamp-1">{announcement.content}</p>
-                        <p className="text-xs text-muted-foreground pt-1">Publicado: {formattedDate}</p>
+                        <p className="text-sm text-foreground line-clamp-1">{announcement.content}</p>
+                        <p className="text-xs text-foreground pt-1">Publicado: {formattedDate}</p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -126,7 +126,7 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
 
     if (!announcements || announcements.length === 0) {
         return (
-            <p className="text-center text-muted-foreground">No hay anuncios para mostrar.</p>
+            <p className="text-center text-foreground">No hay anuncios para mostrar.</p>
         );
     }
 
@@ -138,3 +138,4 @@ export default function AnnouncementAdminList({ authorId }: { authorId?: string 
         </div>
     );
 }
+

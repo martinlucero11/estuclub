@@ -56,7 +56,7 @@ export default function UserManagement() {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <Loader2 className="h-12 w-12 text-primary animate-spin opacity-40 mx-auto" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground animate-pulse">Indexando Población...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground animate-pulse">Indexando Población...</p>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function UserManagement() {
       {/* Header & Search */}
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="relative w-full max-w-xl group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="BUSCAR USUARIO POR NOMBRE O EMAIL..." 
             value={searchQuery}
@@ -81,7 +81,7 @@ export default function UserManagement() {
       </div>
 
       {/* User Table Header (Desktop only) */}
-      <div className="hidden md:grid grid-cols-12 gap-4 px-8 pb-4 text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground opacity-40">
+      <div className="hidden md:grid grid-cols-12 gap-4 px-8 pb-4 text-[10px] font-black uppercase tracking-[0.3em] text-foreground opacity-40">
         <div className="col-span-4">Usuario</div>
         <div className="col-span-2">Rol Base</div>
         <div className="col-span-3">Registro</div>
@@ -101,14 +101,14 @@ export default function UserManagement() {
                   {user.photoURL ? (
                     <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <Users className="h-5 w-5 text-foreground" />
                   )}
                </div>
                <div className="min-w-0">
                   <p className="font-black text-sm tracking-tight truncate">
                     {user.firstName ? `${user.firstName} ${user.lastName || ''}` : user.username || 'Sin Nombre'}
                   </p>
-                  <p className="text-[10px] text-muted-foreground truncate opacity-60">{user.email || user.uid}</p>
+                  <p className="text-[10px] text-foreground truncate opacity-60">{user.email || user.uid}</p>
                </div>
             </div>
 
@@ -120,7 +120,7 @@ export default function UserManagement() {
             </div>
 
             {/* Date */}
-            <div className="col-span-3 flex items-center gap-2 text-[10px] font-bold text-muted-foreground italic">
+            <div className="col-span-3 flex items-center gap-2 text-[10px] font-bold text-foreground italic">
                <Calendar className="h-3 w-3 opacity-30" />
                Hoy, 14:20hs
             </div>
@@ -148,3 +148,4 @@ export default function UserManagement() {
     </div>
   );
 }
+

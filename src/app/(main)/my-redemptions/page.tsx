@@ -24,7 +24,7 @@ export default function MyRedemptionsPage() {
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Mi Historial de Canjes" />
-                <p className="text-muted-foreground -mt-8 mb-8">
+                <p className="text-foreground -mt-8 mb-8">
                     Aquí puedes ver todos los beneficios que has canjeado.
                 </p>
 
@@ -35,3 +35,4 @@ export default function MyRedemptionsPage() {
         </MainLayout>
     );
 }
+

@@ -33,8 +33,8 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   if (isUserLoading && !isPublicPath) {
     return (
       <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 space-y-4">
-        <Loader2 className="h-10 w-10 text-[#d93b64] animate-spin" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#d93b64]">
+        <Loader2 className="h-10 w-10 text-[#cb465a] animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#cb465a]">
           Cargando Estuclub...
         </p>
       </div>
@@ -93,11 +93,11 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   return (
     <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center p-6">
       <Card className="w-full max-w-md rounded-[3rem] border-none shadow-2xl overflow-hidden p-10 text-center space-y-6">
-        <Mail className="h-12 w-12 text-[#d93b64] mx-auto opacity-20" />
-        <h2 className="text-2xl font-black uppercase tracking-tighter text-[#d93b64]">
+        <Mail className="h-12 w-12 text-[#cb465a] mx-auto opacity-20" />
+        <h2 className="text-2xl font-black uppercase tracking-tighter text-[#cb465a]">
           {profileMissing ? 'Configurando perfil...' : 'Verificá tu cuenta'}
         </h2>
-        <p className="text-xs font-bold text-slate-500 uppercase">
+        <p className="text-xs font-bold text-foreground uppercase">
           {profileMissing
             ? 'Estamos terminando de crear tu perfil. Esperá unos segundos.'
             : `Enviamos un link a: ${user.email}`}
@@ -106,7 +106,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
           <Button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="h-14 rounded-2xl bg-[#d93b64] text-white font-black uppercase tracking-widest text-[10px]"
+            className="h-14 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-widest text-[10px]"
           >
             {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'YA VERIFIQUÉ MI CUENTA'}
           </Button>
@@ -123,3 +123,4 @@ export default function VerificationGate({ children }: { children: React.ReactNo
     </div>
   );
 }
+

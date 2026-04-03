@@ -65,9 +65,9 @@ function UserMenu() {
 
   if (!user) {
     return (
-      <Button asChild variant="ghost" size="icon" className="text-white hover:bg-white/20" aria-label="Iniciar Sesión">
+      <Button asChild variant="ghost" size="icon" className="hover:bg-white/10" aria-label="Iniciar Sesión">
         <Link href="/login">
-            <LogIn className="h-6 w-6" />
+            <LogIn className="h-6 w-6 text-white" />
         </Link>
       </Button>
     );
@@ -80,8 +80,8 @@ function UserMenu() {
         <DropdownMenu>
             <MagneticButton>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/20 overflow-hidden" aria-label="User Menu">
-                    <Avatar className="h-9 w-9 bg-background">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 overflow-hidden" aria-label="User Menu">
+                    <Avatar className="h-9 w-9 bg-background border border-white/20">
                         {avatarUrl ? (
                             <AvatarImage src={avatarUrl} alt={user.displayName || 'User'} className="object-cover" />
                         ) : (
@@ -95,7 +95,7 @@ function UserMenu() {
             <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none">{user.displayName || 'Estudiante'}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                <p className="text-xs leading-none text-foreground">{user.email}</p>
             </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -133,16 +133,16 @@ function AppSidebar() {
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-white/20" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
-                        <LayoutGrid className="h-6 w-6 text-white group-hover:scale-110 transition-transform" />
+                    <Button variant="ghost" size="icon" className="group hover:bg-white/10" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
+                        <LayoutGrid className="h-6 w-6 text-white transition-colors" />
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
-            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-primary/10 overflow-hidden">
-                <SheetHeader className="p-10 border-b border-primary/5 relative bg-white">
+            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black overflow-hidden">
+                <SheetHeader className="p-10 border-b border-black/5 relative bg-primary">
                     <div className="flex justify-center mb-4">
                            <Image 
-                                src="/logo.svg" 
+                                src="/logo-white.svg" 
                                 alt="Estuclub" 
                                 width={140} 
                                 height={35} 
@@ -151,11 +151,11 @@ function AppSidebar() {
                     </div>
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium">
+                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium bg-white">
                     <nav className="flex flex-col gap-6">
                         {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => (
                             <div key={section.title} className="space-y-4 mb-2">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-muted-foreground/50 px-5 italic">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-black px-5 italic">
                                     {section.title}
                                 </h3>
                                 <div className="grid gap-1.5 px-1">
@@ -169,12 +169,12 @@ function AppSidebar() {
                                                         variant="ghost" 
                                                         className={cn(
                                                             "w-full justify-start text-[11px] font-black uppercase tracking-widest h-14 rounded-2xl transition-all",
-                                                            isCurrent ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-primary/5"
+                                                            isCurrent ? "bg-primary text-white" : "text-black hover:bg-primary/10"
                                                         )}
                                                     >
                                                         <div className={cn(
                                                             "mr-4 p-2 rounded-xl transition-all",
-                                                            isCurrent ? "bg-primary text-white" : "bg-muted"
+                                                            isCurrent ? "bg-white text-primary" : "bg-primary/10 text-primary border-2 border-primary"
                                                         )}>
                                                             {Icon && <Icon className="h-3.5 w-3.5" />}
                                                         </div>
@@ -195,7 +195,7 @@ function AppSidebar() {
 
                             return (
                                 <div key={category} className="space-y-3">
-                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-muted-foreground/30">
+                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-black">
                                         {category}
                                         {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                     </button>
@@ -204,8 +204,8 @@ function AppSidebar() {
                                             {visibleItems.map((item) => (
                                                 <SheetClose asChild key={item.href}>
                                                     <Link href={item.href}>
-                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-bold", pathname === item.href ? "bg-primary/10 text-primary" : "text-muted-foreground")}>
-                                                            <div className={cn("mr-4 p-2.5 rounded-xl", pathname === item.href ? "bg-primary text-white" : "bg-muted")}>
+                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-black uppercase tracking-widest", pathname === item.href ? "bg-primary text-white" : "text-black hover:bg-primary/5")}>
+                                                            <div className={cn("mr-4 p-2.5 rounded-xl border-2", pathname === item.href ? "bg-white text-primary border-white" : "bg-white text-primary border-primary")}>
                                                                 {item.icon && <item.icon className="h-4 w-4" />}
                                                             </div>
                                                             {item.title}
@@ -230,19 +230,18 @@ export default function Header() {
   const { isMobile } = usePlatform();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-xl border-none shadow-none z-[-1]" />
+    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-primary border-b-2 border-white shadow-lg">
       <div className="container relative flex justify-between items-center px-6">
         <div className="flex items-center gap-1">
           <AppSidebar />
-          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20 h-10 w-10">
-            <Search className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="hover:bg-white/10 h-10 w-10">
+             <Search className="h-5 w-5 text-white" />
           </Button>
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
             <Image 
-                src="/logo.svg" 
+                src="/logo-white.svg" 
                 alt="EstuClub Logo" 
                 width={110} 
                 height={28} 
@@ -259,3 +258,4 @@ export default function Header() {
     </header>
   );
 }
+

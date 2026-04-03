@@ -20,3 +20,4 @@ export const MP_REDIRECT_URI = process.env.NODE_ENV === 'development'
 export const getMPOAuthUrl = (state: string) => {
     return `https://auth.mercadopago.com/authorization?client_id=${MP_APP_ID}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${encodeURIComponent(MP_REDIRECT_URI)}`;
 };
+

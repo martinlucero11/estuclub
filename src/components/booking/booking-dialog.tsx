@@ -183,11 +183,11 @@ export default function BookingDialog({ service, availability, supplierId, child
                             {format(slot, 'HH:mm')}
                             </Button>
                         )) : (
-                            <p className='col-span-full text-sm text-muted-foreground text-center p-4'>No hay turnos disponibles para este día.</p>
+                            <p className='col-span-full text-sm text-foreground text-center p-4'>No hay turnos disponibles para este día.</p>
                         )}
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center h-full text-sm text-muted-foreground border-2 border-dashed rounded-md p-4">
+                        <div className="flex items-center justify-center h-full text-sm text-foreground border-2 border-dashed rounded-md p-4">
                             <p>Selecciona un día para ver los horarios.</p>
                         </div>
                     )}
@@ -196,7 +196,7 @@ export default function BookingDialog({ service, availability, supplierId, child
 
              <DialogFooter className="pt-6">
                  <div className='w-full flex flex-col sm:flex-row justify-between items-center gap-4'>
-                    <p className="text-sm text-muted-foreground text-center sm:text-left">
+                    <p className="text-sm text-foreground text-center sm:text-left">
                         {selectedSlot 
                             ? <>Turno seleccionado: <strong className="text-foreground">{format(selectedSlot, "eeee, d 'de' MMMM 'a las' HH:mm", { locale: es })}</strong></>
                             : "Por favor, selecciona una fecha y hora."
@@ -216,3 +216,4 @@ export default function BookingDialog({ service, availability, supplierId, child
     </Dialog>
   );
 }
+

@@ -91,7 +91,7 @@ function SearchResults() {
           {/* Suppliers Results */}
           {filteredSuppliers.length > 0 && (
             <section>
-              <div className="mb-6 flex items-center gap-2 text-muted-foreground border-b pb-2">
+              <div className="mb-6 flex items-center gap-2 text-foreground border-b pb-2">
                 <Building className="h-5 w-5" />
                 <h2 className="text-lg font-semibold text-foreground">Clubers ({filteredSuppliers.length})</h2>
               </div>
@@ -104,7 +104,7 @@ function SearchResults() {
                   >
                     <Avatar className="h-12 w-12 mr-4 overflow-hidden rounded-full border-2 border-background group-hover:border-primary/20 transition-colors">
                         <AvatarImage src={supplier.logoUrl || undefined} className="object-cover" />
-                        <AvatarFallback className="bg-muted text-lg font-bold">
+                        <AvatarFallback className="bg-background text-lg font-bold">
                             {getInitials(supplier.name)}
                         </AvatarFallback>
                     </Avatar>
@@ -112,7 +112,7 @@ function SearchResults() {
                         <h3 className="font-bold truncate text-foreground group-hover:text-primary transition-colors">
                             {supplier.name}
                         </h3>
-                        <p className="text-xs text-muted-foreground capitalize flex items-center gap-1">
+                        <p className="text-xs text-foreground capitalize flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />
                             {supplier.type}
                         </p>
@@ -125,16 +125,16 @@ function SearchResults() {
 
           {/* Benefits Results */}
           <section>
-            <div className="mb-6 flex items-center gap-2 text-muted-foreground border-b pb-2">
+            <div className="mb-6 flex items-center gap-2 text-foreground border-b pb-2">
               <Ticket className="h-5 w-5" />
               <h2 className="text-lg font-semibold text-foreground">Beneficios ({filteredBenefits.length})</h2>
             </div>
             {filteredBenefits.length > 0 ? (
               <PerksGrid perks={filteredBenefits} />
             ) : (
-              <div className="text-center py-24 bg-muted/20 rounded-3xl border-2 border-dashed border-muted-foreground/20 flex flex-col items-center justify-center space-y-3">
-                <Search className="h-10 w-10 text-muted-foreground/30" />
-                <p className="text-muted-foreground font-medium">No encontramos beneficios que coincidan.</p>
+              <div className="text-center py-24 bg-background/20 rounded-3xl border-2 border-dashed border-foreground-foreground/20 flex flex-col items-center justify-center space-y-3">
+                <Search className="h-10 w-10 text-foreground/30" />
+                <p className="text-foreground font-medium">No encontramos beneficios que coincidan.</p>
                 <Link href="/benefits" className="text-primary hover:underline text-sm font-semibold">
                     Ver todos los beneficios
                 </Link>
@@ -145,7 +145,7 @@ function SearchResults() {
           {isNoResults && q && (
             <div className="text-center py-20">
                 <h2 className="text-xl font-bold">Sin resultados para "{q}"</h2>
-                <p className="text-muted-foreground mt-2">Intenta con otras palabras clave o explora las categorías.</p>
+                <p className="text-foreground mt-2">Intenta con otras palabras clave o explora las categorías.</p>
             </div>
           )}
         </div>
@@ -169,3 +169,4 @@ export default function SearchPage() {
     </MainLayout>
   );
 }
+

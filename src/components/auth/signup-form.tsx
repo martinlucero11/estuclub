@@ -281,7 +281,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
             </div>
             <div className="space-y-2">
                 <h3 className="text-2xl font-black tracking-tighter uppercase text-foreground">¡Casi listo!</h3>
-                <p className="text-sm font-medium text-muted-foreground/80 leading-relaxed italic">
+                <p className="text-sm font-medium text-foreground/80 leading-relaxed italic">
                     Te hemos enviado un enlace para verificar tu cuenta. Revisa tu bandeja de entrada.
                 </p>
             </div>
@@ -289,7 +289,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <Button onClick={() => router.push('/login')} className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20">
                     Ir a Iniciar Sesión
                 </Button>
-                <Button variant="ghost" onClick={handleResendVerification} disabled={isResending} className="w-full font-black uppercase tracking-widest text-[10px] text-muted-foreground hover:bg-primary/5 hover:text-primary transition-all">
+                <Button variant="ghost" onClick={handleResendVerification} disabled={isResending} className="w-full font-black uppercase tracking-widest text-[10px] text-foreground hover:bg-primary/5 hover:text-primary transition-all">
                     {isResending ? 'Reenviando...' : 'Reenviar enlace'}
                 </Button>
             </div>
@@ -311,7 +311,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                     <AlertCircle className="h-4 w-4 text-primary" />
                     <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Inscripción</h4>
                 </div>
-                <p className="text-[10px] font-bold text-muted-foreground/70">Completa tus datos para unirte al club.</p>
+                <p className="text-[10px] font-bold text-foreground/70">Completa tus datos para unirte al club.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -322,7 +322,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                   <FormItem>
                     <FormLabel className={labelClasses}>Nombre</FormLabel>
                     <div className="relative group/input">
-                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                       <FormControl><Input placeholder="Juan" {...field} className={inputClasses} /></FormControl>
                     </div>
                     <FormMessage className="text-[10px] font-bold" />
@@ -336,7 +336,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                   <FormItem>
                     <FormLabel className={labelClasses}>Apellido</FormLabel>
                     <div className="relative group/input">
-                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                       <FormControl><Input placeholder="Pérez" {...field} className={inputClasses} /></FormControl>
                     </div>
                     <FormMessage className="text-[10px] font-bold" />
@@ -352,7 +352,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem>
                   <FormLabel className={labelClasses}>Nombre de usuario</FormLabel>
                   <div className="relative group/input">
-                    <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                     <FormControl><Input placeholder="juanperez" {...field} className={inputClasses} /></FormControl>
                   </div>
                   <FormMessage className="text-[10px] font-bold" />
@@ -367,7 +367,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem>
                   <FormLabel className={labelClasses}>Correo Electrónico</FormLabel>
                   <div className="relative group/input">
-                    <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                     <FormControl><Input placeholder="tu@email.com" {...field} className={inputClasses} /></FormControl>
                   </div>
                   <FormMessage className="text-[10px] font-bold" />
@@ -382,7 +382,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem>
                   <FormLabel className={labelClasses}>Contraseña</FormLabel>
                   <div className="relative group/input">
-                    <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                    <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                     <FormControl><Input type="password" placeholder="••••••••" autoComplete="new-password" {...field} className={inputClasses} /></FormControl>
                   </div>
                   <FormMessage className="text-[10px] font-bold" />
@@ -398,7 +398,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                   <FormItem>
                     <FormLabel className={labelClasses}>DNI</FormLabel>
                     <div className="relative group/input">
-                      <Fingerprint className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <Fingerprint className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                       <FormControl><Input placeholder="12345678" {...field} className={inputClasses} /></FormControl>
                     </div>
                     <FormMessage className="text-[10px] font-bold" />
@@ -412,7 +412,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                   <FormItem>
                     <FormLabel className={labelClasses}>Teléfono</FormLabel>
                     <div className="relative group/input">
-                      <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                      <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                       <FormControl><Input placeholder="1122334455" {...field} className={inputClasses} /></FormControl>
                     </div>
                     <FormMessage className="text-[10px] font-bold" />
@@ -432,7 +432,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                   </FormControl>
                   <div className="space-y-0.5">
                     <FormLabel className="text-[11px] font-black uppercase tracking-widest text-primary cursor-pointer select-none">Soy Estudiante</FormLabel>
-                    <p className="text-[9px] font-bold text-muted-foreground/60 leading-none">Accede al club de beneficios exclusivos.</p>
+                    <p className="text-[9px] font-bold text-foreground/60 leading-none">Accede al club de beneficios exclusivos.</p>
                   </div>
                 </FormItem>
               )}
@@ -452,7 +452,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                     <FormItem>
                       <FormLabel className={labelClasses}>Institución Educativa</FormLabel>
                       <div className="relative group/input">
-                        <University className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <University className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                         <FormControl><Input placeholder="Ej: Universidad de Buenos Aires" {...field} className={inputClasses} /></FormControl>
                       </div>
                       <FormMessage className="text-[10px] font-bold" />
@@ -467,7 +467,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                     <FormItem>
                       <FormLabel className={labelClasses}>Nivel Educativo</FormLabel>
                       <div className="relative group/input">
-                        <Library className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                        <Library className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground z-10" />
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger className={cn(inputClasses, "pr-4")}><SelectValue placeholder="Selecciona nivel" /></SelectTrigger></FormControl>
                           <SelectContent className="rounded-2xl border-primary/10 glass glass-dark">
@@ -489,7 +489,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                       <FormItem>
                         <FormLabel className={labelClasses}>Carrera / Especialidad</FormLabel>
                         <div className="relative group/input">
-                          <Briefcase className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <Briefcase className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                           <FormControl><Input placeholder="Ej: Ingeniería en Informática" {...field} className={inputClasses} /></FormControl>
                         </div>
                         <FormMessage className="text-[10px] font-bold" />
@@ -525,7 +525,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                             <span className="text-[10px] font-black uppercase tracking-widest text-primary">
                                 {certificateFile ? certificateFile.name : "Subir archivo (PDF o Imagen)"}
                             </span>
-                            <p className="text-[9px] font-bold text-muted-foreground/60 italic">Máximo 5MB • Formato PDF o JPG/PNG</p>
+                            <p className="text-[9px] font-bold text-foreground/60 italic">Máximo 5MB • Formato PDF o JPG/PNG</p>
                         </div>
                     </div>
                 </div>
@@ -540,7 +540,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                     <FormItem>
                       <FormLabel className={labelClasses}>Nacimiento</FormLabel>
                       <div className="relative group/input">
-                        <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                        <Calendar className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground transition-colors group-focus-within:text-primary" />
                         <FormControl>
                           <Input type="date" {...field} className={cn(inputClasses, "pr-4 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer")} />
                         </FormControl>
@@ -578,7 +578,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-2xl bg-primary/5 p-4 border border-primary/5">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel className="text-[11px] font-bold text-muted-foreground/80 cursor-pointer">He leído y acepto la <Link href="/privacidad" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline" target="_blank">Política de Privacidad</Link></FormLabel>
+                    <FormLabel className="text-[11px] font-bold text-foreground/80 cursor-pointer">He leído y acepto la <Link href="/privacidad" className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline" target="_blank">Política de Privacidad</Link></FormLabel>
                     <FormMessage className="text-[10px] font-bold" />
                   </div>
                 </FormItem>
@@ -593,8 +593,8 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
                 <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-2xl bg-primary/5 p-4 border border-primary/5 mb-2">
                   <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   <div className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-black uppercase tracking-widest text-muted-foreground cursor-pointer">Solicitar ser Cluber</FormLabel>
-                    <p className="text-[9px] font-bold text-muted-foreground/40 leading-none italic">Si tienes un comercio, únete a nuestra red.</p>
+                    <FormLabel className="text-[11px] font-black uppercase tracking-widest text-foreground cursor-pointer">Solicitar ser Cluber</FormLabel>
+                    <p className="text-[9px] font-bold text-foreground/40 leading-none italic">Si tienes un comercio, únete a nuestra red.</p>
                   </div>
                 </FormItem>
               )}
@@ -604,7 +604,7 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
             <Button 
                 type="submit" 
                 disabled={isSubmitting} 
-                className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98] bg-[#d93b64] hover:bg-[#d93b64]/90 text-white shadow-lg shadow-[#d93b64]/20"
+                className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-[0.98] bg-[#cb465a] hover:bg-[#cb465a]/90 text-white shadow-lg shadow-[#cb465a]/20"
             >
               {isSubmitting ? 'Registrando...' : 'Soy estudiante'}
             </Button>
@@ -614,3 +614,4 @@ export default function SignupForm({ initialRole = 'user' }: { initialRole?: 'us
     </Card>
   );
 }
+

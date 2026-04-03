@@ -41,7 +41,7 @@ export function StarRating({
             className={cn(
               "transition-all duration-200",
               readonly ? "cursor-default" : "hover:scale-110 active:scale-95",
-              isActive ? "text-yellow-400" : "text-slate-300 dark:text-slate-700"
+              isActive ? "text-yellow-400" : "text-foreground dark:text-foreground"
             )}
           >
             <Star 
@@ -56,3 +56,4 @@ export function StarRating({
     </div>
   );
 }
+

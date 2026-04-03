@@ -37,3 +37,4 @@ export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps
         </Dialog>
     );
 }
+

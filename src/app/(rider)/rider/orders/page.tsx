@@ -50,37 +50,37 @@ export default function RiderOrdersPage() {
             {/* Header */}
             <div className="space-y-1">
                 <h1 className="text-3xl font-black italic uppercase tracking-tighter text-white font-montserrat">Mis Entregas</h1>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Gestión de pedidos asignados</p>
+                <p className="text-[10px] font-bold text-foreground uppercase tracking-[0.2em]">Gestión de pedidos asignados</p>
             </div>
 
             {/* Active Orders List */}
             <section className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#d93b64] flex items-center gap-2 font-montserrat">
-                        <div className="h-2 w-2 rounded-full bg-[#d93b64] animate-ping" /> Pedidos en Curso
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#cb465a] flex items-center gap-2 font-montserrat">
+                        <div className="h-2 w-2 rounded-full bg-[#cb465a] animate-ping" /> Pedidos en Curso
                     </h2>
-                    <Badge className="bg-[#d93b64]/10 text-[#d93b64] border-[#d93b64]/20 text-[9px] uppercase font-black px-3">{activeOrders.length}</Badge>
+                    <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-[#cb465a]/20 text-[9px] uppercase font-black px-3">{activeOrders.length}</Badge>
                 </div>
 
                 <div className="space-y-4">
                     {activeOrders.length === 0 ? (
                         <div className="py-12 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-[2.5rem]">
                             <Search className="h-8 w-8 mx-auto mb-3 opacity-20" />
-                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-600">No tenés pedidos activos en este momento</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-foreground">No tenés pedidos activos en este momento</p>
                         </div>
                     ) : (
                         activeOrders.map(order => (
                             <motion.div key={order.id} whileHover={{ scale: 1.01 }} className="group">
-                                <Card className="bg-white/[0.03] border-white/5 rounded-[2.5rem] overflow-hidden group-hover:border-[#d93b64]/30 transition-all shadow-xl">
+                                <Card className="bg-white/[0.03] border-white/5 rounded-[2.5rem] overflow-hidden group-hover:border-[#cb465a]/30 transition-all shadow-xl">
                                     <CardContent className="p-6">
                                         <div className="flex justify-between items-start mb-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="h-12 w-12 rounded-2xl bg-slate-900 border border-white/5 flex items-center justify-center">
-                                                    <Truck className="h-6 w-6 text-[#d93b64]" />
+                                                <div className="h-12 w-12 rounded-2xl bg-background border border-white/5 flex items-center justify-center">
+                                                    <Truck className="h-6 w-6 text-[#cb465a]" />
                                                 </div>
                                                 <div>
                                                     <h3 className="font-black text-white italic uppercase tracking-tight text-lg">{order.supplierName}</h3>
-                                                    <p className="text-[10px] font-black uppercase text-[#d93b64] tracking-widest">{order.status.replace('_', ' ')}</p>
+                                                    <p className="text-[10px] font-black uppercase text-[#cb465a] tracking-widest">{order.status.replace('_', ' ')}</p>
                                                 </div>
                                             </div>
                                             <p className="text-xl font-black tracking-tighter text-white font-inter">${order.deliveryCost}</p>
@@ -89,13 +89,13 @@ export default function RiderOrdersPage() {
                                         <div className="space-y-4 border-t border-white/5 pt-6">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
-                                                    <MapPin className="h-3.5 w-3.5 text-slate-500" />
+                                                    <MapPin className="h-3.5 w-3.5 text-foreground" />
                                                 </div>
-                                                <p className="text-[11px] font-bold text-slate-400 leading-tight">{order.deliveryAddress}</p>
+                                                <p className="text-[11px] font-bold text-foreground leading-tight">{order.deliveryAddress}</p>
                                             </div>
                                         </div>
 
-                                        <Button asChild className="w-full h-14 mt-6 bg-[#d93b64] hover:bg-[#d93b64]/90 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-[#d93b64]/20 border-0">
+                                        <Button asChild className="w-full h-14 mt-6 bg-[#cb465a] hover:bg-[#cb465a]/90 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-[#cb465a]/20 border-0">
                                             <Link href={`/rider/trip/${order.id}`}>Seguir Viaje <ChevronRight className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </CardContent>
@@ -109,10 +109,10 @@ export default function RiderOrdersPage() {
             {/* Recent History List */}
             <section className="space-y-6">
                 <div className="flex items-center justify-between px-2">
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2 font-montserrat">
+                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 font-montserrat">
                         <History className="h-4 w-4" /> Historial de Entregas
                     </h2>
-                    <Button variant="link" className="text-[10px] font-black uppercase tracking-widest text-slate-600">Ver Historial</Button>
+                    <Button variant="link" className="text-[10px] font-black uppercase tracking-widest text-foreground">Ver Historial</Button>
                 </div>
 
                 <div className="space-y-1">
@@ -130,7 +130,7 @@ export default function RiderOrdersPage() {
                                 </div>
                                 <div className="space-y-0.5">
                                     <p className="text-xs font-black text-white uppercase italic">{order.supplierName}</p>
-                                    <p className="text-[10px] font-bold text-slate-600 uppercase">
+                                    <p className="text-[10px] font-bold text-foreground uppercase">
                                         {order.createdAt instanceof Timestamp ? format(order.createdAt.toDate(), "d MMM, HH:mm", { locale: es }) : 'Finalizada'}
                                     </p>
                                 </div>
@@ -146,4 +146,5 @@ export default function RiderOrdersPage() {
         </div>
     );
 }
+
 

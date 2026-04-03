@@ -48,7 +48,7 @@ function SupplierManagementContent() {
       <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Gestión de Clubers</h1>
       </div>
-      <p className="text-muted-foreground">
+      <p className="text-foreground">
         Gestiona los perfiles de los Clubers existentes o convierte usuarios en nuevos Clubers.
       </p>
       
@@ -60,25 +60,25 @@ function SupplierManagementContent() {
           <TabsTrigger value="maintenance">Mantenimiento</TabsTrigger>
         </TabsList>
         <TabsContent value="manage-suppliers" className="mt-4">
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-foreground mb-4">
             Activa o desactiva módulos, visibilidad y estado de destacado de cada Cluber.
           </p>
           <SupplierTable />
         </TabsContent>
         <TabsContent value="convert-user" className="mt-4">
-           <p className="text-sm text-muted-foreground mb-4">
+           <p className="text-sm text-foreground mb-4">
             Selecciona un usuario de la lista para asignarle un perfil de Cluber.
           </p>
           <UserManagementTable />
         </TabsContent>
         <TabsContent value="requests" className="mt-4">
-           <p className="text-sm text-muted-foreground mb-4">
+           <p className="text-sm text-foreground mb-4">
             Gestiona las solicitudes de usuarios que desean unirse como Clubers.
           </p>
           <SupplierRequestTable />
         </TabsContent>
         <TabsContent value="maintenance" className="mt-4">
-           <p className="text-sm text-muted-foreground mb-4">
+           <p className="text-sm text-foreground mb-4">
             Herramientas de limpieza y mantenimiento del sistema.
           </p>
           <ZombieCleanup />
@@ -95,4 +95,5 @@ export default function SupplierManagementPage() {
         </Suspense>
     );
 }
+
 

@@ -156,7 +156,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             <TabsContent value="inventory" className="space-y-6 animate-in fade-in duration-500">
                 <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                     <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
                     <Input 
                         placeholder="Buscar productos..." 
                         className="pl-9 h-11 rounded-2xl bg-background/50 border-white/10"
@@ -184,7 +184,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             <div className="space-y-2">
                                 <Label htmlFor="imageUrl" className="text-[10px] font-black uppercase tracking-widest opacity-70">URL de la Foto</Label>
                                 <div className="flex gap-3 items-center">
-                                    <div className="h-16 w-16 rounded-2xl bg-muted flex-shrink-0 border border-white/10 overflow-hidden relative">
+                                    <div className="h-16 w-16 rounded-2xl bg-background flex-shrink-0 border border-white/10 overflow-hidden relative">
                                         {selectedProduct?.imageUrl ? (
                                             <img src={selectedProduct.imageUrl} alt="Preview" className="h-full w-full object-cover" />
                                         ) : (
@@ -239,7 +239,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         id="originalPrice" 
                                         type="number" 
                                         placeholder="Sin descuento"
-                                        className="rounded-xl bg-background/50 border-white/10 text-muted-foreground"
+                                        className="rounded-xl bg-background/50 border-white/10 text-foreground"
                                         value={selectedProduct?.originalPrice || ''} 
                                         onChange={e => setSelectedProduct({...selectedProduct, originalPrice: e.target.value ? parseFloat(e.target.value) : undefined})}
                                     />
@@ -310,7 +310,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                     {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-[2rem]" />)}
                 </div>
             ) : filteredProducts?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/5">
+                <div className="flex flex-col items-center justify-center py-20 text-center text-foreground border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/5">
                     <Package className="h-12 w-12 mb-4 opacity-20" />
                     <p className="font-bold uppercase tracking-widest text-[10px]">No se encontraron productos</p>
                 </div>
@@ -322,7 +322,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             className="group relative bg-card/40 backdrop-blur-sm border border-white/5 rounded-[2.5rem] p-6 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 flex flex-col h-full"
                         >
                             <div className="flex gap-4 items-start mb-6">
-                                <div className="h-20 w-20 rounded-[1.5rem] bg-muted flex-shrink-0 border border-white/10 overflow-hidden relative shadow-inner">
+                                <div className="h-20 w-20 rounded-[1.5rem] bg-background flex-shrink-0 border border-white/10 overflow-hidden relative shadow-inner">
                                     {product.imageUrl ? (
                                         <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-500" />
                                     ) : (
@@ -388,12 +388,12 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 </div>
                             </div>
                             
-                            <p className="text-xs text-muted-foreground font-medium italic line-clamp-2 mb-6 opacity-70">{product.description || 'Sin descripción'}</p>
+                            <p className="text-xs text-foreground font-medium italic line-clamp-2 mb-6 opacity-70">{product.description || 'Sin descripción'}</p>
                             
                             <div className="mt-auto flex items-end justify-between">
                                 <div className="space-y-1">
                                     {product.originalPrice && product.originalPrice > product.price && (
-                                        <p className="text-[10px] text-muted-foreground line-through decoration-primary/40 font-bold tracking-widest">$ {product.originalPrice.toLocaleString()}</p>
+                                        <p className="text-[10px] text-foreground line-through decoration-primary/40 font-bold tracking-widest">$ {product.originalPrice.toLocaleString()}</p>
                                     )}
                                     <p className="text-2xl font-black text-primary tracking-tighter">$ {product.price.toLocaleString()}</p>
                                 </div>
@@ -436,3 +436,4 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
         </Tabs>
     );
 }
+

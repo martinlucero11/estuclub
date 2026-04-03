@@ -146,10 +146,10 @@ export default function HomeBuilderPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
                         <h1 className="text-3xl font-black tracking-tight">Diseño de Inicio</h1>
-                        <p className="text-muted-foreground font-medium">Configura los bloques de la App.</p>
+                        <p className="text-foreground font-medium">Configura los bloques de la App.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <TabsList className="bg-muted/50 p-1 rounded-xl h-12">
+                        <TabsList className="bg-background/50 p-1 rounded-xl h-12">
                             <TabsTrigger value="perks" className="rounded-lg font-bold px-6 h-10 data-[state=active]:bg-primary data-[state=active]:text-white">Beneficios</TabsTrigger>
                             <TabsTrigger value="delivery" className="rounded-lg font-bold px-6 h-10 data-[state=active]:bg-primary data-[state=active]:text-white">Delivery</TabsTrigger>
                         </TabsList>

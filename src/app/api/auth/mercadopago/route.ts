@@ -61,3 +61,4 @@ export async function GET(request: Request) {
         return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/profile?mp_linked=error`);
     }
 }
+

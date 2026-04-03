@@ -63,7 +63,7 @@ export default function CategoriesPage() {
             
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black tracking-tight">Gestión de Categorías</h1>
-                <p className="text-muted-foreground font-medium italic opacity-80">
+                <p className="text-foreground font-medium italic opacity-80">
                     Organiza las etiquetas y filtros que aparecen en cada sección de la plataforma.
                 </p>
             </div>
@@ -97,4 +97,5 @@ export default function CategoriesPage() {
         </div>
     );
 }
+
 

@@ -39,7 +39,7 @@ export default function ServiceList({ services, availability, supplierId, allows
       <div className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-primary/10 p-12 text-center bg-primary/5">
         <Search className="mx-auto h-12 w-12 text-primary/40" />
         <h3 className="mt-4 text-xl font-black uppercase tracking-tighter">No hay servicios</h3>
-        <p className="mt-2 text-sm font-medium text-muted-foreground opacity-70 italic">
+        <p className="mt-2 text-sm font-medium text-foreground opacity-70 italic">
           Parece que este local aún no ha configurado sus servicios.
         </p>
       </div>
@@ -74,7 +74,7 @@ export default function ServiceList({ services, availability, supplierId, allows
                   <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                   <h3 className="font-black text-xl tracking-tight uppercase group-hover:text-primary transition-colors">{service.name}</h3>
                 </div>
-                <p className="text-sm font-medium text-muted-foreground leading-relaxed italic opacity-80 line-clamp-2">
+                <p className="text-sm font-medium text-foreground leading-relaxed italic opacity-80 line-clamp-2">
                   "{service.description}"
                 </p>
                 <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-primary/70">
@@ -104,3 +104,4 @@ export default function ServiceList({ services, availability, supplierId, allows
     </div>
   );
 }
+

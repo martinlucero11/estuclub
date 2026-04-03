@@ -51,7 +51,7 @@ export function CincoDosSettings() {
     };
 
     if (isLoading) {
-        return <div className="animate-pulse h-32 bg-muted rounded-xl w-full mb-8" />;
+        return <div className="animate-pulse h-32 bg-background rounded-xl w-full mb-8" />;
     }
 
     return (
@@ -96,3 +96,4 @@ export function CincoDosSettings() {
         </Card>
     );
 }
+

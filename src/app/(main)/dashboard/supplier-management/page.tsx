@@ -40,11 +40,12 @@ export default function SupplierManagementPage() {
       <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Gestión de Proveedores</h1>
       </div>
-      <p className="text-muted-foreground">
+      <p className="text-foreground">
         Activa o desactiva módulos y la visibilidad de cada proveedor.
       </p>
       <SupplierTable />
     </div>
   );
 }
+
 

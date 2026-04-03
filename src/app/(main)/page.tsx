@@ -79,7 +79,7 @@ function HomeContent() {
                 <section key={section.id} className={cn(section.title ? "space-y-4 mb-10" : "mb-4")}>
                     {section.title && (
                         <div className="flex items-center justify-between px-1">
-                            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-muted-foreground/80 tracking-[0.2em]">
+                            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-foreground/80 tracking-[0.2em]">
                                 {section.title}
                             </h2>
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
@@ -144,3 +144,4 @@ export default function HomePage() {
         </MainLayout>
     );
 }
+

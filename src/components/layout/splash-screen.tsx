@@ -6,10 +6,10 @@ import Image from 'next/image';
 export default function SplashScreen() {
   return (
     // Background is EXACTLY Rosa EstuClub and content is centered.
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#d83762]">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-primary">
       {/* The logo is now the official SVG, served from the /public folder. */}
       <Image 
-        src="/logo.svg" 
+        src="/logo-white.svg" 
         alt="EstuClub" 
         width={160} 
         height={53} 
@@ -19,3 +19,4 @@ export default function SplashScreen() {
     </div>
   );
 }
+

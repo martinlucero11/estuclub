@@ -435,7 +435,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                         {watchDataSourceMode === 'manual' && (
                              <div className="space-y-4 pt-2">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
                                     <Input placeholder="Buscar para añadir..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                                 </div>
                                 <ScrollArea className="h-64 rounded-md border">
@@ -514,3 +514,4 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
         </Form>
     );
 }
+

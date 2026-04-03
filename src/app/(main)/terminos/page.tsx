@@ -9,7 +9,7 @@ export default function TermsAndConditionsPage() {
     <MainLayout>
       <div className="container mx-auto py-12 px-4 max-w-4xl">
         <h1 className="text-3xl font-bold mb-6 italic uppercase tracking-tighter">Términos y Condiciones</h1>
-        <p className="text-sm text-muted-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
+        <p className="text-sm text-foreground mb-8">Última actualización: 20 de marzo de 2026</p>
         
         <div className="space-y-6 text-foreground/80 leading-relaxed">
           <section>
@@ -46,3 +46,4 @@ export default function TermsAndConditionsPage() {
     </MainLayout>
   );
 }
+

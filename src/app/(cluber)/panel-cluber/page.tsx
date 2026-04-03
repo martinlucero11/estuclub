@@ -35,7 +35,7 @@ function CluberPending() {
             </div>
             <div className="space-y-3">
                 <h1 className="text-3xl font-black tracking-tighter uppercase italic text-indigo-500 font-montserrat leading-none">Verificando tu <br /> Negocio</h1>
-                <p className="text-sm text-slate-400 font-bold max-w-xs mx-auto leading-relaxed italic uppercase tracking-widest opacity-60">
+                <p className="text-sm text-foreground font-bold max-w-xs mx-auto leading-relaxed italic uppercase tracking-widest opacity-60">
                     Nuestro equipo de expansión está revisando tu postulación comercial.
                 </p>
             </div>
@@ -43,11 +43,11 @@ function CluberPending() {
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Estatus: Pendiente
                 </p>
-                <p className="text-[9px] font-bold text-slate-500 leading-relaxed italic">
+                <p className="text-[9px] font-bold text-foreground leading-relaxed italic">
                     Recibirás una notificación y un email en cuanto tu local esté habilitado para vender.
                 </p>
             </div>
-            <Button asChild variant="ghost" className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+            <Button asChild variant="ghost" className="text-foreground font-black text-[10px] uppercase tracking-[0.3em]">
                 <Link href="/">← Volver al inicio</Link>
             </Button>
         </div>
@@ -165,7 +165,7 @@ export default function PanelCluberPage() {
                                 Esta área está reservada para <br /> <span className="font-black">Comercios Aliados</span>
                             </p>
                         </div>
-                        <Button asChild className="h-14 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(217,59,100,0.3)]">
+                        <Button asChild className="h-14 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(203, 70, 90,0.3)]">
                             <Link href="/">Volver al inicio</Link>
                         </Button>
                     </CardContent>
@@ -227,7 +227,7 @@ export default function PanelCluberPage() {
 
                 {/* --- DYNAMIC SEGMENTED CONTROL --- */}
                 <div className="flex justify-center">
-                    <div className="bg-slate-100 dark:bg-white/5 backdrop-blur-xl p-1.5 rounded-[1.5rem] border border-slate-200 dark:border-white/10 flex items-center gap-1 shadow-inner">
+                    <div className="bg-background dark:bg-white/5 backdrop-blur-xl p-1.5 rounded-[1.5rem] border border-foreground dark:border-white/10 flex items-center gap-1 shadow-inner">
                         {canBenefits && (
                             <TabButton
                                 active={activeTab === 'benefits'}
@@ -265,15 +265,15 @@ export default function PanelCluberPage() {
                 {/* --- FOOTER TOOLS --- */}
                 <div className="flex flex-wrap justify-center gap-4 pt-12">
                     <Link href="/panel-cluber/supplier-profile">
-                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-slate-200 dark:border-white/5 hover:bg-primary/5 transition-all group">
-                            <Settings className="h-4 w-4 text-slate-400 group-hover:text-primary group-hover:rotate-45 transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary">Configuración</span>
+                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-foreground dark:border-white/5 hover:bg-primary/5 transition-all group">
+                            <Settings className="h-4 w-4 text-foreground group-hover:text-primary group-hover:rotate-45 transition-all" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-primary">Configuración</span>
                         </Button>
                     </Link>
                     <Link href="/panel-cluber/equipo">
-                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-slate-200 dark:border-white/5 hover:bg-primary/5 transition-all group">
-                            <Users className="h-4 w-4 text-slate-400 group-hover:text-primary transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-primary">Equipo Central</span>
+                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-foreground dark:border-white/5 hover:bg-primary/5 transition-all group">
+                            <Users className="h-4 w-4 text-foreground group-hover:text-primary transition-all" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-primary">Equipo Central</span>
                         </Button>
                     </Link>
                 </div>
@@ -302,7 +302,7 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
                 "rounded-[1.2rem] font-black text-[9px] uppercase tracking-[0.2em] px-8 h-12 transition-all duration-500",
                 active
                     ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 z-10"
-                    : "text-muted-foreground hover:bg-slate-200 dark:hover:bg-white/5"
+                    : "text-foreground hover:bg-background dark:hover:bg-white/5"
             )}
         >
             <Icon className={cn("mr-2 h-4 w-4 transition-transform", active && "scale-110")} />
@@ -338,12 +338,12 @@ function CluberStatsHeader({ stats, activeTab }: { stats: any, activeTab: string
 function StatCard({ label, value, trend, icon: Icon, isSocial }: { label: string, value: string, trend?: string, icon: any, isSocial?: boolean }) {
     return (
         <Card className={cn(
-            "rounded-[2.5rem] border border-slate-100 dark:border-white/5 p-6 relative overflow-hidden transition-all hover:border-primary/20 group",
+            "rounded-[2.5rem] border border-foreground dark:border-white/5 p-6 relative overflow-hidden transition-all hover:border-primary/20 group",
             isSocial ? "bg-primary/5 border-primary/20" : "bg-white/50 dark:bg-card/30"
         )}>
             <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">{label}</p>
+                    <p className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">{label}</p>
                     <h3 className={cn("text-2xl font-black tracking-tighter italic", isSocial && "text-primary italic")}>{value}</h3>
                 </div>
                 <div className={cn("p-2.5 rounded-2xl group-hover:scale-110 transition-transform", isSocial ? "bg-primary text-white" : "bg-primary/10 text-primary")}>
@@ -368,11 +368,11 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-500 bg-emerald-500/10" },
                 ].map((btn) => (
                     <Link key={btn.label} href={btn.href}>
-                        <Card className="rounded-[2.5rem] border border-slate-100 dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
+                        <Card className="rounded-[2.5rem] border border-foreground dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
                             <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", btn.color)}>
                                 <btn.icon className="h-6 w-6" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-white/60">{btn.label}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/60">{btn.label}</span>
                         </Card>
                     </Link>
                 ))}
@@ -381,10 +381,10 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-primary" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Flujo de Canjes</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Flujo de Canjes</h2>
                     </div>
                 </div>
-                <Card className="rounded-[3rem] border border-slate-100 dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[400px]">
+                <Card className="rounded-[3rem] border border-foreground dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[400px]">
                     <BenefitRedemptionsTable supplierId={shopId} />
                 </Card>
             </div>
@@ -399,9 +399,9 @@ function DeliveryModule({ shopId }: { shopId: string }) {
             <div className="space-y-4">
                 <div className="flex items-center gap-2 px-2">
                     <Package className="h-4 w-4 text-primary" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Catálogo de Productos</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Catálogo de Productos</h2>
                 </div>
-                <Card className="rounded-[3rem] border border-slate-100 dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[500px]">
+                <Card className="rounded-[3rem] border border-foreground dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[500px]">
                     <ProductManager supplierId={shopId} />
                 </Card>
             </div>
@@ -416,4 +416,5 @@ function TurneroModule({ shopId }: { shopId: string }) {
         </div>
     )
 }
+
 

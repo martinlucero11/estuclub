@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
                 notification: {
                     channel_id: 'benefits_channel', // Important for Android 8+
                     icon: 'notification_icon', // Res/drawable icon
-                    color: '#d83762',
+                    color: '#cb465a',
                 }
             },
             webpush: {
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
                     Urgency: 'high'
                 },
                 notification: {
-                    icon: '/logo.svg',
-                    badge: '/logo.svg',
+                    icon: '/logo-rosa.svg',
+                    badge: '/logo-rosa.svg',
                     vibrate: [200, 100, 200],
                 }
             }
@@ -51,3 +51,4 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }
+

@@ -34,7 +34,7 @@ export function PremiumEmptyState({
         <div className="w-full space-y-8">
             <div className="space-y-2">
                 <h3 className="text-xl font-black uppercase tracking-tight text-foreground">{title}</h3>
-                <p className="text-sm text-muted-foreground font-medium max-w-[280px] mx-auto opacity-70 italic">{description}</p>
+                <p className="text-sm text-foreground font-medium max-w-[280px] mx-auto opacity-70 italic">{description}</p>
             </div>
             <CatRunner />
             {!hideAction && actionLabel && onAction && (
@@ -49,7 +49,7 @@ export function PremiumEmptyState({
                 <Icon className="h-10 w-10 opacity-70" />
             </div>
             <h3 className="text-xl font-black uppercase tracking-tight text-foreground">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground font-medium max-w-[280px] mx-auto opacity-70 italic mb-6">{description}</p>
+            <p className="mt-2 text-sm text-foreground font-medium max-w-[280px] mx-auto opacity-70 italic mb-6">{description}</p>
             
             {!hideAction && actionLabel && onAction && (
                 <Button onClick={onAction} className="rounded-xl shadow-premium-glow px-8 h-12 text-sm uppercase tracking-wider font-bold">
@@ -61,3 +61,4 @@ export function PremiumEmptyState({
     </div>
   );
 }
+

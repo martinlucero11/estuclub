@@ -6,9 +6,10 @@ export default function ApproveAnnouncementsPage() {
     <div className="space-y-4">
       <BackButton />
       <h1 className="text-2xl font-bold">Aprobar Anuncios</h1>
-      <p className="text-muted-foreground">
+      <p className="text-foreground">
         Esta funcionalidad está en construcción. Aquí podrás moderar los anuncios enviados por los proveedores.
       </p>
     </div>
   );
 }
+

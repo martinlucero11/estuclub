@@ -338,7 +338,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         <FormItem>
                         <FormLabel>URL de la Imagen</FormLabel>
                         <div className="relative">
-                            <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                             <FormControl>
                             <Input type="url" {...field} className="pl-10" />
                             </FormControl>
@@ -354,7 +354,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         <FormItem>
                         <FormLabel>Dirección / Ubicación</FormLabel>
                         <div className="relative">
-                            <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                             <FormControl>
                             <Input {...field} className="pl-10" />
                             </FormControl>
@@ -369,7 +369,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                             <Package className="h-4 w-4" />
                             Combo de Delivery
                         </h3>
-                        <p className="text-xs text-muted-foreground font-medium">Puedes vincular productos de tu menú a este beneficio. Así los usuarios podrán pedirlos directamente a su carrito.</p>
+                        <p className="text-xs text-foreground font-medium">Puedes vincular productos de tu menú a este beneficio. Así los usuarios podrán pedirlos directamente a su carrito.</p>
                         <FormField
                             control={form.control}
                             name="linkedProductIds"
@@ -475,7 +475,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                         <FormItem>
                         <FormLabel>Puntos</FormLabel>
                         <div className="relative">
-                            <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                             <FormControl>
                                 <Input type="number" {...field} className="pl-10" />
                             </FormControl>
@@ -531,7 +531,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                             <FormItem>
                             <FormLabel>Límite de Canje por Usuario</FormLabel>
                             <div className="relative">
-                                <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                 <FormControl>
                                     <Input type="number" placeholder="0" {...field} className="pl-10" />
                                 </FormControl>
@@ -556,7 +556,7 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
                                         variant={"outline"}
                                         className={cn(
                                             "w-full pl-3 text-left font-normal",
-                                            !field.value && "text-muted-foreground"
+                                            !field.value && "text-foreground"
                                         )}
                                         >
                                         {field.value ? (
@@ -699,3 +699,4 @@ export function BenefitFormDialog({ isOpen, onOpenChange }: BenefitFormDialogPro
     </Dialog>
   );
 }
+

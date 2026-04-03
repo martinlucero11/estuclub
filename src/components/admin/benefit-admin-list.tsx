@@ -53,7 +53,7 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
           />
           <div className="flex-1 min-w-0">
             <p className="font-medium truncate">{benefit.title}</p>
-            <p className="text-sm text-muted-foreground">{benefit.category}</p>
+            <p className="text-sm text-foreground">{benefit.category}</p>
             <div className='flex items-center gap-2 text-sm text-primary font-semibold pt-1'>
               <TrendingUp className='h-4 w-4' />
               <span>{benefit.redemptionCount || 0} canjes</span>
@@ -150,7 +150,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
                     <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
                         Crear Índice en Firebase Console
                     </a>
-                    <p className="mt-4 text-xs text-muted-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active. Luego, recarga esta página.</p>
+                    <p className="mt-4 text-xs text-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active. Luego, recarga esta página.</p>
                 </CardContent>
             </Card>
         );
@@ -160,7 +160,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   if (!serializableBenefits || serializableBenefits.length === 0) {
     return (
-      <p className="text-center text-muted-foreground">No has creado ningún beneficio todavía.</p>
+      <p className="text-center text-foreground">No has creado ningún beneficio todavía.</p>
     );
   }
 
@@ -172,3 +172,4 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
     </div>
   );
 }
+

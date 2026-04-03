@@ -58,10 +58,11 @@ export default function CategoriesPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Gestión de Categorías</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
                 Crea, edita y elimina las categorías de beneficios que aparecen en la página de inicio.
             </p>
             <CategoryTable />
         </div>
     );
 }
+

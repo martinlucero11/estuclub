@@ -65,7 +65,7 @@ export function LoyaltyMetrics({ totalUsers, repeatUsers, newUsers, engagementCo
                         </div>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-[-20px]">
                             <span className="text-4xl font-black text-primary tracking-tighter">{loyaltyRate}%</span>
-                            <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Tasa de Fidelidad</span>
+                            <span className="text-[8px] font-black uppercase tracking-widest text-foreground">Tasa de Fidelidad</span>
                         </div>
                         <div className="flex gap-8 mt-4">
                             {mainData.map((d, i) => (
@@ -84,7 +84,7 @@ export function LoyaltyMetrics({ totalUsers, repeatUsers, newUsers, engagementCo
                                 <Users2 className="h-4 w-4" />
                                 Cohortes de Compromiso
                             </h4>
-                            <p className="text-[10px] font-black text-muted-foreground uppercase opacity-60">Segmentación por frecuencia de canje</p>
+                            <p className="text-[10px] font-black text-foreground uppercase opacity-60">Segmentación por frecuencia de canje</p>
                         </div>
                         
                         <div className="space-y-4">
@@ -125,3 +125,4 @@ export function LoyaltyMetrics({ totalUsers, repeatUsers, newUsers, engagementCo
         </Card>
     );
 }
+

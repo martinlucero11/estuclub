@@ -18,3 +18,4 @@ export function middleware(_request: NextRequest) {
 export const config = {
   matcher: [],
 };
+

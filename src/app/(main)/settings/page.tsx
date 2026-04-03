@@ -84,7 +84,7 @@ export default function SettingsPage() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
                         Configuración
                     </h1>
-                    <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed">
+                    <p className="text-lg text-foreground font-medium max-w-2xl leading-relaxed">
                         Personaliza tu experiencia y ajusta tus preferencias en EstuClub.
                     </p>
                 </header>
@@ -92,7 +92,7 @@ export default function SettingsPage() {
                 <div className="grid gap-8">
                      <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden group">
                         <CardHeader className="pb-4">
-                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Notificaciones</CardTitle>
+                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Notificaciones</CardTitle>
                             <CardDescription className="text-sm font-medium">
                                 Gestiona cómo recibes las alertas y novedades del Club.
                             </CardDescription>
@@ -111,7 +111,7 @@ export default function SettingsPage() {
 
                     <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
                         <CardHeader className="pb-4">
-                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Apariencia</CardTitle>
+                            <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Apariencia</CardTitle>
                             <CardDescription className="text-sm font-medium">
                                 Elige el estilo visual que mejor se adapte a vos.
                             </CardDescription>
@@ -129,3 +129,4 @@ export default function SettingsPage() {
         </MainLayout>
     );
 }
+

@@ -92,7 +92,7 @@ export default function ProductDetailPage() {
     if (!product) {
         return (
             <MainLayout>
-                <div className="container max-w-xl mx-auto p-4 py-12 text-center text-muted-foreground">
+                <div className="container max-w-xl mx-auto p-4 py-12 text-center text-foreground">
                     <ShoppingBag className="mx-auto h-12 w-12 opacity-20 mb-4" />
                     <p>Producto no encontrado.</p>
                     <Button variant="ghost" className="mt-4" onClick={() => router.push('/delivery')}>
@@ -108,7 +108,7 @@ export default function ProductDetailPage() {
             <div className="container max-w-xl mx-auto p-4 py-6 md:py-12 min-h-screen pb-32">
                 <button 
                     onClick={() => router.back()} 
-                    className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
+                    className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-[0.2em] text-foreground hover:text-primary transition-colors group"
                 >
                     <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Volver
@@ -121,7 +121,7 @@ export default function ProductDetailPage() {
                 >
                     <Card className="overflow-hidden rounded-[2rem] border-primary/5 glass glass-dark shadow-premium relative">
                         {product.imageUrl ? (
-                            <div className="relative w-full aspect-square md:aspect-video bg-muted">
+                            <div className="relative w-full aspect-square md:aspect-video bg-background">
                                 <Image
                                     src={optimizeImage(product.imageUrl, 800)}
                                     alt={product.name}
@@ -136,7 +136,7 @@ export default function ProductDetailPage() {
                                 )}
                             </div>
                         ) : (
-                            <div className="w-full aspect-square md:aspect-video bg-muted flex items-center justify-center">
+                            <div className="w-full aspect-square md:aspect-video bg-background flex items-center justify-center">
                                 <ShoppingBag className="h-16 w-16 opacity-10" />
                             </div>
                         )}
@@ -146,7 +146,7 @@ export default function ProductDetailPage() {
                                 <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground leading-tight mb-2">
                                     {product.name}
                                 </h1>
-                                <p className="text-muted-foreground italic font-medium leading-relaxed">
+                                <p className="text-foreground italic font-medium leading-relaxed">
                                     {product.description}
                                 </p>
                             </div>
@@ -158,10 +158,10 @@ export default function ProductDetailPage() {
                                 >
                                     <Avatar className="h-10 w-10 border-2 border-primary/20 bg-background">
                                         <AvatarImage src={supplier.logoUrl} alt={supplier.name} className="object-cover" />
-                                        <AvatarFallback><Store className="h-5 w-5 text-muted-foreground" /></AvatarFallback>
+                                        <AvatarFallback><Store className="h-5 w-5 text-foreground" /></AvatarFallback>
                                     </Avatar>
                                     <div>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Vendido por</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground">Vendido por</p>
                                         <p className="font-extrabold text-foreground">{supplier.name}</p>
                                     </div>
                                 </div>
@@ -170,7 +170,7 @@ export default function ProductDetailPage() {
                             <div className="pt-4 border-t border-white/10 flex items-end justify-between">
                                 <div className="flex flex-col">
                                     {product.originalPrice && product.originalPrice > product.price && (
-                                        <span className="text-muted-foreground line-through text-sm font-medium mb-1 decoration-primary/40">
+                                        <span className="text-foreground line-through text-sm font-medium mb-1 decoration-primary/40">
                                             $ {product.originalPrice.toLocaleString()}
                                         </span>
                                     )}

@@ -43,7 +43,7 @@ export const getHomeSectionColumns = (
   {
     id: 'drag-handle',
     header: '',
-    cell: () => <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />,
+    cell: () => <GripVertical className="h-4 w-4 text-foreground cursor-grab" />,
     size: 20,
   },
   {
@@ -115,3 +115,4 @@ export const getHomeSectionColumns = (
     },
   },
 ];
+

@@ -89,7 +89,7 @@ export function AvatarOnboarding() {
                                 <DialogTitle className="text-2xl font-black tracking-tight text-foreground">
                                     ¡Hola, {userProfile?.firstName}! 👋
                                 </DialogTitle>
-                                <DialogDescription className="text-muted-foreground font-medium text-sm leading-relaxed px-2">
+                                <DialogDescription className="text-foreground font-medium text-sm leading-relaxed px-2">
                                     Queremos que seas vos mismo en el Club. Personalizá tu personaje y hacelo tan <span className="text-primary font-bold">fachero</span> como vos.
                                 </DialogDescription>
                             </div>
@@ -129,7 +129,7 @@ export function AvatarOnboarding() {
 
                                 <button 
                                     onClick={() => setIsOpen(false)}
-                                    className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 hover:text-primary transition-colors py-2"
+                                    className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 hover:text-primary transition-colors py-2"
                                 >
                                     Quizás más tarde
                                 </button>
@@ -141,3 +141,4 @@ export function AvatarOnboarding() {
         </AnimatePresence>
     );
 }
+

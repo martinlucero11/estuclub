@@ -26,3 +26,4 @@ export function CincoDosLogo({ className }: { className?: string }) {
     </svg>
   );
 }
+

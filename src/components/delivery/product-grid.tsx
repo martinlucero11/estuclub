@@ -85,7 +85,7 @@ export function ProductGrid({ supplierId, supplierName, supplierPhone }: Product
             
             {unassignedProducts.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-lg md:text-xl font-black uppercase tracking-[0.2em] text-muted-foreground border-b border-white/5 pb-2 opacity-70">
+                    <h2 className="text-lg md:text-xl font-black uppercase tracking-[0.2em] text-foreground border-b border-white/5 pb-2 opacity-70">
                         Más Productos
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -96,3 +96,4 @@ export function ProductGrid({ supplierId, supplierName, supplierPhone }: Product
         </div>
     );
 }
+

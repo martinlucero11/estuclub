@@ -102,11 +102,11 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="relative group">
         <div className="absolute -inset-[1px] rounded-[2rem] bg-gradient-to-b from-white/20 to-transparent opacity-50 pointer-events-none" />
-        <Card className="bg-[#0C0C0E]/80 backdrop-blur-3xl border-0 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden rounded-[2rem] relative z-10">
+        <Card className="bg-[#000000]/80 backdrop-blur-3xl border-0 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden rounded-[2rem] relative z-10">
             <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
             <div className="p-8 border-b border-white/5 relative flex flex-col items-center sm:items-start text-center sm:text-left">
                 <h2 className="text-2xl font-bold text-white tracking-tight">Afiliación a la Red</h2>
-                <p className="text-sm text-zinc-400 mt-2 font-medium">Completa tu perfil para solicitar acceso a la mesa principal de Cinco.Dos</p>
+                <p className="text-sm text-foreground mt-2 font-medium">Completa tu perfil para solicitar acceso a la mesa principal de Cinco.Dos</p>
             </div>
         <CardContent className="p-6">
             <Form {...form}>
@@ -120,33 +120,33 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="firstName" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Nombre</FormLabel><FormControl>
-                                <Input placeholder="Juan" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Nombre</FormLabel><FormControl>
+                                <Input placeholder="Juan" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                         <FormField control={form.control} name="lastName" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Apellido</FormLabel><FormControl>
-                                <Input placeholder="Pérez" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Apellido</FormLabel><FormControl>
+                                <Input placeholder="Pérez" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="email" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Correo Electrónico</FormLabel><FormControl>
-                                <Input type="email" placeholder="juan@ejemplo.com" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Correo Electrónico</FormLabel><FormControl>
+                                <Input type="email" placeholder="juan@ejemplo.com" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                         <FormField control={form.control} name="phone" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Teléfono Celular</FormLabel><FormControl>
-                                <Input type="tel" placeholder="+54 9 11..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Teléfono Celular</FormLabel><FormControl>
+                                <Input type="tel" placeholder="+54 9 11..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                     </div>
 
                     <FormField control={form.control} name="address" render={({ field }) => (
-                        <FormItem><FormLabel className="text-zinc-300">Dirección actual (Residencia)</FormLabel><FormControl>
-                            <Input placeholder="Calle, Número, Ciudad" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                        <FormItem><FormLabel className="text-foreground">Dirección actual (Residencia)</FormLabel><FormControl>
+                            <Input placeholder="Calle, Número, Ciudad" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                         </FormControl><FormMessage className="text-red-400" /></FormItem>
                     )} />
                 </div>
@@ -161,14 +161,14 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField control={form.control} name="institution" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Institución Educativa</FormLabel><FormControl>
-                                <Input placeholder="Ej: UNLP, UBA..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Institución Educativa</FormLabel><FormControl>
+                                <Input placeholder="Ej: UNLP, UBA..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                         <FormField control={form.control} name="courseYear" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Año de Cursado</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormItem><FormLabel className="text-foreground">Año de Cursado</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger className="bg-white/[0.03] border-white/5 text-white focus:ring-1 focus:ring-white/20 rounded-xl h-11"><SelectValue placeholder="Selecciona el año" /></SelectTrigger></FormControl>
-                                <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                <SelectContent className="bg-background border-white/10 text-white">
                                     <SelectItem value="1">1er Año</SelectItem>
                                     <SelectItem value="2">2do Año</SelectItem>
                                     <SelectItem value="3">3er Año</SelectItem>
@@ -191,25 +191,25 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField control={form.control} name="contactName" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Nombre Completo</FormLabel><FormControl>
-                                <Input placeholder="Familiar o amigo" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Nombre Completo</FormLabel><FormControl>
+                                <Input placeholder="Familiar o amigo" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                         <FormField control={form.control} name="contactPhone" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Teléfono</FormLabel><FormControl>
-                                <Input type="tel" placeholder="Número" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Teléfono</FormLabel><FormControl>
+                                <Input type="tel" placeholder="Número" {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                         <FormField control={form.control} name="contactRelationship" render={({ field }) => (
-                            <FormItem><FormLabel className="text-zinc-300">Vínculo</FormLabel><FormControl>
-                                <Input placeholder="Ej: Madre, Padre, Hermano..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
+                            <FormItem><FormLabel className="text-foreground">Vínculo</FormLabel><FormControl>
+                                <Input placeholder="Ej: Madre, Padre, Hermano..." {...field} className="bg-white/[0.03] border-white/5 text-white placeholder:text-foreground focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white/20 rounded-xl h-11" />
                             </FormControl><FormMessage className="text-red-400" /></FormItem>
                         )} />
                     </div>
                 </div>
 
                 <div className="pt-8 relative z-20">
-                    <Button type="submit" disabled={isSubmitting} className="relative group w-full h-14 text-lg font-bold rounded-2xl overflow-hidden bg-white text-black hover:bg-zinc-200 transition-all duration-300">
+                    <Button type="submit" disabled={isSubmitting} className="relative group w-full h-14 text-lg font-bold rounded-2xl overflow-hidden bg-white text-black hover:bg-background transition-all duration-300">
                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-30 group-hover:translate-x-full transition-all duration-700 ease-in-out -translate-x-full" />
                         {isSubmitting ? (
                             <span className="flex items-center"><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Autorizando...</span>
@@ -225,3 +225,4 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
     </div>
   );
 }
+

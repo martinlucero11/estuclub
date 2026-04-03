@@ -5,3 +5,4 @@ import { redirect } from 'next/navigation';
 export default function DashboardSupplierProfilePage() {
   redirect('/panel-cluber/supplier-profile');
 }
+

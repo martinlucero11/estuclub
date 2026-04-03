@@ -24,7 +24,7 @@ export default function TeamManagementPage() {
                 <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none italic font-montserrat">
                     Gestión de <span className="text-indigo-500">Equipo</span>
                 </h1>
-                <p className="text-muted-foreground font-bold text-sm uppercase tracking-widest max-w-lg">Administrá los accesos de tus colaboradores y asigná roles operativos.</p>
+                <p className="text-foreground font-bold text-sm uppercase tracking-widest max-w-lg">Administrá los accesos de tus colaboradores y asigná roles operativos.</p>
             </header>
 
             <div className="grid gap-8 md:grid-cols-3">
@@ -39,16 +39,16 @@ export default function TeamManagementPage() {
                       </div>
                       <div className="space-y-1">
                          <h3 className="text-xl font-black uppercase italic tracking-tighter">{userData?.displayName || 'Admin Principal'}</h3>
-                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Dueño / Overlord</p>
+                         <p className="text-[10px] font-bold text-foreground uppercase tracking-widest">Dueño / Overlord</p>
                       </div>
-                      <div className="pt-4 border-t border-slate-100 flex gap-4">
+                      <div className="pt-4 border-t border-foreground flex gap-4">
                          <div className="flex-1 text-center">
                             <p className="text-xs font-black text-indigo-500">100%</p>
-                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Accesos</p>
+                            <p className="text-[8px] font-bold text-foreground uppercase">Accesos</p>
                          </div>
-                         <div className="flex-1 text-center border-l border-slate-100">
+                         <div className="flex-1 text-center border-l border-foreground">
                             <p className="text-xs font-black text-indigo-500">-</p>
-                            <p className="text-[8px] font-bold text-muted-foreground uppercase">Actividad</p>
+                            <p className="text-[8px] font-bold text-foreground uppercase">Actividad</p>
                          </div>
                       </div>
                    </CardContent>
@@ -61,13 +61,13 @@ export default function TeamManagementPage() {
                    </div>
                    <div className="space-y-2">
                        <h3 className="text-lg font-black uppercase tracking-tighter">Sumar Miembro</h3>
-                       <p className="text-xs font-medium text-muted-foreground max-w-[200px]">Invitá a un nuevo colaborador para gestionar ventas o escanear beneficios.</p>
+                       <p className="text-xs font-medium text-foreground max-w-[200px]">Invitá a un nuevo colaborador para gestionar ventas o escanear beneficios.</p>
                    </div>
                    <Button className="h-12 w-full rounded-2xl bg-indigo-500 text-white font-black uppercase tracking-widest text-[10px]">INVITAR AHORA</Button>
                 </Card>
 
                 {/* Info Card */}
-                <Card className="rounded-[2.5rem] border-none bg-slate-900 text-white p-10 flex flex-col justify-between overflow-hidden relative shadow-2xl">
+                <Card className="rounded-[2.5rem] border-none bg-background text-white p-10 flex flex-col justify-between overflow-hidden relative shadow-2xl">
                    <div className="absolute -right-10 -bottom-10 opacity-10">
                        <Clock className="h-40 w-40 text-white" />
                    </div>
@@ -84,4 +84,5 @@ export default function TeamManagementPage() {
         </div>
     );
 }
+
 

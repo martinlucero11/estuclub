@@ -67,3 +67,4 @@ export function makeHomeSectionSerializable(section: HomeSection): SerializableH
         createdAt: section.createdAt?.toDate().toISOString() || new Date().toISOString(),
     };
 }
+

@@ -187,3 +187,4 @@ export function SupplierEditForm({ supplier, onSuccess }: SupplierEditFormProps)
         </Form>
     );
 }
+

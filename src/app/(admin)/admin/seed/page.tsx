@@ -96,7 +96,7 @@ export default function SeedPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="rounded-2xl border border-primary/10 bg-primary/5 p-6">
-                            <h4 className="mb-4 text-xs font-black uppercase tracking-widest text-[#d93b64]">Colecciones a crear:</h4>
+                            <h4 className="mb-4 text-xs font-black uppercase tracking-widest text-[#cb465a]">Colecciones a crear:</h4>
                             <div className="flex flex-wrap gap-2">
                                 {collectionsToSeed.map(c => (
                                     <Badge key={c} variant="outline" className="bg-white/50 border-primary/20 font-mono text-[10px]">
@@ -138,4 +138,5 @@ export default function SeedPage() {
         </MainLayout>
     );
 }
+
 

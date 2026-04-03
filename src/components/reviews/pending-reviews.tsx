@@ -72,3 +72,4 @@ export function PendingReviews({ supplierId }: PendingReviewsProps) {
     </div>
   );
 }
+

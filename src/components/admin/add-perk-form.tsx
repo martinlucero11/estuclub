@@ -247,7 +247,7 @@ export default function AddbenefitForm() {
             <FormItem>
               <FormLabel>URL de la Imagen</FormLabel>
               <div className="relative">
-                <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                 <FormControl>
                   <Input type="url" placeholder="https://ejemplo.com/imagen.jpg" {...field} className="pl-10" />
                 </FormControl>
@@ -266,7 +266,7 @@ export default function AddbenefitForm() {
             <FormItem>
               <FormLabel>Dirección / Ubicación</FormLabel>
               <div className="relative">
-                <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                 <FormControl>
                   <Input placeholder="Ej: Av. Siempreviva 742" {...field} className="pl-10" />
                 </FormControl>
@@ -281,7 +281,7 @@ export default function AddbenefitForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Ubicación en el Mapa (Opcional)</FormLabel>
-              <div className="text-sm text-muted-foreground mb-4">
+              <div className="text-sm text-foreground mb-4">
                 Fija con precisión dónde es válido este beneficio para que los alumnos lo descubran en los carrilles cercanos a su ubicación (GPS).
               </div>
               <div className="h-64 sm:h-80 w-full relative">
@@ -301,7 +301,7 @@ export default function AddbenefitForm() {
             <FormItem>
               <FormLabel>Puntos</FormLabel>
               <div className="relative">
-                <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                 <FormControl>
                     <Input type="number" placeholder="Ej: 50" {...field} className="pl-10" />
                 </FormControl>
@@ -321,7 +321,7 @@ export default function AddbenefitForm() {
                 <FormItem>
                 <FormLabel>Límite de Canje por Usuario</FormLabel>
                 <div className="relative">
-                    <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                     <FormControl>
                         <Input type="number" placeholder="0" {...field} className="pl-10" />
                     </FormControl>
@@ -346,7 +346,7 @@ export default function AddbenefitForm() {
                             variant={"outline"}
                             className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-foreground"
                             )}
                             >
                             {field.value ? (
@@ -482,3 +482,4 @@ export default function AddbenefitForm() {
     </Form>
   );
 }
+

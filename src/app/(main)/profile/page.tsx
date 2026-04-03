@@ -104,7 +104,7 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
     <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden relative group">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
       <CardHeader>
-        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Estadísticas</CardTitle>
+        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Estadísticas</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-8 relative z-10">
         <div className="space-y-2">
@@ -114,7 +114,7 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
             </div>
             <p className="text-3xl font-black tracking-tighter">{points || 0}</p>
           </div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Puntos Totales</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-foreground">Puntos Totales</p>
         </div>
         <div className="space-y-2">
            <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ function UserStats({ points, rank, isLoading }: { points: number; rank: number |
             </div>
             {isLoading ? <Skeleton className="h-8 w-12" /> : <p className="text-3xl font-black tracking-tighter">{rank ? `#${rank}` : 'N/A'}</p>}
           </div>
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ranking</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-foreground">Ranking</p>
         </div>
       </CardContent>
     </Card>
@@ -282,7 +282,7 @@ export default function ProfilePage() {
                             </Button>
                         </UserQRCodeDialog>
                     </div>
-                    <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed">
+                    <p className="text-lg text-foreground font-medium max-w-2xl leading-relaxed">
                         Gestiona tu información personal y visualiza tu progreso en el Club.
                     </p>
                 </header>
@@ -300,7 +300,7 @@ export default function ProfilePage() {
 
                 <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Información Personal</CardTitle>
+                        <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Información Personal</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-10 pt-6">
                         <div className="flex items-center space-x-8">
@@ -320,7 +320,7 @@ export default function ProfilePage() {
                                 <p className="text-3xl font-black tracking-tighter">{userProfile.firstName} {userProfile.lastName}</p>
                                 <div className="flex items-center gap-2">
                                     <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-black uppercase tracking-wider">@{userProfile.username}</span>
-                                    <span className="text-sm text-muted-foreground font-medium">{userProfile.email}</span>
+                                    <span className="text-sm text-foreground font-medium">{userProfile.email}</span>
                                 </div>
                                 <div className="pt-1">
                                     <Button 
@@ -361,14 +361,14 @@ export default function ProfilePage() {
                                 <AccordionContent className="pb-8 space-y-6">
                                     {/* Supplier-only toggle: logo vs avatar */}
                                     {isSupplier && (
-                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-background/60 border border-border/40">
+                                        <div className="flex items-center justify-between p-4 rounded-2xl bg-background/60 border border-foreground/40">
                                             <div>
                                                 <p className="font-black text-sm">Mostrar en mi perfil</p>
-                                                <p className="text-xs text-muted-foreground mt-0.5">
+                                                <p className="text-xs text-foreground mt-0.5">
                                                     {userProfile?.useAvatar ? 'Usando tu avatar Micah' : 'Usando tu logo de empresa'}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+                                            <div className="flex items-center gap-2 bg-background rounded-full p-1">
                                                 <button
                                                     type="button"
                                                     onClick={async () => {
@@ -381,7 +381,7 @@ export default function ProfilePage() {
                                                         'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all',
                                                         !userProfile?.useAvatar
                                                             ? 'bg-background text-foreground shadow-sm'
-                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            : 'text-foreground hover:text-foreground'
                                                     )}
                                                 >
                                                     🏢 Logo
@@ -398,7 +398,7 @@ export default function ProfilePage() {
                                                         'px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all',
                                                         userProfile?.useAvatar
                                                             ? 'bg-background text-foreground shadow-sm'
-                                                            : 'text-muted-foreground hover:text-foreground'
+                                                            : 'text-foreground hover:text-foreground'
                                                     )}
                                                 >
                                                     👤 Avatar
@@ -429,9 +429,9 @@ export default function ProfilePage() {
                                         name="firstName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Nombre</FormLabel>
+                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-foreground/80">Nombre</FormLabel>
                                                 <div className="relative">
-                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                                     <FormControl>
                                                         <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                                     </FormControl>
@@ -445,9 +445,9 @@ export default function ProfilePage() {
                                         name="lastName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Apellido</FormLabel>
+                                                <FormLabel className="font-black uppercase text-[10px] tracking-widest text-foreground/80">Apellido</FormLabel>
                                                 <div className="relative">
-                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                                    <UserIcon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                                     <FormControl>
                                                         <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                                     </FormControl>
@@ -461,9 +461,9 @@ export default function ProfilePage() {
                                         name="username"
                                         render={({ field }) => (
                                           <FormItem className="md:col-span-2">
-                                            <FormLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Nombre de usuario</FormLabel>
+                                            <FormLabel className="font-black uppercase text-[10px] tracking-widest text-foreground/80">Nombre de usuario</FormLabel>
                                             <div className="relative">
-                                              <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                              <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                               <FormControl>
                                                 <Input {...field} className="h-12 pl-12 rounded-xl bg-background/50 border-primary/5 focus:border-primary/20 font-bold transition-all text-base" />
                                               </FormControl>
@@ -473,17 +473,17 @@ export default function ProfilePage() {
                                         )}
                                       />
                                     <div className="space-y-3">
-                                        <Label htmlFor="dni" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">DNI</Label>
-                                        <Input id="dni" value={userProfile.dni} disabled className="h-12 rounded-xl bg-muted/30 border-transparent font-bold text-base opacity-70" />
+                                        <Label htmlFor="dni" className="font-black uppercase text-[10px] tracking-widest text-foreground/80">DNI</Label>
+                                        <Input id="dni" value={userProfile.dni} disabled className="h-12 rounded-xl bg-background/30 border-transparent font-bold text-base opacity-70" />
                                     </div>
                                     <div className="space-y-3">
-                                        <Label htmlFor="phone" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">Teléfono</Label>
-                                        <Input id="phone" value={userProfile.phone} disabled className="h-12 rounded-xl bg-muted/30 border-transparent font-bold text-base opacity-70" />
+                                        <Label htmlFor="phone" className="font-black uppercase text-[10px] tracking-widest text-foreground/80">Teléfono</Label>
+                                        <Input id="phone" value={userProfile.phone} disabled className="h-12 rounded-xl bg-background/30 border-transparent font-bold text-base opacity-70" />
                                     </div>
                                     <div className="space-y-3 md:col-span-2">
-                                        <Label htmlFor="userId" className="font-black uppercase text-[10px] tracking-widest text-muted-foreground/80">ID de Usuario</Label>
+                                        <Label htmlFor="userId" className="font-black uppercase text-[10px] tracking-widest text-foreground/80">ID de Usuario</Label>
                                         <div className="relative">
-                                            <Input id="userId" value={user.uid} disabled className="h-12 pr-12 rounded-xl bg-muted/30 border-transparent font-extrabold text-sm opacity-50 font-mono tracking-tighter" />
+                                            <Input id="userId" value={user.uid} disabled className="h-12 pr-12 rounded-xl bg-background/30 border-transparent font-extrabold text-sm opacity-50 font-mono tracking-tighter" />
                                             <Button 
                                                 type="button"
                                                 variant="ghost" 
@@ -494,7 +494,7 @@ export default function ProfilePage() {
                                                 <Copy className="h-4 w-4" />
                                             </Button>
                                         </div>
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">Tu identificador único en EstuClub</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Tu identificador único en EstuClub</p>
                                     </div>
                                 </div>
                                 <div className="pt-2">
@@ -559,7 +559,7 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
                         <Utensils className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Proyecto Cinco.Dos</CardTitle>
+                    <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Proyecto Cinco.Dos</CardTitle>
                 </div>
             </CardHeader>
             <CardContent className="pt-6 space-y-6">
@@ -567,7 +567,7 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <div className="space-y-2">
                             <p className="text-2xl font-black tracking-tighter italic">Comedor Estudiantil Gratuito</p>
-                            <p className="text-xs font-bold text-muted-foreground leading-relaxed">
+                            <p className="text-xs font-bold text-foreground leading-relaxed">
                                 El Proyecto Cinco.Dos es una iniciativa social de Alem que provee almuerzos nutritivos y gratuitos a estudiantes en situación de vulnerabilidad.
                             </p>
                         </div>
@@ -596,7 +596,7 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
                 {status === 'approved' && (
                     <div className="space-y-8 animate-in fade-in duration-1000">
                         {/* Credencial Digital */}
-                        <div className="relative overflow-hidden rounded-3xl bg-slate-900 p-8 shadow-2xl border border-white/5">
+                        <div className="relative overflow-hidden rounded-3xl bg-background p-8 shadow-2xl border border-white/5">
                             <div className="absolute top-0 right-0 p-8 opacity-10">
                                 <Utensils className="h-40 w-40 text-primary rotate-12" />
                             </div>
@@ -638,7 +638,7 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
 
                         <div className="flex items-center gap-3 px-2">
                             <Info className="h-4 w-4 text-primary" />
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-relaxed">
+                            <p className="text-[9px] font-bold text-foreground uppercase tracking-widest leading-relaxed">
                                 Presenta esta credencial en la sede de la Iglesia para acceder al comedor.
                             </p>
                         </div>
@@ -648,3 +648,4 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
         </Card>
     );
 }
+

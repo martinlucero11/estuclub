@@ -110,8 +110,9 @@ export function FavoriteButton({ id, type, className }: FavoriteButtonProps) {
     >
       <Heart className={cn(
         "h-6 w-6 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]", 
-        optimisticFavorite ? "fill-current scale-110 drop-shadow-[0_0_8px_rgba(217,59,100,0.5)]" : "scale-100 opacity-80"
+        optimisticFavorite ? "fill-current scale-110 drop-shadow-[0_0_8px_rgba(203, 70, 90,0.5)]" : "scale-100 opacity-80"
       )} />
     </motion.button>
   );
 }
+

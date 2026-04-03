@@ -143,7 +143,7 @@ export function CatRunner() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Stars/Distant Grid
-      ctx.fillStyle = 'rgba(217, 59, 100, 0.1)';
+      ctx.fillStyle = 'rgba(203, 70, 90, 0.1)';
       for(let j=0; j<20; j++) {
           const sx = (j * 100 - (gameData.current.frames * 0.5)) % canvas.width;
           ctx.beginPath();
@@ -152,7 +152,7 @@ export function CatRunner() {
       }
 
       // Distant mountains/buildings
-      ctx.fillStyle = '#1a1a24';
+      ctx.fillStyle = '#000000';
       ctx.beginPath();
       for(let x=0; x<=canvas.width; x+=50) {
           const h = 40 + Math.sin((x + gameData.current.frames*0.2)/100) * 20;
@@ -163,7 +163,7 @@ export function CatRunner() {
       ctx.fill();
 
       // Floor Grid
-      ctx.strokeStyle = 'rgba(217, 59, 100, 0.08)';
+      ctx.strokeStyle = 'rgba(203, 70, 90, 0.08)';
       ctx.lineWidth = 1;
       const gridScroll = (gameData.current.frames * gameData.current.speed) % 40;
       for(let i=0; i<canvas.width + 40; i+=40) {
@@ -183,8 +183,8 @@ export function CatRunner() {
 
       // Neon Floor Line
       ctx.shadowBlur = 20;
-      ctx.shadowColor = '#d93b64';
-      ctx.strokeStyle = '#d93b64';
+      ctx.shadowColor = '#cb465a';
+      ctx.strokeStyle = '#cb465a';
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(0, groundY);
@@ -237,7 +237,7 @@ export function CatRunner() {
   }, [score, highScore]);
 
   return (
-    <div className="relative flex flex-col items-center bg-[#0a0a0c] rounded-[2.5rem] p-4 sm:p-8 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden max-w-full sm:max-w-xl mx-auto transition-all">
+    <div className="relative flex flex-col items-center bg-[#000000] rounded-[2.5rem] p-4 sm:p-8 border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden max-w-full sm:max-w-xl mx-auto transition-all">
       {/* Background Glow */}
       <div className="absolute -top-24 -left-24 w-64 h-64 bg-estuclub-rosa/10 blur-[100px] rounded-full" />
       <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-violet-500/10 blur-[100px] rounded-full" />
@@ -252,14 +252,14 @@ export function CatRunner() {
         </div>
         <div className="flex flex-col items-end">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-estuclub-rosa opacity-60 mb-0.5">PUNTOS</span>
-            <div className="text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_20px_rgba(217,59,100,0.3)]">
+            <div className="text-5xl font-black text-white italic tracking-tighter drop-shadow-[0_0_20px_rgba(203, 70, 90,0.3)]">
                 {score.toString().padStart(4, '0')}
             </div>
         </div>
       </div>
 
       <div 
-        className="relative border border-white/5 w-full aspect-[16/9] sm:h-[280px] bg-[#0d0d12] rounded-[2rem] overflow-hidden cursor-pointer group shadow-inner" 
+        className="relative border border-white/5 w-full aspect-[16/9] sm:h-[280px] bg-[#000000] rounded-[2rem] overflow-hidden cursor-pointer group shadow-inner" 
         onClick={jump}
       >
         <canvas 
@@ -279,7 +279,7 @@ export function CatRunner() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-[#0a0a0c]/80 backdrop-blur-xl flex flex-col items-center justify-center gap-6 z-30"
+                    className="absolute inset-0 bg-[#000000]/80 backdrop-blur-xl flex flex-col items-center justify-center gap-6 z-30"
                 >
                     <motion.div 
                         animate={{ 
@@ -288,7 +288,7 @@ export function CatRunner() {
                             rotate: [0, 2, -2, 0]
                         }}
                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-20 h-20 relative drop-shadow-[0_0_30px_rgba(217,59,100,0.4)] mt-12"
+                        className="w-20 h-20 relative drop-shadow-[0_0_30px_rgba(203, 70, 90,0.4)] mt-12"
                     >
                         {catImage ? (
                             <Image src="/images/game/cat.png" alt="Cat" fill className="object-contain" priority />
@@ -307,7 +307,7 @@ export function CatRunner() {
                         </div>
                     </div>
 
-                    <Button onClick={startGame} className="rounded-2xl gap-3 px-12 h-14 bg-white text-black hover:bg-neutral-200 border-none shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all hover:scale-105 active:scale-95 group overflow-hidden relative">
+                    <Button onClick={startGame} className="rounded-2xl gap-3 px-12 h-14 bg-white text-black hover:bg-background border-none shadow-[0_20px_40px_rgba(0,0,0,0.4)] transition-all hover:scale-105 active:scale-95 group overflow-hidden relative">
                         <div className="absolute inset-0 bg-gradient-to-r from-estuclub-rosa/20 to-violet-500/20 opacity-0 group-hover:opacity-100 transition-opacity" />
                         <Play className="h-4 w-4 fill-black relative z-10" /> 
                         <span className="font-black uppercase tracking-widest text-xs relative z-10">JUGAR AHORA</span>
@@ -334,7 +334,7 @@ export function CatRunner() {
                     </div>
 
                     <div className="flex flex-col items-center gap-3">
-                        <Button onClick={startGame} className="rounded-2xl gap-4 px-14 h-14 bg-white text-black hover:bg-neutral-200 font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                        <Button onClick={startGame} className="rounded-2xl gap-4 px-14 h-14 bg-white text-black hover:bg-background font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                             <RotateCcw className="h-4 w-4" /> REINTENTAR
                         </Button>
                     </div>
@@ -356,3 +356,4 @@ export function CatRunner() {
     </div>
   );
 }
+

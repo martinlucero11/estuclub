@@ -83,7 +83,7 @@ export default function SupplierList() {
 
     if (!suppliers || suppliers.length === 0) {
         return (
-            <p className="text-center text-muted-foreground">
+            <p className="text-center text-foreground">
                 No hay proveedores registrados.
             </p>
         );
@@ -100,7 +100,7 @@ export default function SupplierList() {
                         <Avatar>
                             <AvatarImage src={supplier.logoUrl} alt={supplier.name} />
                             <AvatarFallback>
-                                <TypeIcon className="h-5 w-5 text-muted-foreground" />
+                                <TypeIcon className="h-5 w-5 text-foreground" />
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
@@ -109,12 +109,12 @@ export default function SupplierList() {
                                     <p className="font-semibold text-base">{supplier.name}</p>
                                 </Link>
                             </Button>
-                            <p className="text-sm text-muted-foreground mb-2">{supplier.email}</p>
+                            <p className="text-sm text-foreground mb-2">{supplier.email}</p>
                             <AdminSupplierImageModal supplier={supplier} />
                         </div>
                         <div className="flex flex-col space-y-2 items-end">
                             <div className="flex items-center space-x-2">
-                                <Label htmlFor={`appointments-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                <Label htmlFor={`appointments-switch-${supplier.id}`} className="flex items-center text-xs text-foreground gap-1">
                                     <CalendarCheck className="h-4 w-4"/>
                                     Turnos
                                 </Label>
@@ -125,7 +125,7 @@ export default function SupplierList() {
                                 />
                             </div>
                              <div className="flex items-center space-x-2">
-                                <Label htmlFor={`benefits-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                <Label htmlFor={`benefits-switch-${supplier.id}`} className="flex items-center text-xs text-foreground gap-1">
                                     <Gift className="h-4 w-4"/>
                                     Beneficios
                                 </Label>
@@ -136,7 +136,7 @@ export default function SupplierList() {
                                 />
                             </div>
                              <div className="flex items-center space-x-2">
-                                <Label htmlFor={`announcements-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                <Label htmlFor={`announcements-switch-${supplier.id}`} className="flex items-center text-xs text-foreground gap-1">
                                     <Megaphone className="h-4 w-4"/>
                                     Anuncios
                                 </Label>
@@ -147,7 +147,7 @@ export default function SupplierList() {
                                 />
                             </div>
                              <div className="flex items-center space-x-2">
-                                <Label htmlFor={`notifications-switch-${supplier.id}`} className="flex items-center text-xs text-muted-foreground gap-1">
+                                <Label htmlFor={`notifications-switch-${supplier.id}`} className="flex items-center text-xs text-foreground gap-1">
                                     <Bell className="h-4 w-4"/>
                                     Notificaciones
                                 </Label>
@@ -164,3 +164,4 @@ export default function SupplierList() {
         </div>
     );
 }
+

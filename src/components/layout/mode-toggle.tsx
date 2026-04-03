@@ -48,7 +48,7 @@ export function ModeToggle() {
                         onClick={() => handleToggle('perks')}
                         className={cn(
                             "relative flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-500",
-                            isBenefits ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                            isBenefits ? "text-primary-foreground" : "text-foreground hover:text-foreground"
                         )}
                     >
                         {isBenefits && (
@@ -66,7 +66,7 @@ export function ModeToggle() {
                         onClick={() => handleToggle('delivery')}
                         className={cn(
                             "relative flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-500",
-                            isDelivery ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                            isDelivery ? "text-primary-foreground" : "text-foreground hover:text-foreground"
                         )}
                     >
                         {isDelivery && (
@@ -84,3 +84,4 @@ export function ModeToggle() {
         </div>
     );
 }
+

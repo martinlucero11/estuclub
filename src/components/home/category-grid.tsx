@@ -12,7 +12,7 @@ import type { Category } from '@/types/data';
 
 export function CategoryGrid({ categories }: { categories: Category[] }) {
     if (!categories || categories.length === 0) {
-        return <p className="text-muted-foreground italic">No hay categorías disponibles.</p>;
+        return <p className="text-foreground italic">No hay categorías disponibles.</p>;
     }
 
     return (
@@ -54,3 +54,4 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
         </Carousel>
     );
 }
+

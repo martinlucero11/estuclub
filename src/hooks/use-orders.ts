@@ -28,3 +28,4 @@ export function useOrders(role: 'user' | 'supplier', id?: string) {
 
     return useCollection(ordersQuery);
 }
+

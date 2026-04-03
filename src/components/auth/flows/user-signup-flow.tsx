@@ -85,7 +85,7 @@ export function UserSignupFlow() {
                 </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">¡Bienvenido al Club!</h2>
-                    <p className="text-sm text-slate-400 font-medium italic">Te enviamos un email de verificación. Revisa tu bandeja de entrada.</p>
+                    <p className="text-sm text-foreground font-medium italic">Te enviamos un email de verificación. Revisa tu bandeja de entrada.</p>
                 </div>
                 <Button onClick={() => window.location.href = '/login'} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest rounded-2xl">
                     INICIAR SESIÓN
@@ -99,11 +99,11 @@ export function UserSignupFlow() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Nombre y Apellido</Label>
                 <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                         {...register('fullName')}
                         placeholder="Ej: Juan Pérez" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-slate-600" 
+                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
                     />
                 </div>
                 {errors.fullName && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.fullName.message}</p>}
@@ -112,12 +112,12 @@ export function UserSignupFlow() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email</Label>
                 <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                         {...register('email')}
                         type="email"
                         placeholder="tu@email.com" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-slate-600" 
+                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
                     />
                 </div>
                 {errors.email && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.email.message}</p>}
@@ -126,11 +126,11 @@ export function UserSignupFlow() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Teléfono</Label>
                 <div className="relative group">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                         {...register('phone')}
                         placeholder="Ej: 3755 123456" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-slate-600" 
+                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
                     />
                 </div>
                 {errors.phone && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.phone.message}</p>}
@@ -139,12 +139,12 @@ export function UserSignupFlow() {
             <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Contraseña</Label>
                 <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                         {...register('password')}
                         type="password"
                         placeholder="••••••••" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-slate-600" 
+                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
                     />
                 </div>
                 {errors.password && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.password.message}</p>}
@@ -160,3 +160,4 @@ export function UserSignupFlow() {
         </form>
     );
 }
+

@@ -34,7 +34,7 @@ export default function CincoDosAdminPage() {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Solicitudes Cinco.Dos</h1>
-                    <p className="text-muted-foreground mt-1">
+                    <p className="text-foreground mt-1">
                         Gestiona, aprueba y rechaza las inscripciones al comedor universitario.
                     </p>
                 </div>
@@ -46,4 +46,5 @@ export default function CincoDosAdminPage() {
         </div>
     );
 }
+
 

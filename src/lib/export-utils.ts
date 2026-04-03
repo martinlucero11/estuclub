@@ -29,3 +29,4 @@ export function generateCSV(data: any[], filename: string) {
     link.click();
     document.body.removeChild(link);
 }
+

@@ -43,8 +43,8 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
 };
 
@@ -111,7 +111,7 @@ export default function RootLayout({
                   if (!theme && supportDarkMode) theme = 'dark';
                   if (theme === 'dark') {
                     document.documentElement.classList.add('dark');
-                    document.documentElement.style.backgroundColor = '#050505';
+                    document.documentElement.style.backgroundColor = '#000000';
                   }
                 } catch (e) {}
               })();
@@ -119,7 +119,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={cn("min-h-screen bg-[#050505] mesh-gradient font-sans antialiased", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -146,10 +146,11 @@ export default function RootLayout({
           </FirebaseProvider>
         </ThemeProvider>
         <Script 
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry`} 
+          src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyCybt-ydw4Cdr1cHFO7W2h9zcuNILlp-50&libraries=places,geometry`} 
           strategy="lazyOnload"
         />
       </body>
     </html>
   );
 }
+

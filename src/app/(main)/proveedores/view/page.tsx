@@ -75,7 +75,7 @@ function AverageRating({ supplier }: { supplier: SupplierProfile }) {
         <div className="flex items-center gap-1.5 mt-1 bg-yellow-400/10 text-yellow-700 dark:text-yellow-400 px-2.5 py-0.5 rounded-full border border-yellow-400/20 shadow-sm animate-in fade-in duration-500">
             <StarRating rating={avg} readonly size="sm" />
             <span className="text-xs font-black">{avg.toFixed(1)}</span>
-            <span className="text-[10px] text-muted-foreground font-bold">({count})</span>
+            <span className="text-[10px] text-foreground font-bold">({count})</span>
         </div>
     );
 }
@@ -201,7 +201,7 @@ function CluberProfileContent() {
                             alt={supplier.name}
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <AvatarFallback className="rounded-none bg-transparent text-4xl font-black text-muted-foreground">
+                        <AvatarFallback className="rounded-none bg-transparent text-4xl font-black text-foreground">
                             {supplierInitials}
                         </AvatarFallback>
                     </Avatar>
@@ -231,7 +231,7 @@ function CluberProfileContent() {
             
             <main className="w-full max-w-5xl mx-auto px-4 py-12">
                 {supplier.description && (
-                     <p className="text-muted-foreground max-w-2xl mx-auto text-center mb-12 text-lg font-medium leading-relaxed">
+                     <p className="text-foreground max-w-2xl mx-auto text-center mb-12 text-lg font-medium leading-relaxed">
                         "{supplier.description}"
                      </p>
                 )}
@@ -294,7 +294,7 @@ function CluberProfileContent() {
                             </div>
                             <div>
                                 <h2 className="text-xl font-black uppercase tracking-tighter">Ubicación</h2>
-                                <p className="text-xs font-bold text-muted-foreground">{supplier.location.address}</p>
+                                <p className="text-xs font-bold text-foreground">{supplier.location.address}</p>
                             </div>
                         </div>
                         <LeafletMap 
@@ -321,3 +321,4 @@ export default function CluberProfilePage() {
         </MainLayout>
     );
 }
+

@@ -32,3 +32,4 @@ export function FirebaseErrorListener() {
   // The component itself renders nothing.
   return null;
 }
+

@@ -109,3 +109,4 @@ export function CategoryTable({ type = 'perks' }: { type?: 'perks' | 'delivery' 
         </>
     );
 }
+

@@ -174,7 +174,7 @@ export function AvatarSelector({ selectedSeed, onSelect, onSave }: Props) {
           <AnimatePresence>
             {config.beard !== 'none' && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 mt-3">Color de barba</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-foreground mb-2 mt-3">Color de barba</p>
                 <div className="flex gap-2 flex-wrap">
                   {OPTS.hairColor.map(o => (
                     <ColorSwatch key={o.v} color={`#${o.v}`} label={o.label} active={config.bcolor === o.v} onClick={() => update('bcolor', o.v)} />
@@ -198,11 +198,11 @@ export function AvatarSelector({ selectedSeed, onSelect, onSave }: Props) {
                   'flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl border-2 transition-all text-center min-w-[3.5rem]',
                   config.mouth === o.v
                     ? 'border-primary bg-primary/10 shadow-sm'
-                    : 'border-border/50 hover:border-primary/40 bg-background/40'
+                    : 'border-foreground/50 hover:border-primary/40 bg-background/40'
                 )}
               >
                 <span className="text-lg leading-none">{o.e}</span>
-                <span className={cn('text-[9px] font-black uppercase tracking-wide', config.mouth === o.v ? 'text-primary' : 'text-muted-foreground')}>{o.label}</span>
+                <span className={cn('text-[9px] font-black uppercase tracking-wide', config.mouth === o.v ? 'text-primary' : 'text-foreground')}>{o.label}</span>
               </motion.button>
             ))}
           </div>
@@ -220,11 +220,11 @@ export function AvatarSelector({ selectedSeed, onSelect, onSave }: Props) {
                 title={o.label}
                 className={cn(
                   'h-9 w-9 rounded-xl border-2 transition-all relative flex items-center justify-center overflow-hidden',
-                  config.bg === o.v ? 'border-primary scale-110 shadow-md' : 'border-border/50 hover:border-primary/40'
+                  config.bg === o.v ? 'border-primary scale-110 shadow-md' : 'border-foreground/50 hover:border-primary/40'
                 )}
                 style={{ backgroundColor: o.hex || 'transparent' }}
               >
-                {o.v === 'transparent' && <span className="text-[8px] font-black text-muted-foreground">OFF</span>}
+                {o.v === 'transparent' && <span className="text-[8px] font-black text-foreground">OFF</span>}
                 {config.bg === o.v && o.v !== 'transparent' && (
                   <div className="absolute inset-0 bg-black/15 flex items-center justify-center">
                     <Check className="h-3 w-3 text-white drop-shadow" />
@@ -268,9 +268,9 @@ export function AvatarSelector({ selectedSeed, onSelect, onSave }: Props) {
 function PickerRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2.5">
-      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">{label}</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/70">{label}</p>
       {children}
-      <div className="border-b border-border/30" />
+      <div className="border-b border-foreground/30" />
     </div>
   );
 }
@@ -279,7 +279,7 @@ function SkinSwatch({ color, label, active, onClick }: { color: string; label: s
   return (
     <motion.button type="button" title={label} whileTap={{ scale: 0.9 }} onClick={onClick}
       className={cn('h-9 w-9 rounded-full border-2 transition-all relative flex items-center justify-center',
-        active ? 'border-primary ring-4 ring-primary/20 scale-110 shadow-md' : 'border-border/30 hover:border-primary/40'
+        active ? 'border-primary ring-4 ring-primary/20 scale-110 shadow-md' : 'border-foreground/30 hover:border-primary/40'
       )}
       style={{ backgroundColor: color }}
     >
@@ -292,7 +292,7 @@ function ColorSwatch({ color, label, active, onClick }: { color: string; label: 
   return (
     <motion.button type="button" title={label} whileTap={{ scale: 0.9 }} onClick={onClick}
       className={cn('h-7 w-7 rounded-lg border-2 transition-all relative flex items-center justify-center',
-        active ? 'border-primary ring-4 ring-primary/20 scale-110 shadow-md' : 'border-border/30 hover:border-primary/40'
+        active ? 'border-primary ring-4 ring-primary/20 scale-110 shadow-md' : 'border-foreground/30 hover:border-primary/40'
       )}
       style={{ backgroundColor: color }}
     >
@@ -308,7 +308,7 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
         'px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-wider border-2 transition-all',
         active
           ? 'bg-foreground text-background border-foreground shadow-sm'
-          : 'bg-background/40 text-muted-foreground border-border/40 hover:border-foreground/30 hover:text-foreground'
+          : 'bg-background/40 text-foreground border-foreground/40 hover:border-foreground/30 hover:text-foreground'
       )}
     >
       {label}
@@ -328,3 +328,4 @@ export function AvatarFallbackFachero({ className }: { className?: string }) {
     </div>
   );
 }
+

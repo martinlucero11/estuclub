@@ -42,3 +42,4 @@ export interface NavConfig {
   mainNav: NavItem[];
   sidebarNav: SidebarNavItem[];
 }
+

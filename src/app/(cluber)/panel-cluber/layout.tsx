@@ -42,8 +42,8 @@ export default function PanelCluberLayout({
         <main className="flex-1 p-4 md:p-8 pb-20">
             {children}
         </main>
-        <BottomNav /> {/* Add BottomNav here */}
       </div>
     </RoleProvider>
   );
 }
+

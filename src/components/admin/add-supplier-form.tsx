@@ -283,7 +283,7 @@ export default function AddSupplierForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Ubicación en el Mapa (Opcional)</FormLabel>
-              <div className="text-sm text-muted-foreground mb-4">
+              <div className="text-sm text-foreground mb-4">
                 Fija con precisión dónde se encuentra este proveedor para que los alumnos lo descubran en su área.
               </div>
               <div className="h-64 sm:h-80 w-full relative">
@@ -303,3 +303,4 @@ export default function AddSupplierForm() {
     </Form>
   );
 }
+

@@ -6,3 +6,4 @@ export default function DashboardLayout() {
   redirect('/panel-cluber');
   return null;
 }
+

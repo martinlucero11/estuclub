@@ -27,7 +27,7 @@ export default function MPLinkCard() {
     };
 
     if (isUserLoading) {
-        return <div className="h-48 w-full bg-slate-100 animate-pulse rounded-[2.5rem]" />;
+        return <div className="h-48 w-full bg-background animate-pulse rounded-[2.5rem]" />;
     }
 
     return (
@@ -36,19 +36,19 @@ export default function MPLinkCard() {
                 <div className="flex items-center justify-between">
                     <div className={cn(
                         "h-12 w-12 rounded-2xl flex items-center justify-center transition-colors",
-                        isLinked ? "bg-emerald-500/10 text-emerald-500" : "bg-slate-50 text-slate-300"
+                        isLinked ? "bg-emerald-500/10 text-emerald-500" : "bg-background text-foreground"
                     )}>
                         <Wallet className="h-6 w-6" />
                     </div>
                 </div>
                 <CardTitle className="text-xl font-black italic uppercase tracking-tight mt-4">Mercado Pago</CardTitle>
-                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Estado de la Pasarela</CardDescription>
+                <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-foreground">Estado de la Pasarela</CardDescription>
             </CardHeader>
 
             <CardContent className="space-y-6">
                 <div className={cn(
                     "p-6 rounded-2xl border-2 transition-all flex items-center justify-between gap-4",
-                    isLinked ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                    isLinked ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-background text-foreground border-foreground"
                 )}>
                     <div className="flex items-center gap-3">
                         {isLinked ? <CheckCircle2 className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5 opacity-40" />}
@@ -65,7 +65,7 @@ export default function MPLinkCard() {
                     <Button 
                         onClick={handleLink}
                         disabled={isRedirecting}
-                        className="w-full h-16 bg-[#d93b64] hover:bg-[#d93b64]/90 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-[#d93b64]/20 group transition-all"
+                        className="w-full h-16 bg-[#cb465a] hover:bg-[#cb465a]/90 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-[#cb465a]/20 group transition-all"
                     >
                         {isRedirecting ? (
                             <Loader2 className="h-6 w-6 animate-spin" />
@@ -75,10 +75,11 @@ export default function MPLinkCard() {
                     </Button>
                 ) : (
                     <div className="text-center">
-                        <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest italic">Tu cuenta MP ya se encuentra enlazada a Estuclub.</p>
+                        <p className="text-[9px] font-bold text-foreground uppercase tracking-widest italic">Tu cuenta MP ya se encuentra enlazada a Estuclub.</p>
                     </div>
                 )}
             </CardContent>
         </Card>
     );
 }
+

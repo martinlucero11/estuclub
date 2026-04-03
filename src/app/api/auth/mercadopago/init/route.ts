@@ -40,3 +40,4 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Error al inicializar vinculación' }, { status: 500 });
     }
 }
+

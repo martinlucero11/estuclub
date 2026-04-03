@@ -23,9 +23,9 @@ export function BottomNav() {
   const isRider = roles.includes('rider');
   const isInRiderContext = pathname.startsWith('/rider') || (isRider && pathname.startsWith('/verify'));
   const isInTurneroView = pathname.includes('/turnos') || pathname.includes('/mis-turnos');
-  const isSignup = pathname === '/signup';
-
-  if (isSignup) return null;
+  const authRoutes = ['/signup', '/login', '/be-cluber', '/be-rider', '/signup-choice', '/signup-rider', '/auth'];
+  const isAuthPage = authRoutes.some(route => pathname === route || pathname?.startsWith(`${route}/`));
+  if (isAuthPage) return null;
 
 
   // Determine Center Button for Benefits Context
@@ -82,8 +82,8 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl shadow-premium border-t border-primary/5 pb-safe ring-1 ring-black/[0.02]">
-      <div className="grid h-16 grid-cols-5 border-t border-primary/5">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-black pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+      <div className="grid h-16 grid-cols-5 border-t border-black/5">
         {navItems.map((item: any, index: number) => {
           const isActive = pathname === item.href;
           
@@ -91,7 +91,7 @@ export function BottomNav() {
             const specialButtonContent = (
               <button
                 onClick={() => haptic.vibrateSubtle()}
-                className="relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300"
+                className="relative flex flex-col items-center justify-center text-foreground transition-colors duration-300"
               >
                 <motion.div 
                   whileHover={{ scale: 1.1 }}
@@ -104,7 +104,7 @@ export function BottomNav() {
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           whileHover={{ scale: 1.2 }}
-                          className="absolute -top-1.5 -right-1.5 bg-white text-primary text-[11px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border-2 border-primary z-20"
+                          className="absolute -top-1.5 -right-1.5 bg-white text-primary text-[11px] font-black h-6 w-6 rounded-full flex items-center justify-center shadow-lg border-2 border-black z-20"
                       >
                           <motion.span
                               animate={{ scale: [1, 1.1, 1] }}
@@ -142,7 +142,7 @@ export function BottomNav() {
                 <button
                   onClick={() => haptic.vibrateSubtle()}
                   className={cn(
-                    'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300 w-full h-full',
+                    'relative flex flex-col items-center justify-center text-foreground transition-colors duration-300 w-full h-full',
                     isActive ? 'text-primary' : 'hover:text-primary'
                   )}
                 >
@@ -154,8 +154,8 @@ export function BottomNav() {
                             </div>
                         )}
                         <span className={cn(
-                            "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-opacity text-center px-1",
-                            isActive ? "opacity-100" : "opacity-60"
+                            "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
+                            isActive ? "text-primary scale-105" : "text-black"
                         )}>
                             {item.label}
                         </span>
@@ -178,7 +178,7 @@ export function BottomNav() {
               href={item.href}
               onClick={() => haptic.vibrateSubtle()}
               className={cn(
-                'relative flex flex-col items-center justify-center text-muted-foreground transition-colors duration-300 w-full h-full',
+                'relative flex flex-col items-center justify-center text-foreground transition-colors duration-300 w-full h-full',
                 isActive ? 'text-primary' : 'hover:text-primary',
                 item.highlight && "text-primary/80"
               )}
@@ -189,8 +189,8 @@ export function BottomNav() {
                 >
                 <item.icon className={cn("h-5 w-5", (isActive || item.highlight) && "stroke-[2.5px]")} />
                 <span className={cn(
-                    "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-opacity text-center px-1",
-                    isActive ? "opacity-100" : "opacity-60"
+                    "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
+                    isActive ? "text-primary scale-105" : "text-black"
                 )}>
                     {item.label}
                 </span>
@@ -210,3 +210,4 @@ export function BottomNav() {
 }
 
 export default BottomNav;
+

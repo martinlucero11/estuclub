@@ -53,12 +53,12 @@ function CluberLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
         }
     };
 
-    const ic = "h-12 pl-12 rounded-xl bg-amber-500/5 border-amber-500/10 focus:border-amber-500/30 focus:ring-amber-500/10 transition-all font-medium placeholder:text-muted-foreground/40";
+    const ic = "h-12 pl-12 rounded-xl bg-amber-500/5 border-amber-500/10 focus:border-amber-500/30 focus:ring-amber-500/10 transition-all font-medium placeholder:text-foreground/40";
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto z-10">
             <header className="mb-8 flex flex-col items-center text-center space-y-3">
-                <Link href="/" className="self-start flex items-center gap-2 text-muted-foreground hover:text-amber-500 transition-colors mb-4">
+                <Link href="/" className="self-start flex items-center gap-2 text-foreground hover:text-amber-500 transition-colors mb-4">
                     <ArrowLeft className="h-4 w-4" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Estuclub</span>
                 </Link>
@@ -66,7 +66,7 @@ function CluberLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
                     <Store className="h-8 w-8 text-amber-500" />
                 </div>
                 <h1 className="text-3xl font-black tracking-tighter text-amber-500 uppercase">Cluber</h1>
-                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Acceso Comercios</p>
+                <p className="text-[10px] font-black text-foreground/60 uppercase tracking-[0.3em]">Acceso Comercios</p>
             </header>
 
             <Card className="rounded-[2rem] border-amber-500/10 overflow-hidden bg-background/80 backdrop-blur-xl">
@@ -75,14 +75,14 @@ function CluberLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
                         <div className="space-y-1.5">
                             <Label className="font-black uppercase tracking-widest text-[10px] text-amber-500/60 ml-1">Email</Label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                 <Input type="email" placeholder="comercio@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} />
                             </div>
                         </div>
                         <div className="space-y-1.5">
                             <Label className="font-black uppercase tracking-widest text-[10px] text-amber-500/60 ml-1">Contraseña</Label>
                             <div className="relative">
-                                <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                 <Input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className={ic} />
                             </div>
                         </div>
@@ -94,7 +94,7 @@ function CluberLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
                     </CardFooter>
                 </form>
             </Card>
-            <button onClick={onSwitchToSignup} className="mt-6 block mx-auto text-xs font-bold text-muted-foreground hover:text-amber-500 transition-colors">
+            <button onClick={onSwitchToSignup} className="mt-6 block mx-auto text-xs font-bold text-foreground hover:text-amber-500 transition-colors">
                 ¿No tenés cuenta? <span className="font-black text-amber-500 uppercase tracking-widest text-[10px] ml-1">Registrá tu comercio</span>
             </button>
         </motion.div>
@@ -165,7 +165,7 @@ function CluberSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
           </div>
           <div className="space-y-2">
             <h3 className="text-2xl font-black tracking-tighter uppercase text-amber-500">¡Bienvenido, Cluber!</h3>
-            <p className="text-sm font-medium text-muted-foreground leading-relaxed">
+            <p className="text-sm font-medium text-foreground leading-relaxed">
               Tu cuenta está lista. Ya podés cargar tus productos. Aparecerán en la app cuando nuestro equipo valide tu comercio.
             </p>
           </div>
@@ -176,7 +176,7 @@ function CluberSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
     );
   }
 
-  const ic = "h-11 pl-11 rounded-xl bg-amber-500/5 border-amber-500/10 focus:border-amber-500/30 focus:ring-amber-500/10 transition-all font-medium placeholder:text-muted-foreground/40 text-sm";
+  const ic = "h-11 pl-11 rounded-xl bg-amber-500/5 border-amber-500/10 focus:border-amber-500/30 focus:ring-amber-500/10 transition-all font-medium placeholder:text-foreground/40 text-sm";
   const lc = "font-black uppercase tracking-widest text-[9px] ml-1 text-amber-500/60";
 
   return (
@@ -193,25 +193,25 @@ function CluberSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             <CardContent className="space-y-3.5 pt-6 px-5">
               <div className="space-y-1">
                 <Label className={lc}>Nombre del Local</Label>
-                <div className="relative"><Store className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Mi Comercio" value={nombreLocal} onChange={e => setNombreLocal(e.target.value)} className={ic} /></div>
+                <div className="relative"><Store className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><Input placeholder="Mi Comercio" value={nombreLocal} onChange={e => setNombreLocal(e.target.value)} className={ic} /></div>
               </div>
               <div className="space-y-1">
                 <Label className={lc}>Email</Label>
-                <div className="relative"><Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input type="email" placeholder="comercio@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} /></div>
+                <div className="relative"><Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><Input type="email" placeholder="comercio@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} /></div>
               </div>
               <div className="space-y-1">
                 <Label className={lc}>Contraseña</Label>
-                <div className="relative"><KeyRound className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input type="password" placeholder="Min 8 caracteres" value={password} onChange={e => setPassword(e.target.value)} className={ic} /></div>
+                <div className="relative"><KeyRound className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><Input type="password" placeholder="Min 8 caracteres" value={password} onChange={e => setPassword(e.target.value)} className={ic} /></div>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                   <div className="space-y-1">
                     <Label className={lc}>CUIT</Label>
-                    <div className="relative"><FileText className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="20-12345678-9" value={cuit} onChange={e => setCuit(e.target.value)} className={ic} /></div>
+                    <div className="relative"><FileText className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><Input placeholder="20-12345678-9" value={cuit} onChange={e => setCuit(e.target.value)} className={ic} /></div>
                   </div>
                   <div className="space-y-1">
                     <Label className={lc}>Rubro</Label>
                     <div className="relative">
-                      <Tag className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground z-10" />
+                      <Tag className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground z-10" />
                       <Select onValueChange={setRubro}>
                         <SelectTrigger className={`${ic} pr-4`}><SelectValue placeholder="Categoría" /></SelectTrigger>
                         <SelectContent className="rounded-xl">{RUBROS.map(r => (<SelectItem key={r} value={r} className="rounded-lg">{r}</SelectItem>))}</SelectContent>
@@ -221,11 +221,11 @@ function CluberSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
               </div>
               <div className="space-y-1">
                 <Label className={lc}>Dirección del Local</Label>
-                <div className="relative"><MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Av. Corrientes 1234" value={direccion} onChange={e => setDireccion(e.target.value)} className={ic} /></div>
+                <div className="relative"><MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><Input placeholder="Av. Corrientes 1234" value={direccion} onChange={e => setDireccion(e.target.value)} className={ic} /></div>
               </div>
               <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/10">
                 <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} className="border-amber-500/30 data-[state=checked]:bg-amber-500" />
-                <p className="text-[9px] font-bold text-muted-foreground">Acepto la <Link href="/politica-de-privacidad" className="text-amber-500 font-black uppercase tracking-widest text-[9px]" target="_blank">Privacidad</Link></p>
+                <p className="text-[9px] font-bold text-foreground">Acepto la <Link href="/politica-de-privacidad" className="text-amber-500 font-black uppercase tracking-widest text-[9px]" target="_blank">Privacidad</Link></p>
               </div>
             </CardContent>
             <CardFooter className="pb-6 pt-2 px-5">
@@ -235,7 +235,7 @@ function CluberSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             </CardFooter>
           </form>
         </Card>
-        <button onClick={onSwitchToLogin} className="mt-4 block mx-auto text-xs font-bold text-muted-foreground hover:text-amber-500 transition-colors">
+        <button onClick={onSwitchToLogin} className="mt-4 block mx-auto text-xs font-bold text-foreground hover:text-amber-500 transition-colors">
             ¿Ya tenés cuenta? <span className="font-black text-amber-500 uppercase tracking-widest text-[10px] ml-1">Ingresar</span>
         </button>
     </motion.div>
@@ -275,3 +275,4 @@ export default function CluberPage() {
         </div>
     );
 }
+

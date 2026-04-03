@@ -41,3 +41,4 @@ export function FeaturedPerks({ sections }: { sections: SerializableHomeSection[
 
   return <PerksGrid perks={serializableBenefits} />;
 }
+

@@ -2,7 +2,7 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00c49f'];
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#000000', '#000000'];
 
 interface PieChartProps {
     data: { name: string, value: number }[];
@@ -17,7 +17,7 @@ export function CategoryPieChart({ data }: PieChartProps) {
     }, [data]);
 
     if (!chartData || chartData.length === 0) {
-        return <div className="h-64 flex items-center justify-center text-muted-foreground">No hay datos para mostrar.</div>
+        return <div className="h-64 flex items-center justify-center text-foreground">No hay datos para mostrar.</div>
     }
 
     return (
@@ -56,3 +56,4 @@ export function CategoryPieChart({ data }: PieChartProps) {
         </ResponsiveContainer>
     );
 }
+

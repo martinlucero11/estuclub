@@ -107,7 +107,7 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>URL de Imagen</FormLabel>
-                            <div className="relative"><ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><FormControl><Input type="url" placeholder="https://ejemplo.com/imagen.jpg" {...field} className="pl-10" /></FormControl></div>
+                            <div className="relative"><ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><FormControl><Input type="url" placeholder="https://ejemplo.com/imagen.jpg" {...field} className="pl-10" /></FormControl></div>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -118,7 +118,7 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>URL de Destino (Opcional)</FormLabel>
-                             <div className="relative"><LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><FormControl><Input type="url" placeholder="https://ejemplo.com/promo" {...field} className="pl-10" /></FormControl></div>
+                             <div className="relative"><LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" /><FormControl><Input type="url" placeholder="https://ejemplo.com/promo" {...field} className="pl-10" /></FormControl></div>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -152,3 +152,4 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
         </Form>
     );
 }
+

@@ -83,7 +83,7 @@ export default function ContentCommandCenterPage() {
     const [isSaving, setIsSaving] = useState(false);
 
     if (isUserLoading) return null;
-    if (!isAdmin) return <div className="p-20 text-center font-black uppercase text-[#d93b64]">OVERLORD ACCESS REQUIRED</div>;
+    if (!isAdmin) return <div className="p-20 text-center font-black uppercase text-[#cb465a]">OVERLORD ACCESS REQUIRED</div>;
 
     // ── ACTIONS ───────────────────────────────────────────
     const handleToggleActive = async (id: string, current: boolean, type: 'perk' | 'announcement') => {
@@ -162,39 +162,39 @@ export default function ContentCommandCenterPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black pb-32 selection:bg-[#d93b64]/30">
+        <div className="min-h-screen bg-black pb-32 selection:bg-[#cb465a]/30">
             {/* Header: Command Style */}
-            <header className="pt-16 pb-12 px-6 md:px-12 bg-gradient-to-b from-[#d93b64]/20 to-transparent">
+            <header className="pt-16 pb-12 px-6 md:px-12 bg-gradient-to-b from-[#cb465a]/20 to-transparent">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <Button asChild variant="ghost" className="h-10 w-10 p-0 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-[#d93b64]/20 transition-all">
+                            <Button asChild variant="ghost" className="h-10 w-10 p-0 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-[#cb465a]/20 transition-all">
                                 <Link href="/panel-admin"><ChevronRight className="h-5 w-5 rotate-180" /></Link>
                             </Button>
-                            <div className="h-10 w-10 rounded-xl bg-[#d93b64] flex items-center justify-center shadow-[0_0_20px_#d93b64]">
+                            <div className="h-10 w-10 rounded-xl bg-[#cb465a] flex items-center justify-center shadow-[0_0_20px_#cb465a]">
                                 <Megaphone className="h-5 w-5 text-white" />
                             </div>
                             <Badge className="bg-white/10 text-white border-white/20 uppercase font-black text-[9px] tracking-widest px-3 py-1">Centro de Difusión</Badge>
                         </div>
                         <h1 className="text-6xl md:text-[5.5rem] font-black text-white uppercase tracking-tighter italic leading-[0.9] font-montserrat drop-shadow-2xl">
-                            CONTENIDO <br/><span className="text-[#d93b64]">EXTREMO</span>
+                            CONTENIDO <br/><span className="text-[#cb465a]">EXTREMO</span>
                         </h1>
                         <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.5em] ml-2">Gestión de Beneficios, Anuncios y Banners</p>
                     </div>
 
                     <div className="flex flex-col items-end gap-4">
                          <div className="flex gap-3 bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10">
-                            <div className="h-10 w-10 rounded-full bg-[#d93b64]/20 flex items-center justify-center">
-                                <Zap className="h-5 w-5 text-[#d93b64]" />
+                            <div className="h-10 w-10 rounded-full bg-[#cb465a]/20 flex items-center justify-center">
+                                <Zap className="h-5 w-5 text-[#cb465a]" />
                             </div>
                             <div className="pr-4">
-                                <p className="text-[10px] font-black text-[#d93b64] uppercase tracking-widest leading-tight">Master Difusión</p>
+                                <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-widest leading-tight">Master Difusión</p>
                                 <p className="text-xs font-bold text-white/80">Monitor de Tráfico Activo</p>
                             </div>
                         </div>
                         <Button 
                             onClick={() => { setEditingItem(null); setIsEditorOpen(true); }}
-                            className="bg-[#d93b64] hover:bg-[#d93b64]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#d93b64]/20"
+                            className="bg-[#cb465a] hover:bg-[#cb465a]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#cb465a]/20"
                         >
                             <Plus className="mr-2 h-4 w-4" /> Crear Nuevo ({activeTab === 'benefits' ? 'Beneficio' : (activeTab === 'announcements' ? 'Anuncio' : 'Banner')})
                         </Button>
@@ -207,18 +207,18 @@ export default function ContentCommandCenterPage() {
                 <Tabs defaultValue="benefits" onValueChange={setActiveTab} className="space-y-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-[2rem] h-16 w-full md:w-auto shadow-2xl backdrop-blur-lg">
-                            <TabsTrigger value="benefits" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#d93b64] data-[state=active]:text-white transition-all duration-500 h-full">Beneficios</TabsTrigger>
-                            <TabsTrigger value="announcements" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#d93b64] data-[state=active]:text-white transition-all duration-500 h-full">Anuncios</TabsTrigger>
-                            <TabsTrigger value="banners" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#d93b64] data-[state=active]:text-white transition-all duration-500 h-full">Banners</TabsTrigger>
+                            <TabsTrigger value="benefits" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Beneficios</TabsTrigger>
+                            <TabsTrigger value="announcements" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Anuncios</TabsTrigger>
+                            <TabsTrigger value="banners" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Banners</TabsTrigger>
                         </TabsList>
 
                         <div className="relative w-full md:w-80 group">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 group-focus-within:text-[#d93b64] transition-colors" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 group-focus-within:text-[#cb465a] transition-colors" />
                             <Input 
                                 placeholder="Buscar contenido..." 
                                 value={search}
                                 onChange={e => setSearch(e.target.value)}
-                                className="h-14 pl-12 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 focus:border-[#d93b64]/40 text-white font-bold transition-all"
+                                className="h-14 pl-12 rounded-2xl bg-white/5 border-white/10 focus:bg-white/10 focus:border-[#cb465a]/40 text-white font-bold transition-all"
                             />
                         </div>
                     </div>
@@ -302,7 +302,7 @@ export default function ContentCommandCenterPage() {
                 <DialogContent className="bg-black/95 border-white/10 text-white max-w-2xl rounded-[3rem] p-10">
                     <DialogHeader>
                         <DialogTitle className="text-4xl font-black italic tracking-tighter uppercase mb-4">
-                            {editingItem ? 'Editar' : 'Crear'} <span className="text-[#d93b64]">{activeTab === 'benefits' ? 'Beneficio' : (activeTab === 'announcements' ? 'Anuncio' : 'Banner')}</span>
+                            {editingItem ? 'Editar' : 'Crear'} <span className="text-[#cb465a]">{activeTab === 'benefits' ? 'Beneficio' : (activeTab === 'announcements' ? 'Anuncio' : 'Banner')}</span>
                         </DialogTitle>
                     </DialogHeader>
                     
@@ -380,7 +380,7 @@ export default function ContentCommandCenterPage() {
 
                         <DialogFooter className="pt-6">
                             <Button type="button" variant="ghost" onClick={() => setIsEditorOpen(false)} className="h-12 px-8 rounded-xl font-bold uppercase text-[10px] tracking-widest">Cancelar</Button>
-                            <Button type="submit" disabled={isSaving} className="h-12 px-10 rounded-xl bg-[#d93b64] hover:bg-[#d93b64]/90 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-[#d93b64]/20 transition-all">
+                            <Button type="submit" disabled={isSaving} className="h-12 px-10 rounded-xl bg-[#cb465a] hover:bg-[#cb465a]/90 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-[#cb465a]/20 transition-all">
                                 {isSaving ? 'Guardando...' : (editingItem ? 'Guardar Cambios' : 'Crear Ahora')}
                             </Button>
                         </DialogFooter>
@@ -401,7 +401,7 @@ function LoadingGrid() {
 
 function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle, onDelete, onEdit, owner, badge, status }: any) {
     return (
-        <Card className="bg-white/5 border-white/10 rounded-[2.5rem] overflow-hidden group hover:border-[#d93b64]/40 transition-all shadow-2xl">
+        <Card className="bg-white/5 border-white/10 rounded-[2.5rem] overflow-hidden group hover:border-[#cb465a]/40 transition-all shadow-2xl">
             <div className="relative aspect-video overflow-hidden">
                 {image ? (
                     <img src={image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt={title} />
@@ -421,7 +421,7 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
 
                 <div className="absolute bottom-4 left-6 right-6 flex justify-between items-end">
                      <div>
-                        <p className="text-[10px] font-black text-[#d93b64] uppercase tracking-[0.2em] mb-1 font-montserrat italic">{owner}</p>
+                        <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-[0.2em] mb-1 font-montserrat italic">{owner}</p>
                         <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-tight italic font-montserrat truncate max-w-[200px]">{title}</h4>
                      </div>
                      <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white/60">
@@ -446,7 +446,7 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
                     <Button 
                         variant="ghost" 
                         onClick={onToggle}
-                        className={cn("flex-1 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest border border-white/5", isVisible ? "text-white/40 hover:text-white" : "text-[#d93b64] hover:bg-[#d93b64]/10")}
+                        className={cn("flex-1 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest border border-white/5", isVisible ? "text-white/40 hover:text-white" : "text-[#cb465a] hover:bg-[#cb465a]/10")}
                     >
                         {isVisible ? 'Ocultar' : 'Activar'}
                     </Button>
@@ -469,4 +469,5 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
         </Card>
     );
 }
+
 

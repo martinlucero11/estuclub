@@ -59,11 +59,12 @@ export default function BannersPage() {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Gestión de Banners</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
                 Crea, edita y activa los banners promocionales que aparecen en la página de inicio.
             </p>
             <BannerTable />
         </div>
     );
 }
+
 

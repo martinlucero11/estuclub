@@ -31,8 +31,8 @@ export default function SupplierSelect() {
 
     return (
         <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="h-10 w-10 rounded-xl bg-[#d93b64]/10 flex items-center justify-center border border-[#d93b64]/20 shrink-0">
-                <Shield className="h-5 w-5 text-[#d93b64]" />
+            <div className="h-10 w-10 rounded-xl bg-[#cb465a]/10 flex items-center justify-center border border-[#cb465a]/20 shrink-0">
+                <Shield className="h-5 w-5 text-[#cb465a]" />
             </div>
             
             <Select 
@@ -63,7 +63,7 @@ export default function SupplierSelect() {
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setImpersonatedSupplierId(null)}
-                    className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest text-[#d93b64] hover:bg-[#d93b64]/10 transition-colors"
+                    className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest text-[#cb465a] hover:bg-[#cb465a]/10 transition-colors"
                 >
                     SALIR DE MODO DIOS
                 </Button>
@@ -71,3 +71,4 @@ export default function SupplierSelect() {
         </div>
     );
 }
+

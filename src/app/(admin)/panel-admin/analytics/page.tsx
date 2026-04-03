@@ -32,11 +32,12 @@ export default function AdminAnalyticsPage() {
         <div className="space-y-4 p-4 md:p-8">
             <BackButton />
             <h1 className="text-3xl font-bold">Analíticas Globales</h1>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
                 Una vista general de la actividad y el crecimiento de la plataforma.
             </p>
             <AdminAnalyticsDashboard />
         </div>
     );
 }
+
 

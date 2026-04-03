@@ -27,3 +27,4 @@ export default function AnnouncementsList({ announcements }: { announcements: Se
     </div>
   );
 }
+

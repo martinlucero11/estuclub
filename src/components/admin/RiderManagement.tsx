@@ -72,7 +72,7 @@ export default function RiderManagement() {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4">
         <Loader2 className="h-12 w-12 text-primary animate-spin opacity-40 mx-auto" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground animate-pulse">Sincronizando Flota...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground animate-pulse">Sincronizando Flota...</p>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function RiderManagement() {
       {/* Search Header */}
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="relative w-full max-w-xl group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="BUSCAR RIDER POR ID O VEHÍCULO..." 
             value={searchQuery}
@@ -91,7 +91,7 @@ export default function RiderManagement() {
           />
         </div>
         <div className="flex gap-4">
-            <Badge variant="outline" className="text-muted-foreground border-white/5 px-4 py-2 rounded-xl flex items-center gap-2">
+            <Badge variant="outline" className="text-foreground border-white/5 px-4 py-2 rounded-xl flex items-center gap-2">
                 <Hash className="h-3 w-3" />
                 {riders?.length || 0} RIDERS
             </Badge>
@@ -117,7 +117,7 @@ export default function RiderManagement() {
                                 <h3 className="font-black italic tracking-tighter uppercase font-montserrat text-lg">ID: {rider.id.slice(0, 8)}</h3>
                                 {rider.isVerified ? <ShieldCheck className="h-4 w-4 text-emerald-500" /> : <XCircle className="h-4 w-4 text-red-500/30" />}
                             </div>
-                            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none mt-1">{rider.vehicleType || 'Motocicleta'}</p>
+                            <p className="text-[10px] font-black uppercase text-foreground tracking-widest leading-none mt-1">{rider.vehicleType || 'Motocicleta'}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -160,8 +160,8 @@ export default function RiderManagement() {
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <FileText className="h-3 w-3 text-muted-foreground/30" />
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase italic tracking-widest">Ver Documentación</span>
+                        <FileText className="h-3 w-3 text-foreground/30" />
+                        <span className="text-[9px] font-bold text-foreground uppercase italic tracking-widest">Ver Documentación</span>
                     </div>
                     <Badge variant="outline" className="text-[8px] font-black border-white/10 rounded-lg">Alem Sede</Badge>
                 </div>
@@ -172,3 +172,4 @@ export default function RiderManagement() {
     </div>
   );
 }
+

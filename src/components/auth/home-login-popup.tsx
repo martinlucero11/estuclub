@@ -35,7 +35,7 @@ export default function HomeLoginPopup() {
                         <h1 className="text-2xl font-black tracking-tighter uppercase text-foreground">
                             Ingresá a tu cuenta
                         </h1>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                        <p className="text-[10px] font-bold text-foreground uppercase tracking-[0.2em]">
                             Disfrutá de todos los beneficios
                         </p>
                     </header>
@@ -43,7 +43,7 @@ export default function HomeLoginPopup() {
                     <LoginForm />
 
                     <div className="mt-6 text-center">
-                        <p className="text-xs font-bold text-muted-foreground">
+                        <p className="text-xs font-bold text-foreground">
                             ¿No tenés cuenta?{' '}
                             <Link href="/signup" className="font-black text-primary hover:text-primary/80 uppercase tracking-widest text-[10px] ml-1 transition-colors">
                                 Registrate ACÁ
@@ -51,7 +51,7 @@ export default function HomeLoginPopup() {
                         </p>
                     </div>
 
-                    <div className="mt-10 pt-8 flex gap-3 border-t border-border/50">
+                    <div className="mt-10 pt-8 flex gap-3 border-t border-foreground/50">
                         <Button asChild variant="outline" className="flex-1 h-14 rounded-2xl border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 text-cyan-500 transition-all group">
                             <Link href="/rider">
                                 <Bike className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
@@ -77,3 +77,4 @@ export default function HomeLoginPopup() {
         </AnimatePresence>
     );
 }
+

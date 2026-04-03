@@ -31,3 +31,4 @@ export function useCincoDosStatus() {
         isLoading: isLoading || (user !== null && rawData === undefined)
     };
 }
+

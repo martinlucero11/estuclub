@@ -176,7 +176,7 @@ export function ApplicationsTable() {
         <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
                     <Input 
                         placeholder="Buscar por nombre, institución o email..." 
                         value={searchTerm}
@@ -209,7 +209,7 @@ export function ApplicationsTable() {
                             </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-foreground">
                                 Define el mensaje base que se abrirá automáticamente al presionar "Contactar Estudiante".<br/>
                                 Usa <code>{'{nombre}'}</code> y <code>{'{apellido}'}</code> y nosotros lo reemplazaremos de manera mágica para cada estudiante.
                             </p>
@@ -239,7 +239,7 @@ export function ApplicationsTable() {
                     <TableBody>
                         {filteredApplications.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={6} className="h-24 text-center text-foreground">
                                     No se encontraron solicitudes.
                                 </TableCell>
                             </TableRow>
@@ -251,15 +251,15 @@ export function ApplicationsTable() {
                                     </TableCell>
                                     <TableCell>
                                         <p className="font-medium">{app.firstName} {app.lastName}</p>
-                                        <p className="text-xs text-muted-foreground">{app.email}</p>
+                                        <p className="text-xs text-foreground">{app.email}</p>
                                     </TableCell>
                                     <TableCell>
                                         <p className="font-medium">{app.institution}</p>
-                                        <p className="text-xs text-muted-foreground">Año de cursado: {app.courseYear}</p>
+                                        <p className="text-xs text-foreground">Año de cursado: {app.courseYear}</p>
                                     </TableCell>
                                     <TableCell>
                                         <p className="text-sm">{app.phone}</p>
-                                        <p className="text-xs text-muted-foreground">Emergencia: {app.contactName} ({app.contactPhone})</p>
+                                        <p className="text-xs text-foreground">Emergencia: {app.contactName} ({app.contactPhone})</p>
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant={
@@ -330,3 +330,4 @@ export function ApplicationsTable() {
         </div>
     );
 }
+

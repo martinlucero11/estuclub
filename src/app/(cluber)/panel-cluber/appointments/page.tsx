@@ -15,7 +15,7 @@ export default function PanelCluberAppointmentsPage() {
     <div className="space-y-4">
         <BackButton />
         <h1 className="text-3xl font-bold">Gestión de Turnos</h1>
-        <p className="text-muted-foreground">
+        <p className="text-foreground">
             Administra tus servicios, horarios de atención y las reservas de tus clientes.
         </p>
 
@@ -78,4 +78,5 @@ export default function PanelCluberAppointmentsPage() {
     </div>
   );
 }
+
 

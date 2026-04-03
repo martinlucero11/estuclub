@@ -84,10 +84,10 @@ export default function AppointmentList() {
 
     if (!appointments || appointments.length === 0) {
         return (
-             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <BookUser className="mx-auto h-12 w-12 text-muted-foreground" />
+             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-foreground p-12 text-center">
+                <BookUser className="mx-auto h-12 w-12 text-foreground" />
                 <h3 className="mt-4 text-xl font-semibold">Sin turnos próximos</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-foreground">
                     No tienes ninguna reserva pendiente.
                 </p>
             </div>
@@ -109,25 +109,25 @@ export default function AppointmentList() {
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{apt.userName}</p>
-                                    <p className="text-sm text-muted-foreground">{apt.serviceName}</p>
+                                    <p className="text-sm text-foreground">{apt.serviceName}</p>
                                 </div>
                             </div>
                             <div className="col-span-1 space-y-2 text-sm">
-                                <div className='flex items-center gap-2 text-muted-foreground'>
+                                <div className='flex items-center gap-2 text-foreground'>
                                     <Calendar className='h-4 w-4'/>
                                     {startTime.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                                 </div>
-                                <div className='flex items-center gap-2 text-muted-foreground'>
+                                <div className='flex items-center gap-2 text-foreground'>
                                     <Clock className='h-4 w-4'/>
                                     {startTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs
                                 </div>
                             </div>
                              <div className="col-span-1 space-y-2 text-sm">
-                                <div className='flex items-center gap-2 text-muted-foreground'>
+                                <div className='flex items-center gap-2 text-foreground'>
                                     <Fingerprint className='h-4 w-4'/>
                                     DNI: {apt.userDni}
                                 </div>
-                                <div className='flex items-center gap-2 text-muted-foreground'>
+                                <div className='flex items-center gap-2 text-foreground'>
                                     <Phone className='h-4 w-4'/>
                                     {apt.userPhone}
                                 </div>
@@ -139,3 +139,4 @@ export default function AppointmentList() {
         </div>
     )
 }
+

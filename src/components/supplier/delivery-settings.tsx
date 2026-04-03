@@ -99,7 +99,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h2 className="text-2xl font-black tracking-tighter uppercase italic">Ajustes de Delivery</h2>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-60">Controla cuándo y cómo recibes los pedidos.</p>
+                    <p className="text-xs font-bold text-foreground uppercase tracking-widest opacity-60">Controla cuándo y cómo recibes los pedidos.</p>
                 </div>
                 <Button 
                     onClick={handleSave} 
@@ -120,7 +120,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                                 <Timer className="h-5 w-5 text-primary" />
                                 Tiempo de Preparación
                             </CardTitle>
-                            <CardDescription className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">Impacto directo en la expectativa del cliente.</CardDescription>
+                            <CardDescription className="text-[10px] font-bold text-foreground uppercase opacity-60">Impacto directo en la expectativa del cliente.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8 pt-0 space-y-4">
                             <div className="grid grid-cols-3 gap-2">
@@ -141,7 +141,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                                 ))}
                             </div>
                             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
-                                <p className="text-[10px] font-medium leading-relaxed italic text-muted-foreground">
+                                <p className="text-[10px] font-medium leading-relaxed italic text-foreground">
                                     Este tiempo se mostrará al estudiante antes de confirmar su pedido. Sé realista para evitar reclamos.
                                 </p>
                             </div>
@@ -184,7 +184,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                                                                         value={interval.start}
                                                                         onChange={(e) => updateInterval(day, index, 'start', e.target.value)}
                                                                     />
-                                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase text-muted-foreground/40">Desde</span>
+                                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase text-foreground/40">Desde</span>
                                                                 </div>
                                                                 <div className="relative">
                                                                     <Input 
@@ -193,7 +193,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                                                                         value={interval.end}
                                                                         onChange={(e) => updateInterval(day, index, 'end', e.target.value)}
                                                                     />
-                                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase text-muted-foreground/40">Hasta</span>
+                                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black uppercase text-foreground/40">Hasta</span>
                                                                 </div>
                                                             </div>
                                                             <Button 
@@ -218,7 +218,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                                                 </div>
                                             ) : (
                                                 <div className="h-11 flex items-center px-4 rounded-xl bg-white/5 border border-white/5 opacity-50">
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Local Cerrado</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Local Cerrado</span>
                                                 </div>
                                             )}
                                         </div>
@@ -232,3 +232,4 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
         </div>
     );
 }
+

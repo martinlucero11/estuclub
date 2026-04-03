@@ -214,7 +214,7 @@ const MenubarSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <MenubarPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    className={cn("-mx-1 my-1 h-px bg-background", className)}
     {...props}
   />
 ))
@@ -227,7 +227,7 @@ const MenubarShortcut = ({
   return (
     <span
       className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
+        "ml-auto text-xs tracking-widest text-foreground",
         className
       )}
       {...props}
@@ -254,3 +254,4 @@ export {
   MenubarSub,
   MenubarShortcut,
 }
+

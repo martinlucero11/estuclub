@@ -58,3 +58,4 @@ export async function getLiveShippingRate(origin: string, destination: string): 
         return { distanceKm: 0, durationMin: 0, rate: BASE_RATE, success: false };
     }
 }
+

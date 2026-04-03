@@ -224,7 +224,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
       <div className='text-center space-y-4 flex flex-col items-center py-4'>
           <CheckCircle className="h-16 w-16 text-green-500" />
           <h3 className="text-lg font-black uppercase tracking-tighter">¡Beneficio Pre-canjeado!</h3>
-          <p className='text-xs text-muted-foreground max-w-[250px]'>Muestra el código QR al proveedor para completar la validación.</p>
+          <p className='text-xs text-foreground max-w-[250px]'>Muestra el código QR al proveedor para completar la validación.</p>
           <div className="my-2 flex justify-center">
             {qrCodeUrl ? (
                 <img src={qrCodeUrl} alt="Código QR de canje" className="rounded-2xl border-4 border-background shadow-xl w-48 h-48" />
@@ -268,19 +268,19 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
 
                 <div className="p-6 space-y-6">
                     <div className="space-y-2">
-                        <p className="text-sm text-neutral-600 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                             {perk.content || perk.description}
                         </p>
                     </div>
 
                     {perk.availableDays && perk.availableDays.length > 0 && (
-                        <div className="flex items-center gap-3 rounded-2xl bg-neutral-100 p-3 border border-neutral-200">
+                        <div className="flex items-center gap-3 rounded-2xl bg-background p-3 border-2 border-black">
                             <CalendarDays className="h-5 w-5 text-primary flex-shrink-0" />
                             <div className='flex-1'>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Días disponibles</p>
-                                <div className="flex flex-wrap gap-x-2 pt-0.5 font-black text-sm text-neutral-900">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Días disponibles</p>
+                                <div className="flex flex-wrap gap-x-2 pt-0.5 font-black text-sm text-foreground">
                                     {daysOrder.map(day => (
-                                        <span key={day} className={perk.availableDays?.includes(day) ? 'text-primary' : 'text-neutral-300'}>
+                                        <span key={day} className={perk.availableDays?.includes(day) ? 'text-primary' : 'text-foreground'}>
                                             {dayAbbreviations[day]}
                                         </span>
                                     ))}
@@ -296,7 +296,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                                 <Package className="h-4 w-4" />
                                 <span>Combo Incluido</span>
                             </div>
-                            <div className="flex flex-col gap-2 p-3 rounded-2xl bg-neutral-100 border border-neutral-200">
+                            <div className="flex flex-col gap-2 p-3 rounded-2xl bg-background border-2 border-black">
                                 {linkedProducts.map((p: any) => {
                                     let finalPrice = Number(p.price || 0);
                                     if (perk.discountPercentage) finalPrice = finalPrice * (1 - Number(perk.discountPercentage)/100);
@@ -304,13 +304,13 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                                     finalPrice = Math.round(finalPrice);
                                     
                                     return (
-                                        <div key={p.id} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-neutral-200 shadow-sm">
+                                        <div key={p.id} className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-black/10 shadow-sm">
                                             <div className="flex-1">
-                                                <p className="text-sm font-bold text-neutral-800">{p.name}</p>
+                                                <p className="text-sm font-bold text-foreground">{p.name}</p>
                                             </div>
                                             <div className="text-right">
                                                 {finalPrice < p.price && (
-                                                    <span className="text-[10px] text-neutral-400 line-through mr-1.5">${p.price}</span>
+                                                    <span className="text-[10px] text-foreground line-through mr-1.5">${p.price}</span>
                                                 )}
                                                 <span className="text-lg font-black text-primary">${finalPrice}</span>
                                             </div>
@@ -358,7 +358,7 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
                         
                         <button 
                             onClick={() => setIsOpen(false)}
-                            className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 hover:text-neutral-900 transition-colors py-2"
+                            className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground hover:text-foreground transition-colors py-2"
                         >
                             Cerrar detalle
                         </button>
@@ -381,3 +381,4 @@ export default function RedeemPerkDialog({ perk, children, isCarouselTrigger = f
     </Dialog>
   );
 }
+

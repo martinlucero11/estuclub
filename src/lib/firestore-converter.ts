@@ -19,3 +19,4 @@ export const createConverter = <T>(): FirestoreDataConverter<T> => ({
     } as T;
   },
 });
+

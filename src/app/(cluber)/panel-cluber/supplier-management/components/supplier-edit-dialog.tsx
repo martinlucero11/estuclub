@@ -39,3 +39,4 @@ export function SupplierEditDialog({ isOpen, onOpenChange, user, supplierProfile
         </Dialog>
     );
 }
+

@@ -47,7 +47,7 @@ const statusConfig = {
     searching_rider: { 
         label: 'Buscando Rider...', 
         icon: Navigation, 
-        color: 'text-pink-400 bg-pink-400/10 border-pink-400/30 shadow-[0_0_15px_rgba(217,59,100,0.2)] animate-pulse' 
+        color: 'text-pink-400 bg-pink-400/10 border-pink-400/30 shadow-[0_0_15px_rgba(203, 70, 90,0.2)] animate-pulse' 
     },
     assigned: { label: 'Rider Asignado', icon: User, color: 'text-green-400 bg-green-400/10 border-green-400/20' },
     shipped: { label: 'En Camino', icon: Truck, color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
@@ -182,13 +182,13 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                     <h3 className={cn("text-xs font-black uppercase tracking-widest", isClosed ? "text-destructive" : "text-green-500")}>
                         {isClosed ? "ESTADO: CERRADO" : "ESTADO: ABIERTO"}
                     </h3>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
+                    <p className="text-[10px] font-bold text-foreground uppercase opacity-60">
                         {isClosed ? "Tu local no aparece en la lista de los estudiantes." : "Estás recibiendo pedidos activamente."}
                     </p>
                 </div>
 
                 <div className="flex items-center gap-4 bg-background/50 p-2 rounded-3xl border border-white/5 backdrop-blur-md">
-                    <span className={cn("text-[9px] font-black uppercase px-2", isClosed ? "text-muted-foreground" : "text-primary italic animate-pulse")}>
+                    <span className={cn("text-[9px] font-black uppercase px-2", isClosed ? "text-foreground" : "text-primary italic animate-pulse")}>
                         {isClosed ? "CERRAR" : "EN LÍNEA"}
                     </span>
                     <Switch 
@@ -259,7 +259,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                             <div className="divide-y divide-white/5">
                                 {filteredOrders.length === 0 ? (
                                     <div className="py-12 text-center space-y-4 opacity-50">
-                                        <Package className="h-10 w-10 mx-auto text-muted-foreground" />
+                                        <Package className="h-10 w-10 mx-auto text-foreground" />
                                         <p className="font-bold uppercase tracking-widest text-[9px]">No hay pedidos registrados</p>
                                     </div>
                                 ) : (
@@ -273,7 +273,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             <Badge className={cn("px-2 py-0.5 font-black text-[9px] uppercase tracking-widest rounded-lg border w-fit", config.color)}>
                                                                 {config.label}
                                                             </Badge>
-                                                            <span className="text-[10px] font-bold text-muted-foreground">
+                                                            <span className="text-[10px] font-bold text-foreground">
                                                                 #{order.id.slice(-6).toUpperCase()} • {order.createdAt ? format(order.createdAt.toDate(), "HH:mm", { locale: es }) : 'Ahora'}
                                                             </span>
                                                         </div>
@@ -282,9 +282,9 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             <div className="space-y-0.5">
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="font-black tracking-tight text-sm">{order.userName}</span>
-                                                                    <span className="text-[10px] text-muted-foreground font-medium italic lowercase">({order.type})</span>
+                                                                    <span className="text-[10px] text-foreground font-medium italic lowercase">({order.type})</span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium opacity-60">
+                                                                <div className="flex items-center gap-2 text-[10px] text-foreground font-medium opacity-60">
                                                                     <MapPin className="h-3 w-3" />
                                                                     <span className="line-clamp-1">{order.deliveryAddress || 'Retiro en local'}</span>
                                                                 </div>
@@ -292,11 +292,11 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             
                                                             <div className="bg-white/5 rounded-xl p-2 px-3 flex items-center justify-between border border-white/5">
                                                                 <div className="flex flex-col">
-                                                                    <p className="text-[8px] font-black uppercase text-muted-foreground/50">Monto</p>
+                                                                    <p className="text-[8px] font-black uppercase text-foreground/50">Monto</p>
                                                                     <p className="text-[12px] font-black text-primary">${order.totalAmount.toLocaleString()}</p>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className="text-[8px] font-black uppercase text-muted-foreground/50">Items</p>
+                                                                    <p className="text-[8px] font-black uppercase text-foreground/50">Items</p>
                                                                     <p className="text-[10px] font-bold truncate max-w-[120px]">{order.items.length} productos</p>
                                                                 </div>
                                                             </div>
@@ -362,3 +362,4 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
         </div>
     );
 }
+

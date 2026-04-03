@@ -130,7 +130,7 @@ export default function EditAnnouncementDialog({ announcement, isOpen, onOpenCha
                         <FormItem>
                         <FormLabel>URL de la Imagen (Opcional)</FormLabel>
                         <div className="relative">
-                            <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                             <FormControl>
                             <Input type="url" placeholder="https://ejemplo.com/imagen.jpg" {...field} className="pl-10" />
                             </FormControl>
@@ -149,7 +149,7 @@ export default function EditAnnouncementDialog({ announcement, isOpen, onOpenCha
                     <FormItem>
                       <FormLabel>URL del Enlace (Opcional)</FormLabel>
                       <div className="relative">
-                        <LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <LinkIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                         <FormControl>
                           <Input type="url" placeholder="https://ejemplo.com/mas-info" {...field} className="pl-10" />
                         </FormControl>

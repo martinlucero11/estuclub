@@ -75,7 +75,7 @@ export const getBannerColumns = (
                 <LinkIcon className="h-3 w-3" />
                 Visitar
             </a>
-        ) : <span className='text-muted-foreground'>N/A</span>;
+        ) : <span className='text-foreground'>N/A</span>;
     }
   },
   {
@@ -105,3 +105,4 @@ export const getBannerColumns = (
     },
   },
 ];
+

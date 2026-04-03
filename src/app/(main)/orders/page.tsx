@@ -20,10 +20,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 const statusConfig = {
     pending_payment: { label: 'Pago Pendiente', icon: Clock, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
     searching_rider: { label: 'Buscando Rider', icon: Navigation, color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20' },
-    accepted: { label: 'En Preparación', icon: Store, color: 'text-[#d93b64] bg-[#d93b64]/10 border-[#d93b64]/20' },
+    accepted: { label: 'En Preparación', icon: Store, color: 'text-[#cb465a] bg-[#cb465a]/10 border-[#cb465a]/20' },
     assigned: { label: 'Rider Asignado', icon: Package, color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20' },
     at_store: { label: 'En Local', icon: Store, color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20' },
-    on_the_way: { label: 'En Camino', icon: Truck, color: 'text-[#d93b64] bg-[#d93b64]/10 border-[#d93b64]/20' },
+    on_the_way: { label: 'En Camino', icon: Truck, color: 'text-[#cb465a] bg-[#cb465a]/10 border-[#cb465a]/20' },
     delivered: { label: 'Entregado', icon: CheckCircle2, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
     completed: { label: 'Finalizado', icon: CheckCircle2, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
     cancelled: { label: 'Cancelado', icon: Hash, color: 'text-destructive bg-destructive/10 border-destructive/20' },
@@ -75,8 +75,8 @@ function OrdersDashboard() {
                     <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full" />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-4xl font-black italic tracking-tighter uppercase text-slate-800">Cero Entregas</h2>
-                    <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Tu historial logístico está vacío.</p>
+                    <h2 className="text-4xl font-black italic tracking-tighter uppercase text-foreground">Cero Entregas</h2>
+                    <p className="text-foreground font-bold uppercase tracking-widest text-[10px]">Tu historial logístico está vacío.</p>
                 </div>
                 <Button asChild className="h-14 px-10 bg-primary rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-primary/30">
                     <Link href="/delivery">Realizar Pedido</Link>
@@ -114,23 +114,23 @@ function OrdersDashboard() {
                                                     <Badge className={cn("px-4 py-2 font-black uppercase tracking-widest text-[9px] rounded-xl shadow-lg border-0", config.color)}>
                                                         {config.label}
                                                     </Badge>
-                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-300">#{order.id.slice(-6)}</span>
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground">#{order.id.slice(-6)}</span>
                                                 </div>
                                                 <div className="space-y-1">
-                                                    <h3 className="text-3xl font-black italic tracking-tighter text-slate-900 group-hover:text-primary transition-colors">{order.supplierName}</h3>
-                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] italic">{order.items.length} Productos • {order.type === 'delivery' ? 'Envío' : 'Takeaway'}</p>
+                                                    <h3 className="text-3xl font-black italic tracking-tighter text-foreground group-hover:text-primary transition-colors">{order.supplierName}</h3>
+                                                    <p className="text-[10px] font-black text-foreground uppercase tracking-[0.2em] italic">{order.items.length} Productos • {order.type === 'delivery' ? 'Envío' : 'Takeaway'}</p>
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-6 pt-6 border-t border-slate-50">
+                                            <div className="space-y-6 pt-6 border-t border-foreground">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 flex items-center justify-center bg-slate-50 rounded-xl">
-                                                        <MapPin className="h-4 w-4 text-slate-400" />
+                                                    <div className="h-10 w-10 flex items-center justify-center bg-background rounded-xl">
+                                                        <MapPin className="h-4 w-4 text-foreground" />
                                                     </div>
-                                                    <p className="text-xs font-bold text-slate-500 italic max-w-xs">{order.deliveryAddress}</p>
+                                                    <p className="text-xs font-bold text-foreground italic max-w-xs">{order.deliveryAddress}</p>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <p className="text-4xl font-black tracking-tighter text-slate-900">${order.totalAmount.toLocaleString()}</p>
+                                                    <p className="text-4xl font-black tracking-tighter text-foreground">${order.totalAmount.toLocaleString()}</p>
                                                     <div className="h-12 w-12 rounded-2xl bg-primary flex items-center justify-center text-white shadow-xl shadow-primary/20 group-hover:translate-x-2 transition-transform">
                                                         <ArrowUpRight className="h-6 w-6" />
                                                     </div>
@@ -149,8 +149,8 @@ function OrdersDashboard() {
             <section className="space-y-8">
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-4">
-                        <div className="h-1 w-12 bg-slate-200 rounded-full" />
-                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-slate-400 italic">Cronología</h2>
+                        <div className="h-1 w-12 bg-background rounded-full" />
+                        <h2 className="text-sm font-black uppercase tracking-[0.3em] text-foreground italic">Cronología</h2>
                     </div>
                 </div>
 
@@ -163,22 +163,22 @@ function OrdersDashboard() {
                             transition={{ delay: i * 0.05 }}
                         >
                             <Link href={`/orders/${order.id}`}>
-                                <Card className="group bg-white/50 border border-slate-100/50 rounded-[2rem] p-6 hover:bg-white hover:border-primary/20 hover:shadow-xl transition-all duration-300">
+                                <Card className="group bg-white/50 border border-foreground/50 rounded-[2rem] p-6 hover:bg-white hover:border-primary/20 hover:shadow-xl transition-all duration-300">
                                     <div className="flex items-center justify-between gap-6">
                                         <div className="flex items-center gap-6">
-                                            <div className="h-14 w-14 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-colors">
-                                                {order.status === 'completed' ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <Package className="h-6 w-6 text-slate-300" />}
+                                            <div className="h-14 w-14 bg-background rounded-2xl flex items-center justify-center border border-foreground/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-colors">
+                                                {order.status === 'completed' ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <Package className="h-6 w-6 text-foreground" />}
                                             </div>
                                             <div className="space-y-1">
-                                                <h4 className="text-lg font-black tracking-tighter uppercase italic text-slate-800">{order.supplierName}</h4>
-                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                <h4 className="text-lg font-black tracking-tighter uppercase italic text-foreground">{order.supplierName}</h4>
+                                                <p className="text-[10px] font-black text-foreground uppercase tracking-widest">
                                                     {order.createdAt instanceof Timestamp ? format(order.createdAt.toDate(), "d MMM • HH:mm", { locale: es }) : 'Finalizada'}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xl font-black tracking-tighter text-slate-900">${order.totalAmount.toLocaleString()}</p>
-                                            <Badge variant="outline" className="mt-1 border-slate-100 text-[8px] font-black uppercase tracking-tighter text-slate-400 rounded-lg">ID {order.id.slice(-6)}</Badge>
+                                            <p className="text-xl font-black tracking-tighter text-foreground">${order.totalAmount.toLocaleString()}</p>
+                                            <Badge variant="outline" className="mt-1 border-foreground text-[8px] font-black uppercase tracking-tighter text-foreground rounded-lg">ID {order.id.slice(-6)}</Badge>
                                         </div>
                                     </div>
                                 </Card>
@@ -208,21 +208,21 @@ export default function StudentOrdersPage() {
                             <Badge className="bg-primary/10 text-primary border-primary/20 px-6 py-2 rounded-2xl font-black uppercase tracking-[0.2em] italic text-[10px] shadow-sm">
                                 Centro Logístico Estudiantil
                             </Badge>
-                            <h1 className="text-7xl md:text-[9rem] font-black tracking-tighter uppercase italic text-slate-900 leading-[0.7] select-none">
+                            <h1 className="text-7xl md:text-[9rem] font-black tracking-tighter uppercase italic text-foreground leading-[0.7] select-none">
                                 Mis <br/>
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-pink-300">Pedidos</span>
                             </h1>
                         </div>
-                        <div className="flex flex-col md:flex-row md:items-center gap-8 border-t border-slate-100 pt-10">
+                        <div className="flex flex-col md:flex-row md:items-center gap-8 border-t border-foreground pt-10">
                             <div className="space-y-1">
-                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-300">Estado del Pulso</p>
+                                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-foreground">Estado del Pulso</p>
                                 <div className="flex items-center gap-2">
                                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sistemas Operativos</p>
+                                    <p className="text-xs font-bold text-foreground uppercase tracking-widest">Sistemas Operativos</p>
                                 </div>
                             </div>
-                            <div className="hidden md:block h-10 w-px bg-slate-100" />
-                            <p className="text-xs md:text-sm text-slate-400 font-bold max-w-sm italic leading-relaxed uppercase tracking-widest opacity-60">
+                            <div className="hidden md:block h-10 w-px bg-background" />
+                            <p className="text-xs md:text-sm text-foreground font-bold max-w-sm italic leading-relaxed uppercase tracking-widest opacity-60">
                                 Sigue el latido de tus entregas en tiempo real. Desde el local hasta tu puerta.
                             </p>
                         </div>
@@ -238,3 +238,4 @@ export default function StudentOrdersPage() {
 }
 
 import { Button } from '@/components/ui/button';
+

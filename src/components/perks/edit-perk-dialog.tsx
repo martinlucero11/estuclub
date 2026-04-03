@@ -219,7 +219,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                     <FormItem>
                     <FormLabel>URL de la Imagen</FormLabel>
                     <div className="relative">
-                        <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <ImageIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                         <FormControl>
                         <Input type="url" {...field} className="pl-10" />
                         </FormControl>
@@ -235,7 +235,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                     <FormItem>
                     <FormLabel>Dirección / Ubicación</FormLabel>
                     <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                         <FormControl>
                         <Input {...field} className="pl-10" />
                         </FormControl>
@@ -251,7 +251,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                         <FormItem>
                         <FormLabel>Puntos</FormLabel>
                         <div className="relative">
-                            <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Award className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                             <FormControl>
                                 <Input type="number" {...field} className="pl-10" />
                             </FormControl>
@@ -271,7 +271,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                             <FormItem>
                             <FormLabel>Límite de Canje por Usuario</FormLabel>
                             <div className="relative">
-                                <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Repeat className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                 <FormControl>
                                     <Input type="number" placeholder="0" {...field} className="pl-10" />
                                 </FormControl>
@@ -296,7 +296,7 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
                                         variant={"outline"}
                                         className={cn(
                                             "w-full pl-3 text-left font-normal",
-                                            !field.value && "text-muted-foreground"
+                                            !field.value && "text-foreground"
                                         )}
                                         >
                                         {field.value ? (
@@ -459,3 +459,4 @@ export default function EditPerkDialog({ perk, isOpen, onOpenChange }: EditPerkD
     </Dialog>
   );
 }
+

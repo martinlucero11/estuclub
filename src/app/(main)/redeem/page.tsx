@@ -139,23 +139,23 @@ function RedemptionValidationContent() {
                      <div className="space-y-3 text-left w-full">
                         <p className="text-lg font-semibold text-foreground">{redemption.userName}</p>
                         <div className="flex items-center gap-3">
-                            <Fingerprint className="h-5 w-5 text-muted-foreground" />
-                            <p className="text-md text-muted-foreground">{redemption.userDni}</p>
+                            <Fingerprint className="h-5 w-5 text-foreground" />
+                            <p className="text-md text-foreground">{redemption.userDni}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <University className="h-5 w-5 text-muted-foreground" />
-                            <p className="text-md text-muted-foreground">{userProfile.university || 'No especificada'}</p>
+                            <University className="h-5 w-5 text-foreground" />
+                            <p className="text-md text-foreground">{userProfile.university || 'No especificada'}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Award className="h-5 w-5 text-muted-foreground" />
-                            <p className="text-md text-muted-foreground">{userProfile.points} Puntos</p>
+                            <Award className="h-5 w-5 text-foreground" />
+                            <p className="text-md text-foreground">{userProfile.points} Puntos</p>
                         </div>
                     </div>
                 </div>
             </CardContent>
              <CardFooter className='flex flex-col gap-2 text-center'>
                 <p className='text-sm font-bold'>Beneficio Canjeado:</p>
-                <p className='text-sm text-muted-foreground'>{redemption.benefitTitle}</p>
+                <p className='text-sm text-foreground'>{redemption.benefitTitle}</p>
             </CardFooter>
         </Card>
     );
@@ -164,10 +164,11 @@ function RedemptionValidationContent() {
 
 export default function RedemptionValidationPage() {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-muted p-4">
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
             <Suspense fallback={<ValidationSkeleton />}>
                 <RedemptionValidationContent />
             </Suspense>
         </div>
     );
 }
+

@@ -123,9 +123,9 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex bg-black/5 dark:bg-white/5 p-1 rounded-xl glass glass-dark">
-                    <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>Hoy</button>
-                    <button onClick={() => setDateFilter('7days')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === '7days' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>7 Días</button>
-                    <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-lg' : 'text-muted-foreground hover:text-foreground'}`}>Este Mes</button>
+                    <button onClick={() => setDateFilter('today')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>Hoy</button>
+                    <button onClick={() => setDateFilter('7days')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === '7days' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>7 Días</button>
+                    <button onClick={() => setDateFilter('month')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-lg' : 'text-foreground hover:text-foreground'}`}>Este Mes</button>
                 </div>
                 
                 <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredOrders, `Reporte_Ventas_${dateFilter}`)} className="h-9 rounded-xl font-bold gap-2">
@@ -137,7 +137,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="glass glass-dark border-primary/10 rounded-[2rem]">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
                             <Receipt className="h-4 w-4" /> Ticket Promedio
                         </CardTitle>
                     </CardHeader>
@@ -145,7 +145,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                         <div className="text-4xl font-black text-primary tracking-tighter">
                             ${Math.round(stats.avgTicket).toLocaleString()}
                         </div>
-                        <p className="text-xs font-medium text-muted-foreground mt-2">En {stats.totalOrders} pedidos procesados</p>
+                        <p className="text-xs font-medium text-foreground mt-2">En {stats.totalOrders} pedidos procesados</p>
                     </CardContent>
                 </Card>
 
@@ -164,7 +164,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                                 </div>
                             </>
                         ) : (
-                            <div className="text-muted-foreground text-sm font-medium italic">Sin ventas registradas en el período.</div>
+                            <div className="text-foreground text-sm font-medium italic">Sin ventas registradas en el período.</div>
                         )}
                     </CardContent>
                 </Card>
@@ -195,7 +195,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                                 </p>
                             </>
                         ) : (
-                            <div className="text-muted-foreground text-sm font-medium italic">Catálogo saludable.</div>
+                            <div className="text-foreground text-sm font-medium italic">Catálogo saludable.</div>
                         )}
                     </CardContent>
                 </Card>
@@ -229,7 +229,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                                         if (active && payload && payload.length) {
                                             return (
                                                 <div className="glass glass-dark p-3 rounded-xl border border-white/10 shadow-xl">
-                                                    <p className="text-xs font-black text-muted-foreground mb-1">{payload[0].payload.hour}</p>
+                                                    <p className="text-xs font-black text-foreground mb-1">{payload[0].payload.hour}</p>
                                                     <p className="text-lg font-black text-primary">{payload[0].value} Pedidos</p>
                                                 </div>
                                             );
@@ -248,7 +248,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="flex h-full items-center justify-center text-sm font-medium italic text-muted-foreground">
+                        <div className="flex h-full items-center justify-center text-sm font-medium italic text-foreground">
                             No hay datos suficientes para calcular las horas pico en este rango.
                         </div>
                     )}
@@ -257,3 +257,4 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
         </div>
     );
 }
+

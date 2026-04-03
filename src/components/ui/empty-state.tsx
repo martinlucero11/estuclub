@@ -20,7 +20,8 @@ export function EmptyState({ icon: Icon, title, description, className }: EmptyS
         <Icon className="h-10 w-10 opacity-70" />
       </div>
       <h3 className="text-xl font-black uppercase tracking-tight text-foreground">{title}</h3>
-      <p className="mt-2 text-sm text-muted-foreground font-medium max-w-[250px] mx-auto opacity-70 italic">{description}</p>
+      <p className="mt-2 text-sm text-foreground font-medium max-w-[250px] mx-auto opacity-70 italic">{description}</p>
     </div>
   );
 }
+

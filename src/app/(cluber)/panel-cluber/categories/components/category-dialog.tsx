@@ -39,3 +39,4 @@ export function CategoryDialog({ isOpen, onOpenChange, category, defaultType }: 
         </Dialog>
     );
 }
+

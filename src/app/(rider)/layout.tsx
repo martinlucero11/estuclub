@@ -26,7 +26,7 @@ export default function RiderLayout({
   if (!hasAccess) return null;
 
   return (
-    <div className="rider-night bg-[#050505] min-h-screen text-white selection:bg-[#d93b64]/30">
+    <div className="rider-night bg-[#000000] min-h-screen text-white selection:bg-[#cb465a]/30">
       <MainLayout>
         <div className="px-6 md:px-12 pt-24 pb-32 max-w-7xl mx-auto">
           {children}
@@ -35,3 +35,4 @@ export default function RiderLayout({
     </div>
   );
 }
+

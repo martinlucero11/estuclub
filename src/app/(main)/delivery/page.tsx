@@ -78,7 +78,7 @@ function DeliveryList() {
                         <ShoppingBag className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/50">Ordenar por</h3>
+                        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-foreground/50">Ordenar por</h3>
                         <p className="text-xs font-bold text-primary">{categoryFilter ? `Categoría: ${categoryFilter}` : 'Todos los locales'}</p>
                     </div>
                  </div>
@@ -102,7 +102,7 @@ function DeliveryList() {
                 {error && (
                     <div className="text-center py-20 space-y-4">
                         <p className="text-destructive font-bold text-xl">Error al cargar el menú</p>
-                        <p className="text-muted-foreground">{error.message}</p>
+                        <p className="text-foreground">{error.message}</p>
                     </div>
                 )}
 
@@ -110,7 +110,7 @@ function DeliveryList() {
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                         {sortedSuppliers.map((supplier) => (
                             <Link href={`/proveedores/${supplier.slug}`} key={supplier.id}>
-                                <Card className="group relative overflow-hidden rounded-[2.5rem] border-border/50 bg-card hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full border-white/10">
+                                <Card className="group relative overflow-hidden rounded-[2.5rem] border-foreground/50 bg-card hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full border-white/10">
                                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60 z-10" />
                                     
                                     <div className="aspect-[16/10] overflow-hidden relative">
@@ -121,8 +121,8 @@ function DeliveryList() {
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-muted flex items-center justify-center">
-                                                <ShoppingBag className="h-12 w-12 text-muted-foreground/20" />
+                                            <div className="w-full h-full bg-background flex items-center justify-center">
+                                                <ShoppingBag className="h-12 w-12 text-foreground/20" />
                                             </div>
                                         )}
                                         
@@ -166,9 +166,9 @@ function DeliveryList() {
 
                 {!isLoading && sortedSuppliers.length === 0 && (
                     <div className="text-center py-32 space-y-4 opacity-50">
-                        <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground" />
+                        <ShoppingBag className="h-16 w-16 mx-auto text-foreground" />
                         <h3 className="text-2xl font-black uppercase tracking-widest">No hay delivery disponible</h3>
-                        <p className="text-muted-foreground font-medium">Prueba con otra categoría o vuelve más tarde.</p>
+                        <p className="text-foreground font-medium">Prueba con otra categoría o vuelve más tarde.</p>
                     </div>
                 )}
             </div>
@@ -232,7 +232,7 @@ function DeliveryPageContent() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase italic px-1">
                       {categoryFilter}
                     </h1>
-                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-1 opacity-60">
+                    <p className="text-sm font-bold text-foreground uppercase tracking-widest px-1 opacity-60">
                       Explorando locales en esta categoría
                     </p>
                   </div>
@@ -294,7 +294,7 @@ function DeliveryHomeSections() {
     if (!sections || sections.length === 0) {
         return (
             <div className="text-center py-20 bg-background/50 border-2 border-dashed border-white/10 rounded-[3rem]">
-                <p className="text-muted-foreground italic">No hay secciones configuradas para Delivery. Configúralas en el Home Builder.</p>
+                <p className="text-foreground italic">No hay secciones configuradas para Delivery. Configúralas en el Home Builder.</p>
             </div>
         );
     }
@@ -305,7 +305,7 @@ function DeliveryHomeSections() {
                 <section key={section.id} className={cn(section.title ? "space-y-4 mb-12" : "mb-4")}>
                     {section.title && (
                         <div className="flex items-center justify-between px-1">
-                            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-muted-foreground/80 tracking-[0.2em]">
+                            <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-foreground/80 tracking-[0.2em]">
                                 {section.title}
                             </h2>
                             {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
@@ -333,3 +333,4 @@ function DeliveryHomeSections() {
         </div>
     );
 }
+

@@ -14,11 +14,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white/80 dark:bg-black/80 backdrop-blur-xl border border-black/10 dark:border-white/10 p-4 rounded-2xl shadow-2xl ring-1 ring-black/5">
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground dark:text-white/40 mb-1">
+                <p className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/40 mb-1">
                     {format(new Date(label), "d 'de' MMMM, yyyy")}
                 </p>
                 <p className="text-xl font-black text-primary flex items-baseline gap-1">
-                    {payload[0].value} <span className="text-[10px] uppercase text-muted-foreground dark:text-white/60 tracking-widest">Canjes</span>
+                    {payload[0].value} <span className="text-[10px] uppercase text-foreground dark:text-white/60 tracking-widest">Canjes</span>
                 </p>
             </div>
         );
@@ -45,7 +45,7 @@ export function TimeSeriesChart({ data, dataKey }: TimeSeriesChartProps) {
     }, [data, dataKey]);
 
     if (!chartData || chartData.length === 0) {
-        return <div className="h-80 flex items-center justify-center text-muted-foreground font-black uppercase tracking-tighter text-xs">Aún no hay datos suficientes</div>
+        return <div className="h-80 flex items-center justify-center text-foreground font-black uppercase tracking-tighter text-xs">Aún no hay datos suficientes</div>
     }
 
     return (
@@ -94,3 +94,4 @@ export function TimeSeriesChart({ data, dataKey }: TimeSeriesChartProps) {
         </ResponsiveContainer>
     );
 }
+

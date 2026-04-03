@@ -88,7 +88,7 @@ function AuthActionHandler() {
 
   if (loading) {
     return (
-      <Card className="w-full max-w-md shadow-lg border-muted">
+      <Card className="w-full max-w-md shadow-lg border-foreground">
         <CardHeader className="text-center space-y-4 py-8">
             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
             <CardTitle>Verificando enlace...</CardTitle>
@@ -99,7 +99,7 @@ function AuthActionHandler() {
   }
 
   return (
-    <Card className="w-full max-w-md shadow-lg border-muted">
+    <Card className="w-full max-w-md shadow-lg border-foreground">
       <CardHeader className="text-center">
         {success ? (
           <CheckCircle2 className="mx-auto h-16 w-16 text-green-500 mb-4" />
@@ -164,7 +164,7 @@ function AuthActionHandler() {
         )}
       </CardContent>
 
-      <CardFooter className="flex justify-center border-t border-border/40 p-6 bg-muted/20">
+      <CardFooter className="flex justify-center border-t border-foreground/40 p-6 bg-background/20">
         <Button asChild className="w-full h-11">
           <Link href="/login">Ir a Iniciar Sesión</Link>
         </Button>
@@ -189,7 +189,7 @@ export default function ActionPage() {
         
         <div className="z-10 w-full max-w-md">
             <Suspense fallback={
-                <Card className="w-full max-w-md shadow-lg border-muted">
+                <Card className="w-full max-w-md shadow-lg border-foreground">
                     <CardHeader className="text-center space-y-4 py-8">
                         <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
                         <CardTitle>Cargando...</CardTitle>
@@ -202,3 +202,4 @@ export default function ActionPage() {
     </div>
   );
 }
+

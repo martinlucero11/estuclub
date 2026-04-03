@@ -33,3 +33,4 @@ export function useProducts(supplierId?: string, activeOnly: boolean = true) {
 
     return useCollection(productsQuery);
 }
+

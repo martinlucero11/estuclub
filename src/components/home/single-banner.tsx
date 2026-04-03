@@ -45,3 +45,4 @@ export function SingleBanner({ banner }: { banner: Banner | null }) {
 }
 
 export default SingleBanner;
+

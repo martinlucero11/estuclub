@@ -32,3 +32,4 @@ export function StatusBarConfig() {
 
   return null; // This component doesn't render anything
 }
+

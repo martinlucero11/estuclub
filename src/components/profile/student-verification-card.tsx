@@ -119,7 +119,7 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
                     </div>
                     <CardTitle className="text-xl font-black tracking-tight uppercase tracking-[0.1em]">Verificación Requerida</CardTitle>
                 </div>
-                <CardDescription className="font-bold text-muted-foreground italic">
+                <CardDescription className="font-bold text-foreground italic">
                     Para mantener tu acceso al portal de beneficios, necesitamos tu certificado de alumno regular.
                 </CardDescription>
             </CardHeader>
@@ -150,7 +150,7 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
                     <div 
                         className={cn(
                             "flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-3xl transition-all cursor-pointer relative group",
-                            file ? "border-primary/40 bg-primary/5" : "border-border/40 hover:border-primary/20 hover:bg-primary/5"
+                            file ? "border-primary/40 bg-primary/5" : "border-foreground/40 hover:border-primary/20 hover:bg-primary/5"
                         )}
                     >
                         <input 
@@ -170,7 +170,7 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
                                 <p className="font-black uppercase tracking-widest text-xs">
                                     {file ? file.name : "Seleccionar Archivo"}
                                 </p>
-                                <p className="text-[10px] font-bold text-muted-foreground/60 mt-1 uppercase tracking-tighter">PDF o Imagen (Máx 5MB)</p>
+                                <p className="text-[10px] font-bold text-foreground/60 mt-1 uppercase tracking-tighter">PDF o Imagen (Máx 5MB)</p>
                             </div>
                         </div>
                     </div>
@@ -197,3 +197,4 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
         </Card>
     );
 }
+

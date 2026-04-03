@@ -57,14 +57,14 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
                          />
                     </div>
                     <div className="space-y-2">
-                         <p className="text-sm text-muted-foreground">{redemption.benefitDescription}</p>
+                         <p className="text-sm text-foreground">{redemption.benefitDescription}</p>
                          {redemption.benefitLocation && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-2 text-xs text-foreground">
                                 <MapPin className="h-3 w-3" />
                                 <span>{redemption.benefitLocation}</span>
                             </div>
                          )}
-                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                         <div className="flex items-center gap-2 text-xs text-foreground">
                             <Building className="h-3 w-3" />
                             <span>Vendido por: {redemption.supplierName}</span>
                          </div>
@@ -72,7 +72,7 @@ function RedeemedBenefitDetails({ redemption }: { redemption: SerializableBenefi
                 </div>
                  <div>
                     <h4 className="font-semibold mb-2">Detalles del Canje</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
+                    <ul className="text-sm text-foreground space-y-1">
                         <li><span className="font-medium text-foreground">Fecha:</span> {redeemedDate.toLocaleDateString('es-ES')}</li>
                         <li><span className="font-medium text-foreground">Hora:</span> {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} hs</li>
                         <li><span className="font-medium text-foreground">Puntos Otorgados:</span> {redemption.pointsGranted}</li>
@@ -136,7 +136,7 @@ export default function MyRedemptionsList() {
                                         </div>
                                     </div>
                                     <div className="md:col-span-1 flex flex-col items-start md:items-center">
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <div className="flex items-center gap-2 text-sm text-foreground">
                                             <Calendar className="h-4 w-4" />
                                             <span>{redeemedDate.toLocaleDateString('es-ES')} - {redeemedDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
                                         </div>
@@ -172,3 +172,4 @@ export default function MyRedemptionsList() {
         </Accordion>
     )
 }
+

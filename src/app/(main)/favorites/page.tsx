@@ -61,9 +61,9 @@ function FavoritesContent() {
   if (!user) {
     return (
       <div className="container flex flex-col items-center justify-center py-20 text-center">
-        <Heart className="h-16 w-16 text-muted-foreground/30 mb-4" />
+        <Heart className="h-16 w-16 text-foreground/30 mb-4" />
         <h2 className="text-2xl font-bold">Inicia sesión</h2>
-        <p className="text-muted-foreground mt-2">Debes estar registrado para guardar tus favoritos.</p>
+        <p className="text-foreground mt-2">Debes estar registrado para guardar tus favoritos.</p>
         <Button onClick={() => router.push('/login')} className="mt-6">
           Iniciar Sesión
         </Button>
@@ -81,7 +81,7 @@ function FavoritesContent() {
         </div>
         <div>
             <h1 className="text-3xl font-black tracking-tight uppercase text-foreground leading-tight">Mis Favoritos</h1>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Tu selección exclusiva</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground opacity-60">Tu selección exclusiva</p>
         </div>
       </div>
 
@@ -102,7 +102,7 @@ function FavoritesContent() {
             <section className="space-y-6">
               <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                 <Building className="h-4 w-4 text-primary" />
-                <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Mis Clubers</h2>
+                <h2 className="text-sm font-black uppercase tracking-widest text-foreground/80">Mis Clubers</h2>
               </div>
               {suppliersLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -132,7 +132,7 @@ function FavoritesContent() {
                           <h3 className="font-black text-base truncate text-foreground group-hover:text-primary transition-colors leading-tight">
                               {supplier.name}
                           </h3>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-foreground opacity-60 mt-0.5">
                               {supplier.type}
                           </p>
                       </div>
@@ -147,7 +147,7 @@ function FavoritesContent() {
           <section className="space-y-6">
             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
               <Ticket className="h-4 w-4 text-primary" />
-              <h2 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Mis Beneficios</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest text-foreground/80">Mis Beneficios</h2>
             </div>
             {benefitsLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -171,3 +171,4 @@ export default function FavoritesPage() {
     </MainLayout>
   );
 }
+

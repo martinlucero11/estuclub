@@ -73,7 +73,7 @@ function AppointmentCard({ appointment, index }: { appointment: Appointment, ind
                         <p className="text-sm font-black uppercase tracking-widest text-foreground">
                             {startTime.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
                         </p>
-                        <p className="text-xs font-bold text-muted-foreground opacity-70">
+                        <p className="text-xs font-bold text-foreground opacity-70">
                             {startTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                         </p>
                     </div>
@@ -88,11 +88,11 @@ function AppointmentCard({ appointment, index }: { appointment: Appointment, ind
                         </h3>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Building className="h-3.5 w-3.5 text-muted-foreground" />
+                        <Building className="h-3.5 w-3.5 text-foreground" />
                         {isLoading ? (
                             <BrandSkeleton className="h-3 w-24 rounded-md" />
                         ) : (
-                            <span className="text-xs font-bold text-muted-foreground opacity-80 uppercase tracking-wider">
+                            <span className="text-xs font-bold text-foreground opacity-80 uppercase tracking-wider">
                                 {supplier?.name || 'Comercio'}
                             </span>
                         )}
@@ -189,3 +189,4 @@ export default function UserAppointmentsList() {
         </div>
     )
 }
+

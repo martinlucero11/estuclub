@@ -58,7 +58,7 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
 
     if (!user) {
         return (
-            <Button disabled className="h-14 px-6 rounded-2xl font-black uppercase tracking-widest bg-muted/20 opacity-50 border-2 border-dashed">
+            <Button disabled className="h-14 px-6 rounded-2xl font-black uppercase tracking-widest bg-background/20 opacity-50 border-2 border-dashed">
                 <BellPlus className="mr-2 h-5 w-5" />
                 Login para suscribirte
             </Button>
@@ -67,7 +67,7 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
     
     if (isLoading || isProcessing) {
          return (
-            <Button disabled className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest bg-muted/20 border-2 border-primary/20">
+            <Button disabled className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest bg-background/20 border-2 border-primary/20">
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Cargando...
             </Button>
@@ -101,3 +101,4 @@ export default function SubscribeButton({ supplierId }: SubscribeButtonProps) {
         </motion.div>
     );
 }
+

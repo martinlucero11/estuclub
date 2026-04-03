@@ -24,3 +24,4 @@ export function PageHeader({ title, children, className }: PageHeaderProps) {
         </header>
     );
 }
+

@@ -43,3 +43,4 @@ export async function calculateDistance(origin: string, destination: string) {
     return { distanceKm: 0, durationMin: 0, success: false };
   }
 }
+

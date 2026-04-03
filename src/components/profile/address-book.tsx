@@ -75,7 +75,7 @@ export function AddressBook() {
         <Card className="glass glass-dark shadow-premium border-0 rounded-[2rem] overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div>
-                    <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-muted-foreground/80 tracking-[0.2em]">Mis Direcciones</CardTitle>
+                    <CardTitle className="text-xl font-black tracking-tight uppercase text-xs text-foreground/80 tracking-[0.2em]">Mis Direcciones</CardTitle>
                 </div>
                 {!isAdding && (
                     <Button 
@@ -105,7 +105,7 @@ export function AddressBook() {
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Etiqueta</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground ml-1">Etiqueta</Label>
                                         <Input 
                                             placeholder="Ej: Mi Casa, Trabajo" 
                                             value={newAddress.label}
@@ -114,7 +114,7 @@ export function AddressBook() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Referencias</Label>
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-foreground ml-1">Referencias</Label>
                                         <Input 
                                             placeholder="Ej: Portón negro, timbre fuerte" 
                                             value={newAddress.notes}
@@ -163,7 +163,7 @@ export function AddressBook() {
                                                     <span className="font-black uppercase tracking-tighter text-sm italic">{addr.label}</span>
                                                     {addr.isDefault && <Check className="h-3 w-3 text-green-500" />}
                                                 </div>
-                                                <p className="text-[10px] font-bold text-muted-foreground truncate">{addr.address}</p>
+                                                <p className="text-[10px] font-bold text-foreground truncate">{addr.address}</p>
                                                 {addr.notes && (
                                                     <p className="text-[9px] font-medium text-primary italic mt-0.5 line-clamp-1">"{addr.notes}"</p>
                                                 )}
@@ -173,7 +173,7 @@ export function AddressBook() {
                                             variant="ghost" 
                                             size="icon" 
                                             onClick={() => handleDelete(addr)}
-                                            className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                                            className="h-10 w-10 rounded-xl text-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
@@ -192,3 +192,4 @@ export function AddressBook() {
         </Card>
     );
 }
+

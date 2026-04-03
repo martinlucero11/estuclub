@@ -57,7 +57,7 @@ const config = {
         },
         // Brand shortcuts for hardcoded use in Rosa/Negro modes
         estuclub: {
-          rosa: "#d93b64",
+          rosa: "#cb465a",
           negro: "#000000",
           blanco: "#FFFFFF",
         },

@@ -26,3 +26,4 @@ export default function CluberLayout({
 
   return <MainLayout>{children}</MainLayout>;
 }
+

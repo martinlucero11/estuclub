@@ -136,7 +136,7 @@ function BenefitsList() {
                         <ArrowDownUp className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground/80">Ordenar por</h3>
+                        <h3 className="text-sm font-black uppercase tracking-widest text-foreground/80">Ordenar por</h3>
                         {categoryFilter && <p className="text-xs font-bold text-primary">Categoría: {categoryFilter}</p>}
                     </div>
                  </div>
@@ -214,7 +214,7 @@ export default function BenefitsPage() {
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
                         Todos los <span className="text-primary">Beneficios</span>
                     </h1>
-                    <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed">
+                    <p className="text-lg text-foreground font-medium max-w-2xl leading-relaxed">
                         Explora todos los descuentos, ofertas y eventos exclusivos disponibles para la comunidad de EstuClub.
                     </p>
                 </header>
@@ -226,3 +226,4 @@ export default function BenefitsPage() {
         </MainLayout>
     );
 }
+

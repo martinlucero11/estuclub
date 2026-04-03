@@ -23,3 +23,4 @@ export default function AdminAccessDenied({ title, description }: AdminAccessDen
         </div>
     );
 }
+

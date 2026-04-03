@@ -12,7 +12,7 @@ export interface LevelInfo {
 }
 
 const LEVEL_TIERS = [
-  { threshold: 0, label: 'Novato', color: 'text-slate-500 bg-slate-100' },
+  { threshold: 0, label: 'Novato', color: 'text-foreground bg-background' },
   { threshold: 50, label: 'Ahorrador', color: 'text-blue-600 bg-blue-100' },
   { threshold: 200, label: 'Fanático', color: 'text-estuclub-rosa bg-pink-100' },
   { threshold: 500, label: 'Leyenda', color: 'text-amber-600 bg-amber-100' },
@@ -47,3 +47,4 @@ export function getProgressToNextLevel(xp: number = 0): number {
   const progress = ((xp - info.minXp) / range) * 100;
   return Math.min(100, Math.max(0, progress));
 }
+

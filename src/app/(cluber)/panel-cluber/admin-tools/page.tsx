@@ -151,9 +151,9 @@ export default function AdminToolsPanelPage() {
     if (!isAdmin) {
         return (
             <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                <Shield className="h-16 w-16 text-muted-foreground/30" />
+                <Shield className="h-16 w-16 text-foreground/30" />
                 <h1 className="text-2xl font-bold">Acceso denegado</h1>
-                <p className="text-muted-foreground">Solo administradores pueden acceder a esta página.</p>
+                <p className="text-foreground">Solo administradores pueden acceder a esta página.</p>
             </div>
         );
     }
@@ -162,7 +162,7 @@ export default function AdminToolsPanelPage() {
         <div className="space-y-8 animate-fade-in">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black tracking-tight leading-none">Herramientas del Sistema</h1>
-                <p className="text-muted-foreground text-sm font-medium opacity-70 italic">Acciones administrativas avanzadas para la gestión de la plataforma.</p>
+                <p className="text-foreground text-sm font-medium opacity-70 italic">Acciones administrativas avanzadas para la gestión de la plataforma.</p>
             </div>
 
             <div className="grid gap-8 lg:grid-cols-2">
@@ -197,7 +197,7 @@ export default function AdminToolsPanelPage() {
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <p className="font-black text-2xl tracking-tighter uppercase">{foundUser.firstName} {foundUser.lastName}</p>
-                                            <p className="text-sm font-bold text-muted-foreground italic mb-2">{foundUser.email}</p>
+                                            <p className="text-sm font-bold text-foreground italic mb-2">{foundUser.email}</p>
                                             <div className="flex gap-2">
                                                 <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${foundUser.isStudent ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                                                     {foundUser.isStudent ? 'Estudiante' : 'No Estudiante'}
@@ -214,23 +214,23 @@ export default function AdminToolsPanelPage() {
 
                                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-primary/5">
                                         <div className="space-y-1">
-                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Institución</p>
+                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">Institución</p>
                                             <p className="text-xs font-bold truncate">{foundUser.institution || 'No especificada'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Carrera</p>
+                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">Carrera</p>
                                             <p className="text-xs font-bold truncate">{foundUser.career || 'No especificada'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">DNI</p>
+                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">DNI</p>
                                             <p className="text-xs font-bold">{foundUser.dni || 'N/A'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground">Certificado</p>
+                                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-foreground">Certificado</p>
                                             {foundUser.studentCertificateUrl ? (
                                                 <a href={foundUser.studentCertificateUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-primary hover:underline">Ver Archivo 🔗</a>
                                             ) : (
-                                                <p className="text-xs font-bold text-muted-foreground/50 italic">No subido</p>
+                                                <p className="text-xs font-bold text-foreground/50 italic">No subido</p>
                                             )}
                                         </div>
                                     </div>
@@ -288,7 +288,7 @@ export default function AdminToolsPanelPage() {
                                     <div key={section.id} className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between hover:bg-primary/10 transition-colors group">
                                         <div className="space-y-0.5">
                                             <p className="font-black text-sm uppercase tracking-tight">{section.title}</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">Tipo: {section.block.kind}</p>
+                                            <p className="text-[10px] font-bold text-foreground uppercase opacity-60">Tipo: {section.block.kind}</p>
                                         </div>
                                         <Button 
                                             size="sm" 
@@ -304,7 +304,7 @@ export default function AdminToolsPanelPage() {
                                     </div>
                                 ))}
                                 {deliverySections.length === 0 && (
-                                    <p className="text-center py-6 text-xs font-bold text-muted-foreground/50 uppercase tracking-widest leading-loose italic">No hay secciones configuradas para Delivery.</p>
+                                    <p className="text-center py-6 text-xs font-bold text-foreground/50 uppercase tracking-widest leading-loose italic">No hay secciones configuradas para Delivery.</p>
                                 )}
                             </div>
                         )}
@@ -340,7 +340,7 @@ export default function AdminToolsPanelPage() {
                     {confirmStep > 0 && !isResetting && (
                         <Button 
                             variant="ghost" 
-                            className="w-full font-black uppercase tracking-widest text-[10px] text-muted-foreground"
+                            className="w-full font-black uppercase tracking-widest text-[10px] text-foreground"
                             onClick={() => setConfirmStep(0)}
                         >
                             Cancelar
@@ -367,4 +367,5 @@ export default function AdminToolsPanelPage() {
         </div>
     );
 }
+
 

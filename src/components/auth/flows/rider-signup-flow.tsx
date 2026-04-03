@@ -86,7 +86,7 @@ function CameraCapture({ onCapture, onClose, title }: { onCapture: (file: File) 
                 <h3 className="font-black uppercase tracking-widest text-[10px] text-primary">{title}</h3>
                 <Button variant="ghost" onClick={onClose}><X /></Button>
             </div>
-            <video ref={videoRef} autoPlay playsInline className="w-full max-w-md aspect-[3/4] bg-zinc-900 rounded-[2rem] object-cover" />
+            <video ref={videoRef} autoPlay playsInline className="w-full max-w-md aspect-[3/4] bg-background rounded-[2rem] object-cover" />
             <div className="mt-10 flex gap-10 items-center">
                 <Button variant="ghost" className="h-14 w-14 rounded-full bg-white/10" onClick={() => setFacingMode(f => f === 'user' ? 'environment' : 'user')}><FlipHorizontal className="text-white" /></Button>
                 <div onClick={capture} className="h-20 w-20 rounded-full border-4 border-white/20 flex items-center justify-center cursor-pointer active:scale-95 transition-all">
@@ -217,9 +217,9 @@ export function RiderSignupFlow() {
                 </div>
                 <div className="space-y-3">
                     <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white font-montserrat">¡Postulación Enviada!</h2>
-                    <p className="text-sm text-slate-400 font-bold opacity-70 italic max-w-xs mx-auto uppercase tracking-widest leading-relaxed">Analizaremos tus datos para activarte como Rider oficial de Alem.</p>
+                    <p className="text-sm text-foreground font-bold opacity-70 italic max-w-xs mx-auto uppercase tracking-widest leading-relaxed">Analizaremos tus datos para activarte como Rider oficial de Alem.</p>
                 </div>
-                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-slate-900 border border-white/5 text-slate-400 font-black uppercase tracking-widest rounded-3xl">
+                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-background border border-white/5 text-foreground font-black uppercase tracking-widest rounded-3xl">
                     VOLVER AL INICIO
                 </Button>
             </motion.div>
@@ -239,10 +239,10 @@ export function RiderSignupFlow() {
             </AnimatePresence>
 
             <div className="flex items-center justify-between px-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] italic">Sección {step} de 2</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#cb465a] italic">Sección {step} de 2</p>
                 <div className="flex gap-1.5">
                     {[1, 2].map(s => (
-                        <div key={s} className={cn("h-1 w-10 rounded-full transition-all duration-500", step >= s ? "bg-[#d93b64]" : "bg-white/10")} />
+                        <div key={s} className={cn("h-1 w-10 rounded-full transition-all duration-500", step >= s ? "bg-[#cb465a]" : "bg-white/10")} />
                     ))}
                 </div>
             </div>
@@ -261,10 +261,10 @@ export function RiderSignupFlow() {
                                     onClick={() => form.setValue('vehicleType', v.id as any)}
                                     className={cn(
                                         "flex flex-col items-center justify-center gap-3 h-24 rounded-2xl border transition-all",
-                                        form.watch('vehicleType') === v.id ? "bg-primary border-primary text-white shadow-lg" : "bg-white/5 border-white/10 text-slate-500"
+                                        form.watch('vehicleType') === v.id ? "bg-primary border-primary text-white shadow-lg" : "bg-white/5 border-white/10 text-foreground"
                                     )}
                                 >
-                                    <v.icon className={cn("h-6 w-6", form.watch('vehicleType') === v.id ? "text-white" : "text-slate-600")} />
+                                    <v.icon className={cn("h-6 w-6", form.watch('vehicleType') === v.id ? "text-white" : "text-foreground")} />
                                     <span className="text-[9px] font-black uppercase tracking-widest">{v.label}</span>
                                 </button>
                             ))}
@@ -327,14 +327,14 @@ export function RiderSignupFlow() {
                                         files[doc.id as keyof typeof files] ? "bg-emerald-500/10 border-emerald-500/20" : "bg-white/5 border-white/10"
                                     )}
                                 >
-                                    {files[doc.id as keyof typeof files] ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Camera className="h-5 w-5 text-slate-500" />}
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-500 mt-1">{doc.label}</span>
+                                    {files[doc.id as keyof typeof files] ? <CheckCircle2 className="h-5 w-5 text-emerald-500" /> : <Camera className="h-5 w-5 text-foreground" />}
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground mt-1">{doc.label}</span>
                                 </button>
                             ))}
                         </div>
 
                         <div className="flex gap-4">
-                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-white/5 rounded-2xl border border-white/10 text-slate-600">
+                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-white/5 rounded-2xl border border-white/10 text-foreground">
                                 <ArrowLeft className="h-6 w-6" />
                             </Button>
                             <Button 
@@ -351,3 +351,4 @@ export function RiderSignupFlow() {
         </div>
     );
 }
+

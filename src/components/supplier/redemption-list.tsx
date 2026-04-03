@@ -79,7 +79,7 @@ export default function SupplierScanHistory() {
                     <a href={indexUrl} target="_blank" rel="noopener noreferrer" className="text-primary underline font-mono break-all text-sm hover:text-primary/80">
                         Crear Índice en Firebase Console
                     </a>
-                    <p className="mt-4 text-xs text-muted-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active.</p>
+                    <p className="mt-4 text-xs text-foreground">Una vez en la página, simplemente haz clic en "Crear índice" y espera unos minutos a que se active.</p>
                 </CardContent>
             </Card>
         );
@@ -91,10 +91,10 @@ export default function SupplierScanHistory() {
 
     if (!scans || scans.length === 0) {
         return (
-             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-12 text-center">
-                <History className="mx-auto h-12 w-12 text-muted-foreground" />
+             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-foreground p-12 text-center">
+                <History className="mx-auto h-12 w-12 text-foreground" />
                 <h3 className="mt-4 text-xl font-semibold">Sin Escaneos Registrados</h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-foreground">
                     Aún no has escaneado ningún código QR de canje.
                 </p>
             </div>
@@ -122,8 +122,8 @@ export default function SupplierScanHistory() {
                             const redeemedAt = (scan.redeemedAt as Timestamp)?.toDate();
                             return (
                                 <TableRow key={scan.id}>
-                                    <TableCell className="font-medium flex items-center gap-2"><Tag className="h-4 w-4 text-muted-foreground"/>{scan.benefitTitle}</TableCell>
-                                    <TableCell className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-muted-foreground"/>{scan.userName}</TableCell>
+                                    <TableCell className="font-medium flex items-center gap-2"><Tag className="h-4 w-4 text-foreground"/>{scan.benefitTitle}</TableCell>
+                                    <TableCell className="flex items-center gap-2"><UserIcon className="h-4 w-4 text-foreground"/>{scan.userName}</TableCell>
                                     <TableCell>
                                         {redeemedAt ? redeemedAt.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) : 'Fecha no disponible'}
                                     </TableCell>
@@ -145,3 +145,4 @@ export default function SupplierScanHistory() {
         </Card>
     );
 }
+

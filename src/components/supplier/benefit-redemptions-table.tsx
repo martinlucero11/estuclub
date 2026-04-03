@@ -48,7 +48,7 @@ export function BenefitRedemptionsTable({ supplierId }: { supplierId: string }) 
     if (!redemptions || redemptions.length === 0) {
         return (
             <div className="py-12 text-center space-y-4 opacity-50">
-                <Ticket className="h-12 w-12 mx-auto text-muted-foreground" />
+                <Ticket className="h-12 w-12 mx-auto text-foreground" />
                 <p className="font-bold uppercase tracking-widest text-[10px]">No hay canjes registrados aún</p>
             </div>
         );
@@ -75,18 +75,18 @@ export function BenefitRedemptionsTable({ supplierId }: { supplierId: string }) 
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-xs font-black tracking-tight">{redemption.userName}</span>
-                                        <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter">DNI: {redemption.userDni}</span>
+                                        <span className="text-[9px] text-foreground font-bold uppercase tracking-tighter">DNI: {redemption.userDni}</span>
                                     </div>
                                 </div>
                             </TableCell>
                             <TableCell className="py-4">
                                 <div className="flex flex-col">
                                     <span className="text-xs font-bold leading-tight">{redemption.benefitTitle}</span>
-                                    <span className="text-[9px] text-muted-foreground font-medium truncate max-w-[150px]">Cod: {redemption.qrCodeValue}</span>
+                                    <span className="text-[9px] text-foreground font-medium truncate max-w-[150px]">Cod: {redemption.qrCodeValue}</span>
                                 </div>
                             </TableCell>
                             <TableCell className="py-4">
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-foreground">
                                     <Calendar className="h-3 w-3" />
                                     {format(redemption.redeemedAt.toDate(), "d MMM, HH:mm", { locale: es })}
                                 </div>
@@ -108,3 +108,4 @@ export function BenefitRedemptionsTable({ supplierId }: { supplierId: string }) 
         </div>
     );
 }
+

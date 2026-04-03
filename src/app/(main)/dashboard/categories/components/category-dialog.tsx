@@ -36,3 +36,4 @@ export function CategoryDialog({ isOpen, onOpenChange, category }: CategoryDialo
         </Dialog>
     );
 }
+

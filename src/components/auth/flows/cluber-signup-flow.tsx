@@ -179,9 +179,9 @@ export function CluberSignupFlow() {
                 </div>
                 <div className="space-y-3">
                     <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white font-montserrat">¡Postulación Enviada!</h2>
-                    <p className="text-sm text-slate-400 font-bold opacity-70 italic max-w-xs mx-auto uppercase tracking-widest">Analizaremos tu local en breve. Bienvenido a la red Estuclub.</p>
+                    <p className="text-sm text-foreground font-bold opacity-70 italic max-w-xs mx-auto uppercase tracking-widest">Analizaremos tu local en breve. Bienvenido a la red Estuclub.</p>
                 </div>
-                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-slate-900 border border-white/5 text-slate-400 font-black uppercase tracking-widest rounded-3xl">
+                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-background border border-white/5 text-foreground font-black uppercase tracking-widest rounded-3xl">
                     VOLVER AL INICIO
                 </Button>
             </motion.div>
@@ -192,10 +192,10 @@ export function CluberSignupFlow() {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Steps */}
             <div className="flex items-center justify-between px-2">
-                <p className="text-[10px] font-black uppercase tracking-widest text-[#d93b64] italic">Sección {step} de 2</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[#cb465a] italic">Sección {step} de 2</p>
                 <div className="flex gap-1.5">
                     {[1, 2].map(s => (
-                        <div key={s} className={cn("h-1 w-10 rounded-full transition-all duration-500", step >= s ? "bg-[#d93b64]" : "bg-white/10")} />
+                        <div key={s} className={cn("h-1 w-10 rounded-full transition-all duration-500", step >= s ? "bg-[#cb465a]" : "bg-white/10")} />
                     ))}
                 </div>
             </div>
@@ -207,8 +207,8 @@ export function CluberSignupFlow() {
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Nombre Comercial</Label>
                                 <div className="relative group">
-                                    <Store className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-primary transition-colors" />
-                                    <Input {...form.register('supplierName')} placeholder="Ej: Barber Shop 22" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-slate-600" />
+                                    <Store className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors" />
+                                    <Input {...form.register('supplierName')} placeholder="Ej: Barber Shop 22" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
                                 </div>
                             </div>
                             <div className="space-y-2">
@@ -222,7 +222,7 @@ export function CluberSignupFlow() {
                                     className="h-[240px] rounded-3xl border-white/5"
                                 />
                                 {form.watch('address') && (
-                                    <p className="text-[9px] font-bold text-slate-500 italic truncate py-1 px-2 border-l-2 border-primary/20">
+                                    <p className="text-[9px] font-bold text-foreground italic truncate py-1 px-2 border-l-2 border-primary/20">
                                         Detectado: {form.watch('address')}
                                     </p>
                                 )}
@@ -234,7 +234,7 @@ export function CluberSignupFlow() {
                                         <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl text-white uppercase font-black text-[10px] tracking-widest">
                                             <SelectValue placeholder="Categoría" />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#121212] border-white/10 text-white">
+                                        <SelectContent className="bg-[#000000] border-white/10 text-white">
                                             {CATEGORIES.map(c => (
                                                 <SelectItem key={c} value={c} className="uppercase font-black text-[10px] tracking-widest">{c}</SelectItem>
                                             ))}
@@ -244,13 +244,13 @@ export function CluberSignupFlow() {
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">WhatsApp Ventas</Label>
                                     <div className="relative group">
-                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                                        <Input {...form.register('commercialPhone')} placeholder="3755 000111" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-slate-600" />
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
+                                        <Input {...form.register('commercialPhone')} placeholder="3755 000111" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <Button onClick={nextStep} className="w-full h-16 bg-[#d93b64] text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-[#d93b64]/20">
+                        <Button onClick={nextStep} className="w-full h-16 bg-[#cb465a] text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-[#cb465a]/20">
                             SIGUIENTE PASO <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
                     </motion.div>
@@ -259,8 +259,8 @@ export function CluberSignupFlow() {
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Nombre del Propietario</Label>
                             <div className="relative group">
-                                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                                <Input {...form.register('fullName')} placeholder="Ej: Juan Pérez" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-slate-600" />
+                                <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
+                                <Input {...form.register('fullName')} placeholder="Ej: Juan Pérez" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -282,9 +282,9 @@ export function CluberSignupFlow() {
                                     {files[doc.id as keyof typeof files] ? (
                                         <CheckCircle2 className="h-5 w-5 text-primary mb-1" />
                                     ) : (
-                                        <ImageIcon className="h-5 w-5 text-slate-600 mb-1 group-hover:text-primary transition-colors" />
+                                        <ImageIcon className="h-5 w-5 text-foreground mb-1 group-hover:text-primary transition-colors" />
                                     )}
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-foreground">
                                         {files[doc.id as keyof typeof files] ? 'Cargado' : doc.label}
                                     </span>
                                 </div>
@@ -292,7 +292,7 @@ export function CluberSignupFlow() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-white/5 rounded-2xl border border-white/10 text-slate-600">
+                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-white/5 rounded-2xl border border-white/10 text-foreground">
                                 <ArrowLeft className="h-6 w-6" />
                             </Button>
                             <Button 
@@ -309,4 +309,5 @@ export function CluberSignupFlow() {
         </div>
     );
 }
+
 

@@ -68,3 +68,4 @@ export function useAppointmentReminders() {
         return () => clearInterval(interval);
     }, [appointments]);
 }
+

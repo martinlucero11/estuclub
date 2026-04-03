@@ -65,7 +65,7 @@ function NotificationList({
     
     if (!notifications || notifications.length === 0) {
         return (
-            <div className="p-4 text-center text-sm text-muted-foreground">
+            <div className="p-4 text-center text-sm text-foreground">
                 No tienes notificaciones nuevas.
             </div>
         )
@@ -83,8 +83,8 @@ function NotificationList({
                             </div>
                             <div className='flex-1'>
                                 <p className="text-sm font-medium">{notification.title}</p>
-                                <p className="text-sm text-muted-foreground">{notification.description}</p>
-                                <p className="text-xs text-muted-foreground pt-1">{formatTime(notification.createdAt)}</p>
+                                <p className="text-sm text-foreground">{notification.description}</p>
+                                <p className="text-xs text-foreground pt-1">{formatTime(notification.createdAt)}</p>
                             </div>
                         </div>
                          {index < notifications.length - 1 && <Separator />}

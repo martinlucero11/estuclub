@@ -58,7 +58,7 @@ export default function AnnouncementsPage() {
         <MainLayout>
             <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Todos los Anuncios" />
-                <p className="text-muted-foreground -mt-8 mb-8">
+                <p className="text-foreground -mt-8 mb-8">
                     Mantente al día con las últimas noticias y publicaciones de la comunidad.
                 </p>
 
@@ -69,3 +69,4 @@ export default function AnnouncementsPage() {
         </MainLayout>
     );
 }
+

@@ -291,7 +291,7 @@ export default function EditSupplierProfileForm() {
 
         <FormItem className="flex flex-col items-center">
             <FormLabel>Imagen de Portada (Delivery Card)</FormLabel>
-            <div className="relative w-full aspect-[16/10] max-w-md overflow-hidden rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-muted/50 transition-all hover:border-primary/40 group">
+            <div className="relative w-full aspect-[16/10] max-w-md overflow-hidden rounded-[2.5rem] border-2 border-dashed border-primary/20 bg-background/50 transition-all hover:border-primary/40 group">
                 {(isUploadingCover) && (
                     <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-10">
                         <Loader2 className="h-10 w-10 text-white animate-spin" />
@@ -304,7 +304,7 @@ export default function EditSupplierProfileForm() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                     />
                 ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+                    <div className="w-full h-full flex flex-col items-center justify-center text-foreground gap-2">
                         <Camera className="h-12 w-12 opacity-20" />
                         <span className="text-xs font-bold uppercase tracking-widest opacity-50">Vista previa de tarjeta</span>
                     </div>
@@ -329,7 +329,7 @@ export default function EditSupplierProfileForm() {
                 accept="image/png, image/jpeg, image/webp"
                 disabled={isUploadingCover}
             />
-            <p className="text-[10px] text-muted-foreground italic text-center max-w-sm mt-2">
+            <p className="text-[10px] text-foreground italic text-center max-w-sm mt-2">
                 Esta es la imagen de "fondo" que se verá cuando los alumnos busquen tu local en la sección de Delivery. Recomendamos formato 16:10.
             </p>
         </FormItem>
@@ -415,7 +415,7 @@ export default function EditSupplierProfileForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Ubicación en el Mapa</FormLabel>
-              <div className="text-sm text-muted-foreground mb-4">
+              <div className="text-sm text-foreground mb-4">
                 Ubica el pin en el lugar exacto de tu local para atraer a los alumnos de la universidad y aparecer en el mapa geolocalizado.
               </div>
               <div className="h-64 sm:h-80 w-full relative">
@@ -442,13 +442,13 @@ export default function EditSupplierProfileForm() {
           )}
         />
         
-        <div className="space-y-6 pt-6 border-t border-border/50">
-            <h3 className="text-lg font-black uppercase tracking-widest text-[#d93b64] flex items-center gap-2">
+        <div className="space-y-6 pt-6 border-t border-foreground/50">
+            <h3 className="text-lg font-black uppercase tracking-widest text-[#cb465a] flex items-center gap-2">
                 <Clock className="h-5 w-5" /> Horarios de Atención
             </h3>
             <div className="grid gap-4">
                 {(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] as const).map((day) => (
-                    <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-muted/30 border border-border/50">
+                    <div key={day} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-background/30 border border-foreground/50">
                         <div className="flex items-center gap-4 min-w-[120px]">
                             <Switch 
                                 checked={form.watch(`operatingHours.${day}.active`)} 
@@ -492,10 +492,10 @@ export default function EditSupplierProfileForm() {
                     </div>
                 ))}
             </div>
-            <p className="text-[10px] text-muted-foreground italic pl-2">Define tus horarios para que los alumnos sepan cuándo pueden visitarte o pedir delivery.</p>
+            <p className="text-[10px] text-foreground italic pl-2">Define tus horarios para que los alumnos sepan cuándo pueden visitarte o pedir delivery.</p>
         </div>
         
-         <div className="space-y-4 pt-6 border-t border-border/50">
+         <div className="space-y-4 pt-6 border-t border-foreground/50">
             <h3 className="text-lg font-black uppercase tracking-widest text-primary flex items-center gap-2">
                 <Truck className="h-5 w-5" /> Configuración de Delivery
             </h3>
@@ -507,7 +507,7 @@ export default function EditSupplierProfileForm() {
                         <FormItem className="flex flex-row items-center justify-between rounded-2xl border p-4">
                             <div className="space-y-0.5">
                                 <FormLabel className="text-base">Habilitar Delivery</FormLabel>
-                                <div className="text-sm text-muted-foreground">Activa esta opción para recibir pedidos online.</div>
+                                <div className="text-sm text-foreground">Activa esta opción para recibir pedidos online.</div>
                             </div>
                             <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -615,3 +615,4 @@ export default function EditSupplierProfileForm() {
     </Form>
   );
 }
+

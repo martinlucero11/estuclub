@@ -44,9 +44,9 @@ export default function AnnouncementDialog({ announcement, children }: Announcem
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-muted-foreground whitespace-pre-wrap">{announcement.content}</p>
+          <p className="text-foreground whitespace-pre-wrap">{announcement.content}</p>
         </div>
-        <DialogFooter className="flex-wrap items-center justify-between text-sm text-muted-foreground sm:justify-between">
+        <DialogFooter className="flex-wrap items-center justify-between text-sm text-foreground sm:justify-between">
             <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
                     <AvatarFallback>{authorInitial}</AvatarFallback>
@@ -69,3 +69,4 @@ export default function AnnouncementDialog({ announcement, children }: Announcem
     </Dialog>
   );
 }
+

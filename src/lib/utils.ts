@@ -132,3 +132,4 @@ export function getAvatarUrl(avatarSeed: string | null | undefined): string | nu
   
   return `${MICAH_BASE_URL}?baseColor=${config.skin}&hair=${config.hair}&hairColor=${config.hcolor}&facialHair=${config.beard === 'none' ? '' : config.beard}&facialHairProbability=${config.beard === 'none' ? 0 : 100}&facialHairColor=${config.bcolor}&mouth=${config.mouth}&backgroundColor=${config.bg === 'transparent' ? '' : config.bg}&hatProbability=0`;
 }
+

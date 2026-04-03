@@ -51,7 +51,7 @@ function HomeMessage({ title, body, imageUrl, alignment = 'left' }: { title?: st
                         {title}
                     </h1>
                 )}
-                <p className="text-muted-foreground font-medium text-lg md:text-xl leading-relaxed italic opacity-80 max-w-2xl">
+                <p className="text-foreground font-medium text-lg md:text-xl leading-relaxed italic opacity-80 max-w-2xl">
                     {body}
                 </p>
             </div>
@@ -200,7 +200,7 @@ function SectionContent({ section }: { section: HomeSection }) {
     if (!items || items.length === 0) {
         return (
             <div className="py-8 px-1">
-                <p className="text-muted-foreground italic text-sm opacity-50">
+                <p className="text-foreground italic text-sm opacity-50">
                     No se encontraron {block.contentType.includes('product') ? 'productos' : 'locales'} en esta sección.
                 </p>
             </div>
@@ -258,3 +258,4 @@ function SectionContent({ section }: { section: HomeSection }) {
 export default function HomeSectionRenderer({ section }: { section: HomeSection }) {
     return <SectionContent section={section} />;
 }
+

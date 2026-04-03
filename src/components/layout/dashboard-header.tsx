@@ -36,7 +36,7 @@ export function DashboardHeader() {
             </SelectContent>
           </Select>
         ) : (
-          <div className="font-medium text-sm text-muted-foreground">
+          <div className="font-medium text-sm text-foreground">
             Vista: {capitalize(activeRole)}
           </div>
         )}
@@ -44,3 +44,4 @@ export function DashboardHeader() {
     </header>
   );
 }
+

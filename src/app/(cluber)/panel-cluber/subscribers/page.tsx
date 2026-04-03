@@ -113,10 +113,10 @@ function SubscriberList() {
                                 </Avatar>
                                 <div>
                                     <p className="font-semibold">{`${sub.firstName} ${sub.lastName}`}</p>
-                                    <p className="text-sm text-muted-foreground">{sub.email}</p>
+                                    <p className="text-sm text-foreground">{sub.email}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2 text-sm text-foreground">
                                 <Calendar className="h-4 w-4" />
                                 <span>Suscrito el {subscribedDate.toLocaleDateString('es-ES')}</span>
                             </div>
@@ -135,11 +135,12 @@ export default function SubscribersPage() {
         <div className="space-y-4">
             <BackButton />
             <h1 className="text-3xl font-bold">Mis Suscriptores</h1>
-            <p className="text-muted-foreground">
+            <p className="text-foreground">
                 Estos son los usuarios que recibirán notificaciones sobre tus nuevos beneficios.
             </p>
             <SubscriberList />
         </div>
     );
 }
+
 

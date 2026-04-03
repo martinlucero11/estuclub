@@ -15,7 +15,7 @@ export function StoreMap({ suppliers }: StoreMapProps) {
     // We'll use the premium stylized "demand/store map" concept from the Rider app
     
     return (
-        <div className="w-full h-[300px] md:h-[400px] bg-slate-900 rounded-[2.5rem] border border-primary/10 shadow-premium relative overflow-hidden mb-10 group">
+        <div className="w-full h-[300px] md:h-[400px] bg-background rounded-[2.5rem] border border-primary/10 shadow-premium relative overflow-hidden mb-10 group">
             {/* Animated Mesh Grid Background */}
             <div className="absolute inset-0 bg-[radial-gradient(#ffffff05_1px,transparent_1px)] [background-size:20px_20px] opacity-20" />
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-blue-500/5 opacity-50 z-0" />
@@ -27,7 +27,7 @@ export function StoreMap({ suppliers }: StoreMapProps) {
                         <MapPin className="h-6 w-6 text-primary animate-bounce" />
                     </div>
                     <h3 className="text-sm font-black uppercase tracking-widest text-white italic">Explorar Cercanía</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase leading-relaxed tracking-wider">
+                    <p className="text-[10px] font-bold text-foreground uppercase leading-relaxed tracking-wider">
                         Visualizando {suppliers.length} locales con delivery activo cerca de tu ubicación.
                     </p>
                     <Badge variant="outline" className="border-primary/20 text-primary text-[8px] font-black tracking-widest">MAPA INTERACTIVO</Badge>
@@ -67,3 +67,4 @@ export function StoreMap({ suppliers }: StoreMapProps) {
         </div>
     );
 }
+

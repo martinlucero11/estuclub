@@ -18,7 +18,7 @@ function LeaderboardItem({ profile, rank, isCurrentUser, index }: { profile: Use
   
   const rankColors: Record<number, string> = {
     1: 'text-amber-500 bg-amber-50/50 dark:bg-amber-900/20 border-amber-200/50 shadow-[0_0_15px_rgba(251,191,36,0.2)]',
-    2: 'text-slate-400 bg-slate-50/50 dark:bg-slate-900/20 border-slate-200/50',
+    2: 'text-foreground bg-background/50 dark:bg-background/20 border-foreground/50',
     3: 'text-orange-600 bg-orange-50/50 dark:bg-orange-900/20 border-orange-200/50',
   };
 
@@ -37,7 +37,7 @@ function LeaderboardItem({ profile, rank, isCurrentUser, index }: { profile: Use
     >
       <div className={cn(
         "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl font-black italic mr-4 text-lg shadow-sm border",
-        isTopThree ? (rankColors[rank]) : "text-muted-foreground bg-background/50 border-primary/5"
+        isTopThree ? (rankColors[rank]) : "text-foreground bg-background/50 border-primary/5"
       )}>
         {rank === 1 ? <Trophy className="h-6 w-6 animate-pulse" /> : rank}
       </div>
@@ -60,7 +60,7 @@ function LeaderboardItem({ profile, rank, isCurrentUser, index }: { profile: Use
             <span className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border border-primary/10", levelInfo.color)}>
                 {levelInfo.label} • NIV {levelInfo.level}
             </span>
-            <span className="text-[10px] text-muted-foreground font-bold tracking-wider opacity-70">@{profile.username}</span>
+            <span className="text-[10px] text-foreground font-bold tracking-wider opacity-70">@{profile.username}</span>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ function LeaderboardItem({ profile, rank, isCurrentUser, index }: { profile: Use
             <Star className="h-4 w-4 fill-current drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
             <span>{profile.points || 0}</span>
         </div>
-        <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest opacity-60">PUNTOS XP</p>
+        <p className="text-[9px] font-black uppercase text-foreground tracking-widest opacity-60">PUNTOS XP</p>
       </div>
     </div>
   );
@@ -98,7 +98,7 @@ function LeaderboardContent() {
         <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase text-foreground">
             Ranking <span className="text-primary tracking-[0.2em] font-black ml-2">EstuClub</span>
         </h1>
-        <p className="text-muted-foreground font-bold text-xs uppercase tracking-[0.3em] opacity-70">
+        <p className="text-foreground font-bold text-xs uppercase tracking-[0.3em] opacity-70">
             Los estudiantes más activos del Club
         </p>
       </div>
@@ -131,3 +131,4 @@ export default function LeaderboardPage() {
     </MainLayout>
   );
 }
+

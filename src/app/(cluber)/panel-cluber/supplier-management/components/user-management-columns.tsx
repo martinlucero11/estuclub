@@ -34,7 +34,7 @@ export const columns = ({ suppliersMap, onEdit }: CreateColumnsProps): ColumnDef
     header: "Nombre de Cluber",
     cell: ({ row }) => {
         const supplierProfile = suppliersMap.get(row.original.id);
-        return supplierProfile ? <div className="font-medium">{supplierProfile.name}</div> : <span className="text-muted-foreground">N/A</span>;
+        return supplierProfile ? <div className="font-medium">{supplierProfile.name}</div> : <span className="text-foreground">N/A</span>;
     }
   },
   {
@@ -79,3 +79,4 @@ export const columns = ({ suppliersMap, onEdit }: CreateColumnsProps): ColumnDef
     },
   },
 ];
+

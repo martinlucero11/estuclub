@@ -98,7 +98,7 @@ export default function ServiceManager() {
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
+                            <p className="text-sm text-foreground line-clamp-2">
                                 {service.description}
                             </p>
                         </CardContent>
@@ -116,3 +116,4 @@ export default function ServiceManager() {
         </div>
     );
 }
+

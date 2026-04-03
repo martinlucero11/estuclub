@@ -182,7 +182,7 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
   return (
     <div className={cn("relative rounded-[2rem] overflow-hidden border border-white/10 shadow-premium group", className)}>
         <style dangerouslySetInnerHTML={{ __html: `
-            .leaflet-container { background: ${resolvedTheme === 'dark' ? '#0b0e14' : '#f8f9fa'} !important; }
+            .leaflet-container { background: ${resolvedTheme === 'dark' ? '#000000' : '#f8f9fa'} !important; }
             .leaflet-control-attribution { display: none !important; }
             .glass-search { background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         ` }} />
@@ -252,3 +252,4 @@ export default function LocationPicker({ initialLocation, onLocationSelect, clas
     </div>
   );
 }
+

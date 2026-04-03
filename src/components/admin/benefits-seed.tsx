@@ -211,7 +211,7 @@ export function BenefitsSeed() {
         <Sparkles className="w-8 h-8 text-primary" />
         <div>
           <h3 className="text-xl font-black uppercase tracking-tighter text-primary">Seed de Beneficios</h3>
-          <p className="text-xs text-muted-foreground">7 Comercios, 15 Beneficios por niveles.</p>
+          <p className="text-xs text-foreground">7 Comercios, 15 Beneficios por niveles.</p>
         </div>
       </div>
       <Button 
@@ -224,3 +224,4 @@ export function BenefitsSeed() {
     </div>
   );
 }
+

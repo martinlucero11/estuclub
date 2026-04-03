@@ -51,3 +51,4 @@ export default function OfflineWarmer() {
   // This component renders nothing
   return null;
 }
+

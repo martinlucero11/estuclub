@@ -40,3 +40,4 @@ export function HomeSectionDialog({ isOpen, onOpenChange, section, defaultBoard 
         </Dialog>
     );
 }
+

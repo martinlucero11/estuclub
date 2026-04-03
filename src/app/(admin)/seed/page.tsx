@@ -255,7 +255,7 @@ export default function SeedPage() {
                     <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> 4 Beneficios (Perks) destacados</li>
                     <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> 3 Anuncios aprobados</li>
                 </ul>
-                <p className="text-[10px] text-muted-foreground italic pt-2">No se borrarán datos existentes. Se usarán las categorías actuales.</p>
+                <p className="text-[10px] text-foreground italic pt-2">No se borrarán datos existentes. Se usarán las categorías actuales.</p>
             </div>
 
             <Button 
@@ -280,7 +280,7 @@ export default function SeedPage() {
             )}
 
             {result?.success && (
-                <p className="text-center text-xs text-muted-foreground animate-pulse">
+                <p className="text-center text-xs text-foreground animate-pulse">
                     Ya podés volver al Home para ver los cambios.
                 </p>
             )}
@@ -290,4 +290,5 @@ export default function SeedPage() {
     </MainLayout>
   );
 }
+
 

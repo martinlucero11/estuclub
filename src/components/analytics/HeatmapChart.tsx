@@ -31,7 +31,7 @@ export function HeatmapChart({ title, description, data }: HeatmapChartProps) {
         <Card className="border-black/10 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl rounded-[2.5rem] overflow-hidden shadow-xl">
             <CardHeader>
                 <CardTitle className="text-xl font-black italic text-foreground dark:text-white">{title}</CardTitle>
-                {description && <CardDescription className="text-muted-foreground dark:text-white/40">{description}</CardDescription>}
+                {description && <CardDescription className="text-foreground dark:text-white/40">{description}</CardDescription>}
             </CardHeader>
             <CardContent>
                 <div className="overflow-x-auto pb-4">
@@ -40,7 +40,7 @@ export function HeatmapChart({ title, description, data }: HeatmapChartProps) {
                         <div className="flex gap-1.5 mb-1.5">
                             <div className="w-10" />
                             {HOURS.filter(h => h % 3 === 0).map(h => (
-                                <div key={h} className="flex-1 text-[8px] font-black text-muted-foreground dark:text-white/30 text-center uppercase tracking-tighter">
+                                <div key={h} className="flex-1 text-[8px] font-black text-foreground dark:text-white/30 text-center uppercase tracking-tighter">
                                     {h}:00
                                 </div>
                             ))}
@@ -48,7 +48,7 @@ export function HeatmapChart({ title, description, data }: HeatmapChartProps) {
 
                         {grid.map((row, dayIndex) => (
                             <div key={dayIndex} className="flex gap-1.5 items-center">
-                                <div className="w-10 text-[10px] font-black text-muted-foreground dark:text-white/40 uppercase tracking-tighter">
+                                <div className="w-10 text-[10px] font-black text-foreground dark:text-white/40 uppercase tracking-tighter">
                                     {DAYS[dayIndex]}
                                 </div>
                                 {row.map((count, hourIndex) => {
@@ -74,7 +74,7 @@ export function HeatmapChart({ title, description, data }: HeatmapChartProps) {
                         ))}
                     </div>
                 </div>
-                <div className="flex justify-end items-center gap-2 mt-4 text-[8px] font-black text-muted-foreground dark:text-white/30 uppercase tracking-widest">
+                <div className="flex justify-end items-center gap-2 mt-4 text-[8px] font-black text-foreground dark:text-white/30 uppercase tracking-widest">
                     <span>Menos</span>
                     <div className="flex gap-1">
                         {[0.1, 0.3, 0.6, 1].map(o => (
@@ -87,3 +87,4 @@ export function HeatmapChart({ title, description, data }: HeatmapChartProps) {
         </Card>
     );
 }
+

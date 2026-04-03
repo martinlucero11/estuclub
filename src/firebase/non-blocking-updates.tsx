@@ -102,3 +102,4 @@ export function commitBatchNonBlocking(batch: WriteBatch) {
         console.error("Batch write failed with permission error:", error);
     });
 }
+

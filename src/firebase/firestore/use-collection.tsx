@@ -90,3 +90,4 @@ export function useCollection<T extends DocumentData>(
 
   return { data, isLoading, error, isFromCache, hasPendingWrites };
 }
+

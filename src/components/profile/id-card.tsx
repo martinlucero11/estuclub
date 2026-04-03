@@ -65,7 +65,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
       )} />
       
       {/* Card Body */}
-      <div className="relative min-h-[540px] w-full rounded-[2.5rem] bg-[#0a0a0a] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
+      <div className="relative min-h-[540px] w-full rounded-[2.5rem] bg-[#000000] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
         
         {/* Header/Banner with Pattern */}
         <div className={cn("h-36 w-full relative overflow-hidden", roleColor)}>
@@ -90,7 +90,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
               "absolute -inset-1.5 blur-xl opacity-50 group-hover/avatar:opacity-80 transition-all duration-500",
               roleColor
             )} />
-            <div className="relative p-1.5 bg-[#1a1a1a] rounded-[2.2rem] border border-white/10 shadow-3xl">
+            <div className="relative p-1.5 bg-[#000000] rounded-[2.2rem] border border-white/10 shadow-3xl">
               <Avatar className="h-32 w-32 rounded-[1.8rem] border border-white/5 bg-[#222]">
                 {photo ? (
                   <AvatarImage src={photo} alt={fullName} className="object-cover" />
@@ -103,7 +103,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
             <motion.div 
               whileHover={{ rotate: 15, scale: 1.1 }}
               className={cn(
-                "absolute -bottom-1 -right-1 h-11 w-11 rounded-2xl flex items-center justify-center text-white border-4 border-[#0a0a0a] shadow-2xl z-20 transition-transform",
+                "absolute -bottom-1 -right-1 h-11 w-11 rounded-2xl flex items-center justify-center text-white border-4 border-[#000000] shadow-2xl z-20 transition-transform",
                 roleColor
               )}
             >
@@ -197,3 +197,4 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
     </motion.div>
   );
 }
+

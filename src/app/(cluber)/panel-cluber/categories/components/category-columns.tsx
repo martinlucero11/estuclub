@@ -84,7 +84,7 @@ export const getCategoryColumns = (
         return (
             <div className="flex items-center gap-2">
                 <Square className={`h-5 w-5 ${colorClass}`} />
-                <span className="text-muted-foreground text-xs">{colorClass}</span>
+                <span className="text-foreground text-xs">{colorClass}</span>
             </div>
         );
     }
@@ -102,3 +102,4 @@ export const getCategoryColumns = (
     },
   },
 ];
+

@@ -90,7 +90,7 @@ export function ReorderCategoriesDialog({ isOpen, onOpenChange, categories: init
                         {categories.map((category, index) => (
                             <div 
                                 key={category.id} 
-                                className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg border border-border group"
+                                className="flex items-center gap-3 p-3 bg-background/30 rounded-lg border border-foreground group"
                             >
                                 <span className="text-xl">{category.emoji}</span>
                                 <span className="flex-1 font-medium">{category.name}</span>
@@ -132,3 +132,4 @@ export function ReorderCategoriesDialog({ isOpen, onOpenChange, categories: init
         </Dialog>
     );
 }
+

@@ -52,7 +52,7 @@ const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: Sup
                 <motion.div 
                     whileHover={{ scale: 1.05, y: -8 }}
                     whileTap={{ scale: 0.95 }}
-                    className="relative w-full aspect-square overflow-hidden rounded-[2.5rem] bg-card glass glass-dark shadow-premium border border-primary/10 group-hover:border-primary/40 transition-all duration-700 group-hover:shadow-[0_20px_50px_rgba(217,59,100,0.15)] group-hover:glass-glow-pink"
+                    className="relative w-full aspect-square overflow-hidden rounded-[2.5rem] bg-card glass glass-dark shadow-premium border border-primary/10 group-hover:border-primary/40 transition-all duration-700 group-hover:shadow-[0_20px_50px_rgba(203, 70, 90,0.15)] group-hover:glass-glow-pink"
                 >
                     <Image
                         src={optimizeImage(supplier.logoUrl || '', 400)}
@@ -154,7 +154,7 @@ const BannerCarouselCard = ({ banner, priority = false }: BannerCarouselCardProp
 const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center glass glass-dark text-foreground rounded-full shadow-2xl border border-white/10 transition-all duration-300 hover:scale-110 active:scale-90 disabled:opacity-0 w-12 h-12 z-20 backdrop-blur-xl hover:bg-primary/10 hover:border-primary/30";
 
 export function PerksCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
-    if (!benefits || benefits.length === 0) return <p className="text-muted-foreground italic text-sm">No hay beneficios para mostrar.</p>;
+    if (!benefits || benefits.length === 0) return <p className="text-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
        <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
@@ -172,7 +172,7 @@ export function PerksCarousel({ items: benefits }: { items: SerializableBenefit[
 }
 
 export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
-    if (!suppliers || suppliers.length === 0) return <p className="text-muted-foreground italic text-sm">No hay proveedores para mostrar.</p>;
+    if (!suppliers || suppliers.length === 0) return <p className="text-foreground italic text-sm">No hay proveedores para mostrar.</p>;
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full relative py-10 -my-10">
@@ -206,7 +206,7 @@ export function MiniSuppliersCarousel({ items: suppliers }: { items: any[] }) {
 }
 
 export function AnnouncementsCarousel({ items: announcements }: { items: Announcement[] }) {
-    if (!announcements || announcements.length === 0) return <p className="text-muted-foreground italic text-sm">No hay anuncios para mostrar.</p>;
+    if (!announcements || announcements.length === 0) return <p className="text-foreground italic text-sm">No hay anuncios para mostrar.</p>;
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full">
@@ -229,7 +229,7 @@ export function AnnouncementsCarousel({ items: announcements }: { items: Announc
 
 export function BannersCarousel({ items: banners }: { items: any[] }) {
     if (!banners || banners.length === 0) {
-        return <p className="text-muted-foreground italic text-sm">No hay banners para mostrar.</p>;
+        return <p className="text-foreground italic text-sm">No hay banners para mostrar.</p>;
     }
     
     return (
@@ -309,7 +309,7 @@ export function SupplierPromoCarousel({ items: suppliers }: { items: any[] }) {
     );
 }
 export function ProductsCarousel({ items: products }: { items: any[] }) {
-    if (!products || products.length === 0) return <p className="text-muted-foreground italic text-sm">No hay productos destacados.</p>;
+    if (!products || products.length === 0) return <p className="text-foreground italic text-sm">No hay productos destacados.</p>;
 
     return (
         <Carousel opts={{ align: "start" }} className="w-full py-10 -my-10">
@@ -409,7 +409,7 @@ const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier
                                 )}
                             </div>
                             
-                            <div className="flex items-center gap-2 mt-0.5 text-muted-foreground">
+                            <div className="flex items-center gap-2 mt-0.5 text-foreground">
                                 <div className="flex items-center gap-1 text-[10px] font-bold">
                                     <Clock className="h-2.5 w-2.5 text-primary/60" />
                                     <span>30-50 min</span>
@@ -455,3 +455,4 @@ export function ProductsWithSupplierCarousel({ items: products }: { items: any[]
         </Carousel>
     );
 }
+

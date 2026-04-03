@@ -140,7 +140,7 @@ export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormP
                             <FormItem>
                                 <FormLabel>Color (Tailwind)</FormLabel>
                                 <div className="relative">
-                                    <Palette className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Palette className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
                                     <FormControl>
                                         <Input placeholder="Ej: text-blue-500" {...field} className="pl-10" />
                                     </FormControl>
@@ -160,3 +160,4 @@ export function CategoryForm({ category, onSuccess, defaultType }: CategoryFormP
         </Form>
     );
 }
+

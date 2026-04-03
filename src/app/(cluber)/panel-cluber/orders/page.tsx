@@ -24,7 +24,7 @@ export default function MerchantOrdersPage() {
                 <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">
                     Control de <span className="text-primary">Delivery</span>
                 </h1>
-                <p className="text-lg text-muted-foreground font-medium max-w-2xl leading-relaxed italic opacity-80">
+                <p className="text-lg text-foreground font-medium max-w-2xl leading-relaxed italic opacity-80">
                     Administra tus pedidos entrantes, actualiza estados y sigue tus ventas diarias.
                 </p>
             </header>
@@ -33,4 +33,5 @@ export default function MerchantOrdersPage() {
         </div>
     );
 }
+
 

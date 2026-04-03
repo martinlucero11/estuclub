@@ -108,7 +108,7 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
       <form onSubmit={handleSubmit}>
         <CardContent className="pt-4 space-y-4">
           <div className="flex flex-col items-center gap-2">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tu calificación</p>
+              <p className="text-xs font-bold text-foreground uppercase tracking-widest">Tu calificación</p>
               <StarRating rating={rating} onRatingChange={setRating} size="lg" />
           </div>
 
@@ -131,3 +131,4 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
     </Card>
   );
 }
+

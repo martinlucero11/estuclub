@@ -84,7 +84,7 @@ export default function AppointmentReceiptPage() {
         <MainLayout>
              <div className="flex-1 space-y-8 p-4 md:p-8">
                 <PageHeader title="Comprobante de Turno" />
-                 <p className="text-muted-foreground -mt-8 mb-8 text-center">
+                 <p className="text-foreground -mt-8 mb-8 text-center">
                     Presenta este comprobante en el local.
                 </p>
 
@@ -127,3 +127,4 @@ export default function AppointmentReceiptPage() {
         </MainLayout>
     );
 }
+

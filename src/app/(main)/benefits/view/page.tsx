@@ -129,7 +129,7 @@ export default function BenefitDetailPage() {
             <div className="container max-w-2xl mx-auto p-4 py-8 md:py-12 min-h-screen">
                 <Link 
                     href="/benefits" 
-                    className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors group"
+                    className="inline-flex items-center gap-2 mb-6 text-xs font-black uppercase tracking-[0.2em] text-foreground hover:text-primary transition-colors group"
                 >
                     <ChevronLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                     Volver a beneficios
@@ -191,7 +191,7 @@ export default function BenefitDetailPage() {
                                             <MapPin className="h-5 w-5 text-primary" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Ubicación</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-foreground opacity-60">Ubicación</p>
                                             <p className="text-sm font-bold text-foreground truncate">{serializableBenefit.location}</p>
                                         </div>
                                     </div>
@@ -223,7 +223,7 @@ export default function BenefitDetailPage() {
                                                         <span className="truncate pr-2">{p.name}</span>
                                                         <div className="flex items-center gap-2">
                                                             {hasDiscount && (
-                                                                <span className="text-muted-foreground line-through text-xs font-medium">${p.price}</span>
+                                                                <span className="text-foreground line-through text-xs font-medium">${p.price}</span>
                                                             )}
                                                             <span className="text-primary flex-shrink-0">${finalPrice}</span>
                                                         </div>
@@ -276,3 +276,4 @@ export default function BenefitDetailPage() {
         </MainLayout>
     );
 }
+

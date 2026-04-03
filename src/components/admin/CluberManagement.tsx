@@ -121,7 +121,7 @@ export default function CluberManagement() {
     return (
       <div className="flex flex-col items-center justify-center p-20 space-y-4 text-center">
         <Loader2 className="h-12 w-12 text-primary animate-spin opacity-40 mx-auto" />
-        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground animate-pulse">Escaneando Red Local...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground animate-pulse">Escaneando Red Local...</p>
       </div>
     );
   }
@@ -131,7 +131,7 @@ export default function CluberManagement() {
       {/* Search & Stats Header */}
       <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
         <div className="relative w-full max-w-xl group">
-          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground group-focus-within:text-primary transition-colors" />
           <Input 
             placeholder="BUSCAR CLUBER POR NOMBRE, ID O DIRECCIÓN..." 
             value={searchQuery}
@@ -140,7 +140,7 @@ export default function CluberManagement() {
           />
         </div>
         <div className="flex gap-4">
-            <Badge variant="outline" className="text-muted-foreground border-white/5 px-4 py-2 rounded-xl flex items-center gap-2">
+            <Badge variant="outline" className="text-foreground border-white/5 px-4 py-2 rounded-xl flex items-center gap-2">
                 <Hash className="h-3 w-3" />
                 {clubers?.length || 0} TOTALES
             </Badge>
@@ -165,7 +165,7 @@ export default function CluberManagement() {
                     {cluber.logoUrl ? (
                       <img src={cluber.logoUrl} alt={cluber.name} className="w-full h-full object-cover" />
                     ) : (
-                      <Building className="h-10 w-10 text-muted-foreground/20" />
+                      <Building className="h-10 w-10 text-foreground/20" />
                     )}
                   </div>
                   <div className="space-y-1">
@@ -177,7 +177,7 @@ export default function CluberManagement() {
                       {!cluber.isVisible && <XCircle className="h-5 w-5 text-red-500/50" />}
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
-                       <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground italic truncate max-w-[200px]">{cluber.address || 'Sin dirección'}</p>
+                       <p className="text-[10px] font-black uppercase tracking-widest text-foreground italic truncate max-w-[200px]">{cluber.address || 'Sin dirección'}</p>
                        <div className="h-1 w-1 rounded-full bg-white/10" />
                        <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">ID: {cluber.id.slice(0, 8)}</p>
                     </div>
@@ -341,7 +341,7 @@ export default function CluberManagement() {
                 <div className="space-y-3">
                    <Label className="text-[10px] font-black opacity-40 uppercase tracking-[0.3em] ml-2">Dirección Física</Label>
                    <div className="relative">
-                       <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/20" />
+                       <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/20" />
                        <Input 
                           value={editingCluber?.address || ''} 
                           onChange={(e) => editingCluber && setEditingCluber({...editingCluber, address: e.target.value})}
@@ -416,3 +416,4 @@ function ManagementToggle({ icon, label, value, onChange }: { icon: any, label: 
         </div>
     );
 }
+

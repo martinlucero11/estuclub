@@ -115,3 +115,4 @@ export async function onMessageListener(callback: (payload: any) => void) {
     
     return unsubscribe;
 }
+
