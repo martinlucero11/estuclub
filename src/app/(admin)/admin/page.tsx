@@ -108,7 +108,7 @@ export default function AdminControlCentralPage() {
                         title="Sistema"
                         desc="Configuración técnica del servidor, mantenimiento de DB y logs de MP."
                         icon={Settings}
-                        href="/admin/settings"
+                        onClick={() => alert('🚀 Función en desarrollo: ¡Próximamente podrás configurar el sistema!')}
                         items={["MP Webhooks", "Cron Jobs", "Ajustes Globales"]}
                         accent="slate"
                     />
@@ -118,7 +118,7 @@ export default function AdminControlCentralPage() {
     );
 }
 
-function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
+function AdminModule({ title, desc, icon: Icon, href, items, accent, ...props }: any) {
     const accentColors = {
         primary: "text-primary border-primary/20 bg-primary/5 hover:border-primary/50",
         blue: "text-blue-500 border-blue-500/20 bg-blue-500/5 hover:border-blue-500/50",
@@ -130,32 +130,40 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
 
     const colorClass = accentColors[accent as keyof typeof accentColors] || accentColors.primary;
 
+    const Content = (
+        <Card className={cn("rounded-[2.5rem] p-1 group transition-all duration-500 overflow-hidden border-white/5 bg-card/30 hover:bg-card/50 shadow-premium relative", colorClass)}>
+            <CardContent className="p-8 space-y-6 relative z-10">
+                <div className="flex justify-between items-start">
+                    <div className="h-14 w-14 rounded-2xl bg-background/50 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500 shadow-inner">
+                        <Icon className="h-7 w-7" />
+                    </div>
+                    <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-[-10px] group-hover:translate-x-0" />
+                </div>
+
+                <div className="space-y-2">
+                    <h3 className="text-2xl font-black italic tracking-tighter uppercase font-montserrat">{title}</h3>
+                    <p className="text-[10px] font-bold text-foreground leading-relaxed line-clamp-2">{desc}</p>
+                </div>
+
+                <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2">
+                    {items.map((item: string) => (
+                        <span key={item} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-background/30 text-foreground group-hover:text-foreground transition-colors">
+                            {item}
+                        </span>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+
+    if (href) {
+        return <Link href={href}>{Content}</Link>;
+    }
+
     return (
-        <Link href={href}>
-            <Card className={cn("rounded-[2.5rem] p-1 group transition-all duration-500 overflow-hidden border-white/5 bg-card/30 hover:bg-card/50 shadow-premium relative", colorClass)}>
-                <CardContent className="p-8 space-y-6 relative z-10">
-                    <div className="flex justify-between items-start">
-                        <div className="h-14 w-14 rounded-2xl bg-background/50 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500 shadow-inner">
-                            <Icon className="h-7 w-7" />
-                        </div>
-                        <ArrowRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-[-10px] group-hover:translate-x-0" />
-                    </div>
-
-                    <div className="space-y-2">
-                        <h3 className="text-2xl font-black italic tracking-tighter uppercase font-montserrat">{title}</h3>
-                        <p className="text-[10px] font-bold text-foreground leading-relaxed line-clamp-2">{desc}</p>
-                    </div>
-
-                    <div className="pt-4 border-t border-white/5 flex flex-wrap gap-2">
-                        {items.map((item: string) => (
-                            <span key={item} className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-background/30 text-foreground group-hover:text-foreground transition-colors">
-                                {item}
-                            </span>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        </Link>
+        <button onClick={props.onClick} className="w-full text-left">
+            {Content}
+        </button>
     );
 }
 

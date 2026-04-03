@@ -38,6 +38,7 @@ import { MagneticButton } from '../ui/magnetic-button';
 import { getAvatarUrl } from '@/lib/utils';
 import { AvatarFallbackFachero } from '@/components/profile/avatar-selector';
 import { usePlatform } from '@/hooks/use-platform';
+import Logo from '@/components/common/Logo';
 
 function UserMenu() {
   const { user, userData, roles, isUserLoading } = useUser(); 
@@ -139,16 +140,11 @@ function AppSidebar() {
                 </SheetTrigger>
             </MagneticButton>
             <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black overflow-hidden">
-                <SheetHeader className="p-10 border-b border-black/5 relative bg-primary">
-                    <div className="flex justify-center mb-4">
-                           <Image 
-                                src="/logo-white.svg" 
-                                alt="Estuclub" 
-                                width={140} 
-                                height={35} 
-                                className="w-auto h-auto" 
-                           />
-                    </div>
+                <SheetHeader className="p-10 border-b border-black/5 relative bg-primary flex items-center justify-center">
+                    <Logo 
+                        variant="white"
+                        className="h-10 w-auto"
+                    />
                 </SheetHeader>
                 
                 <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium bg-white">
@@ -240,13 +236,9 @@ export default function Header() {
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
-            <Image 
-                src="/logo-white.svg" 
-                alt="EstuClub Logo" 
-                width={110} 
-                height={28} 
-                priority
-                className="h-8 w-auto"
+            <Logo 
+                variant="white"
+                className="h-8 w-auto transition-transform hover:scale-105 active:scale-95"
             />
         </Link>
 

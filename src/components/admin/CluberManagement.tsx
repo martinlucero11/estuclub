@@ -136,7 +136,7 @@ export default function CluberManagement() {
             placeholder="BUSCAR CLUBER POR NOMBRE, ID O DIRECCIÓN..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-16 pl-16 rounded-[2rem] bg-card/50 border-white/5 focus:border-primary/40 text-sm font-bold uppercase tracking-widest transition-all shadow-premium"
+            className="h-16 pl-16 rounded-[2rem] bg-card/50 border-white/5 focus:border-primary/40 text-sm font-bold uppercase tracking-widest transition-all shadow-premium placeholder:text-black/20 dark:placeholder:text-white/20"
           />
         </div>
         <div className="flex gap-4">
@@ -183,11 +183,11 @@ export default function CluberManagement() {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                     <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-primary/20 hover:text-primary transition-all shadow-xl"
+                        className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-primary/20 hover:text-primary transition-all shadow-xl shrink-0"
                         onClick={() => {
                           toast({ title: 'Cargando EstuSim', description: `Impersonando a ${cluber.name}...` });
                           setImpersonatedUserId(cluber.id);
@@ -199,7 +199,7 @@ export default function CluberManagement() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-primary/10 transition-all opacity-40 hover:opacity-100"
+                      className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-primary/10 transition-all opacity-40 hover:opacity-100 shrink-0"
                       onClick={() => setEditingCluber(cluber)}
                     >
                       <Edit3 className="h-5 w-5" />
@@ -207,7 +207,7 @@ export default function CluberManagement() {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-blue-500/10 hover:text-blue-400 transition-all opacity-40 hover:opacity-100"
+                      className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-blue-500/10 hover:text-blue-400 transition-all opacity-40 hover:opacity-100 shrink-0"
                       asChild
                     >
                       <a href={`/delivery/commerce/${cluber.id}`} target="_blank" rel="noopener noreferrer">

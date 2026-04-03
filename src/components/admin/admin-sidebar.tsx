@@ -20,15 +20,17 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAdmin } from '@/context/admin-context';
+import Logo from '@/components/common/Logo';
 
 const navItems = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+  { label: 'Solicitudes', icon: ShieldCheck, href: '/verify' },
   { label: 'Comercios', icon: Store, href: '/admin/clubers' },
   { label: 'Riders', icon: Truck, href: '/admin/riders' },
   { label: 'Marketing', icon: Megaphone, href: '/admin/cms' },
   { label: 'Usuarios', icon: Users, href: '/admin/users' },
   { label: 'Métricas', icon: BarChart3, href: '/admin/analytics' },
-  { label: 'Ajustes', icon: Settings, href: '/admin/settings' },
+  { label: 'Ajustes', icon: Settings, href: '#', isGhost: true },
 ];
 
 export function AdminSidebar() {
@@ -47,19 +49,31 @@ export function AdminSidebar() {
       <div className="p-6 flex items-center justify-between">
         {!isCollapsed && (
           <div className="flex items-center gap-3 animate-in fade-in duration-500">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <Zap className="h-6 w-6 text-white fill-white" />
-            </div>
-            <div>
-                <p className="font-black tracking-tighter text-xl uppercase italic">ESTU<span className="text-primary">ADMIN</span></p>
-                <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Overlord v2.2</p>
+            <Logo 
+                variant="rosa"
+                className="h-9 w-auto dark:hidden"
+            />
+            <Logo 
+                variant="white"
+                className="h-9 w-auto hidden dark:block"
+            />
+            <div className="flex flex-col">
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Overlord</span>
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary">v2.2</span>
             </div>
           </div>
         )}
         {isCollapsed && (
-            <div className="h-10 w-10 mx-auto rounded-xl bg-primary flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white fill-white" />
-            </div>
+            <Logo 
+                variant="rosa"
+                className="h-7 w-auto mx-auto dark:hidden"
+            />
+        )}
+        {isCollapsed && (
+            <Logo 
+                variant="white"
+                className="h-7 w-auto mx-auto hidden dark:block"
+            />
         )}
       </div>
 
@@ -75,9 +89,24 @@ export function AdminSidebar() {
       {/* Nav Items */}
       <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto no-scrollbar">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== '/admin' && item.href !== '#' && pathname.startsWith(item.href));
+          
+          const NavWrapper = ({ children }: { children: React.ReactNode }) => {
+            if (item.href === '#') {
+              return (
+                <button 
+                  onClick={() => alert('🚀 Función en desarrollo: ¡Próximamente podrás configurar el sistema!')}
+                  className="w-full text-left"
+                >
+                  {children}
+                </button>
+              );
+            }
+            return <Link href={item.href}>{children}</Link>;
+          };
+
           return (
-            <Link key={item.label} href={item.href}>
+            <NavWrapper key={item.label}>
               <div 
                 className={cn(
                   "flex items-center gap-4 px-4 h-12 rounded-2xl transition-all duration-200 group relative",
@@ -96,7 +125,7 @@ export function AdminSidebar() {
                     <div className="absolute left-0 w-1 h-6 bg-primary rounded-full" />
                 )}
               </div>
-            </Link>
+            </NavWrapper>
           );
         })}
       </nav>

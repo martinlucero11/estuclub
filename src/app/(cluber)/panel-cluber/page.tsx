@@ -358,23 +358,51 @@ function StatCard({ label, value, trend, icon: Icon, isSocial }: { label: string
 }
 
 function BenefitsModule({ shopId }: { shopId: string }) {
+    const { toast } = useToast();
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                     { label: "Canjear QR", icon: QrCode, href: "/panel-cluber/scanner", color: "text-blue-500 bg-blue-500/10" },
-                    { label: "Nuevo Beneficio", icon: Plus, href: "/panel-cluber/benefits/new", color: "text-primary bg-primary/10" },
-                    { label: "Anunciar", icon: Megaphone, href: "/panel-cluber/announcements/new", color: "text-orange-500 bg-orange-500/10" },
+                    { 
+                        label: "Nuevo Beneficio", 
+                        icon: Plus, 
+                        onClick: () => toast({ 
+                            title: "🚀 Función en desarrollo", 
+                            description: "¡Próximamente podrás crear beneficios desde el panel!" 
+                        }), 
+                        color: "text-primary bg-primary/10" 
+                    },
+                    { 
+                        label: "Anunciar", 
+                        icon: Megaphone, 
+                        onClick: () => toast({ 
+                            title: "🚀 Función en desarrollo", 
+                            description: "¡Próximamente podrás enviar notificaciones a tus seguidores!" 
+                        }), 
+                        color: "text-orange-500 bg-orange-500/10" 
+                    },
                     { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-500 bg-emerald-500/10" },
                 ].map((btn) => (
-                    <Link key={btn.label} href={btn.href}>
-                        <Card className="rounded-[2.5rem] border border-foreground dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
-                            <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", btn.color)}>
-                                <btn.icon className="h-6 w-6" />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/60">{btn.label}</span>
-                        </Card>
-                    </Link>
+                    btn.href ? (
+                        <Link key={btn.label} href={btn.href}>
+                            <Card className="rounded-[2.5rem] border border-foreground dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
+                                <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", btn.color)}>
+                                    <btn.icon className="h-6 w-6" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/60">{btn.label}</span>
+                            </Card>
+                        </Link>
+                    ) : (
+                        <button key={btn.label} onClick={btn.onClick} className="w-full">
+                            <Card className="rounded-[2.5rem] border border-foreground dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
+                                <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", btn.color)}>
+                                    <btn.icon className="h-6 w-6" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/60">{btn.label}</span>
+                            </Card>
+                        </button>
+                    )
                 ))}
             </div>
             <div className="space-y-4">

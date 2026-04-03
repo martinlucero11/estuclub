@@ -7,7 +7,7 @@ import { collection, query, where, doc, updateDoc, Timestamp } from 'firebase/fi
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Order } from '@/types/data';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import Logo from '@/components/common/Logo';
 import {
     ShoppingBag, CreditCard, Navigation, AlertCircle, ExternalLink,
     CheckCircle2, Wallet, Clock, MapPin, ArrowRight, Map as MapIcon,
@@ -296,6 +296,7 @@ function RiderPending() {
 // ─── MAIN PAGE ───────────────────────────────────────────
 export default function RiderPage() {
     const { userData, user, roles, isUserLoading } = useUser();
+    const { toast } = useToast();
     const firestore = useFirestore();
     const [view, setView] = useState<'login' | 'signup'>('login');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -339,13 +340,9 @@ export default function RiderPage() {
                 <header className="mb-10 text-center space-y-4 z-10 flex flex-col items-center">
                     <div className="relative mb-2">
                         <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#cb465a]/30 blur-md rounded-full" />
-                        <Image
-                            src="/logo-rosa.svg"
-                            alt="EstuClub Logo"
-                            width={160}
-                            height={40}
-                            priority
-                            className="filter drop-shadow-[0_2px_15px_rgba(203,70,90,0.4)]"
+                        <Logo 
+                            variant="white"
+                            className="h-16 w-auto filter drop-shadow-[0_2px_15px_rgba(203,70,90,0.4)]"
                         />
                     </div>
                     <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic font-montserrat">
@@ -421,8 +418,14 @@ export default function RiderPage() {
                         </div>
                     )}
                     {!isSubscribed && (
-                        <Button asChild className="h-14 bg-transparent border-2 border-[#cb465a] text-[#cb465a] font-black uppercase tracking-widest hover:bg-[#cb465a]/10 rounded-2xl">
-                            <Link href="/rider/subscribe"><Wallet className="mr-2 h-5 w-5" /> Activar Suscripción</Link>
+                        <Button 
+                            onClick={() => toast({ 
+                                title: "🚀 Función en desarrollo", 
+                                description: "¡Próximamente podrás suscribirte directamente desde la app!" 
+                            })}
+                            className="h-14 bg-transparent border-2 border-[#cb465a] text-[#cb465a] font-black uppercase tracking-widest hover:bg-[#cb465a]/10 rounded-2xl"
+                        >
+                            <Wallet className="mr-2 h-5 w-5" /> Activar Suscripción
                         </Button>
                     )}
                 </div>
@@ -540,7 +543,16 @@ export default function RiderPage() {
                         <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground font-montserrat">
                             Historial Reciente
                         </h2>
-                        <Button variant="link" className="text-[10px] font-black uppercase tracking-widest text-[#cb465a]">Ver Todo</Button>
+                        <Button 
+                            variant="link" 
+                            className="text-[10px] font-black uppercase tracking-widest text-[#cb465a]"
+                            onClick={() => toast({ 
+                                title: "🚀 Función en desarrollo", 
+                                description: "¡Próximamente podrás ver tu historial completo!" 
+                            })}
+                        >
+                            Ver Todo
+                        </Button>
                     </div>
                     <div className="space-y-3">
                         {historyOrders.slice(0, 5).map(order => (

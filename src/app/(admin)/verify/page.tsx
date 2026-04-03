@@ -52,19 +52,19 @@ export default function VerifyPage() {
   // ── ADMIN OVERLORD BYPASS ────────────────────────────────
   if (!isUserLoading && !isAdmin) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#000000] p-6 selection:bg-[#FF007F]/30">
+      <div className="flex min-h-screen items-center justify-center bg-[#000000] p-6 selection:bg-[#cb465a]/30">
         <Card className="w-full max-w-md text-center rounded-[3rem] border-none shadow-[0_0_50px_rgba(255,0,127,0.1)] bg-background/50 backdrop-blur-xl">
           <CardContent className="pt-16 pb-12 space-y-6">
-            <div className="h-20 w-20 rounded-[2rem] bg-[#FF007F]/10 flex items-center justify-center mx-auto border border-[#FF007F]/20">
-               <ShieldX className="h-10 w-10 text-[#FF007F]" />
+            <div className="h-20 w-20 rounded-[2rem] bg-[#cb465a]/10 flex items-center justify-center mx-auto border border-[#cb465a]/20">
+               <ShieldX className="h-10 w-10 text-[#cb465a]" />
             </div>
             <div className="space-y-2">
                <h1 className="text-3xl font-black uppercase tracking-tighter text-white font-montserrat">ACCESO DENEGADO</h1>
                <p className="text-xs font-bold text-foreground uppercase tracking-widest leading-relaxed">
-                 Esta área está restringida a personal de <br/> <span className="text-[#FF007F]">Estuclub Central</span>
+                 Esta área está restringida a personal de <br/> <span className="text-[#cb465a]">Estuclub Central</span>
                </p>
             </div>
-            <Button asChild className="h-14 px-10 rounded-2xl bg-[#FF007F] text-white font-black uppercase tracking-widest hover:bg-[#FF007F]/90 transition-all shrink-0">
+            <Button asChild className="h-14 px-10 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-widest hover:bg-[#cb465a]/90 transition-all shrink-0">
                <Link href="/">Volver al inicio</Link>
             </Button>
           </CardContent>
@@ -187,35 +187,35 @@ export default function VerifyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#FF007F]/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#cb465a]/30 overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-12">
         <header className="pt-12 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <Button asChild variant="ghost" className="h-12 w-12 p-0 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#FF007F]/20 transition-all">
+              <Button asChild variant="ghost" className="h-12 w-12 p-0 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#cb465a]/20 transition-all">
                 <Link href="/panel-admin"><ChevronRight className="h-6 w-6 rotate-180" /></Link>
               </Button>
-              <div className="h-12 w-12 rounded-xl bg-[#FF007F] flex items-center justify-center shadow-[0_0_30px_#FF007F]">
+              <div className="h-12 w-12 rounded-xl bg-[#cb465a] flex items-center justify-center shadow-[0_0_30px_#cb465a]">
                 <ShieldCheck className="h-6 w-6 text-white" />
               </div>
               <Badge className="bg-white/10 text-white border-white/20 uppercase font-black text-[10px] tracking-[0.3em] px-4 py-1.5 rounded-full">HQ Monitor</Badge>
             </div>
             <h1 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-[0.85] font-montserrat drop-shadow-2xl">
-              CENTRO DE <br/><span className="text-[#FF007F]">VERIFICACIÓN</span>
+              CENTRO DE <br/><span className="text-[#cb465a]">VERIFICACIÓN</span>
             </h1>
             <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.6em] ml-2 opacity-60">ADMINISTRACIÓN TOTAL CLUBERS & RIDERS</p>
           </div>
 
           <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/10">
-             <div className="h-12 w-12 rounded-2xl bg-[#FF007F]/20 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-[#FF007F] animate-pulse" />
+             <div className="h-12 w-12 rounded-2xl bg-[#cb465a]/20 flex items-center justify-center">
+                <Zap className="h-6 w-6 text-[#cb465a] animate-pulse" />
              </div>
              <div className="pr-6">
-                <p className="text-[10px] font-black text-[#FF007F] uppercase tracking-widest leading-tight">Master Center</p>
+                <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-widest leading-tight">Master Center</p>
                 <p className="text-sm font-bold text-white/80">System Active</p>
              </div>
-             <div className="bg-black/40 border border-[#FF007F]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(255,0,127,0.1)]">
-                <p className="text-[9px] font-black text-[#FF007F] uppercase tracking-widest mb-1">En Cola</p>
+             <div className="bg-black/40 border border-[#cb465a]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(255,0,127,0.1)]">
+                <p className="text-[9px] font-black text-[#cb465a] uppercase tracking-widest mb-1">En Cola</p>
                 <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + pendingClubers.length}</p>
              </div>
           </div>
@@ -223,13 +223,13 @@ export default function VerifyPage() {
 
         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-10">
           <TabsList className="bg-background/50 border border-white/5 p-2 rounded-3xl w-full h-auto flex flex-wrap gap-2 shadow-2xl overflow-hidden">
-            <TabsTrigger value="riders" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="riders" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
               Riders ({applications?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
               Pendientes ({pendingClubers.length})
             </TabsTrigger>
-            <TabsTrigger value="management" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#FF007F] data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="management" className="flex-1 min-w-[120px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
               Gestión Clubers
             </TabsTrigger>
           </TabsList>
@@ -268,9 +268,9 @@ export default function VerifyPage() {
                             <h3 className="text-xl font-black uppercase tracking-tighter">{app.userName}</h3>
                             <p className="text-[10px] font-bold text-foreground opacity-70">Patente: {app.patente} | DNI: {app.dni}</p>
                         </div>
-                        <div className="flex gap-3">
-                            <Button variant="ghost" onClick={() => handleRejectRider(app)} disabled={!!processingId} className="rounded-xl font-black uppercase text-[10px] tracking-widest text-destructive">Rechazar</Button>
-                            <Button onClick={() => handleApproveRider(app)} disabled={!!processingId} className="rounded-xl font-black uppercase text-[10px] tracking-widest bg-green-500 hover:bg-green-600 text-white px-8 h-12">Aprobar</Button>
+                        <div className="flex gap-3 shrink-0">
+                            <Button variant="ghost" onClick={() => handleRejectRider(app)} disabled={!!processingId} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest text-destructive hover:bg-destructive/10 shrink-0">Rechazar</Button>
+                            <Button onClick={() => handleApproveRider(app)} disabled={!!processingId} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest bg-green-500 hover:bg-green-600 text-white px-8 shrink-0">Aprobar</Button>
                         </div>
                     </div>
                   </div>
@@ -283,7 +283,7 @@ export default function VerifyPage() {
           <TabsContent value="pending-clubers" className="space-y-8 focus-visible:outline-none">
              {pendingClubers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
-                    <Building className="h-16 w-16 text-[#FF007F] mb-4 opacity-20" />
+                    <Building className="h-16 w-16 text-[#cb465a] mb-4 opacity-20" />
                     <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin comercios pendientes</p>
                 </div>
              ) : (
@@ -291,19 +291,19 @@ export default function VerifyPage() {
                 {pendingClubers.map((cluber) => (
                     <Card key={cluber.id} className="rounded-[2.5rem] border-white/5 bg-card/50 backdrop-blur-sm p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-6">
-                        <div className="h-20 w-20 rounded-[1.5rem] bg-[#FF007F]/10 border border-[#FF007F]/20 flex items-center justify-center overflow-hidden shrink-0">
-                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#FF007F] opacity-20" />}
+                        <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
+                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
                         </div>
                         <div>
                         <h3 className="text-xl font-black uppercase tracking-tighter">{cluber.name}</h3>
                         <p className="text-[10px] font-bold text-foreground opacity-70 mb-2 italic">{cluber.address}</p>
-                        <Badge className="bg-[#FF007F]/10 text-[#FF007F] border-[#FF007F]/20 font-black text-[8px] uppercase tracking-widest">{cluber.type}</Badge>
+                        <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-[#cb465a]/20 font-black text-[8px] uppercase tracking-widest">{cluber.type}</Badge>
                         </div>
                     </div>
                     <Button
                         onClick={() => handleVerifyCluber(cluber.id, cluber.name)}
                         disabled={processingId === cluber.id}
-                        className="h-16 px-10 rounded-2xl bg-white text-[#FF007F] font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-[#FF007F]/10 hover:text-white border-2 border-white transition-all"
+                        className="h-12 px-10 rounded-2xl bg-white text-[#000000] font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-primary hover:text-white border-2 border-white transition-all shrink-0"
                     >
                         {processingId === cluber.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "VERIFICAR COMERCIO"}
                     </Button>
@@ -316,12 +316,12 @@ export default function VerifyPage() {
           {/* MANAGEMENT TAB */}
           <TabsContent value="management" className="space-y-8 focus-visible:outline-none">
              <div className="relative group">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-[#FF007F] transition-colors" />
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-[#cb465a] transition-colors" />
                 <Input 
                     placeholder="BUSCAR COMERCIO POR NOMBRE O ID..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-20 pl-16 rounded-[2rem] bg-white/5 border-white/5 focus:border-[#FF007F]/30 focus:ring-[#FF007F]/10 text-lg font-black uppercase tracking-widest placeholder:text-white/10"
+                    className="h-20 pl-16 rounded-[2rem] bg-white/5 border-white/5 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 text-lg font-black uppercase tracking-widest placeholder:text-white/10"
                 />
              </div>
 
@@ -332,14 +332,14 @@ export default function VerifyPage() {
              ) : (
                 <div className="grid gap-6">
                     {filteredManagementClubers.map((cluber) => (
-                        <Card key={cluber.id} className="rounded-[3rem] border-white/5 bg-background/40 p-8 space-y-8 hover:border-[#FF007F]/20 transition-all group overflow-hidden relative">
+                        <Card key={cluber.id} className="rounded-[3rem] border-white/5 bg-background/40 p-8 space-y-8 hover:border-[#cb465a]/20 transition-all group overflow-hidden relative">
                              {/* Decorative Background Icon */}
-                             <Building className="absolute -right-10 -bottom-10 h-64 w-64 text-white/[0.02] -rotate-12 pointer-events-none group-hover:text-[#FF007F]/[0.03] transition-colors" />
+                             <Building className="absolute -right-10 -bottom-10 h-64 w-64 text-white/[0.02] -rotate-12 pointer-events-none group-hover:text-[#cb465a]/[0.03] transition-colors" />
 
                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                                 <div className="flex items-center gap-6">
-                                    <div className="h-20 w-20 rounded-[1.5rem] bg-[#FF007F]/10 border border-[#FF007F]/20 flex items-center justify-center overflow-hidden shrink-0">
-                                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#FF007F] opacity-20" />}
+                                    <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
+                                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
@@ -400,8 +400,13 @@ export default function VerifyPage() {
                                         <div className="p-2.5 rounded-xl bg-white/5"><Settings2 className="h-4 w-4 text-white/40" /></div>
                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Controles</span>
                                     </div>
-                                    <Button size="sm" variant="ghost" className="h-8 text-[9px] font-bold uppercase tracking-widest" onClick={() => {/* Placeholder */}}>
-                                        Editar
+                                    <Button 
+                                        size="sm" 
+                                        variant="ghost" 
+                                        className="h-10 text-[9px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white shrink-0" 
+                                        onClick={() => window.location.href = `/admin/clubers`}
+                                    >
+                                        Gestionar
                                     </Button>
                                 </div>
                              </div>
@@ -420,15 +425,15 @@ function ControlToggle({ icon, label, value, onChange }: { icon: any, label: str
     return (
         <div className={cn(
             "flex items-center justify-between p-5 rounded-[1.5rem] transition-all border",
-            value ? "bg-[#FF007F]/10 border-[#FF007F]/20" : "bg-white/5 border-white/5 opacity-60"
+            value ? "bg-[#cb465a]/10 border-[#cb465a]/20" : "bg-white/5 border-white/5 opacity-60"
         )}>
             <div className="flex items-center gap-3 text-white/80">
-                <div className={cn("p-2.5 rounded-xl transition-colors", value ? "bg-[#FF007F]/20 text-[#FF007F]" : "bg-white/5 text-white/40")}>
+                <div className={cn("p-2.5 rounded-xl transition-colors", value ? "bg-[#cb465a]/20 text-[#cb465a]" : "bg-white/5 text-white/40")}>
                     {icon}
                 </div>
                 <Label className="text-[10px] font-black uppercase tracking-widest cursor-pointer leading-none">{label}</Label>
             </div>
-            <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-[#FF007F]" />
+            <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-[#cb465a]" />
         </div>
     );
 }
@@ -438,7 +443,7 @@ function CincoDosToggle({ value, onChange }: { value: boolean, onChange: (v: boo
         <div className={cn(
             "flex items-center justify-between p-5 rounded-[1.5rem] transition-all duration-500 border",
             value 
-                ? "bg-gradient-to-br from-amber-400/20 to-[#FF007F]/20 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
+                ? "bg-gradient-to-br from-amber-400/20 to-[#cb465a]/20 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
                 : "bg-white/5 border-white/5 opacity-40 grayscale"
         )}>
             <div className="flex items-center gap-3">

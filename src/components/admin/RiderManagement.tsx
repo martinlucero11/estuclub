@@ -87,7 +87,7 @@ export default function RiderManagement() {
             placeholder="BUSCAR RIDER POR ID O VEHÍCULO..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-16 pl-16 rounded-[2rem] bg-card/50 border-white/5 focus:border-primary/40 text-sm font-bold uppercase tracking-widest transition-all"
+            className="h-16 pl-16 rounded-[2rem] bg-card/50 border-white/5 focus:border-primary/40 text-sm font-bold uppercase tracking-widest transition-all placeholder:text-black/20 dark:placeholder:text-white/20"
           />
         </div>
         <div className="flex gap-4">
@@ -120,10 +120,10 @@ export default function RiderManagement() {
                             <p className="text-[10px] font-black uppercase text-foreground tracking-widest leading-none mt-1">{rider.vehicleType || 'Motocicleta'}</p>
                         </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                         <Button 
                             variant="ghost" size="icon" 
-                            className="h-10 w-10 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/20 hover:text-primary transition-all"
+                            className="h-10 w-10 rounded-xl bg-white/5 border border-white/5 hover:bg-primary/20 hover:text-primary transition-all shrink-0"
                             onClick={() => {
                                 toast({ title: 'Cargando EstuSim', description: `Impersonando Rider ${rider.id.slice(0, 8)}` });
                                 setImpersonatedUserId(rider.id);
@@ -159,10 +159,10 @@ export default function RiderManagement() {
                 </div>
 
                 <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <FileText className="h-3 w-3 text-foreground/30" />
-                        <span className="text-[9px] font-bold text-foreground uppercase italic tracking-widest">Ver Documentación</span>
-                    </div>
+                    <Button variant="ghost" className="h-8 px-0 text-[10px] font-bold text-foreground hover:text-primary uppercase italic tracking-widest flex items-center gap-2 transition-colors">
+                        <FileText className="h-3 w-3" />
+                        <span>Ver Documentación</span>
+                    </Button>
                     <Badge variant="outline" className="text-[8px] font-black border-white/10 rounded-lg">Alem Sede</Badge>
                 </div>
             </CardContent>

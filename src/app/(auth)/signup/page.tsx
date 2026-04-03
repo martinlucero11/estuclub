@@ -7,9 +7,9 @@ import {
     X
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/firebase';
+import Logo from '@/components/common/Logo';
 import SplashScreen from '@/components/layout/splash-screen';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -88,7 +88,7 @@ export default function SignupPage() {
             {/* Local Header - Simplified and not fixed to avoid layout issues */}
             <div className="w-full flex items-center justify-between px-6 py-6 mb-4">
                 <Link href="/" className="transition-transform active:scale-95">
-                    <Image src="/logo-rosa.svg" alt="Estuclub" width={120} height={30} className="h-8 w-auto" />
+                    <Logo variant="rosa" className="h-8 w-auto" />
                 </Link>
                 {activeRole && (
                     <Button 

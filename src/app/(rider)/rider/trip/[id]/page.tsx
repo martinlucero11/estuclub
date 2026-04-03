@@ -73,7 +73,8 @@ export default function RiderTripPage() {
             await updateDoc(doc(firestore, 'orders', id as string), {
                 status: 'delivered',
                 updatedAt: Timestamp.now(),
-                deliveryPinValidated: true
+                deliveryPinValidated: true,
+                deliveryPaymentStatus: order.deliveryPaymentStatus === 'pending' ? 'completed' : order.deliveryPaymentStatus
             });
             
             toast({ title: "🎁 ¡Entrega Confirmada!", description: "El pedido ha sido finalizado con éxito." });

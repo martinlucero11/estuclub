@@ -51,8 +51,11 @@ export default function VerificationGate({ children }: { children: React.ReactNo
     return <>{children}</>;
   }
 
+  // ── DEMO BYPASS ──
+  const isDemoUser = user.email?.endsWith('@estuclub.com.ar');
+
   // User exists but email not verified
-  const needsVerification = user && !user.emailVerified;
+  const needsVerification = user && !user.emailVerified && !isDemoUser;
   // User exists but Firestore profile missing (registration incomplete)
   const profileMissing = user && !isUserLoading && !userData;
 
