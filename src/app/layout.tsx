@@ -141,8 +141,8 @@ export default function RootLayout({
                   </MessagingProvider>
                 </CartProvider>
               </VerificationGate>
+              <Toaster />
             </AdminProvider>
-            <Toaster />
           </FirebaseProvider>
         </ThemeProvider>
         <Script 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { SupplierProfile, UserProfile } from '@/types/data';
 
@@ -19,8 +19,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-    const { roles, userData } = useUser();
-    const firestore = useFirestore();
+    const { roles, firestore } = useFirebase();
     
     const [impersonatedSupplierId, setImpersonatedSupplierIdState] = useState<string | null>(null);
     const [impersonatedSupplierData, setImpersonatedSupplierData] = useState<SupplierProfile | null>(null);
