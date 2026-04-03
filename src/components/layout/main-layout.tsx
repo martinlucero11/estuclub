@@ -14,6 +14,8 @@ import { usePlatform } from '@/hooks/use-platform';
 import OfflineWarmer from '@/firebase/firestore/offline-warmer';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
+import { useAdmin } from '@/context/admin-context';
+import { LogOut } from 'lucide-react';
 
 const MeshBackground = dynamic(() => import('@/components/layout/mesh-background'), { ssr: false });
 
@@ -22,12 +24,9 @@ import Footer from '@/components/layout/footer';
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [isMounted, setIsMounted] = useState(false);
-    const { isMobile, isWeb } = usePlatform();
-
-    // ... exists hooks
-    useAppointmentReminders();
     const { user } = useUser();
     const firestore = useFirestore();
+    const { impersonatedUserId, impersonatedSupplierId, setImpersonatedUserId, setImpersonatedSupplierId } = useAdmin();
     
     useEffect(() => {
         const handleFCM = async () => {
@@ -73,6 +72,20 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     </div>
                 </motion.main>
             </AnimatePresence>
+
+            {(impersonatedUserId || impersonatedSupplierId) && (
+                <button
+                    onClick={() => {
+                        setImpersonatedUserId(null);
+                        setImpersonatedSupplierId(null);
+                        window.location.reload();
+                    }}
+                    className="fixed bottom-20 right-4 z-[9999] bg-black text-white px-4 py-2 rounded-full font-bold shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                >
+                    <LogOut className="h-4 w-4 text-red-500" />
+                    🛑 Salir de Simulación
+                </button>
+            )}
         </div>
     );
 }

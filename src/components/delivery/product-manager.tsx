@@ -179,6 +179,9 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             <DialogTitle className="text-2xl font-black tracking-tighter">
                                 {selectedProduct?.id ? 'Editar Producto' : 'Añadir Producto'}
                             </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Formulario para gestionar productos del menú de delivery.
+                            </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSaveProduct} className="space-y-4 pt-4">
                             <div className="space-y-2">

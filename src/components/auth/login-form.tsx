@@ -209,6 +209,7 @@ export default function LoginForm() {
                         <Input 
                             type="password" 
                             placeholder="••••••••" 
+                            autoComplete="current-password"
                             {...field} 
                             className="h-12 pl-12 rounded-xl bg-background border-2 border-foreground focus:border-primary focus:ring-primary/20 transition-all font-bold" 
                         />

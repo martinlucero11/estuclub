@@ -72,6 +72,7 @@ export default function UserQRCodeDialog({ userId, username, children }: UserQRC
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden overflow-visible">
         <DialogTitle className="sr-only">ID Card de {userProfile?.username}</DialogTitle>
+        <DialogDescription className="sr-only">Tu credencial digital de Estuclub para acceder a beneficios.</DialogDescription>
         <div className="flex justify-center w-full overflow-visible py-12">
           {isProfileLoading ? (
             <Skeleton className="h-[520px] w-[330px] rounded-[2.5rem] bg-white/5" />

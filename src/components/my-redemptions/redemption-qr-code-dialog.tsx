@@ -6,6 +6,9 @@ import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
@@ -107,6 +110,10 @@ export default function RedemptionQRCodeDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-xs bg-transparent border-none shadow-none">
+        <DialogHeader className="sr-only">
+            <DialogTitle>{benefitTitle}</DialogTitle>
+            <DialogDescription>Ticket de canje para {supplierName}. ID: {redemptionId}</DialogDescription>
+        </DialogHeader>
         <div className="bg-card text-card-foreground rounded-2xl overflow-hidden shadow-2xl aspect-[9/16] flex flex-col items-center justify-center relative p-6">
             <TicketCutout />
             
