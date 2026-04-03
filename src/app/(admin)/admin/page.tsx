@@ -33,7 +33,7 @@ export default function AdminControlCentralPage() {
                         <div className="h-1 w-8 bg-primary/20 rounded-full" />
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-none font-montserrat">
-                        Admin <span className="text-primary italic">Overlord</span>
+                        PANEL <span className="text-primary italic">ADMIN</span>
                     </h1>
                     <p className="text-[10px] font-black opacity-40 uppercase tracking-[0.4em] ml-1">
                         Arquitectura de Gestión Global • v2.2.0

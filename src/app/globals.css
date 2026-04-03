@@ -110,7 +110,7 @@ h1, h2, h3, h4, .font-branding {
 
 /* Glassmorphism */
 .glass {
-  @apply bg-background/50 backdrop-blur-xl border-foreground/40;
+  @apply bg-background/50 backdrop-blur-xl border-white/10;
 }
 
 .glass-dark {
@@ -155,7 +155,7 @@ h1, h2, h3, h4, .font-branding {
   }
 
   .glass {
-    @apply backdrop-blur-md bg-white/70 dark:bg-black/20 border border-black/5 dark:border-white/10;
+    @apply backdrop-blur-md bg-white/70 dark:bg-black/20 border border-white/10;
   }
   
   .glass-dark {

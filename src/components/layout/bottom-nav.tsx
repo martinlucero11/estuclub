@@ -155,7 +155,7 @@ export function BottomNav() {
                         )}
                         <span className={cn(
                             "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
-                            isActive ? "text-primary scale-105" : "text-black"
+                            isActive ? "text-primary scale-105" : "text-foreground opacity-60"
                         )}>
                             {item.label}
                         </span>
@@ -190,7 +190,7 @@ export function BottomNav() {
                 <item.icon className={cn("h-5 w-5", (isActive || item.highlight) && "stroke-[2.5px]")} />
                 <span className={cn(
                     "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
-                    isActive ? "text-primary scale-105" : "text-black"
+                    isActive ? "text-primary scale-105" : "text-foreground opacity-60"
                 )}>
                     {item.label}
                 </span>

@@ -188,7 +188,7 @@ export default function VerifyPage() {
 
   return (
     <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#cb465a]/30 overflow-x-hidden">
-      <div className="max-w-4xl mx-auto space-y-12">
+      <div className="max-w-5xl mx-auto space-y-12">
         <header className="pt-12 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
           <div className="space-y-5">
             <div className="flex items-center gap-4">
@@ -248,7 +248,7 @@ export default function VerifyPage() {
             ) : (
               <div className="grid gap-8">
                 {applications.map((app) => (
-                  <div key={app.id} className="bg-card rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
+                  <div key={app.id} className="glass-dark rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
                       <div className="relative aspect-video rounded-[2rem] overflow-hidden group">
                         <img src={app.fotoRostroUrl} alt="" className="w-full h-full object-cover" />
@@ -289,7 +289,7 @@ export default function VerifyPage() {
              ) : (
                 <div className="grid gap-6">
                 {pendingClubers.map((cluber) => (
-                    <Card key={cluber.id} className="rounded-[2.5rem] border-white/5 bg-card/50 backdrop-blur-sm p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                    <Card key={cluber.id} className="rounded-[2.5rem] border-white/5 glass-dark p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
                     <div className="flex items-center gap-6">
                         <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
                         {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
@@ -360,7 +360,7 @@ export default function VerifyPage() {
                                 </div>
                              </div>
 
-                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+                             <div className="flex flex-wrap gap-4 items-center w-full relative z-10">
                                 <ControlToggle 
                                     icon={<Globe className="h-4 w-4" />}
                                     label="Visibilidad" 
@@ -395,7 +395,7 @@ export default function VerifyPage() {
                                     value={!!cluber.isCincoDos} 
                                     onChange={(v) => handleToggleCluberField(cluber.id, 'isCincoDos', v)} 
                                 />
-                                <div className="flex items-center justify-between p-5 rounded-[1.5rem] bg-white/5 border border-white/5">
+                                <div className="flex items-center justify-between p-5 rounded-[1.5rem] glass-dark border border-white/5 flex-1 min-w-[200px]">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2.5 rounded-xl bg-white/5"><Settings2 className="h-4 w-4 text-white/40" /></div>
                                         <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Controles</span>

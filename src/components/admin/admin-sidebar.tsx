@@ -23,7 +23,7 @@ import { useAdmin } from '@/context/admin-context';
 import Logo from '@/components/common/Logo';
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+  { label: 'Inicio', icon: LayoutDashboard, href: '/admin' },
   { label: 'Solicitudes', icon: ShieldCheck, href: '/verify' },
   { label: 'Comercios', icon: Store, href: '/admin/clubers' },
   { label: 'Riders', icon: Truck, href: '/admin/riders' },
@@ -58,7 +58,7 @@ export function AdminSidebar() {
                 className="h-9 w-auto hidden dark:block"
             />
             <div className="flex flex-col">
-                <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Overlord</span>
+                <span className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">ADMIN</span>
                 <span className="text-[8px] font-black uppercase tracking-[0.3em] text-primary">v2.2</span>
             </div>
           </div>

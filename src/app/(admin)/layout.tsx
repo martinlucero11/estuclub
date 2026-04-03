@@ -34,7 +34,7 @@ export default function AdminLayout({
         <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl flex items-center px-8 justify-between z-40 sticky top-0">
            <div className="flex items-center gap-4">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">System Operational</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">SISTEMA ACTIVO</p>
            </div>
            {/* Add user menu or quick actions here if needed */}
         </header>
