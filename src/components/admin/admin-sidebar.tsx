@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAdmin } from '@/context/admin-context';
 import Logo from '@/components/common/Logo';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/firebase/config';
 
 const navItems = [
   { label: 'Inicio', icon: LayoutDashboard, href: '/admin' },
@@ -41,7 +43,7 @@ export function AdminSidebar() {
   return (
     <div 
       className={cn(
-        "flex flex-col bg-card border-r border-white/5 transition-all duration-300 z-50",
+        "flex flex-col bg-card border-r border-white/5 transition-all duration-300 z-50 sticky top-0 h-screen overflow-y-auto",
         isCollapsed ? "w-[80px]" : "w-[280px]"
       )}
     >
@@ -170,6 +172,28 @@ export function AdminSidebar() {
              </div>
            )}
         </div>
+      </div>
+
+      {/* Logout Button */}
+      <div className="p-4 mt-auto mb-2">
+          <Button 
+            variant="ghost" 
+            onClick={async () => {
+                await signOut(auth);
+                window.location.href = '/login';
+            }}
+            className={cn(
+                "w-full rounded-2xl transition-all duration-200 flex items-center text-red-500 hover:bg-red-500/10 hover:text-red-600",
+                isCollapsed ? "justify-center px-0 h-12" : "justify-start gap-4 px-4 h-12"
+            )}
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            {!isCollapsed && (
+                <span className="font-black text-[10px] uppercase tracking-widest">
+                    Cerrar Sesión
+                </span>
+            )}
+          </Button>
       </div>
     </div>
   );
