@@ -52,7 +52,7 @@ const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: Sup
                 <motion.div 
                     whileHover={{ scale: 1.05, y: -8 }}
                     whileTap={{ scale: 0.95 }}
-                    className="relative w-full aspect-square overflow-hidden rounded-[2.5rem] bg-card glass glass-dark shadow-premium border border-primary/10 group-hover:border-primary/40 transition-all duration-700 group-hover:shadow-[0_20px_50px_rgba(203, 70, 90,0.15)] group-hover:glass-glow-pink"
+                    className="relative w-full aspect-square overflow-hidden rounded-[2.5rem] glass glass-dark shadow-premium border border-primary/10 group-hover:border-primary/40 transition-all duration-700 group-hover:shadow-[0_20px_50px_rgba(203, 70, 90,0.15)] group-hover:glass-glow-pink"
                 >
                     <Image
                         src={optimizeImage(supplier.logoUrl || '', 400)}

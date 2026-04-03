@@ -33,7 +33,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                             <div 
                                 className={cn(
                                     'flex flex-col items-center justify-center h-28 w-28 sm:h-32 sm:w-32 mx-auto rounded-[2.5rem] transition-all duration-700',
-                                    'bg-gradient-to-br from-primary/30 to-primary/10 border-2 border-primary/20 shadow-premium glass',
+                                    'bg-gradient-to-br from-primary/30 to-primary/5 border border-primary/20 shadow-premium glass transition-all duration-700',
                                     'group-hover:scale-105 group-hover:shadow-2xl group-hover:border-primary/40 group-hover:from-primary/40 group-hover:to-primary/20',
                                     'active:scale-95'
                                 )}

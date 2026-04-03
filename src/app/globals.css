@@ -7,6 +7,7 @@ body {
   font-family: var(--font-inter), sans-serif;
   max-width: 100vw;
   width: 100%;
+  overflow-x: hidden;
   position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -153,11 +154,31 @@ h1, h2, h3, h4, .font-branding {
     @apply w-full max-w-[450px] mx-auto px-5;
   }
 
+  .glass {
+    @apply backdrop-blur-md bg-white/70 dark:bg-black/20 border border-black/5 dark:border-white/10;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-md bg-white/10 border border-white/10;
+  }
+
+  .glass-glow-pink {
+    @apply shadow-[0_0_30px_rgba(203,70,90,0.15)] border-primary/20;
+  }
+
   /* Z-Index Hierarchy */
   .z-header { z-index: 100; }
   .z-sheet { z-index: 200; }
   .z-modal { z-index: 300; }
   .z-toast { z-index: 400; }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 

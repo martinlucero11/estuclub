@@ -61,7 +61,7 @@ export const ProductCard = React.memo(({ product, supplier: initialSupplier, onA
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ y: -5 }}
-                className="relative bg-card glass glass-dark border border-white/10 rounded-2xl p-2.5 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
+                className="relative glass glass-dark rounded-2xl p-2.5 flex flex-col h-full hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500"
             >
                 {product.imageUrl && (
                 <div className="aspect-square w-full rounded-xl overflow-hidden mb-2 relative shadow-inner">

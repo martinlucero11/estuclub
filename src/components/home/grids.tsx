@@ -26,8 +26,8 @@ const SupplierGridCard = ({ supplier }: { supplier: SupplierProfile }) => {
 
     return (
         <Link key={supplier.id} href={`/proveedores/view?slug=${supplier.slug}`} className="group block h-full active:scale-95 transition-transform duration-200">
-            <Card className="bg-card/40 backdrop-blur-sm rounded-3xl shadow-premium border border-foreground/40 p-4 flex flex-col items-center text-center transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20 group-hover:-translate-y-1 h-full">
-                <div className="w-16 h-16 rounded-full border-2 border-foreground/50 group-hover:border-primary/30 mb-3 overflow-hidden transition-colors duration-500 shadow-inner">
+            <Card className="glass rounded-3xl shadow-premium border border-primary/10 p-4 flex flex-col items-center text-center transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20 group-hover:-translate-y-1 h-full">
+                <div className="w-16 h-16 rounded-full border-2 border-primary/10 group-hover:border-primary/30 mb-3 overflow-hidden transition-colors duration-500 shadow-inner">
                     <Avatar className="h-full w-full">
                         <AvatarImage src={supplier.logoUrl || undefined} alt={supplier.name} className="object-cover transition-transform duration-500 group-hover:scale-110" />
                         <AvatarFallback className="bg-background text-lg font-bold text-foreground">

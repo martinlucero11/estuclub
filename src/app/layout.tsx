@@ -119,7 +119,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={cn("min-h-screen bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
+      <body className={cn("min-h-screen bg-background font-sans antialiased selection:bg-primary/20 overflow-x-hidden", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -90,7 +90,7 @@ function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
 
     return (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
-            <Card className="rounded-[2rem] bg-background/80 border-[#cb465a]/10 backdrop-blur-xl">
+            <Card className="rounded-[2rem] glass-dark border-primary/10">
                 <form onSubmit={handleLogin}>
                     <CardContent className="space-y-4 pt-8 px-6">
                         <div className="space-y-1.5">

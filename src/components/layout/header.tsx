@@ -230,7 +230,7 @@ export default function Header() {
   const { isMobile } = usePlatform();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-primary border-b-2 border-white shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-primary/90 backdrop-blur-md border-b border-white/20 shadow-lg">
       <div className="container relative flex justify-between items-center px-6">
         <div className="flex items-center gap-1">
           <AppSidebar />

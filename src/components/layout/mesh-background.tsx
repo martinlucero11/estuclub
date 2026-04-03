@@ -27,7 +27,7 @@ export default function MeshBackground() {
   const blob2Y = useTransform(springY, (v) => (window.innerHeight - v) * 0.03);
 
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none max-w-full">
       {/* Mesh Gradients */}
       <div className="absolute inset-0 bg-[#fafafa] dark:bg-[#000000] [.rider-night_&]:bg-[#000000]" />
       
