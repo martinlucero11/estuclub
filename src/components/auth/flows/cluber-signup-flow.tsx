@@ -136,8 +136,8 @@ export function CluberSignupFlow() {
             batch.set(doc(firestore, 'users', user.uid), {
                 uid: user.uid,
                 email: data.email,
-                firstName: data.fullName.split(' ')[0],
-                lastName: data.fullName.split(' ').slice(1).join(' ') || '',
+                firstName: (data.fullName || 'Propietario').split(' ')[0],
+                lastName: (data.fullName || '').split(' ').slice(1).join(' ') || 'Sin_Apellido',
                 role: 'cluber_pending',
                 createdAt: serverTimestamp(),
             });

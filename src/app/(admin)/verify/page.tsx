@@ -133,8 +133,8 @@ export default function VerifyPage() {
       await setDoc(doc(firestore, 'users', app.userId), {
         uid: app.userId,
         email: app.email,
-        firstName: app.userName.split(' ')[0],
-        lastName: app.userName.split(' ').slice(1).join(' ') || '',
+        firstName: (app.userName || 'Rider').split(' ')[0],
+        lastName: (app.userName || '').split(' ').slice(1).join(' ') || 'Sin_Apellido',
         phone: app.phone,
         role: 'rider',
         isVerified: true,
