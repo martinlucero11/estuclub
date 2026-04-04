@@ -72,57 +72,64 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
     const unassignedProducts = products.filter(p => !p.menuSection || !sections.includes(p.menuSection));
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="p-6 rounded-[2rem] bg-card border border-white/5 space-y-6">
-                <div className="space-y-2">
-                    <h2 className="text-xl font-black tracking-tighter">Gestionar Secciones del Menú</h2>
-                    <p className="text-sm text-foreground font-medium">
-                        Crea categorías personalizadas para agrupar tus productos (ej. Hamburguesas, Bebidas).
+        <div className="space-y-12 animate-in fade-in duration-700">
+            <div className="p-8 rounded-[3rem] bg-white border border-black/5 space-y-8 shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+                    <Plus className="h-24 w-24" />
+                </div>
+                <div className="space-y-3 relative">
+                    <h2 className="text-2xl font-black tracking-tighter text-black italic">Gestionar Menú</h2>
+                    <p className="text-[11px] text-black/40 font-bold uppercase tracking-widest leading-relaxed max-w-sm">
+                        Crea categorías personalizadas para agrupar tus productos y mejorar la experiencia de tus clientes.
                     </p>
                 </div>
                 
-                <div className="flex gap-3">
+                <div className="flex gap-4 relative">
                     <Input 
-                        placeholder="Ej: Plato Principal" 
+                        placeholder="Ej: Hamburguesas Especiales" 
                         value={newSection} 
                         onChange={(e) => setNewSection(e.target.value)}
-                        className="rounded-xl h-12 bg-background/50 border-white/10"
+                        className="rounded-2xl h-14 bg-black/[0.02] border-black/5 focus-visible:ring-primary/20 font-bold text-black placeholder:text-black/20 px-6"
                         onKeyDown={(e) => e.key === 'Enter' && handleAddSection()}
                     />
                     <Button 
                         onClick={handleAddSection} 
                         disabled={isSaving || !newSection.trim()}
-                        className="h-12 rounded-xl px-6 font-black uppercase tracking-widest text-[10px]"
+                        className="h-14 rounded-2xl px-10 font-black uppercase tracking-widest text-[11px] shadow-lg shadow-primary/20"
                     >
-                        <Plus className="h-4 w-4 mr-2" /> Añadir
+                        {isSaving ? 'Guardando...' : 'Añadir'}
                     </Button>
                 </div>
 
-                <div className="space-y-3 pt-4">
+                <div className="space-y-4 pt-4 relative">
                     {sections.length === 0 ? (
-                        <div className="text-center py-8 text-foreground italic text-sm">
-                            <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                            Aún no has creado ninguna sección personalizada.
+                        <div className="text-center py-12 text-black/20 italic text-sm bg-black/[0.01] rounded-3xl border border-dashed border-black/5">
+                            <AlertCircle className="h-10 w-10 mx-auto mb-4 opacity-10" />
+                            Aún no has creado secciones personalizadas.
                         </div>
                     ) : (
                         sections.map((section, index) => {
                             const sectionProducts = products.filter(p => p.menuSection === section);
                             return (
-                                <div key={section} className="flex items-center justify-between p-4 rounded-2xl bg-background/50 border border-white/5">
-                                    <div className="flex items-center gap-4">
-                                        <h3 className="font-bold">{section}</h3>
-                                        <Badge variant="secondary" className="rounded-full text-[10px] uppercase font-black tracking-widest">
-                                            {sectionProducts.length} productos
-                                        </Badge>
+                                <div key={section} className="flex items-center justify-between p-5 rounded-[2rem] bg-white border border-black/5 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex items-center gap-5">
+                                        <div className="h-10 w-10 rounded-xl bg-black/5 flex items-center justify-center font-black text-black/20 text-xs">
+                                            0{index + 1}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-black tracking-tight">{section}</h3>
+                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/60">{sectionProducts.length} Productos Asignados</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" disabled={index === 0} onClick={() => handleMoveUp(index)}>
+                                    <div className="flex items-center gap-1.5 translate-x-2 opacity-30 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-black/5" disabled={index === 0} onClick={() => handleMoveUp(index)}>
                                             <ArrowUp className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" disabled={index === sections.length - 1} onClick={() => handleMoveDown(index)}>
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-black/5" disabled={index === sections.length - 1} onClick={() => handleMoveDown(index)}>
                                             <ArrowDown className="h-4 w-4" />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10" onClick={() => handleRemoveSection(section)}>
+                                        <div className="w-px h-6 bg-black/5 mx-1" />
+                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-red-500 hover:bg-red-50" onClick={() => handleRemoveSection(section)}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
@@ -133,10 +140,13 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
                 </div>
             </div>
 
-            <div className="pt-8 space-y-12">
-                <div className="flex items-center gap-4">
-                    <h2 className="text-2xl font-black uppercase tracking-tight text-white">Vista Previa del Menú</h2>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">Cómo lo ve el cliente</Badge>
+            <div className="pt-12 space-y-16">
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-4">
+                        <h2 className="text-4xl font-black uppercase tracking-tighter text-black italic italic-border">Vista Previa</h2>
+                        <Badge className="bg-primary text-white border-0 font-black px-4 py-1 rounded-full text-[10px] uppercase tracking-widest shadow-lg shadow-primary/30">Cliente en Vivo</Badge>
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.2em] text-black/30">Así es como tus clientes verán el menú en la App Estuclub</p>
                 </div>
 
                 {sections.map(section => {
@@ -144,8 +154,8 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
                     if (sectionProducts.length === 0) return null;
                     
                     return (
-                        <div key={section} className="space-y-6">
-                            <h3 className="text-xl font-black uppercase tracking-[0.2em] text-primary/80 border-b border-white/5 pb-2">
+                        <div key={section} className="space-y-8">
+                            <h3 className="text-2xl font-black uppercase tracking-[0.1em] text-black border-b-4 border-primary w-fit pb-2 pr-12">
                                 {section}
                             </h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -158,8 +168,8 @@ export function MenuSectionManager({ supplierId, sections, products }: MenuSecti
                 })}
 
                 {unassignedProducts.length > 0 && (
-                    <div className="space-y-6">
-                        <h3 className="text-xl font-black uppercase tracking-[0.2em] text-foreground border-b border-white/5 pb-2">
+                    <div className="space-y-8">
+                        <h3 className="text-2xl font-black uppercase tracking-[0.1em] text-black/40 border-b-4 border-black/5 w-fit pb-2 pr-12">
                             {sections.length > 0 ? "Más Productos" : "Productos"}
                         </h3>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

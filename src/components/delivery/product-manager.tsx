@@ -21,16 +21,6 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -60,7 +50,6 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);
     const [uploadMethod, setUploadMethod] = useState<'upload' | 'link'>('link');
     const [isUploading, setIsUploading] = useState(false);
-    const [productToDelete, setProductToDelete] = useState<string | null>(null);
     const firestore = useFirestore();
     const { toast } = useToast();
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierId ? doc(firestore, 'roles_supplier', supplierId) : null);
@@ -136,11 +125,10 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     };
 
     const handleDeleteProduct = async (id: string) => {
-        if (!firestore) return;
+        if (!firestore || !confirm('¿Estás seguro de eliminar este producto?')) return;
         try {
             await deleteDoc(doc(firestore, 'products', id));
-            toast({ title: "✅ PRODUCTO ELIMINADO", description: "El catálogo ha sido actualizado." });
-            setProductToDelete(null);
+            toast({ title: "Producto eliminado" });
         } catch (error) {
             console.error(error);
             toast({ title: "Error al eliminar el producto", variant: "destructive" });
@@ -161,11 +149,11 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
 
     return (
         <Tabs defaultValue="inventory" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mx-auto max-w-md mb-8 h-14 p-1.5 glass glass-dark shadow-premium rounded-2xl">
-                <TabsTrigger value="inventory" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">
+            <TabsList className="grid w-full grid-cols-2 mx-auto max-w-sm mb-8 h-12 p-1.5 bg-black/5 rounded-2xl border border-black/5 shadow-sm">
+                <TabsTrigger value="inventory" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg text-[10px] uppercase tracking-widest">
                     Inventario
                 </TabsTrigger>
-                <TabsTrigger value="menu" className="font-extrabold rounded-xl data-[state=active]:shadow-lg">
+                <TabsTrigger value="menu" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg text-[10px] uppercase tracking-widest">
                     Organizar Menú
                 </TabsTrigger>
             </TabsList>
@@ -173,10 +161,10 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             <TabsContent value="inventory" className="space-y-6 animate-in fade-in duration-500">
                 <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                     <div className="relative w-full max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-black/40" />
                     <Input 
                         placeholder="Buscar productos..." 
-                        className="pl-9 h-11 rounded-2xl bg-background/50 border-white/10"
+                        className="pl-9 h-11 rounded-2xl bg-white border border-black/5 shadow-sm focus-visible:ring-primary/20"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -191,7 +179,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             <Plus className="h-4 w-4 mr-2" /> Nuevo Producto
                         </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-white/10 glass glass-dark">
+                    <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-black/5 bg-white shadow-2xl">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black tracking-tighter">
                                 {selectedProduct?.id ? 'Editar Producto' : 'Añadir Producto'}
@@ -205,14 +193,14 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Imagen del Producto</Label>
                                 
                                 <Tabs value={uploadMethod} onValueChange={(v: any) => setUploadMethod(v)} className="w-full">
-                                    <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-white/5 rounded-xl border border-white/5">
-                                        <TabsTrigger value="link" className="text-[9px] font-black uppercase tracking-widest">Enlace Externo</TabsTrigger>
-                                        <TabsTrigger value="upload" className="text-[9px] font-black uppercase tracking-widest">Subir Archivo</TabsTrigger>
+                                    <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-black/5 rounded-xl border border-black/5">
+                                        <TabsTrigger value="link" className="text-[9px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">Enlace Externo</TabsTrigger>
+                                        <TabsTrigger value="upload" className="text-[9px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">Subir Archivo</TabsTrigger>
                                     </TabsList>
                                     
                                     <TabsContent value="link" className="pt-4 space-y-4">
                                         <div className="flex gap-3 items-center">
-                                            <div className="h-16 w-16 rounded-2xl bg-background flex-shrink-0 border border-white/10 overflow-hidden relative">
+                                            <div className="h-16 w-16 rounded-2xl bg-black/5 flex-shrink-0 border border-black/5 overflow-hidden relative shadow-inner">
                                                 {selectedProduct?.imageUrl ? (
                                                     <img src={selectedProduct.imageUrl} alt="Preview" className="h-full w-full object-cover" />
                                                 ) : (
@@ -223,7 +211,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                 id="imageUrl" 
                                                 type="url" 
                                                 placeholder="https://ejemplo.com/foto.jpg"
-                                                className="rounded-xl bg-background/50 border-white/10"
+                                                className="rounded-xl bg-white border border-black/5 shadow-sm"
                                                 value={selectedProduct?.imageUrl || ''} 
                                                 onChange={e => setSelectedProduct({...selectedProduct, imageUrl: e.target.value})}
                                             />
@@ -233,8 +221,8 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                     <TabsContent value="upload" className="pt-4">
                                         <div 
                                             className={cn(
-                                                "relative group h-32 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 cursor-pointer glass-2 overflow-hidden",
-                                                isUploading ? "border-primary animate-pulse" : "border-white/10 hover:border-primary/50"
+                                                "relative group h-32 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 cursor-pointer bg-black/[0.02] overflow-hidden",
+                                                isUploading ? "border-primary animate-pulse" : "border-black/10 hover:border-primary/50"
                                             )}
                                             onClick={() => document.getElementById('product-file-upload')?.click()}
                                         >
@@ -253,11 +241,11 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                 </div>
                                             ) : (
                                                 <>
-                                                    <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,0,127,0.2)]">
+                                                    <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,0,127,0.1)]">
                                                         <Plus className="h-5 w-5" />
                                                     </div>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Seleccionar Archivo</span>
-                                                    <div className="absolute inset-0 border-2 border-primary/20 animate-pulse rounded-2xl pointer-events-none" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-black/40">Seleccionar Archivo</span>
+                                                    <div className="absolute inset-0 border-2 border-primary/10 animate-pulse rounded-2xl pointer-events-none" />
                                                 </>
                                             )}
                                             <input 
@@ -307,7 +295,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 <Input 
                                     id="name" 
                                     required 
-                                    className="rounded-xl bg-background/50 border-white/10"
+                                    className="rounded-xl bg-white border border-black/5 shadow-sm"
                                     value={selectedProduct?.name || ''} 
                                     onChange={e => setSelectedProduct({...selectedProduct, name: e.target.value})}
                                 />
@@ -316,7 +304,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest opacity-70">Descripción</Label>
                                 <Textarea 
                                     id="description" 
-                                    className="rounded-xl bg-background/50 border-white/10 min-h-[80px]"
+                                    className="rounded-xl bg-white border border-black/5 shadow-sm min-h-[80px]"
                                     value={selectedProduct?.description || ''} 
                                     onChange={e => setSelectedProduct({...selectedProduct, description: e.target.value})}
                                 />
@@ -328,7 +316,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         id="price" 
                                         type="number" 
                                         required 
-                                        className="rounded-xl bg-background/50 border-white/10 font-bold"
+                                        className="rounded-xl bg-white border border-black/5 shadow-sm font-black text-primary"
                                         value={selectedProduct?.price || ''} 
                                         onChange={e => setSelectedProduct({...selectedProduct, price: parseFloat(e.target.value)})}
                                     />
@@ -339,7 +327,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         id="originalPrice" 
                                         type="number" 
                                         placeholder="Sin descuento"
-                                        className="rounded-xl bg-background/50 border-white/10 text-foreground"
+                                        className="rounded-xl bg-white border border-black/5 shadow-sm text-black/40"
                                         value={selectedProduct?.originalPrice || ''} 
                                         onChange={e => setSelectedProduct({...selectedProduct, originalPrice: e.target.value ? parseFloat(e.target.value) : undefined})}
                                     />
@@ -353,12 +341,12 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         value={selectedProduct?.category || ''} 
                                         onValueChange={v => setSelectedProduct({...selectedProduct, category: v})}
                                     >
-                                        <SelectTrigger id="category" className="rounded-xl bg-background/50 border-white/10 h-10">
-                                            <SelectValue placeholder="Seleccionar categoría global" />
+                                        <SelectTrigger id="category" className="rounded-xl bg-white border border-black/5 shadow-sm h-11">
+                                            <SelectValue placeholder="Categoría global" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="rounded-2xl border-black/5">
                                             {deliveryCategories.map(cat => (
-                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                <SelectItem key={cat} value={cat} className="rounded-xl font-bold py-2.5">{cat}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -369,14 +357,14 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         value={selectedProduct?.menuSection || ''} 
                                         onValueChange={v => setSelectedProduct({...selectedProduct, menuSection: v})}
                                     >
-                                        <SelectTrigger id="menuSection" className="rounded-xl bg-background/50 border-white/10 h-10">
+                                        <SelectTrigger id="menuSection" className="rounded-xl bg-white border border-black/5 shadow-sm h-11">
                                             <SelectValue placeholder="Ninguna" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className="rounded-2xl border-black/5">
                                             {menuSections.map(section => (
-                                                <SelectItem key={section} value={section}>{section}</SelectItem>
+                                                <SelectItem key={section} value={section} className="rounded-xl font-bold py-2.5">{section}</SelectItem>
                                             ))}
-                                            <SelectItem value="none">Sin asignación (Otros)</SelectItem>
+                                            <SelectItem value="none" className="rounded-xl font-bold py-2.5 italic">Sin asignación (Otros)</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -384,12 +372,13 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 flex flex-col justify-end">
-                                    <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
-                                        <Label htmlFor="isActive" className="text-[8px] font-black uppercase tracking-widest opacity-70">Visible</Label>
+                                    <div className="flex items-center justify-between p-3.5 bg-black/[0.02] rounded-2xl border border-black/5 shadow-inner">
+                                        <Label htmlFor="isActive" className="text-[10px] font-black uppercase tracking-widest opacity-60">Producto Visible</Label>
                                         <Switch 
                                             id="isActive" 
                                             checked={selectedProduct?.isActive} 
                                             onCheckedChange={v => setSelectedProduct({...selectedProduct, isActive: v})}
+                                            className="data-[state=checked]:bg-primary"
                                         />
                                     </div>
                                 </div>
@@ -415,25 +404,25 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             </div>
 
             {isLoading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-[2rem]" />)}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-64 w-full rounded-[2.5rem]" />)}
                 </div>
             ) : filteredProducts?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center text-foreground border-2 border-dashed border-white/5 rounded-[2.5rem] bg-white/5">
-                    <Package className="h-12 w-12 mb-4 opacity-20" />
-                    <p className="font-bold uppercase tracking-widest text-[10px]">No se encontraron productos</p>
+                <div className="flex flex-col items-center justify-center py-32 text-center text-black/20 border-2 border-dashed border-black/5 rounded-[3rem] bg-black/[0.02] shadow-inner">
+                    <Package className="h-16 w-16 mb-6 opacity-20" />
+                    <p className="font-black uppercase tracking-widest text-[11px] italic">No hay productos que coincidan</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredProducts?.map(product => (
                         <div 
                             key={product.id} 
-                            className="group relative bg-card/40 backdrop-blur-sm border border-white/5 rounded-[2.5rem] p-6 transition-all hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 flex flex-col h-full"
+                            className="group relative bg-white border border-black/5 rounded-[3rem] p-7 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:-translate-y-2 flex flex-col h-full shadow-lg"
                         >
-                            <div className="flex gap-4 items-start mb-6">
-                                <div className="h-20 w-20 rounded-[1.5rem] bg-background flex-shrink-0 border border-white/10 overflow-hidden relative shadow-inner">
+                            <div className="flex gap-5 items-start mb-6">
+                                <div className="h-24 w-24 rounded-[2rem] bg-black/5 flex-shrink-0 border border-black/5 overflow-hidden relative shadow-inner">
                                     {product.imageUrl ? (
-                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-500" />
+                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-700" />
                                     ) : (
                                         <ImageIcon className="h-8 w-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10" />
                                     )}
@@ -441,20 +430,20 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
                                         <div className="flex flex-col flex-1 min-w-0">
-                                            {product.category && (
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1 truncate">{product.category}</span>
+                                            {product.menuSection && product.menuSection !== 'none' && (
+                                                <span className="text-[10px] font-black uppercase tracking-[0.1em] text-primary/60 mb-1 truncate bg-primary/5 w-fit px-2 py-0.5 rounded-lg">{product.menuSection}</span>
                                             )}
-                                            <h4 className="font-black text-lg leading-tight tracking-tighter group-hover:text-primary transition-colors line-clamp-2">{product.name}</h4>
+                                            <h4 className="font-black text-xl leading-tight tracking-tighter text-black group-hover:text-primary transition-colors line-clamp-2">{product.name}</h4>
                                         </div>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 rounded-xl border border-white/5 hover:bg-white/10">
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 -mt-1 -mr-2 rounded-2xl border border-black/5 hover:bg-black/5">
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-2xl border-white/10 glass glass-dark">
+                                            <DropdownMenuContent align="end" className="rounded-2xl border-black/5 bg-white shadow-2xl p-2 w-40">
                                                 <DropdownMenuItem 
-                                                    className="rounded-xl font-bold"
+                                                    className="rounded-xl font-black text-[10px] uppercase tracking-widest py-3 focus:bg-primary/10 focus:text-primary cursor-pointer"
                                                     onClick={() => {
                                                         setSelectedProduct(product);
                                                         setIsEditing(true);
@@ -463,8 +452,8 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                     <Edit2 className="h-4 w-4 mr-2" /> Editar
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem 
-                                                    className="rounded-xl font-bold text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                    onClick={() => setProductToDelete(product.id)}
+                                                    className="rounded-xl font-black text-[10px] uppercase tracking-widest py-3 text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
+                                                    onClick={() => handleDeleteProduct(product.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4 mr-2" /> Eliminar
                                                 </DropdownMenuItem>
@@ -497,39 +486,39 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 </div>
                             </div>
                             
-                            <p className="text-xs text-foreground font-medium italic line-clamp-2 mb-6 opacity-70">{product.description || 'Sin descripción'}</p>
+                            <p className="text-sm text-black/50 font-bold italic line-clamp-2 mb-8 px-1">{product.description || 'Sin descripción'}</p>
                             
-                            <div className="mt-auto flex items-end justify-between">
+                            <div className="mt-auto flex items-end justify-between px-1">
                                 <div className="space-y-1">
                                     {product.originalPrice && product.originalPrice > product.price && (
-                                        <p className="text-[10px] text-foreground line-through decoration-primary/40 font-bold tracking-widest">$ {product.originalPrice.toLocaleString()}</p>
+                                        <p className="text-[11px] text-black/30 line-through decoration-primary/40 font-bold tracking-widest italic">$ {product.originalPrice.toLocaleString()}</p>
                                     )}
-                                    <p className="text-2xl font-black text-primary tracking-tighter">$ {product.price.toLocaleString()}</p>
+                                    <p className="text-3xl font-black text-black tracking-tighter italic">$ {product.price.toLocaleString()}</p>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2.5">
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
                                         className={cn(
-                                            "h-10 w-10 rounded-2xl border-white/10 transition-all",
-                                            product.isActive ? "bg-green-500/10 text-green-500 border-green-500/20" : "opacity-30"
+                                            "h-12 w-12 rounded-[1.2rem] border-black/5 transition-all shadow-md hover:scale-110",
+                                            product.isActive ? "bg-emerald-50 text-emerald-500 border-emerald-200" : "bg-black/5 text-black/20 opacity-50"
                                         )}
                                         onClick={() => toggleStatus(product, 'isActive')}
                                         title={product.isActive ? "Visible" : "Oculto"}
                                     >
-                                        {product.isActive ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                                        {product.isActive ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
                                     </Button>
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
                                         className={cn(
-                                            "h-10 w-10 rounded-2xl border-white/10 transition-all",
-                                            product.stockAvailable ? "bg-primary/10 text-primary border-primary/20" : "bg-destructive/10 text-destructive border-destructive/20"
+                                            "h-12 w-12 rounded-[1.2rem] border-black/5 transition-all shadow-md hover:scale-110",
+                                            product.stockAvailable ? "bg-primary/5 text-primary border-primary/20" : "bg-red-50 text-red-500 border-red-200"
                                         )}
                                         onClick={() => toggleStatus(product, 'stockAvailable')}
                                         title={product.stockAvailable ? "En stock" : "Sin stock"}
                                     >
-                                        <Package className="h-4 w-4" />
+                                        <Package className="h-5 w-5" />
                                     </Button>
                                 </div>
                             </div>
@@ -542,26 +531,6 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             <TabsContent value="menu" className="animate-in fade-in duration-500">
                 <MenuSectionManager supplierId={supplierId} sections={menuSections} products={products || []} />
             </TabsContent>
-
-            <AlertDialog open={!!productToDelete} onOpenChange={(o) => !o && setProductToDelete(null)}>
-                <AlertDialogContent className="rounded-[2.5rem] border-white/10 glass glass-dark">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-black tracking-tighter uppercase italic">¿Confirmar Eliminación?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-xs font-bold uppercase tracking-widest opacity-60">
-                            Esta acción es permanente. El producto desaparecerá del menú de los clientes inmediatamente.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="pt-4">
-                        <AlertDialogCancel className="rounded-xl font-black uppercase text-[10px] tracking-widest h-11 border-white/10">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={() => productToDelete && handleDeleteProduct(productToDelete)}
-                            className="rounded-xl bg-destructive text-destructive-foreground font-black uppercase text-[10px] tracking-widest h-11 px-8 shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:bg-destructive/90"
-                        >
-                            Eliminar Producto
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </Tabs>
     );
 }

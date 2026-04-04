@@ -241,7 +241,7 @@ export default function VerifyPage() {
       await updateDoc(docRef, { [field]: value });
       
       // Synchronize key fields to the user document for UI reactivity
-      if (field === 'isCincoDos' || field === 'permitsBenefits' || field === 'permitsShifts') {
+      if (field === 'isCincoDos' || field === 'permitsBenefits') {
         await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
       }
 
@@ -669,12 +669,6 @@ export default function VerifyPage() {
                                     label="Beneficios" 
                                     value={!!cluber.permitsBenefits} 
                                     onChange={(v) => handleToggleCluberField(cluber.id, 'permitsBenefits', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<CalendarDays className="h-4 w-4" />}
-                                    label="Turnos" 
-                                    value={!!cluber.permitsShifts} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsShifts', v)} 
                                 />
                                 <CincoDosToggle 
                                     value={!!cluber.isCincoDos} 

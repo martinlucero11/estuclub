@@ -39,11 +39,11 @@ export function BottomNav() {
   // Define Navigation Sets
   const benefitsNav = [
     { href: '/', label: 'Inicio', icon: Home },
-    { href: '/benefits', label: 'Beneficios', icon: Ticket },
+    ...(isStudent ? [{ href: '/benefits', label: 'Beneficios', icon: Ticket }] : []),
     benefitsCenterBtn,
     { href: isPrivileged ? '/panel-cluber/supplier-profile' : '/profile', label: 'Perfil', icon: User },
     { href: '#cart', label: 'Carrito', icon: ShoppingCart },
-  ];
+  ].filter(Boolean);
 
   const deliveryNav = [
     { href: '/delivery', label: 'Tienda', icon: ShoppingBag },
@@ -63,6 +63,11 @@ export function BottomNav() {
 
   // Determine which nav to show
   let navItems = isInRiderContext ? riderNav : (isInDeliveryContext ? deliveryNav : benefitsNav);
+
+  // If normal user is in root path, ensure they see a proper nav (no benefits)
+  if (!isStudent && !isInDeliveryContext && !isInRiderContext && !isInTurneroView) {
+    navItems = benefitsNav; // benefitsNav was already filtered above
+  }
 
   // ─── CART RESTRICTION ───────────────────────────────────
   if (isInTurneroView) {

@@ -47,7 +47,6 @@ export interface UserProfile {
     level?: number;
     isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
     permitsBenefits?: boolean; // Permiso para crear beneficios (Cluber)
-    permitsShifts?: boolean; // Permiso para gestionar turnos (Cluber)
     location?: {
       address: string;
       city?: string;
@@ -108,6 +107,9 @@ export type CluberCategory = typeof cluberCategories[number];
 export const deliveryCategories = ['Comida Rápida', 'Restaurantes', 'Farmacia', 'Supermercado', 'Bebidas', 'Otros'] as const;
 export type DeliveryCategory = typeof deliveryCategories[number];
 
+export const benefitCategories = ['Gastronomía', 'Entretenimiento', 'Deportes', 'Educación', 'Indumentaria', 'Otros'] as const;
+export type BenefitCategory = typeof benefitCategories[number];
+
 
 /**
  * Represents the profile data stored in /roles_supplier/{uid}
@@ -134,7 +136,6 @@ export interface SupplierProfile {
   canCreateBenefits?: boolean;
   canSendNotifications?: boolean;
   announcementsEnabled?: boolean;
-  permitsShifts?: boolean;
   avgRating?: number;
   reviewCount?: number;
   // --- Delivery Lite ---
@@ -209,36 +210,6 @@ export interface Category {
     isActive: boolean;
 }
 
-export interface HomeHero {
-    title: string;
-    subtitle: string;
-    ctaText: string;
-    ctaLink: string;
-    bgImage: string;
-}
-
-export interface HomeBannerConfig {
-    id: string;
-    title: string;
-    image: string;
-    link: string;
-    order: number;
-    isActive: boolean;
-}
-
-export interface HomeConfig {
-    id: string;
-    hero: HomeHero;
-    banners: HomeBannerConfig[];
-    visibility: {
-        showRiders: boolean;
-        showCincoDos: boolean;
-        showBenefits: boolean;
-        showDelivery: boolean;
-    };
-    updatedAt: Timestamp;
-}
-
 export interface Order {
     id: string;
     shortId: string;
@@ -266,6 +237,7 @@ export interface Order {
     riderName?: string;
     riderPhone?: string;
     riderLocation?: { latitude: number; longitude: number };
+    type: 'delivery' | 'pickup';
     createdAt: Timestamp;
     updatedAt: Timestamp;
     estimatedDeliveryTime?: Timestamp;
@@ -281,10 +253,11 @@ export interface OrderItem {
 
 export type OrderStatus = 
     'pending' | 
+    'accepted' |
     'searching_rider' |
     'assigned' | 
     'at_store' | 
-    'on_the_way' | 
+    'shipped' |
     'delivered' | 
     'completed' | 
     'cancelled';
@@ -296,6 +269,7 @@ export interface Benefit {
     supplierLogo?: string;
     title: string;
     description: string;
+    highlight?: string;
     imageUrl: string;
     category: string;
     points?: number;
@@ -303,6 +277,10 @@ export interface Benefit {
     isVisible: boolean;
     isFeatured: boolean;
     isExclusive?: boolean;
+    // Targeting
+    isStudentOnly?: boolean;
+    isCincoDosOnly?: boolean;
+    minLevel?: number;
     createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
@@ -317,6 +295,10 @@ export interface Announcement {
     linkUrl?: string;
     status: 'pending' | 'approved' | 'rejected';
     isVisible: boolean;
+    // Targeting
+    isStudentOnly?: boolean;
+    isCincoDosOnly?: boolean;
+    minLevel?: number;
     submittedAt: Timestamp;
     updatedAt?: Timestamp;
     createdAt?: Timestamp; // safety alias
@@ -336,17 +318,31 @@ export interface Banner {
 }
 
 export interface HomeSection {
-    id: string;
-    title: string;
-    type: 'carousel' | 'grid' | 'categories' | 'highlights';
-    order: number;
-    isActive: boolean;
-    dataSource?: 'products' | 'suppliers' | 'benefits' | 'announcements';
-    queryLimit?: number;
-    filterByField?: string;
-    filterByValue?: any;
-    updatedAt?: Timestamp;
+  id: string;
+  title?: string;
+  isActive: boolean;
+  targetBoard: 'perks' | 'delivery';
+  block: HomeSectionBlock;
+  order: number;
+  createdAt: Timestamp;
 }
+
+export type HomeSectionBlock = 
+  | { kind: 'banner'; bannerId: string }
+  | { kind: 'categories' }
+  | { kind: 'message'; message: { title?: string; body: string; imageUrl?: string; alignment?: 'left' | 'center' } }
+  | { 
+      kind: 'carousel' | 'grid'; 
+      contentType: "perks" | "suppliers" | "announcements" | "banners" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo" | "benefits_nearby" | "suppliers_nearby";
+      mode: 'auto' | 'manual';
+      query?: {
+        filters?: WhereFilter[];
+        sort?: { field: string; direction: 'asc' | 'desc' };
+        limit?: number;
+      };
+      items?: string[];
+      layout?: { gridPreset?: string };
+    };
 
 // Serializable versions for Next.js SSR/Client boundary if needed
 export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'updatedAt'> & {

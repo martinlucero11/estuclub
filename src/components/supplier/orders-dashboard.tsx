@@ -129,7 +129,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
     };
 
     const stats = useMemo(() => {
-        if (!orders) return { pending: 0, today: 0, revenue: 0 };
+        if (!orders) return { pending: 0, today: 0, totalSales: 0 };
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -139,10 +139,10 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             const orderDate = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date();
             if (orderDate >= today && order.status !== 'cancelled') {
                 acc.today++;
-                acc.revenue += order.totalAmount;
+                acc.totalSales += (order.total || 0);
             }
             return acc;
-        }, { pending: 0, today: 0, revenue: 0 });
+        }, { pending: 0, today: 0, totalSales: 0 });
     }, [orders]);
     const handleTogglePause = async () => {
         if (!firestore || !supplierId) return;
@@ -171,85 +171,84 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Master Switch - Sticky in Header context */}
             <Card className={cn(
-                "rounded-[2.5rem] border-2 transition-all p-6 md:p-8 flex items-center justify-between shadow-2xl relative overflow-hidden",
-                isClosed ? "bg-destructive/5 border-destructive/20" : "bg-green-500/5 border-green-500/20"
+                "rounded-[2.5rem] border border-black/5 transition-all p-6 md:p-8 flex items-center justify-between shadow-xl relative overflow-hidden",
+                isClosed ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100"
             )}>
-                <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12">
-                   {isClosed ? <XCircle className="h-16 w-16" /> : <CheckCircle2 className="h-16 w-16" />}
+                <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12">
+                   {isClosed ? <XCircle className="h-20 w-20 text-red-500" /> : <CheckCircle2 className="h-20 w-20 text-emerald-500" />}
                 </div>
                 
                 <div className="space-y-1">
-                    <h3 className={cn("text-xs font-black uppercase tracking-widest", isClosed ? "text-destructive" : "text-green-500")}>
-                        {isClosed ? "ESTADO: CERRADO" : "ESTADO: ABIERTO"}
+                    <h3 className={cn("text-[10px] font-black uppercase tracking-[0.2em]", isClosed ? "text-red-500" : "text-emerald-500")}>
+                        {isClosed ? "ESTADO: CERRADO" : "ESTADO: EN LÍNEA"}
                     </h3>
-                    <p className="text-[10px] font-bold text-foreground uppercase opacity-60">
-                        {isClosed ? "Tu local no aparece en la lista de los estudiantes." : "Estás recibiendo pedidos activamente."}
+                    <p className="text-[12px] font-bold text-black uppercase tracking-tight opacity-70">
+                        {isClosed ? "Tu local no es visible para los estudiantes." : "Tu local está recibiendo pedidos activamente."}
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-background/50 p-2 rounded-3xl border border-white/5 backdrop-blur-md">
-                    <span className={cn("text-[9px] font-black uppercase px-2", isClosed ? "text-foreground" : "text-primary italic animate-pulse")}>
-                        {isClosed ? "CERRAR" : "EN LÍNEA"}
+                <div className="flex items-center gap-4 bg-white/40 p-2 rounded-3xl border border-black/5 backdrop-blur-md z-10 shadow-sm">
+                    <span className={cn("text-[9px] font-black uppercase px-2", isClosed ? "text-black/40" : "text-primary italic animate-pulse")}>
+                        {isClosed ? "DESCONECTADO" : "RECIBIENDO"}
                     </span>
                     <Switch 
                         checked={!isClosed} 
                         onCheckedChange={handleTogglePause}
-                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-destructive"
+                        className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500"
                     />
                 </div>
             </Card>
 
             <Tabs defaultValue="orders" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mx-auto max-w-md mb-10 h-14 p-2 glass glass-dark rounded-[2rem] border border-white/5">
-                    <TabsTrigger value="orders" className="font-extrabold rounded-[1.5rem] data-[state=active]:shadow-lg text-xs uppercase tracking-widest gap-2">
-                        <Package className="h-4 w-4" /> Pedidos
+                <TabsList className="grid w-full grid-cols-2 mx-auto max-w-sm mb-10 h-12 p-1 bg-black/5 rounded-2xl border border-black/5">
+                    <TabsTrigger value="orders" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
+                        <Package className="h-3.5 w-3.5" /> Pedidos
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="font-extrabold rounded-[1.5rem] data-[state=active]:shadow-lg text-xs uppercase tracking-widest gap-2">
-                        <Clock className="h-4 w-4" /> Ajustes
+                    <TabsTrigger value="settings" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
+                        <Clock className="h-3.5 w-3.5" /> Ajustes
                     </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="orders" className="space-y-8 animate-in fade-in duration-500">
                     {/* Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Card className="rounded-3xl border-white/5 bg-yellow-500/5 overflow-hidden relative h-20">
-                            <div className="absolute top-0 right-0 p-3 opacity-10"><Clock className="h-10 w-10" /></div>
-                            <CardHeader className="p-4 space-y-0">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-yellow-500">Pendientes</p>
-                                <CardTitle className="text-xl font-black tracking-tight">{stats.pending}</CardTitle>
+                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><Clock className="h-12 w-12" /></div>
+                            <CardHeader className="p-5 space-y-0 relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Pendientes</p>
+                                <CardTitle className="text-2xl font-black tracking-tight text-yellow-500 italic">{stats.pending}</CardTitle>
                             </CardHeader>
                         </Card>
-                        <Card className="rounded-3xl border-white/5 bg-blue-500/5 overflow-hidden relative h-20">
-                            <div className="absolute top-0 right-0 p-3 opacity-10"><ShoppingBag className="h-10 w-10" /></div>
-                            <CardHeader className="p-4 space-y-0">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-blue-500">Hoy</p>
-                                <CardTitle className="text-xl font-black tracking-tight">{stats.today} pedidos</CardTitle>
+                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><ShoppingBag className="h-12 w-12" /></div>
+                            <CardHeader className="p-5 space-y-0 relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Hoy</p>
+                                <CardTitle className="text-2xl font-black tracking-tight text-blue-500 italic">{stats.today} <span className="text-[10px] uppercase font-bold text-black/20">pedidos</span></CardTitle>
                             </CardHeader>
                         </Card>
-                        <Card className="rounded-3xl border-white/5 bg-green-500/5 overflow-hidden relative h-20">
-                            <div className="absolute top-0 right-0 p-3 opacity-10"><CheckCircle2 className="h-10 w-10" /></div>
-                            <CardHeader className="p-4 space-y-0">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-green-500">Ventas Hoy</p>
-                                <CardTitle className="text-xl font-black tracking-tight">${stats.revenue.toLocaleString()}</CardTitle>
+                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><CheckCircle2 className="h-12 w-12" /></div>
+                            <CardHeader className="p-5 space-y-0 relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Ventas Hoy</p>
+                                <CardTitle className="text-2xl font-black tracking-tight text-emerald-500 italic">${stats.totalSales.toLocaleString()}</CardTitle>
                             </CardHeader>
                         </Card>
                     </div>
 
-                    <div className="rounded-[2.5rem] border border-white/5 bg-card/50 backdrop-blur-sm shadow-premium overflow-hidden">
-                        <div className="border-b border-white/5 bg-white/5 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="rounded-[2.5rem] border border-black/5 bg-white shadow-xl overflow-hidden">
+                        <div className="border-b border-black/5 bg-black/[0.02] px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="h-4 w-4 text-primary" /></div>
-                                <h2 className="text-sm font-black tracking-tight uppercase">Pedidos Recientes</h2>
+                                <h2 className="text-sm font-black tracking-tight uppercase text-black">Pedidos Recientes</h2>
                             </div>
-                            <div className="flex items-center gap-1.5 bg-background/50 p-1 rounded-xl border border-white/5 overflow-x-auto max-w-full no-scrollbar">
+                            <div className="flex items-center gap-1.5 bg-black/5 p-1 rounded-xl border border-black/5 overflow-x-auto max-w-full no-scrollbar">
                                 {(['all', 'pending', 'accepted', 'searching_rider', 'assigned', 'shipped', 'completed', 'cancelled'] as const).map(s => (
                                     <Button 
                                         key={s}
                                         variant={statusFilter === s ? 'secondary' : 'ghost'} 
                                         size="sm"
                                         onClick={() => setStatusFilter(s)}
-                                        className={cn("rounded-lg h-7 px-2.5 text-[9px] font-black uppercase tracking-widest transition-all shrink-0", statusFilter === s && "shadow-lg bg-white/10")}
-                                    >
+                                        className={cn("rounded-lg h-7 px-2.5 text-[9px] font-black uppercase tracking-widest transition-all shrink-0", statusFilter === s && "shadow-lg bg-white text-primary")}>
                                         {s === 'all' ? 'Todos' : statusConfig[s].label}
                                     </Button>
                                 ))}
@@ -281,8 +280,8 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                                                             <div className="space-y-0.5">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="font-black tracking-tight text-sm">{order.userName}</span>
-                                                                    <span className="text-[10px] text-foreground font-medium italic lowercase">({order.type})</span>
+                                                                    <span className="font-black tracking-tight text-sm text-black">{order.customerName}</span>
+                                                                    <span className="text-[10px] text-black/60 font-medium italic lowercase">({order.type})</span>
                                                                 </div>
                                                                 <div className="flex items-center gap-2 text-[10px] text-foreground font-medium opacity-60">
                                                                     <MapPin className="h-3 w-3" />
@@ -290,14 +289,14 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                 </div>
                                                             </div>
                                                             
-                                                            <div className="bg-white/5 rounded-xl p-2 px-3 flex items-center justify-between border border-white/5">
+                                                            <div className="bg-black/5 rounded-xl p-2 px-3 flex items-center justify-between border border-black/5">
                                                                 <div className="flex flex-col">
-                                                                    <p className="text-[8px] font-black uppercase text-foreground/50">Monto</p>
-                                                                    <p className="text-[12px] font-black text-primary">${order.totalAmount.toLocaleString()}</p>
+                                                                    <p className="text-[8px] font-black uppercase text-black/40">Monto</p>
+                                                                    <p className="text-[12px] font-black text-primary">${order.total.toLocaleString()}</p>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className="text-[8px] font-black uppercase text-foreground/50">Items</p>
-                                                                    <p className="text-[10px] font-bold truncate max-w-[120px]">{order.items.length} productos</p>
+                                                                    <p className="text-[8px] font-black uppercase text-black/40">Items</p>
+                                                                    <p className="text-[10px] font-bold truncate max-w-[120px] text-black">{order.items.length} productos</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -309,7 +308,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                 <Button 
                                                                     size="sm"
                                                                     onClick={() => handleUpdateStatus(order, 'accepted')}
-                                                                    className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-5 bg-primary hover:bg-primary/90 text-white"
+                                                                    className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-5 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
                                                                 >
                                                                     ACEPTAR
                                                                 </Button>
@@ -317,7 +316,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     onClick={() => handleUpdateStatus(order, 'cancelled')}
-                                                                    className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-4 text-destructive hover:bg-destructive/10 border border-destructive/20"
+                                                                    className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-4 text-red-500 hover:bg-red-50 border border-red-100"
                                                                 >
                                                                     <XCircle className="h-4 w-4" />
                                                                 </Button>
@@ -325,13 +324,13 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                         ) : (
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
-                                                                    <Button variant="outline" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-4 border-white/10 hover:bg-white/5">
+                                                                    <Button variant="outline" size="sm" className="rounded-xl font-black uppercase tracking-widest text-[9px] h-9 px-4 border-black/10 hover:bg-black/5 text-black/60">
                                                                         Estado <ChevronDown className="ml-1.5 h-3 w-3" />
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
-                                                                <DropdownMenuContent className="rounded-2xl border-white/5 glass glass-dark w-44">
+                                                                <DropdownMenuContent className="rounded-2xl border-black/5 bg-white shadow-2xl w-44 p-2">
                                                                     {(['pending', 'accepted', 'searching_rider', 'assigned', 'shipped', 'completed', 'cancelled'] as const).map(s => (
-                                                                        <DropdownMenuItem key={s} onClick={() => handleUpdateStatus(order, s)} className="rounded-xl font-bold py-2 text-[10px] uppercase tracking-widest focus:bg-primary/20">
+                                                                        <DropdownMenuItem key={s} onClick={() => handleUpdateStatus(order, s)} className="rounded-xl font-black py-2 text-[10px] uppercase tracking-[0.1em] focus:bg-primary/10 focus:text-primary cursor-pointer transition-all">
                                                                             {statusConfig[s].label}
                                                                         </DropdownMenuItem>
                                                                     ))}
@@ -339,7 +338,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             </DropdownMenu>
                                                         )}
                                                         
-                                                        <Button variant="outline" size="icon" className="rounded-xl border-white/10 hover:bg-white/10 h-9 w-9" onClick={() => window.open(`https://wa.me/${order.userPhone?.replace(/\D/g, '')}`, '_blank')}>
+                                                        <Button variant="outline" size="icon" className="rounded-xl border-black/10 hover:bg-black/5 h-9 w-9 text-black/60" onClick={() => window.open(`https://wa.me/${order.customerPhone?.replace(/\D/g, '')}`, '_blank')}>
                                                             <Phone className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </div>

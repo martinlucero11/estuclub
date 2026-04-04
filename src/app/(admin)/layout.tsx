@@ -34,7 +34,7 @@ export default function AdminLayout({
   if (!isAdmin) return null;
 
   return (
-    <div className={cn("flex bg-background relative admin-desktop-zoom")}>
+    <div className="flex min-h-screen bg-white relative overflow-hidden">
       <AdminSidebar />
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Continuous Background Accents */}

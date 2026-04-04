@@ -7,13 +7,14 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 space-y-12">
         <div className="grid grid-cols-2 lg:flex lg:items-center lg:justify-between gap-10">
           <div className="space-y-4">
-               <Image 
-                 src="/logo-white.svg" 
-                 alt="Estuclub" 
-                 width={110} 
-                 height={28} 
-                 className="h-7 w-auto brightness-100 invert-0"
-               />
+               <div className="h-7 w-28 relative">
+                   <Image 
+                     src="/logo-white.svg" 
+                     alt="Estuclub" 
+                     fill
+                     className="object-contain brightness-100 invert-0"
+                   />
+               </div>
                <p className="text-[10px] font-bold text-foreground uppercase tracking-widest max-w-[200px] leading-loose opacity-40">Potenciando el beneficio estudiantil en todo el país.</p>
           </div>
           

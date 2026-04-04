@@ -13,7 +13,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
 import { HomeSectionTable } from '@/components/admin/home-sections/home-section-table';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
-import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
+import { BannerTable } from '@/components/admin/banners/banner-table';
+import { CategoryTable } from '@/components/admin/categories/category-table';
+import { AnnouncementTable } from '@/components/admin/announcements/announcement-table';
 import { useState } from 'react';
 
 export default function AdminCMSPage() {
@@ -66,40 +68,38 @@ export default function AdminCMSPage() {
                     <TabsTrigger value="delivery" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">Delivery</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="banners" className="space-y-8 focus-visible:outline-none">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <CMSCard 
-                            title="Banner Hero" 
-                            desc="Editor de carrusel principal" 
-                            icon={<ImageIcon className="h-6 w-6" />} 
-                            onClick={() => handleAction('Banner Hero')}
-                        />
-                        <CMSCard 
-                            title="Promos Grid" 
-                            desc="Sección de ofertas flash" 
-                            icon={<Zap className="h-6 w-6" />} 
-                            onClick={() => handleAction('Promos Grid')}
-                        />
+                    <div className="space-y-12">
+                        <BannerTable />
+                        
+                        <div className="bg-card/30 border border-white/5 rounded-[3rem] p-8 shadow-premium overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
+                                <Layout className="h-40 w-40" />
+                            </div>
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 relative z-10">
+                                <div className="space-y-1">
+                                    <h2 className="text-3xl font-black uppercase italic tracking-tighter">Arquitectura de <span className="text-primary">Inicio</span></h2>
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40 italic">Configura el orden y bloques de cada pantalla principal.</p>
+                                </div>
+                                
+                                <Tabs defaultValue="delivery" className="w-full md:w-auto">
+                                    <TabsList className="bg-background/50 border border-white/5 p-1.5 rounded-[1.25rem] h-14 w-full md:w-[350px] shadow-inner">
+                                        <TabsTrigger value="delivery" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Delivery Home</TabsTrigger>
+                                        <TabsTrigger value="perks" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Benefits Home</TabsTrigger>
+                                    </TabsList>
+                                    
+                                    <TabsContent value="delivery" className="mt-8 focus-visible:outline-none animate-in fade-in duration-500">
+                                        <HomeSectionTable targetBoard="delivery" />
+                                    </TabsContent>
+                                    <TabsContent value="perks" className="mt-8 focus-visible:outline-none animate-in fade-in duration-500">
+                                        <HomeSectionTable targetBoard="perks" />
+                                    </TabsContent>
+                                </Tabs>
+                            </div>
+                        </div>
                     </div>
-                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Gestión de Secciones de Inicio</h2>
-                        <HomeSectionTable />
-                    </div>
-                </TabsContent>
 
                 <TabsContent value="categories" className="space-y-8 focus-visible:outline-none">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <CMSCard 
-                            title="Icon Mappings" 
-                            desc="Gestión de emojis y colores" 
-                            icon={<Layout className="h-6 w-6" />} 
-                            onClick={() => handleAction('Categorías')}
-                        />
-                    </div>
-                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Gestión de Categorías</h2>
-                        <p className="text-sm opacity-60">Utiliza la tabla de Secciones para gestionar el orden y visibilidad de las categorías en la home.</p>
-                    </div>
+                    <CategoryTable />
                 </TabsContent>
 
                 <TabsContent value="benefits" className="space-y-8 focus-visible:outline-none">
@@ -118,18 +118,7 @@ export default function AdminCMSPage() {
                 </TabsContent>
 
                 <TabsContent value="announcements" className="space-y-8 focus-visible:outline-none">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <CMSCard 
-                            title="Push Notify" 
-                            desc="Enviador de notificaciones" 
-                            icon={<MessageSquare className="h-6 w-6" />} 
-                            onClick={() => handleAction('Anuncios')}
-                        />
-                    </div>
-                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
-                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Lista de Anuncios</h2>
-                        <AnnouncementAdminList />
-                    </div>
+                    <AnnouncementTable />
                 </TabsContent>
 
                 <TabsContent value="turns" className="space-y-8 focus-visible:outline-none">

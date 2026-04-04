@@ -16,7 +16,7 @@ import {
     Users, Bell, LayoutDashboard, UtensilsCrossed,
     Clock, AlertCircle, CheckCircle2, ChevronRight,
     ShieldCheck, Plus, Megaphone, Receipt, Truck,
-    Calendar, Info, Heart, Sparkles, TrendingUp
+    Calendar, Info, Sparkles, TrendingUp
 } from 'lucide-react';
 import { ProductManager } from '@/components/delivery/product-manager';
 import SupplierSelect from '@/components/admin/SupplierSelect';
@@ -25,32 +25,6 @@ import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 import OrdersDashboard from '@/components/supplier/orders-dashboard';
 import { BenefitRedemptionsTable } from '@/components/supplier/benefit-redemptions-table';
 import { TurneroManager } from '../../../components/supplier/turnero-manager';
-import { Skeleton } from '@/components/ui/skeleton';
-
-// ─── LOADING SKELETON ─────────────────────────────────────
-function CluberSkeleton() {
-    return (
-        <div className="space-y-8 animate-pulse px-4 pt-10">
-            <div className="flex justify-between items-end">
-                <div className="space-y-3">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-8 w-48" />
-                </div>
-                <Skeleton className="h-10 w-10 rounded-full" />
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-            </div>
-            <Skeleton className="h-14 w-full rounded-2xl" />
-            <div className="space-y-4">
-                <Skeleton className="h-6 w-32" />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
-                </div>
-            </div>
-        </div>
-    );
-}
 
 // ─── PENDING SCREEN ──────────────────────────────────────
 function CluberPending() {
@@ -89,8 +63,6 @@ export default function PanelCluberPage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'benefits' | 'delivery' | 'turnero'>('benefits');
 
-    if (isUserLoading) return <CluberSkeleton />;
-
     const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
     const shopId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : userData?.uid;
     const isOpen = effectiveSupplierData?.isOpen ?? false;
@@ -98,7 +70,7 @@ export default function PanelCluberPage() {
     // Dynamic Permissions
     const canBenefits = userData?.permitsBenefits ?? false;
     const canDelivery = effectiveSupplierData?.deliveryEnabled ?? false;
-    const canTurnero = userData?.permitsShifts ?? false;
+    const canTurnero = effectiveSupplierData?.appointmentsEnabled ?? false;
 
     // Set initial tab based on permissions
     useEffect(() => {
@@ -203,48 +175,52 @@ export default function PanelCluberPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background pb-24 animate-fade-in relative overflow-x-hidden luminous-bokeh">
+        <div className="min-h-screen bg-white pb-24 animate-fade-in relative overflow-x-hidden">
             <MPRestrictionOverlay />
-
-            {/* ─── HEADER FIX ────────────────────────────────────── */}
-            <div className="absolute top-0 left-0 right-0 h-[1px] bg-background z-[60]" />
-
+            
             <div className="max-w-7xl mx-auto px-6 md:px-8 pt-8 space-y-8">
 
                 {/* Superior Header */}
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-6 rounded-[2.5rem] glass-luminous border-white/10 shadow-2xl">
-                    <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(255,0,127,0.3)]">
-                            <Store className="h-6 w-6 text-primary" />
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 rounded-[3rem] bg-white border border-black/5 shadow-2xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-transparent pointer-events-none" />
+                    <div className="flex items-center gap-5 relative z-10">
+                        <div className="h-16 w-16 rounded-[1.5rem] bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                            <Store className="h-7 w-7 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black uppercase tracking-tighter italic text-white text-shadow-sm">
+                            <h1 className="text-3xl font-black uppercase tracking-tighter italic text-black leading-none mb-1">
                                 {effectiveSupplierData?.name || 'Cluber Panel'}
                             </h1>
                             <div className="flex items-center gap-2">
-                                <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", isOpen ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" : "bg-red-500")} />
-                                <span className={cn("text-[10px] font-black uppercase tracking-widest", isOpen ? "text-emerald-400" : "opacity-60")}>
-                                    {isOpen ? "Tienda Abierta" : "Tienda Cerrada"}
+                                <div className={cn("h-2 w-2 rounded-full animate-pulse", isOpen ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]")} />
+                                <span className={cn("text-[10px] font-black uppercase tracking-widest italic", isOpen ? "text-emerald-600" : "text-black/40")}>
+                                    {isOpen ? "Operando en Vivo" : "Servicio Pausado"}
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        {isAdmin && <div className="hidden lg:block"><SupplierSelect /></div>}
+                    <div className="flex items-center gap-4 w-full md:w-auto relative z-10">
+                        {isAdmin && <div className="hidden lg:block scale-90"><SupplierSelect /></div>}
 
                         <div className={cn(
-                            "rounded-2xl border border-white/10 transition-all h-12 flex items-center px-4 gap-4 glass-2",
-                            isOpen ? "shadow-[0_0_15px_rgba(52,211,153,0.1)]" : "shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+                            "rounded-[1.5rem] border border-black/5 transition-all h-14 flex items-center px-6 gap-6 bg-white shadow-xl",
+                            isOpen ? "shadow-[0_0_30px_rgba(16,185,129,0.1)] border-emerald-100" : "shadow-[0_0_30px_rgba(239,68,68,0.1)] border-red-100"
                         )}>
-                            <span className={cn("text-[10px] font-black uppercase tracking-widest", isOpen ? "text-emerald-400" : "text-red-500")}>
-                                {isOpen ? "En Línea" : "Pausado"}
-                            </span>
+                            <div className="flex flex-col">
+                                <span className={cn("text-[8px] font-black uppercase tracking-[0.2em]", isOpen ? "text-emerald-500" : "text-red-500")}>
+                                    Switch Maestro
+                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-black">
+                                    {isOpen ? "Abierto" : "Cerrado"}
+                                </span>
+                            </div>
                             <Switch
+                                id="master-switch"
                                 checked={isOpen}
                                 onCheckedChange={toggleStoreStatus}
                                 disabled={isUpdating}
-                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500 scale-90 shadow-lg"
+                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500 scale-110 shadow-lg"
                             />
                         </div>
                     </div>
@@ -253,9 +229,8 @@ export default function PanelCluberPage() {
                 {/* --- STATS HEADER (KPIs) --- */}
                 <CluberStatsHeader stats={statsCounts} activeTab={activeTab} />
 
-                {/* --- DYNAMIC SEGMENTED CONTROL --- */}
                 <div className="flex justify-center">
-                    <div className="bg-white/5 backdrop-blur-2xl p-1.5 rounded-[1.8rem] border border-white/10 flex items-center gap-1 shadow-2xl glass-2">
+                    <div className="bg-white p-1.5 rounded-[1.8rem] border border-black/5 flex items-center gap-1 shadow-xl">
                         {canBenefits && (
                             <TabButton
                                 active={activeTab === 'benefits'}
@@ -291,25 +266,29 @@ export default function PanelCluberPage() {
                 </div>
 
                 {/* --- FOOTER TOOLS --- */}
-                <div className="flex flex-wrap justify-center gap-4 pt-12">
+                <div className="flex flex-wrap justify-center gap-6 pt-16 pb-8">
                     <Link href="/panel-cluber/configuracion">
-                        <Button variant="ghost" className="rounded-2xl h-14 px-8 gap-3 glass-2 border-white/5 hover:bg-white/10 transition-all group shadow-xl">
-                            <Settings className="h-4 w-4 text-white group-hover:text-primary group-hover:rotate-45 transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white">Configuración</span>
+                        <Button variant="ghost" className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-black/5 hover:scale-105 transition-all group shadow-xl">
+                            <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center">
+                                <Settings className="h-4 w-4 text-primary group-hover:rotate-90 transition-all duration-700" />
+                            </div>
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-primary">Ajustes</span>
                         </Button>
                     </Link>
                     <Link href="/panel-cluber/equipo">
-                        <Button variant="ghost" className="rounded-2xl h-14 px-8 gap-3 glass-2 border-white/5 hover:bg-white/10 transition-all group shadow-xl">
-                            <Users className="h-4 w-4 text-white group-hover:text-primary transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white">Equipo Central</span>
+                        <Button variant="ghost" className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-black/5 hover:scale-105 transition-all group shadow-xl">
+                            <div className="h-8 w-8 rounded-xl bg-blue-500/5 flex items-center justify-center">
+                                <Users className="h-4 w-4 text-blue-500" />
+                            </div>
+                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-blue-500">Mi Equipo</span>
                         </Button>
                     </Link>
                 </div>
 
                 {isAdmin && (
-                    <div className="fixed bottom-24 right-6 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-primary/20 text-white z-50 shadow-2xl animate-in slide-in-from-right-6 duration-700">
-                        <p className="text-[8px] font-black uppercase tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="h-3 w-3 text-primary" /> Admin View: {shopId?.slice(0, 8)}
+                    <div className="fixed bottom-24 right-6 p-4 rounded-3xl bg-white border border-black/5 text-primary z-50 shadow-[0_15px_50px_rgba(0,0,0,0.1)] animate-in slide-in-from-right-6 duration-700">
+                        <p className="text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-primary" /> Admin View: {shopId?.slice(0, 8)}
                         </p>
                     </div>
                 )}
@@ -329,8 +308,8 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
             className={cn(
                 "rounded-[1.3rem] font-black text-[9px] uppercase tracking-[0.2em] px-8 h-12 transition-all duration-500",
                 active
-                    ? "bg-primary text-white shadow-[0_0_20px_rgba(255,0,127,0.4)] scale-105 z-10"
-                    : "text-white/40 hover:bg-white/5 hover:text-white"
+                    ? "bg-primary text-white shadow-[0_0_20px_rgba(203,70,90,0.4)] scale-105 z-10"
+                    : "text-black/40 hover:bg-black/5 hover:text-primary"
             )}
         >
             <Icon className={cn("mr-2 h-4 w-4 transition-transform", active && "scale-110")} />
@@ -341,18 +320,12 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
 
 function CluberStatsHeader({ stats, activeTab }: { stats: any, activeTab: string }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <StatCard
                 label={activeTab === 'turnero' ? "Turnos del Día" : activeTab === 'delivery' ? "Pedidos Activos" : "Canjes de Hoy"}
                 value={activeTab === 'turnero' ? stats.appointments : activeTab === 'delivery' ? stats.orders : stats.redemptions}
                 trend="+100%"
                 icon={TrendingUp}
-            />
-            <StatCard
-                label="Impacto Social"
-                value="Cinco.Dos"
-                icon={Heart}
-                isSocial
             />
             <StatCard
                 label="Estado de Red"
@@ -363,21 +336,18 @@ function CluberStatsHeader({ stats, activeTab }: { stats: any, activeTab: string
     )
 }
 
-function StatCard({ label, value, trend, icon: Icon, isSocial }: { label: string, value: string, trend?: string, icon: any, isSocial?: boolean }) {
+function StatCard({ label, value, trend, icon: Icon }: { label: string, value: string | number, trend?: string, icon: any }) {
     return (
-        <Card className={cn(
-            "rounded-[2.5rem] border border-white/5 p-6 relative overflow-hidden transition-all hover:scale-[1.02] duration-500 glass-2 group",
-            isSocial ? "bg-primary/5 border-primary/20 shadow-[0_0_30px_rgba(255,0,127,0.05)]" : "bg-black/20"
-        )}>
+        <Card className="rounded-[2.5rem] border border-black/5 p-6 relative overflow-hidden transition-all hover:scale-[1.02] duration-500 bg-white shadow-xl group">
             <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">{label}</p>
-                    <h3 className={cn("text-3xl font-black tracking-tighter italic text-white flex items-center gap-2", isSocial && "text-primary text-glow-premium")}>
+                    <p className="text-[9px] font-black text-black/40 uppercase tracking-[0.2em]">{label}</p>
+                    <h3 className="text-3xl font-black tracking-tighter italic text-black flex items-center gap-2">
                         {value}
-                        {label === "Estado de Red" && <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]" />}
+                        {label === "Estado de Red" && <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
                     </h3>
                 </div>
-                <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-lg", isSocial ? "bg-primary text-white shadow-[0_0_15px_rgba(255,0,127,0.3)]" : "bg-white/5 text-white/60")}>
+                <div className="p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-lg bg-black/5 text-primary">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>
@@ -400,8 +370,8 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     { 
                         label: "Nuevo Beneficio", 
                         icon: Plus, 
-                        href: "/panel-cluber/beneficios", 
-                        color: "text-white bg-primary shadow-[0_0_20px_rgba(255,0,127,0.5)] animate-pulse-slow" 
+                        href: "/panel-cluber/benefits", 
+                        color: "text-white bg-primary shadow-[0_0_20px_rgba(203,70,90,0.5)] animate-pulse-slow" 
                     },
                     { 
                         label: "Anunciar", 
@@ -412,12 +382,12 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]" },
                 ].map((btn) => (
                     <Link key={btn.label} href={btn.href}>
-                        <Card className="rounded-[2.5rem] border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-500 group h-36 flex flex-col items-center justify-center text-center gap-3 glass-2 shadow-2xl overflow-hidden relative">
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Card className="rounded-[2.5rem] border border-black/5 bg-white hover:bg-black/[0.02] transition-all duration-500 group h-36 flex flex-col items-center justify-center text-center gap-3 shadow-xl overflow-hidden relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className={cn("p-4 rounded-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 z-10", btn.color)}>
                                 <btn.icon className="h-7 w-7" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white z-10">{btn.label}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-black/40 group-hover:text-primary z-10">{btn.label}</span>
                         </Card>
                     </Link>
                 ))}
@@ -426,11 +396,11 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-primary animate-pulse" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Flujo de Canjes</h2>
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-black/60">Flujo de Canjes</h2>
                     </div>
                 </div>
-                <Card className="rounded-[3rem] border border-white/10 bg-black/40 backdrop-blur-3xl overflow-hidden min-h-[400px] shadow-2xl texture-brushed relative">
-                    <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+                <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[400px] shadow-2xl relative">
+                    <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-primary/[0.03] to-transparent pointer-events-none" />
                     <BenefitRedemptionsTable supplierId={shopId} />
                 </Card>
             </div>
@@ -447,7 +417,8 @@ function DeliveryModule({ shopId }: { shopId: string }) {
                     <Package className="h-4 w-4 text-primary" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Catálogo de Productos</h2>
                 </div>
-                <Card className="rounded-[3rem] border border-foreground dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[500px]">
+                <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[500px] shadow-2xl relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
                     <ProductManager supplierId={shopId} />
                 </Card>
             </div>

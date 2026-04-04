@@ -199,12 +199,6 @@ export const navConfig: NavConfig = {
                 role: ["admin"],
             },
             {
-                title: "Home Builder",
-                href: "/panel-admin/home-builder",
-                icon: LayoutTemplate,
-                role: ["admin"],
-            },
-            {
                 title: "Mapa Logística",
                 href: "/rider",
                 icon: Building,

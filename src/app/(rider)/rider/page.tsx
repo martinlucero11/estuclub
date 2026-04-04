@@ -406,8 +406,8 @@ export default function RiderPage() {
                     <div className="relative mb-2">
                         <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#cb465a]/30 blur-md rounded-full" />
                         <Logo 
-                            variant="white"
-                            className="h-16 w-auto filter drop-shadow-[0_2px_15px_rgba(203,70,90,0.4)]"
+                            variant="rosa-glow"
+                            className="h-16 w-auto filter drop-shadow-[0_2px_15px_rgba(255,0,127,0.4)]"
                         />
                     </div>
                     <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic font-montserrat">

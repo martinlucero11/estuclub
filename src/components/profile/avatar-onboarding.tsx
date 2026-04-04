@@ -33,6 +33,8 @@ export function AvatarOnboarding() {
         <AnimatePresence>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogContent className="sm:max-w-[440px] border-0 bg-transparent p-0 shadow-none outline-none">
+                    <DialogTitle className="sr-only">Personaliza tu Avatar</DialogTitle>
+                    <DialogDescription className="sr-only">Dale un toque único a tu perfil de Estuclub.</DialogDescription>
                     <motion.div 
                         initial={{ scale: 0.8, opacity: 0, y: 40 }}
                         animate={{ scale: 1, opacity: 1, y: 0 }}

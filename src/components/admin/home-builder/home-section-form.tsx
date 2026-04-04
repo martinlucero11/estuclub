@@ -11,13 +11,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
-import { Save, Search } from 'lucide-react';
+import { Save, Search, Layout, Database, Settings2, Eye, MessageSquare, Plus } from 'lucide-react';
 import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock, Product } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   title: z.string().optional(),
@@ -62,7 +65,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface HomeSectionFormProps {
     section?: HomeSection | null;
     onSuccess: () => void;
-    defaultBoard?: 'perks' | 'delivery';
+    defaultBoard: 'perks' | 'delivery';
 }
 
 export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectionFormProps) {
@@ -71,6 +74,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isEditMode = !!section;
     
+    // Data fetching for manual selection
     const bannersQuery = useMemo(() => firestore ? query(collection(firestore, 'banners').withConverter(createConverter<Banner>())) : null, [firestore]);
     const { data: banners } = useCollection(bannersQuery);
 
@@ -92,8 +96,8 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
             const defaults = {
                 title: '',
                 isActive: true,
-                targetBoard: defaultBoard || 'perks' as const,
-                contenttype: 'perks' as const,
+                targetBoard: defaultBoard,
+                contentType: (defaultBoard === 'delivery' ? 'delivery_suppliers' : 'perks') as any,
                 layout_kind: 'carousel' as const,
                 data_source_mode: 'auto' as const,
                 query_isFeatured: false,
@@ -116,7 +120,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
             const base = {
                 title: section.title,
                 isActive: section.isActive,
-                targetBoard: section.targetBoard || 'perks',
+                targetBoard: section.targetBoard,
             };
 
             if (block.kind === 'banner') {
@@ -152,7 +156,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                 contentType: block.contentType,
                 layout_kind: block.kind,
                 data_source_mode: block.mode,
-                ...(block.kind === 'grid' && block.layout && { layout_gridPreset: block.layout.gridPreset }),
+                ...(block.kind === 'grid' && block.layout && { layout_gridPreset: block.layout.gridPreset as any }),
             };
 
             if (block.mode === 'auto' && block.query) {
@@ -177,7 +181,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
             }
             
             return dynamicContentDefaults;
-        }, [section]),
+        }, [section, defaultBoard]),
     });
 
     const watchContentType = form.watch('contentType');
@@ -197,7 +201,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
         
         if (!searchTerm) return items;
         return items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [watchContentType, benefits, suppliers, announcements, banners, searchTerm]);
+    }, [watchContentType, benefits, suppliers, announcements, banners, products, searchTerm]);
 
     const handleSelectItem = (itemId: string) => {
         const currentItems = form.getValues('manual_items') || [];
@@ -244,31 +248,31 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                     };
                     break;
                 default: // Dynamic content
-                    const query = {
+                    const queryObj = {
                         filters: [] as WhereFilter[],
-                        // Only add sort if explicitly defined
                         ...(values.query_sort_field && {
                             sort: { 
                                 field: values.query_sort_field, 
                                 direction: values.query_sort_direction as any || 'desc' 
                             }
                         }),
+                        limit: values.query_limit || 10
                     };
                     
                     if (values.query_isVisible) {
                         const visibilityField = (values.contentType === 'banners' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers' || values.contentType === 'supplierpromo') ? 'isActive' : 'isVisible';
-                        query.filters.push({ field: visibilityField, op: '==', value: true });
+                        queryObj.filters.push({ field: visibilityField, op: '==', value: true });
                     }
 
-                    if (values.query_isFeatured) query.filters.push({ field: 'isFeatured', op: '==', value: true });
-                    if (values.query_category) query.filters.push({ field: 'category', op: '==', value: values.query_category });
-                    if (values.query_deliveryCategory) query.filters.push({ field: 'deliveryCategory', op: '==', value: values.query_deliveryCategory });
-                    if (values.query_supplierType) query.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
+                    if (values.query_isFeatured) queryObj.filters.push({ field: 'isFeatured', op: '==', value: true });
+                    if (values.query_category) queryObj.filters.push({ field: 'category', op: '==', value: values.query_category });
+                    if (values.query_deliveryCategory) queryObj.filters.push({ field: 'deliveryCategory', op: '==', value: values.query_deliveryCategory });
+                    if (values.query_supplierType) queryObj.filters.push({ field: 'type', op: '==', value: values.query_supplierType });
 
                     const commonDynamicProps = {
                         contentType: values.contentType as any,
                         mode: values.data_source_mode,
-                        ...(values.data_source_mode === 'auto' && { query }),
+                        ...(values.data_source_mode === 'auto' && { query: queryObj }),
                         ...(values.data_source_mode === 'manual' && { items: values.manual_items || [] }),
                     };
 
@@ -319,20 +323,28 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-1">
-                <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="font-semibold text-lg">1. Configuración General</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                {/* 1. General Config */}
+                <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium">
+                    <div className="space-y-1">
+                        <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                            <Settings2 className="h-5 w-5 text-orange-500" />
+                            1. Configuración General
+                        </h3>
+                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Define el título y el board de destino.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
                         <FormField control={form.control} name="title" render={({ field }) => (
-                            <FormItem><FormLabel>Título de la Sección</FormLabel><FormControl><Input {...field} placeholder="Ej: Ofertas Destacadas" /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Título de la Sección</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="Ej: Ofertas Destacadas" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="targetBoard" render={({ field }) => (
-                            <FormItem><FormLabel>Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="perks">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem></SelectContent></Select></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="perks">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem></SelectContent></Select></FormItem>
                         )} />
                     </div>
                     <FormField control={form.control} name="contentType" render={({ field }) => (
-                        <FormItem><FormLabel>Tipo de Contenido</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                            <SelectContent>
+                        <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Tipo de Contenido</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent className="rounded-xl border-white/5">
                                 <SelectItem value="perks">Beneficios</SelectItem>
                                 <SelectItem value="suppliers">Proveedores (Clubers)</SelectItem>
                                 <SelectItem value="delivery_suppliers">Delivery (Locales)</SelectItem>
@@ -354,24 +366,31 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                         </Select><FormMessage /></FormItem>
                     )} />
                 </div>
-                
+
+                {/* 2. Presentation */}
                 {!isSpecialKind && (
-                    <div className="space-y-4 rounded-md border p-4">
-                        <h3 className="font-semibold text-lg">2. Presentación</h3>
+                    <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium">
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                                <Layout className="h-5 w-5 text-orange-500" />
+                                2. Presentación
+                            </h3>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Elige cómo se visualizarán los elementos.</p>
+                        </div>
                         <FormField control={form.control} name="layout_kind" render={({ field }) => (
-                            <FormItem><FormLabel>Layout</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="carousel">Carrusel</SelectItem>
-                                    <SelectItem value="grid">Grilla</SelectItem>
+                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Layout</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl>
+                                <SelectContent className="rounded-xl border-white/5">
+                                    <SelectItem value="carousel">Carrusel (Scroll Horizontal)</SelectItem>
+                                    <SelectItem value="grid">Grilla (Estática)</SelectItem>
                                 </SelectContent>
                             </Select><FormMessage /></FormItem>
                         )} />
                         {watchLayoutKind === 'grid' && (
                             <FormField control={form.control} name="layout_gridPreset" render={({ field }) => (
-                                <FormItem><FormLabel>Diseño de Grilla</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl><SelectTrigger><SelectValue placeholder="Selecciona un diseño" /></SelectTrigger></FormControl>
-                                    <SelectContent>
+                                <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Diseño de Grilla</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue placeholder="Selecciona un diseño" /></SelectTrigger></FormControl>
+                                    <SelectContent className="rounded-xl border-white/5">
                                         <SelectItem value="1x4">1 Fila x 4 Columnas</SelectItem>
                                         <SelectItem value="1x5">1 Fila x 5 Columnas</SelectItem>
                                         <SelectItem value="2x4">2 Filas x 4 Columnas</SelectItem>
@@ -383,106 +402,152 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                     </div>
                 )}
 
+                {/* 3. Data Source */}
                  {!isSpecialKind && (
-                     <div className="space-y-4 rounded-md border p-4">
-                        <h3 className="font-semibold text-lg">3. Fuente de Datos</h3>
-                        <FormField control={form.control} name="data_source_mode" render={({ field }) => (
-                            <FormItem><FormLabel>Modo</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    <SelectItem value="auto">Automático (con consulta)</SelectItem>
-                                    <SelectItem value="manual">Manual (seleccionar ítems)</SelectItem>
-                                </SelectContent>
-                            </Select></FormItem>
-                        )} />
+                     <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium">
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                                <Database className="h-5 w-5 text-orange-500" />
+                                3. Fuente de Datos
+                            </h3>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Configura de dónde provienen los ítems.</p>
+                        </div>
 
-                        {watchDataSourceMode === 'auto' && (
-                             <div className="space-y-4 pt-2">
+                        <Tabs 
+                            value={watchDataSourceMode} 
+                            onValueChange={(v) => form.setValue('data_source_mode', v as any)}
+                            className="w-full"
+                        >
+                            <TabsList className="bg-background/50 border border-white/5 p-1 rounded-xl h-12 w-full mb-6">
+                                <TabsTrigger value="auto" className="flex-1 rounded-lg font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white">Automatizado</TabsTrigger>
+                                <TabsTrigger value="manual" className="flex-1 rounded-lg font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white">Manual</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="auto" className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500 focus-visible:outline-none">
                                 <div className="grid grid-cols-2 gap-4">
                                      <FormField control={form.control} name="query_isFeatured" render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between rounded-lg border p-3"><FormLabel>Solo Destacados</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
+                                        <FormItem className="flex items-center justify-between rounded-2xl border border-white/5 bg-background/30 p-4 shadow-inner">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-[10px] font-black uppercase tracking-widest">Solo Destacados</FormLabel>
+                                            </div>
+                                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                                        </FormItem>
                                     )} />
                                      <FormField control={form.control} name="query_isVisible" render={({ field }) => (
-                                        <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                                            <FormLabel>{watchContentType === 'banners' ? 'Solo Activos' : 'Solo Visibles'}</FormLabel>
+                                        <FormItem className="flex items-center justify-between rounded-2xl border border-white/5 bg-background/30 p-4 shadow-inner">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-[10px] font-black uppercase tracking-widest">{watchContentType === 'banners' ? 'Solo Activos' : 'Solo Visibles'}</FormLabel>
+                                            </div>
                                             <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                         </FormItem>
                                     )} />
                                 </div>
-                                {watchContentType === 'perks' && <FormField control={form.control} name="query_category" render={({ field }) => (
-                                    <FormItem><FormLabel>Categoría de Beneficio (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent>{benefitCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
-                                )} />}
-                                {watchContentType === 'delivery_suppliers' && <FormField control={form.control} name="query_deliveryCategory" render={({ field }) => (
-                                    <FormItem><FormLabel>Categoría de Delivery (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent>{deliveryCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
-                                )} />}
-                                {watchContentType === 'suppliers' && <FormField control={form.control} name="query_supplierType" render={({ field }) => (
-                                    <FormItem><FormLabel>Tipo de Proveedor (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Todos los tipos" /></SelectTrigger></FormControl><SelectContent>{cluberCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
-                                )} />}
-                                <div className="grid grid-cols-2 gap-4">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {watchContentType === 'perks' && <FormField control={form.control} name="query_category" render={({ field }) => (
+                                        <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Categoría (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5">{benefitCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                    )} />}
+                                    {watchContentType === 'delivery_suppliers' && <FormField control={form.control} name="query_deliveryCategory" render={({ field }) => (
+                                        <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Categoría (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5">{deliveryCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
+                                    )} />}
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4 p-4 rounded-2xl bg-black/20 border border-white/5">
                                     <FormField control={form.control} name="query_sort_field" render={({ field }) => (
-                                        <FormItem><FormLabel>Ordenar por</FormLabel><FormControl><Input {...field} placeholder="Ej: createdAt" /></FormControl></FormItem>
+                                        <FormItem><FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Campo</FormLabel><FormControl><Input {...field} className="h-10 text-xs rounded-lg bg-background/50 border-white/10" placeholder="createdAt" /></FormControl></FormItem>
                                     )} />
                                      <FormField control={form.control} name="query_sort_direction" render={({ field }) => (
-                                        <FormItem><FormLabel>Dirección</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="asc">Asc</SelectItem><SelectItem value="desc">Desc</SelectItem></SelectContent></Select></FormItem>
+                                        <FormItem><FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Orden</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10 text-xs rounded-lg bg-background/50 border-white/10"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-lg border-white/5"><SelectItem value="asc">ASC</SelectItem><SelectItem value="desc">DESC</SelectItem></SelectContent></Select></FormItem>
+                                    )} />
+                                    <FormField control={form.control} name="query_limit" render={({ field }) => (
+                                        <FormItem><FormLabel className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Límite</FormLabel><FormControl><Input type="number" {...field} className="h-10 text-xs rounded-lg bg-background/50 border-white/10" /></FormControl></FormItem>
                                     )} />
                                 </div>
-                                <FormField control={form.control} name="query_limit" render={({ field }) => (
-                                    <FormItem><FormLabel>Límite de Items</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
-                                )} />
-                             </div>
-                        )}
-                        
-                        {watchDataSourceMode === 'manual' && (
-                             <div className="space-y-4 pt-2">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                    <Input placeholder="Buscar para añadir..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                            </TabsContent>
+                            
+                            <TabsContent value="manual" className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-500 focus-visible:outline-none">
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                                    <Input 
+                                        placeholder="Buscar por nombre..." 
+                                        className="pl-12 h-14 rounded-2xl bg-background/50 border-white/10 focus:ring-orange-500/20" 
+                                        value={searchTerm} 
+                                        onChange={e => setSearchTerm(e.target.value)} 
+                                    />
                                 </div>
-                                <ScrollArea className="h-64 rounded-md border">
-                                    <div className="p-4 space-y-2">
-                                        {selectableItems.map(item => (
-                                            <div key={item.id} className="flex items-center space-x-2">
-                                                <Checkbox id={item.id} checked={manualItems.includes(item.id)} onCheckedChange={() => handleSelectItem(item.id)} />
-                                                <label htmlFor={item.id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{item.name}</label>
+                                <ScrollArea className="h-80 rounded-2xl border border-white/5 bg-black/20 p-4">
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {(selectableItems || []).map(item => (
+                                            <div 
+                                                key={item.id} 
+                                                onClick={() => handleSelectItem(item.id)}
+                                                className={cn(
+                                                    "flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all border",
+                                                    manualItems.includes(item.id) 
+                                                        ? "bg-orange-500/10 border-orange-500/30 text-orange-500" 
+                                                        : "bg-white/5 border-transparent hover:bg-white/10"
+                                                )}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <Checkbox 
+                                                        id={item.id} 
+                                                        checked={manualItems.includes(item.id)} 
+                                                        onCheckedChange={() => handleSelectItem(item.id)} 
+                                                        className="data-[state=checked]:bg-orange-500 border-white/20"
+                                                    />
+                                                    <label htmlFor={item.id} className="text-xs font-bold uppercase tracking-widest cursor-pointer">{item.name}</label>
+                                                </div>
+                                                <Badge variant="outline" className="text-[8px] opacity-40 border-white/10">ID: {item.id.substring(0,6)}</Badge>
                                             </div>
                                         ))}
                                     </div>
                                 </ScrollArea>
-                                <FormDescription>{manualItems.length} ítem(s) seleccionado(s).</FormDescription>
-                             </div>
-                        )}
+                                <div className="flex justify-between items-center px-2">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">{manualItems.length} seleccionados</p>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue('manual_items', [])} className="text-[9px] font-black uppercase opacity-40">Limpiar Todo</Button>
+                                </div>
+                            </TabsContent>
+                        </Tabs>
                      </div>
-                )}
-                
+                 )}
+
+                {/* 4. Special Kinds */}
                 {watchContentType === 'message' && (
-                    <div className="space-y-4 rounded-md border p-4 bg-primary/5 border-primary/10">
-                        <h3 className="font-semibold text-lg flex items-center gap-2">
-                            Configuración del Mensaje
-                        </h3>
+                    <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium border-primary/20 bg-primary/5">
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                                <MessageSquare className="h-5 w-5 text-orange-500" />
+                                Configuración del Mensaje
+                            </h3>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Personaliza el mensaje directo en el Home.</p>
+                        </div>
                         <div className="grid grid-cols-1 gap-4">
                             <FormField control={form.control} name="message_title" render={({ field }) => (
-                                <FormItem><FormLabel>Título (Opcional)</FormLabel><FormControl><Input {...field} placeholder="Ej: ¡Bienvenidos alumnos!" /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Título (Opcional)</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="Ej: ¡Bienvenidos alumnos!" /></FormControl></FormItem>
                             )} />
                             <FormField control={form.control} name="message_body" render={({ field }) => (
-                                <FormItem><FormLabel>Cuerpo del Mensaje</FormLabel><FormControl><Input {...field} placeholder="Ej: Descubre los mejores beneficios..." /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Cuerpo del Mensaje</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="Ej: Descubre los mejores beneficios..." /></FormControl></FormItem>
                             )} />
                             <FormField control={form.control} name="message_imageUrl" render={({ field }) => (
-                                <FormItem><FormLabel>URL de Imagen (Opcional)</FormLabel><FormControl><Input {...field} placeholder="https://..." /></FormControl></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">URL de Imagen (Opcional)</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="https://..." /></FormControl></FormItem>
                             )} />
                              <FormField control={form.control} name="message_alignment" render={({ field }) => (
-                                <FormItem><FormLabel>Alineación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="left">Izquierda</SelectItem><SelectItem value="center">Centro</SelectItem></SelectContent></Select></FormItem>
+                                <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Alineación</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="left">Izquierda</SelectItem><SelectItem value="center">Centro</SelectItem></SelectContent></Select></FormItem>
                             )} />
                         </div>
                         
-                        <div className="mt-6 pt-6 border-t border-primary/10">
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-4">Previsualización</p>
-                            <div className={`p-6 rounded-3xl glass glass-dark border border-white/10 flex flex-col md:flex-row items-center gap-6 ${form.watch('message_alignment') === 'center' ? 'text-center' : 'text-left'}`}>
+                        <div className="mt-6 pt-6 border-t border-white/5">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4">Previsualización</p>
+                            <div className={cn(
+                                "p-8 rounded-[2rem] glass glass-dark border border-white/10 flex flex-col md:flex-row items-center gap-6",
+                                form.watch('message_alignment') === 'center' ? 'text-center flex-col' : 'text-left'
+                            )}>
                                 <div className="flex-1 space-y-2">
-                                    <h4 className="text-2xl font-black tracking-tighter">{form.watch('message_title') || 'Título de ejemplo'}</h4>
-                                    <p className="text-sm opacity-70 italic">{form.watch('message_body') || 'Cuerpo del mensaje de ejemplo...'}</p>
+                                    <h4 className="text-3xl font-black tracking-tighter uppercase italic">{form.watch('message_title') || 'Título de ejemplo'}</h4>
+                                    <p className="text-sm opacity-70 italic font-medium">{form.watch('message_body') || 'Cuerpo del mensaje de ejemplo...'}</p>
                                 </div>
                                 {form.watch('message_imageUrl') && (
-                                    <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/20">
+                                    <div className="w-24 h-24 rounded-2xl overflow-hidden border border-white/20 shadow-2xl shrink-0">
                                         <img src={form.watch('message_imageUrl')} className="w-full h-full object-cover" alt="Preview" />
                                     </div>
                                 )}
@@ -491,27 +556,40 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                     </div>
                 )}
 
-
-                <div className="space-y-4 rounded-md border p-4">
-                    <h3 className="font-semibold text-lg">4. Estado</h3>
+                {/* 5. Status Card */}
+                <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium">
+                    <div className="space-y-1">
+                        <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                            <Eye className="h-5 w-5 text-orange-500" />
+                            4. Estado de Publicación
+                        </h3>
+                        <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Activa o desactiva este bloque.</p>
+                    </div>
                      <FormField control={form.control} name="isActive" render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                            <div className="space-y-0.5"><FormLabel>Activo</FormLabel><FormDescription>Desmarcar para ocultar este bloque de la Home.</FormDescription></div>
-                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                        <FormItem className="flex flex-row items-center justify-between rounded-2xl border border-white/5 bg-background/30 p-4 shadow-inner">
+                            <div className="space-y-0.5">
+                                <FormLabel className="text-sm font-bold uppercase tracking-widest">Visibilidad Pública</FormLabel>
+                                <FormDescription className="text-[10px] opacity-40 uppercase font-bold tracking-widest">Si está desactivado, no se mostrará en el Home.</FormDescription>
+                            </div>
+                            <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-orange-500" /></FormControl>
                         </FormItem>
                     )} />
                 </div>
 
-
-                <div className="flex justify-end items-center gap-4 pt-4">
-                     <Button type="button" variant="ghost" onClick={onSuccess} disabled={isSubmitting}>Cancelar</Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                        <Save className="mr-2 h-4 w-4" />
-                        {isSubmitting ? 'Guardando...' : 'Guardar Bloque'}
+                <div className="flex justify-end items-center gap-4 pt-6 border-t border-white/5">
+                     <Button type="button" variant="ghost" className="rounded-xl px-8 uppercase font-black text-[10px] tracking-widest opacity-40 hover:opacity-100 transition-opacity" onClick={onSuccess} disabled={isSubmitting}>Cancelar</Button>
+                    <Button type="submit" className="rounded-xl px-10 h-14 bg-orange-500 hover:bg-orange-600 text-white font-black uppercase text-[11px] tracking-[0.2em] shadow-lg shadow-orange-500/20" disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>Procesando...</>
+                        ) : (
+                            <>
+                                <Plus className="mr-2 h-4 w-4" />
+                                {isEditMode ? 'Actualizar Bloque' : 'Crear Bloque'}
+                            </>
+                        )}
                     </Button>
                 </div>
             </form>
         </Form>
     );
 }
-

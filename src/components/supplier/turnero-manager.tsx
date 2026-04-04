@@ -52,7 +52,7 @@ export function TurneroManager({ supplierId }: { supplierId: string }) {
     return (
         <div className="space-y-8">
             {/* Sub-Navigation (Minimalist) */}
-            <div className="flex items-center gap-2 bg-background dark:bg-white/5 p-1 rounded-2xl w-fit border border-foreground dark:border-white/10">
+            <div className="flex items-center gap-2 bg-black/[0.03] p-1.5 rounded-[1.3rem] w-fit border border-black/5 shadow-inner">
                 <SubTab active={view === 'agenda'} onClick={() => setView('agenda')} icon={CalendarDays} label="Agenda Hoy" />
                 <SubTab active={view === 'services'} onClick={() => setView('services')} icon={Settings2} label="Servicios" />
                 <SubTab active={view === 'availability'} onClick={() => setView('availability')} icon={Clock} label="Horarios" />
@@ -73,8 +73,8 @@ function SubTab({ active, onClick, icon: Icon, label }: { active: boolean, onCli
             variant="ghost" 
             onClick={onClick}
             className={cn(
-                "rounded-xl h-10 px-6 font-black text-[9px] uppercase tracking-widest transition-all",
-                active ? "bg-white dark:bg-white/10 text-primary shadow-sm" : "text-foreground hover:text-foreground"
+                "rounded-xl h-10 px-6 font-black text-[9px] uppercase tracking-[0.2em] transition-all duration-300",
+                active ? "bg-white text-primary shadow-lg scale-105" : "text-black/40 hover:bg-black/5 hover:text-black"
             )}
         >
             <Icon className="mr-2 h-3.5 w-3.5" />
@@ -123,29 +123,32 @@ function AgendaView({ supplierId }: { supplierId: string }) {
     return (
         <div className="space-y-6">
             {!appointments || appointments.length === 0 ? (
-                <Card className="rounded-[3rem] border border-dashed border-foreground dark:border-white/5 bg-background dark:bg-white/5 py-24 text-center flex flex-col items-center justify-center gap-4">
-                    <div className="h-20 w-20 rounded-[2rem] bg-background dark:bg-white/5 flex items-center justify-center opacity-40">
-                        <Calendar className="h-10 w-10 text-foreground" />
+                <Card className="rounded-[3rem] border-2 border-dashed border-black/5 bg-black/[0.01] py-24 text-center flex flex-col items-center justify-center gap-4 shadow-inner">
+                    <div className="h-24 w-24 rounded-[3rem] bg-white flex items-center justify-center shadow-xl border border-black/5">
+                        <Calendar className="h-10 w-10 text-primary/40" />
                     </div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em] text-foreground">Sin turnos para hoy</p>
+                    <div className="space-y-1">
+                        <p className="text-xl font-black tracking-tighter uppercase italic text-black">Agenda Libre</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">No hay turnos programados para hoy</p>
+                    </div>
                 </Card>
             ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-6">
                     {appointments.map((apt) => (
-                        <Card key={apt.id} className="rounded-[2rem] border-foreground dark:border-white/5 bg-white/50 dark:bg-card/30 overflow-hidden group hover:border-primary/20 transition-all">
-                            <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="flex items-center gap-5">
-                                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex flex-col items-center justify-center border border-primary/20 shrink-0">
-                                        <Clock className="h-6 w-6 text-primary mb-1" />
-                                        <span className="text-[10px] font-black italic">
+                        <Card key={apt.id} className="rounded-[2.5rem] border border-black/5 bg-white overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 shadow-xl">
+                            <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="flex items-center gap-7">
+                                    <div className="h-20 w-20 rounded-[1.8rem] bg-primary/5 flex flex-col items-center justify-center border border-primary/10 shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
+                                        <Clock className="h-7 w-7 text-primary mb-1.5" />
+                                        <span className="text-[11px] font-black italic text-black tracking-tighter">
                                             {apt.startTime ? format(apt.startTime.toDate(), "HH:mm") : '--:--'}
                                         </span>
                                     </div>
-                                    <div className="space-y-1">
-                                        <h4 className="text-xl font-black tracking-tighter uppercase italic">{apt.userName}</h4>
-                                        <div className="flex items-center gap-3">
-                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[8px] uppercase px-2">{apt.serviceName}</Badge>
-                                            <span className="text-[10px] font-bold text-foreground uppercase tracking-widest">{apt.userPhone}</span>
+                                    <div className="space-y-2">
+                                        <h4 className="text-3xl font-black tracking-tighter uppercase italic text-black leading-none">{apt.userName}</h4>
+                                        <div className="flex items-center gap-4">
+                                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black text-[9px] uppercase tracking-widest px-3 py-0.5 rounded-full">{apt.serviceName}</Badge>
+                                            <span className="text-[11px] font-black text-black/30 uppercase tracking-[0.2em]">{apt.userPhone}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -218,10 +221,10 @@ function ServicesView({ supplierId }: { supplierId: string }) {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center px-2">
-                <div className="space-y-1">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Catálogo de Turnos</h3>
-                    <p className="text-2xl font-black tracking-tighter italic uppercase underline decoration-primary/30 underline-offset-4">Gestión de Servicios</p>
+            <div className="flex justify-between items-end px-2 pt-4">
+                <div className="space-y-3">
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40">Inventario de Servicios</h3>
+                    <p className="text-4xl font-black tracking-tighter italic uppercase text-black">Catálogo Profesional</p>
                 </div>
                 <Button 
                     onClick={() => { setEditingService(null); setIsFormOpen(true); }}
@@ -233,27 +236,33 @@ function ServicesView({ supplierId }: { supplierId: string }) {
 
             <div className="grid gap-6">
                 {!services || services.length === 0 ? (
-                    <div className="py-24 text-center bg-white/5 border border-dashed border-white/5 rounded-[3rem] opacity-40">
-                         <Info className="h-12 w-12 mx-auto mb-4" />
-                         <p className="text-xs font-black uppercase tracking-widest">No has creado servicios todavía</p>
+                    <div className="py-32 text-center bg-black/[0.02] border-2 border-dashed border-black/5 rounded-[3rem] shadow-inner">
+                         <div className="h-20 w-20 rounded-[2rem] bg-white flex items-center justify-center mx-auto mb-6 shadow-xl border border-black/5">
+                             <Info className="h-8 w-8 text-black/20" />
+                         </div>
+                         <p className="text-xl font-black tracking-tighter uppercase italic text-black">Sin servicios</p>
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30 mt-1">Habilita una prestación para comenzar a dar turnos</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {services.map((svc) => (
-                            <Card key={svc.id} className="rounded-[2.5rem] border-foreground dark:border-white/5 bg-card/30 p-8 flex justify-between items-start group hover:border-primary/20 transition-all">
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <h4 className="text-xl font-black uppercase tracking-tighter italic">{svc.name}</h4>
-                                        <p className="text-[10px] font-bold text-foreground leading-relaxed max-w-xs">{svc.description}</p>
+                            <Card key={svc.id} className="rounded-[3rem] border border-black/5 bg-white p-10 flex justify-between items-start group hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 shadow-xl relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none group-hover:scale-125 transition-transform duration-700">
+                                    <DollarSign className="h-24 w-24" />
+                                </div>
+                                <div className="space-y-6 relative z-10">
+                                    <div className="space-y-2">
+                                        <h4 className="text-3xl font-black uppercase tracking-tighter italic text-black leading-none">{svc.name}</h4>
+                                        <p className="text-[11px] font-bold text-black/50 leading-relaxed max-w-[250px] line-clamp-2">{svc.description}</p>
                                     </div>
-                                    <div className="flex gap-4">
-                                        <div className="flex items-center gap-2">
+                                    <div className="flex gap-6">
+                                        <div className="flex items-center gap-3 bg-primary/5 px-4 py-2 rounded-2xl border border-primary/10">
                                             <Timer className="h-4 w-4 text-primary" />
-                                            <span className="text-[11px] font-black italic">{svc.duration} min</span>
+                                            <span className="text-sm font-black italic text-black">{svc.duration} min</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <DollarSign className="h-4 w-4 text-primary" />
-                                            <span className="text-[11px] font-black italic tracking-tighter">$ {svc.price.toLocaleString()}</span>
+                                        <div className="flex items-center gap-3 bg-black/[0.03] px-4 py-2 rounded-2xl border border-black/5">
+                                            <DollarSign className="h-4 w-4 text-black/40" />
+                                            <span className="text-sm font-black italic text-black tracking-tighter">$ {svc.price.toLocaleString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -352,51 +361,56 @@ function AvailabilityView({ supplierId }: { supplierId: string }) {
     if (isLoading || !localSchedule) return <Skeleton className="h-96 w-full rounded-[3rem]" />;
 
     return (
-        <Card className="rounded-[3rem] border border-foreground dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden">
-            <CardHeader className="p-10 border-b border-foreground dark:border-white/5">
-                <CardTitle className="text-2xl font-black italic tracking-tighter uppercase">Disponibilidad Semanal</CardTitle>
-                <CardDescription className="text-xs font-bold text-foreground uppercase tracking-widest">Configura tus horarios para que los estudiantes reserven.</CardDescription>
+        <Card className="rounded-[3rem] border border-black/5 bg-white shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+                <CalendarDays className="h-32 w-32" />
+            </div>
+            <CardHeader className="p-12 pb-8 border-b border-black/5 relative z-10">
+                <CardTitle className="text-4xl font-black italic tracking-tighter uppercase text-black leading-none">Horarios Semanales</CardTitle>
+                <CardDescription className="text-[11px] font-black text-black/30 uppercase tracking-[0.2em] mt-3">Configura tu disponibilidad para reservas automáticas</CardDescription>
             </CardHeader>
-            <CardContent className="p-10 space-y-6">
+            <CardContent className="p-12 space-y-4 relative z-10">
                 {dayKeys.map((day) => (
                     <div key={day} className={cn(
-                        "flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-[2rem] border transition-all",
+                        "flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 rounded-[2.5rem] border transition-all duration-500",
                         localSchedule[day]?.active 
-                            ? "bg-background dark:bg-white/5 border-foreground dark:border-white/5 group hover:bg-primary/5" 
-                            : "bg-background/30 dark:bg-white/2 border-transparent opacity-50"
+                            ? "bg-white border-black/5 group hover:shadow-xl hover:-translate-y-1" 
+                            : "bg-black/[0.02] border-transparent opacity-40 grayscale"
                     )}>
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             <div className={cn(
-                                "h-10 w-10 rounded-xl flex items-center justify-center font-black uppercase italic transition-colors",
-                                localSchedule[day]?.active ? "bg-primary/10 text-primary" : "bg-background dark:bg-white/10 text-foreground"
+                                "h-14 w-14 rounded-2xl flex items-center justify-center font-black uppercase italic transition-all duration-500 text-xl shadow-inner",
+                                localSchedule[day]?.active ? "bg-primary/5 text-primary" : "bg-black/5 text-black/20"
                             )}>
                                 {dayLabels[day][0]}
                             </div>
-                            <span className="text-sm font-black uppercase tracking-widest">{dayLabels[day]}</span>
+                            <div>
+                                <span className="text-xl font-black uppercase tracking-tighter text-black italic">{dayLabels[day]}</span>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-black/30">{localSchedule[day]?.active ? "Disponible" : "Cerrado"}</p>
+                            </div>
                         </div>
                         
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             {localSchedule[day]?.active ? (
-                                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                                <div className="flex items-center gap-3 animate-in fade-in slide-in-from-right-4 duration-500">
                                     <Input 
                                         type="time" 
                                         value={localSchedule[day].startTime} 
                                         onChange={(e) => handleTimeChange(day, 'startTime', e.target.value)}
-                                        className="h-10 w-24 rounded-xl bg-white dark:bg-white/5 border-foreground dark:border-white/10 text-[10px] font-black"
+                                        className="h-12 w-28 rounded-2xl bg-black/[0.03] border-black/5 text-xs font-black text-center"
                                     />
-                                    <span className="text-[10px] font-black text-foreground">A</span>
+                                    <span className="text-[10px] font-black text-black/20 uppercase tracking-widest">al</span>
                                     <Input 
                                         type="time" 
                                         value={localSchedule[day].endTime} 
                                         onChange={(e) => handleTimeChange(day, 'endTime', e.target.value)}
-                                        className="h-10 w-24 rounded-xl bg-white dark:bg-white/5 border-foreground dark:border-white/10 text-[10px] font-black"
+                                        className="h-12 w-28 rounded-2xl bg-black/[0.03] border-black/5 text-xs font-black text-center"
                                     />
                                 </div>
-                            ) : (
-                                <span className="text-[10px] font-black text-foreground uppercase tracking-widest px-4">Cerrado</span>
-                            )}
+                            ) : null}
                             <Switch 
-                                className="data-[state=checked]:bg-primary" 
+                                id={`switch-${day}`}
+                                className="data-[state=checked]:bg-primary scale-125 ml-4" 
                                 checked={localSchedule[day]?.active} 
                                 onCheckedChange={(checked) => handleToggleDay(day, checked)}
                             />
@@ -404,13 +418,13 @@ function AvailabilityView({ supplierId }: { supplierId: string }) {
                     </div>
                 ))}
                 
-                <div className="pt-8">
+                <div className="pt-12">
                     <Button 
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="w-full h-16 rounded-2xl bg-background dark:bg-white text-white dark:text-foreground font-black uppercase tracking-widest text-xs italic shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        className="w-full h-20 rounded-[2rem] bg-black text-white font-black uppercase tracking-[0.3em] text-[11px] italic shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 shadow-black/20"
                     >
-                        {isSaving ? 'GUARDANDO...' : 'GUARDAR CONFIGURACIÓN'}
+                        {isSaving ? 'OPTMIZANDO HORARIOS...' : 'PUBLICAR DISPONIBILIDAD'}
                     </Button>
                 </div>
             </CardContent>

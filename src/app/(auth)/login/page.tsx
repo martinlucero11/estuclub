@@ -34,10 +34,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md z-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
         <header className="mb-10 flex flex-col items-center text-center">
             <Link href="/" className="mb-6 transition-transform hover:scale-110 duration-300">
-                <Logo 
-                    variant="rosa"
-                    className="h-16 w-auto"
-                />
+            <Logo 
+                variant="rosa-glow"
+                className="h-16 w-auto"
+            />
             </Link>
           <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase sr-only">
             EstuClub

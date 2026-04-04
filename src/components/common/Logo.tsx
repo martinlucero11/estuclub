@@ -10,10 +10,10 @@ const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const fillColor = {
       white: '#FFFFFF',
-      rosa: '#FF007F',
-      'rosa-glow': '#FF007F',
+      rosa: '#cb465a',
+      'rosa-glow': '#cb465a',
       black: '#000000',
-      default: '#FF007F',
+      default: '#cb465a',
     }[variant];
 
     return (

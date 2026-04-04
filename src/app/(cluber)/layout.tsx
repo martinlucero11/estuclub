@@ -34,6 +34,10 @@ export default function CluberLayout({
 
   if (!hasAccess) return null;
 
-  return <MainLayout>{children}</MainLayout>;
+  return (
+    <div className="bg-white min-h-screen selection:bg-primary/10">
+      <MainLayout>{children}</MainLayout>
+    </div>
+  );
 }
 

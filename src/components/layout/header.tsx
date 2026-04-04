@@ -68,7 +68,7 @@ function UserMenu() {
     return (
       <Button asChild variant="ghost" size="icon" className="hover:bg-white/10" aria-label="Iniciar Sesión">
         <Link href="/login">
-            <LogIn className="h-6 w-6 text-white" />
+            <LogIn className="h-6 w-6 text-black/60" />
         </Link>
       </Button>
     );
@@ -134,15 +134,15 @@ function AppSidebar() {
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-white/10" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
-                        <LayoutGrid className="h-6 w-6 text-white transition-colors" />
+                    <Button variant="ghost" size="icon" className="group hover:bg-black/5" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
+                        <LayoutGrid className="h-6 w-6 text-black/60 transition-colors" />
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
-            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black overflow-hidden">
+            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black/5 overflow-hidden">
                 <SheetHeader className="p-10 border-b border-black/5 relative bg-primary flex items-center justify-center">
                     <Logo 
-                        variant="rosa-glow"
+                        variant="white"
                         className="h-10 w-auto"
                     />
                 </SheetHeader>
@@ -151,7 +151,7 @@ function AppSidebar() {
                     <nav className="flex flex-col gap-6">
                         {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => (
                             <div key={section.title} className="space-y-4 mb-2">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-black px-5 italic">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-black/40 px-5 italic">
                                     {section.title}
                                 </h3>
                                 <div className="grid gap-1.5 px-1">
@@ -165,7 +165,7 @@ function AppSidebar() {
                                                         variant="ghost" 
                                                         className={cn(
                                                             "w-full justify-start text-[11px] font-black uppercase tracking-widest h-14 rounded-2xl transition-all",
-                                                            isCurrent ? "bg-primary text-white" : "text-black hover:bg-primary/10"
+                                                            isCurrent ? "bg-primary text-white" : "text-black/60 hover:bg-primary/10 hover:text-primary"
                                                         )}
                                                     >
                                                         <div className={cn(
@@ -191,16 +191,16 @@ function AppSidebar() {
 
                             return (
                                 <div key={category} className="space-y-3">
-                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-black">
+                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-black/40">
                                         {category}
-                                        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                        {isCollapsed ? <ChevronRight className="h-3 w-3 text-black/40" /> : <ChevronDown className="h-3 w-3 text-black/40" />}
                                     </button>
                                     {!isCollapsed && (
                                         <div className="grid gap-1.5">
                                             {visibleItems.map((item) => (
                                                 <SheetClose asChild key={item.href}>
                                                     <Link href={item.href}>
-                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-black uppercase tracking-widest", pathname === item.href ? "bg-primary text-white" : "text-black hover:bg-primary/5")}>
+                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-black uppercase tracking-widest", pathname === item.href ? "bg-primary text-white" : "text-black/60 hover:bg-primary/5 hover:text-primary")}>
                                                             <div className={cn("mr-4 p-2.5 rounded-xl border-2", pathname === item.href ? "bg-white text-primary border-white" : "bg-white text-primary border-primary")}>
                                                                 {item.icon && <item.icon className="h-4 w-4" />}
                                                             </div>
@@ -230,14 +230,14 @@ export default function Header() {
       <div className="container relative flex justify-between items-center px-6">
         <div className="flex items-center gap-1">
           <AppSidebar />
-          <Button variant="ghost" size="icon" className="hover:bg-white/10 h-10 w-10">
-             <Search className="h-5 w-5 text-white" />
+          <Button variant="ghost" size="icon" className="hover:bg-black/5 h-10 w-10">
+             <Search className="h-5 w-5 text-black/60" />
           </Button>
         </div>
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
             <Logo 
-                variant="rosa-glow"
+                variant="white"
                 className="h-8 w-auto transition-transform hover:scale-105 active:scale-95"
             />
         </Link>

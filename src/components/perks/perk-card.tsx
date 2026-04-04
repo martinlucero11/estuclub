@@ -24,6 +24,8 @@ interface PerkCardProps {
   priority?: boolean;
 }
 
+const DEFAULT_PERK_IMAGE = "https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&q=80&w=800";
+
 export default function PerkCard({ perk, className, variant = 'grid', priority = false }: PerkCardProps) {
   const { userData, userLocation, roles } = useUser();
   const { isApproved: isCincoDos } = useCincoDosStatus();
@@ -36,9 +38,10 @@ export default function PerkCard({ perk, className, variant = 'grid', priority =
   const isLocked = useMemo(() => {
     if (isAdmin) return false;
     if (perk.minLevel && userLevel < perk.minLevel) return true;
-    if (perk.targetAudience === 'cinco_dos' && !isCincoDos) return true;
+    if (perk.isCincoDosOnly && !isCincoDos) return true;
+    if (perk.isStudentOnly && roles.length > 0 && !roles.includes('user_student') && !roles.includes('admin')) return true;
     return false;
-  }, [perk.minLevel, userLevel, perk.targetAudience, isCincoDos, isAdmin]);
+  }, [perk.minLevel, userLevel, perk.isCincoDosOnly, perk.isStudentOnly, isCincoDos, isAdmin, roles]);
 
   const supplierName = perk.supplierName || "Club de Beneficios";
   
@@ -63,7 +66,7 @@ export default function PerkCard({ perk, className, variant = 'grid', priority =
       className
     )}>
         <Image
-            src={optimizeImage(perk.imageUrl, 800)}
+            src={optimizeImage(perk.imageUrl || DEFAULT_PERK_IMAGE, 800)}
             alt={perk.title}
             fill
             className={cn(

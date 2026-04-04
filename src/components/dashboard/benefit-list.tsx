@@ -8,7 +8,7 @@ import { makeBenefitSerializable } from '@/lib/data';
 import { DataTable } from '@/components/ui/data-table';
 import { getBenefitColumns } from './benefit-columns';
 import { useToast } from '@/hooks/use-toast';
-import EditPerkDialog from '@/components/perks/edit-perk-dialog';
+import { BenefitDialog } from '@/components/admin/benefits/benefit-dialog';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
@@ -36,7 +36,7 @@ export default function BenefitList({ user }: BenefitListProps) {
     if (!firestore) return null;
     let q = query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()));
     if (!isAdmin) {
-      q = query(q, where('ownerId', '==', user.uid));
+      q = query(q, where('supplierId', '==', user.uid));
     }
     return q;
   }, [firestore, isAdmin, user.uid]);
@@ -102,13 +102,13 @@ export default function BenefitList({ user }: BenefitListProps) {
         filterPlaceholder='Filtrar por título...'
       />
       {selectedBenefit && (
-        <EditPerkDialog
+        <BenefitDialog
           isOpen={isEditDialogOpen}
           onOpenChange={(open) => {
               setIsEditDialogOpen(open);
               if (!open) setSelectedBenefit(null);
           }}
-          perk={selectedBenefit}
+          benefit={selectedBenefit}
         />
       )}
       <DeleteConfirmationDialog

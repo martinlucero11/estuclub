@@ -3,7 +3,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, doc, deleteDoc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, orderBy, doc, deleteDoc, updateDoc, writeBatch, where } from 'firebase/firestore';
 import { getHomeSectionColumns } from './home-section-columns';
 import type { HomeSection } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
@@ -11,10 +11,14 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
-import { HomeSectionDialog } from './home-section-dialog';
+import { HomeSectionDialog } from '@/components/admin/home-builder/home-section-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
-export function HomeSectionTable() {
+interface HomeSectionTableProps {
+    targetBoard: 'perks' | 'delivery';
+}
+
+export function HomeSectionTable({ targetBoard }: HomeSectionTableProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -23,8 +27,17 @@ export function HomeSectionTable() {
     const [selectedSection, setSelectedSection] = useState<HomeSection | null>(null);
     const [sectionIdToDelete, setSectionIdToDelete] = useState<string | null>(null);
 
-    const sectionsQuery = useMemo(() => query(collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), orderBy('order', 'asc')), [firestore]);
-    const { data: sections, isLoading } = useCollection(sectionsQuery);
+    const sectionsQuery = useMemo(() => 
+        query(
+            collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()), 
+            orderBy('order', 'asc')
+        ), [firestore]);
+    const { data: allSections, isLoading } = useCollection(sectionsQuery);
+
+    const sections = useMemo(() => {
+        if (!allSections) return [];
+        return allSections.filter(s => (s.targetBoard || 'perks') === targetBoard);
+    }, [allSections, targetBoard]);
 
     const handleToggleActive = async (sectionId: string, isActive: boolean) => {
         const sectionRef = doc(firestore, 'home_sections', sectionId);
@@ -62,7 +75,42 @@ export function HomeSectionTable() {
         }
     };
 
-    const columns = useMemo(() => getHomeSectionColumns(handleToggleActive, handleEdit, handleDeleteRequest), []);
+    const handleMoveUp = async (section: HomeSection) => {
+        if (!sections || sections.length === 0) return;
+        const currentIndex = sections.findIndex(s => s.id === section.id);
+        if (currentIndex <= 0) return; // Already at the top
+
+        const neighbor = sections[currentIndex - 1];
+        await swapOrder(section, neighbor);
+    };
+
+    const handleMoveDown = async (section: HomeSection) => {
+        if (!sections || sections.length === 0) return;
+        const currentIndex = sections.findIndex(s => s.id === section.id);
+        if (currentIndex === -1 || currentIndex >= sections.length - 1) return; // Already at the bottom
+
+        const neighbor = sections[currentIndex + 1];
+        await swapOrder(section, neighbor);
+    };
+
+    const swapOrder = async (s1: HomeSection, s2: HomeSection) => {
+        const batch = writeBatch(firestore);
+        const s1Ref = doc(firestore, 'home_sections', s1.id);
+        const s2Ref = doc(firestore, 'home_sections', s2.id);
+
+        batch.update(s1Ref, { order: s2.order });
+        batch.update(s2Ref, { order: s1.order });
+
+        try {
+            await batch.commit();
+            toast({ title: 'Orden actualizado', description: 'Las secciones han sido reordenadas.' });
+        } catch (error) {
+            console.error('Error swapping order:', error);
+            toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el orden.' });
+        }
+    };
+
+    const columns = useMemo(() => getHomeSectionColumns(handleToggleActive, handleEdit, handleDeleteRequest, handleMoveUp, handleMoveDown), [sections]);
 
     return (
         <>
@@ -82,17 +130,17 @@ export function HomeSectionTable() {
              <HomeSectionDialog 
                 isOpen={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
+                defaultBoard={targetBoard}
             />
-            {selectedSection && (
-                 <HomeSectionDialog 
+                  <HomeSectionDialog 
                     isOpen={isEditDialogOpen}
                     onOpenChange={(isOpen) => {
                         setIsEditDialogOpen(isOpen);
                         if (!isOpen) setSelectedSection(null);
                     }}
                     section={selectedSection}
+                    defaultBoard={targetBoard}
                 />
-            )}
              <DeleteConfirmationDialog
                 isOpen={isDeleteDialogOpen}
                 onOpenChange={setIsDeleteDialogOpen}

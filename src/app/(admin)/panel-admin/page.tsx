@@ -18,10 +18,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { KPIWidgets } from '@/components/admin/kpi-widgets';
-import { AdminSettingsModal } from '@/components/admin/admin-settings-modal';
 
 export default function AdminControlCentralPage() {
-    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     return (
         <div className="space-y-12 animate-in fade-in duration-1000">
             {/* Top Branding & Welcome */}
@@ -80,10 +78,10 @@ export default function AdminControlCentralPage() {
 
                     <AdminModule 
                         title="Marketing" 
-                        desc="Gestión de Banners, Secciones de la Home y Visibilidad de Módulos."
+                        desc="Gestión de Banners, Categorías y envío de Push Notifications."
                         icon={Megaphone}
-                        href="/home-builder"
-                        items={["Hero Editor", "Banner Home", "Toggles Globales"]}
+                        href="/admin/cms"
+                        items={["Banner Home", "Categorías Globales", "Push Directo"]}
                         accent="orange"
                     />
 
@@ -109,36 +107,17 @@ export default function AdminControlCentralPage() {
                         title="Sistema" 
                         desc="Configuración técnica del servidor, mantenimiento de DB y logs de MP."
                         icon={Settings}
-                        onClick={() => setIsSettingsOpen(true)}
+                        href="/admin/settings"
                         items={["MP Webhooks", "Cron Jobs", "Ajustes Globales"]}
                         accent="slate"
                     />
                 </div>
             </div>
-
-            <AdminSettingsModal 
-                isOpen={isSettingsOpen} 
-                onClose={() => setIsSettingsOpen(false)} 
-            />
         </div>
     );
 }
 
-function AdminModule({ title, desc, icon: Icon, href, onClick, items, accent }: any) {
-    const CardWrapper = ({ children }: { children: React.ReactNode }) => {
-        if (onClick) {
-            return (
-                <button 
-                  onClick={onClick}
-                  className="w-full text-left"
-                >
-                  {children}
-                </button>
-            );
-        }
-        return <Link href={href}>{children}</Link>;
-    };
-
+function AdminModule({ title, desc, icon: Icon, href, items, accent }: any) {
     const accentColors = {
         primary: "text-primary border-primary/20 bg-primary/5 hover:border-primary/50",
         blue: "text-blue-500 border-blue-500/20 bg-blue-500/5 hover:border-blue-500/50",
@@ -151,7 +130,7 @@ function AdminModule({ title, desc, icon: Icon, href, onClick, items, accent }: 
     const colorClass = accentColors[accent as keyof typeof accentColors] || accentColors.primary;
 
     return (
-        <CardWrapper>
+        <Link href={href}>
             <Card className={cn("rounded-[2.5rem] p-1 group transition-all duration-500 overflow-hidden border-white/5 bg-card/30 hover:bg-card/50 shadow-premium relative", colorClass)}>
                 <CardContent className="p-8 space-y-6 relative z-10">
                     <div className="flex justify-between items-start">
@@ -175,7 +154,7 @@ function AdminModule({ title, desc, icon: Icon, href, onClick, items, accent }: 
                     </div>
                 </CardContent>
             </Card>
-        </CardWrapper>
+        </Link>
     );
 }
 

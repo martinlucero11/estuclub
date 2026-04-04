@@ -88,7 +88,7 @@ export default function SignupPage() {
             {/* Local Header - Simplified and not fixed to avoid layout issues */}
             <div className="w-full flex items-center justify-between px-6 py-6 mb-4">
                 <Link href="/" className="transition-transform active:scale-95">
-                    <Logo variant="rosa" className="h-8 w-auto" />
+                    <Logo variant="rosa-glow" className="h-8 w-auto" />
                 </Link>
                 {activeRole && (
                     <Button 
