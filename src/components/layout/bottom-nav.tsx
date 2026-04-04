@@ -39,11 +39,13 @@ export function BottomNav() {
   // Define Navigation Sets
   const benefitsNav = [
     { href: '/', label: 'Inicio', icon: Home },
-    ...(isStudent ? [{ href: '/benefits', label: 'Beneficios', icon: Ticket }] : []),
+    isStudent 
+        ? { href: '/benefits', label: 'Beneficios', icon: Ticket }
+        : { href: '/turnos', label: 'Turnos', icon: CalendarDays },
     benefitsCenterBtn,
     { href: isPrivileged ? '/panel-cluber/supplier-profile' : '/profile', label: 'Perfil', icon: User },
     { href: '#cart', label: 'Carrito', icon: ShoppingCart },
-  ].filter(Boolean);
+  ];
 
   const deliveryNav = [
     { href: '/delivery', label: 'Tienda', icon: ShoppingBag },
