@@ -44,11 +44,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ 
             success: true, 
             id: result?.id, 
-            url: result?.url 
+            url: result?.url,
+            contentLink: result?.contentLink
         });
 
     } catch (error: any) {
-        console.error('API Drive Upload Error:', error);
+        console.error('CRITICAL API DRIVE UPLOAD ERROR:', {
+            message: error.message,
+            code: error.code,
+            errors: error.errors
+        });
         return NextResponse.json({ 
             error: error.message || 'Internal Server Error' 
         }, { status: 500 });

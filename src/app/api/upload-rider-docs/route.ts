@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to create Drive folder');
     }
 
+    // MANDATORY: Set FOLDER permissions to anyone with link can view
+    await drive.permissions.create({
+      fileId: folderId,
+      requestBody: { role: 'reader', type: 'anyone' },
+    });
+
     let fotoRostroLink = '';
     let fotoVehiculoLink = '';
 
@@ -74,7 +80,16 @@ export async function POST(req: NextRequest) {
         media: { mimeType: fotoRostro.type, body: stream },
         fields: 'id, webViewLink',
       });
-      fotoRostroLink = res.data.webViewLink || '';
+      
+      const fileId = res.data.id!;
+      await drive.permissions.create({
+        fileId: fileId,
+        requestBody: { role: 'reader', type: 'anyone' },
+      });
+
+      // Get fresh link
+      const meta = await drive.files.get({ fileId, fields: 'webViewLink' });
+      fotoRostroLink = meta.data.webViewLink || '';
     }
 
     // 3. Upload vehicle photo
@@ -91,7 +106,16 @@ export async function POST(req: NextRequest) {
         media: { mimeType: fotoVehiculo.type, body: stream },
         fields: 'id, webViewLink',
       });
-      fotoVehiculoLink = res.data.webViewLink || '';
+
+      const fileId = res.data.id!;
+      await drive.permissions.create({
+        fileId: fileId,
+        requestBody: { role: 'reader', type: 'anyone' },
+      });
+
+      // Get fresh link
+      const meta = await drive.files.get({ fileId, fields: 'webViewLink' });
+      fotoVehiculoLink = meta.data.webViewLink || '';
     }
 
     return NextResponse.json({
@@ -102,7 +126,11 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('Error uploading rider docs:', error);
+    console.error('CRITICAL RIDER UPLOAD ERROR:', {
+      message: error.message,
+      code: error.code,
+      errors: error.errors
+    });
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

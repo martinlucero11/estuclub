@@ -59,16 +59,32 @@ export async function POST(req: NextRequest) {
     const response = await drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id, webViewLink',
+      fields: 'id, webViewLink, webContentLink',
     });
 
+    const fileId = response.data.id!;
+
+    // MANDATORY: Set permissions to anyone with link can view
+    await drive.permissions.create({
+      fileId,
+      requestBody: { role: 'reader', type: 'anyone' },
+    });
+
+    // Get fresh link
+    const meta = await drive.files.get({ fileId, fields: 'webViewLink, webContentLink' });
+
     return NextResponse.json({
-      fileId: response.data.id,
-      webViewLink: response.data.webViewLink
+      fileId: fileId,
+      webViewLink: meta.data.webViewLink,
+      webContentLink: meta.data.webContentLink
     });
 
   } catch (error: any) {
-    console.error('Error uploading to Google Drive:', error);
+    console.error('CRITICAL STUDENT UPLOAD ERROR:', {
+      message: error.message,
+      code: error.code,
+      errors: error.errors
+    });
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

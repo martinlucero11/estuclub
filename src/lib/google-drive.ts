@@ -1,30 +1,20 @@
 import { google } from 'googleapis';
 import { Readable } from 'stream';
+import path from 'path';
 
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
-const REDIRECT_URI = 'https://developers.google.com/oauthplayground';
-
-const oauth2Client = new google.auth.OAuth2(
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REDIRECT_URI
-);
-
-oauth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+// Initialize Auth with Service Account for better reliability
+const auth = new google.auth.GoogleAuth({
+    keyFile: path.join(process.cwd(), 'service-account.json'),
+    scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata'],
+});
 
 const drive = google.drive({
     version: 'v3',
-    auth: oauth2Client,
+    auth,
 });
 
 /**
- * Uploads a file to Google Drive
- * @param file The file object (from Buffer)
- * @param filename Desired filename
- * @param parentFolderId The Google Drive folder ID
- * @returns The webViewLink of the uploaded file
+ * Uploads a file to Google Drive and sets public permissions
  */
 export async function uploadFileToDrive(
     fileBuffer: Buffer,
@@ -33,6 +23,8 @@ export async function uploadFileToDrive(
     parentFolderId: string
 ) {
     try {
+        console.log(`[DRIVE] Starting upload for ${filename} to folder ${parentFolderId}`);
+
         // Create Readable Stream from Buffer
         const bufferStream = new Readable();
         bufferStream.push(fileBuffer);
@@ -50,21 +42,37 @@ export async function uploadFileToDrive(
             fields: 'id, webViewLink, webContentLink',
         });
 
-        // Set permissions to anyone with link can view (Optional, depending on user needs)
+        const fileId = response.data.id;
+        if (!fileId) throw new Error('Drive API did not return a file ID');
+
+        console.log(`[DRIVE] File created with ID: ${fileId}. Setting public permissions...`);
+
+        // MANDATORY: Set permissions to anyone with link can view
         await drive.permissions.create({
-            fileId: response.data.id!,
+            fileId: fileId,
             requestBody: {
                 role: 'reader',
                 type: 'anyone',
             },
         });
 
+        // Re-fetch to get links after permission change (sometimes needed for fresh links)
+        const fileMetadata = await drive.files.get({
+            fileId: fileId,
+            fields: 'id, webViewLink, webContentLink',
+        });
+
         return {
-            id: response.data.id,
-            url: response.data.webViewLink,
+            id: fileId,
+            url: fileMetadata.data.webViewLink,
+            contentLink: fileMetadata.data.webContentLink
         };
-    } catch (error) {
-        console.error('Error uploading to Google Drive:', error);
+    } catch (error: any) {
+        console.error('CRITICAL DRIVE UPLOAD ERROR:', {
+            message: error.message,
+            code: error.code,
+            errors: error.errors
+        });
         throw error;
     }
 }
