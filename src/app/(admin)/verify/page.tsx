@@ -14,8 +14,16 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   ExternalLink, Loader2,  CheckCircle, User,
   Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera,
-  ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Utensils, Gift
+  ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Utensils, Gift,
+  CalendarDays, CalendarClock
 } from 'lucide-react';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SupplierProfile } from '@/types/data';
@@ -70,7 +78,7 @@ export default function VerifyPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'riders' | 'pending-clubers' | 'management' | 'cinco-dos'>('riders');
+  const [activeTab, setActiveTab] = useState<'riders' | 'pending-clubers' | 'management' | 'cinco-dos' | 'appointments'>('riders');
   const [searchQuery, setSearchQuery] = useState('');
 
   const isAdmin = roles.includes('admin');
@@ -131,10 +139,19 @@ export default function VerifyPage() {
     );
   }, [firestore]);
 
+  const appointmentsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'appointments').withConverter(createConverter<any>()),
+      orderBy('startTime', 'desc')
+    );
+  }, [firestore]);
+
   const { data: applications, isLoading: isLoadingRiders } = useCollection<RiderApplication>(pendingRiderQuery);
   const { data: allClubers, isLoading: isLoadingManagement } = useCollection<SupplierProfile>(allClubersQuery);
   const { data: comedorApps, isLoading: isLoadingComedor } = useCollection<ComedorApplication>(pendingComedorQuery);
   const { data: pendingClubers, isLoading: isLoadingPendingClubers } = useCollection<SupplierRequest>(supplierRequestsQuery);
+  const { data: appointments, isLoading: isLoadingAppointments } = useCollection<any>(appointmentsQuery);
 
   const filteredManagementClubers = useMemo(() => {
     if (!searchQuery) return allClubers || [];
@@ -224,7 +241,7 @@ export default function VerifyPage() {
       await updateDoc(docRef, { [field]: value });
       
       // Synchronize key fields to the user document for UI reactivity
-      if (field === 'isCincoDos' || field === 'permitsBenefits') {
+      if (field === 'isCincoDos' || field === 'permitsBenefits' || field === 'permitsShifts') {
         await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
       }
 
@@ -365,10 +382,90 @@ export default function VerifyPage() {
             <TabsTrigger value="cinco-dos" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-amber-500 data-[state=active]:text-black transition-all duration-500 h-14">
               Cinco.Dos ({comedorApps?.length || 0})
             </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-500 h-14">
+              Turnos ({appointments?.length || 0})
+            </TabsTrigger>
             <TabsTrigger value="management" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-white data-[state=active]:text-black transition-all duration-500 h-14">
               Gestión Total
             </TabsTrigger>
           </TabsList>
+
+          {/* APPOINTMENTS TAB */}
+          <TabsContent value="appointments" className="space-y-10 focus-visible:outline-none">
+            {isLoadingAppointments ? (
+              <div className="grid gap-8">
+                {[1, 2].map(i => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+              </div>
+            ) : (!appointments || appointments.length === 0) ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
+                  <CalendarDays className="h-16 w-16 text-blue-500 mb-4 opacity-20" />
+                  <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin turnos registrados</p>
+              </div>
+            ) : (
+                <div className="grid gap-6">
+                    {appointments.map((apt: any) => {
+                         const start = (apt.startTime as Timestamp)?.toDate();
+                         return (
+                            <Card key={apt.id} className="rounded-[2.5rem] border-white/5 glass-dark p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl relative overflow-hidden group">
+                                <div className="absolute right-0 top-0 h-full w-1 border-r-4 border-blue-500/20" />
+                                <div className="flex items-center gap-6">
+                                    <div className="h-16 w-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                                        <CalendarClock className="h-6 w-6 text-blue-500" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-xl font-black uppercase tracking-tighter text-white">{apt.userName}</h4>
+                                        <div className="flex flex-wrap items-center gap-4 text-[10px] font-black uppercase tracking-widest text-white/40">
+                                            <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full"><Building className="h-3.5 w-3.5 text-blue-500" /> {apt.supplierName || 'Punto Local'}</span>
+                                            <span className="flex items-center gap-2 bg-white/5 px-3 py-1 rounded-full"><Utensils className="h-3.5 w-3.5" /> {apt.serviceName}</span>
+                                            <span className="text-white/60">{start?.toLocaleString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} hs</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <Badge className={cn(
+                                        "h-10 px-6 rounded-xl font-black uppercase text-[10px] tracking-widest border-2",
+                                        apt.status === 'approved' ? "bg-green-500/10 text-green-500 border-green-500/20" :
+                                        apt.status === 'rejected' ? "bg-red-500/10 text-red-500 border-red-500/20" :
+                                        "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                    )}>
+                                        {apt.status === 'approved' ? 'Aprobado' : apt.status === 'rejected' ? 'Rechazado' : 'Pendiente'}
+                                    </Badge>
+                                    
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-12 w-12 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10">
+                                                <Settings2 className="h-5 w-5" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="glass glass-dark rounded-2xl border-white/10">
+                                            <DropdownMenuItem 
+                                                className="rounded-xl font-black text-[10px] uppercase tracking-widest text-green-500 hover:bg-green-500/10"
+                                                onClick={async () => {
+                                                    await updateDoc(doc(firestore, 'appointments', apt.id), { status: 'approved' });
+                                                    toast({ title: "✅ TURNO APROBADO", description: `El turno de ${apt.userName} fue validado.` });
+                                                }}
+                                            >
+                                                <CheckCircle className="h-4 w-4 mr-2" /> Aprobar
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem 
+                                                className="rounded-xl font-black text-[10px] uppercase tracking-widest text-red-500 hover:bg-red-500/10"
+                                                onClick={async () => {
+                                                    await updateDoc(doc(firestore, 'appointments', apt.id), { status: 'rejected' });
+                                                    toast({ title: "❌ TURNO RECHAZADO", description: `El turno de ${apt.userName} fue denegado.` });
+                                                }}
+                                            >
+                                                <ShieldX className="h-4 w-4 mr-2" /> Rechazar
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </Card>
+                         )
+                    })}
+                </div>
+            )}
+          </TabsContent>
 
           {/* RIDERS TAB */}
           <TabsContent value="riders" className="space-y-10 focus-visible:outline-none">
@@ -572,6 +669,12 @@ export default function VerifyPage() {
                                     label="Beneficios" 
                                     value={!!cluber.permitsBenefits} 
                                     onChange={(v) => handleToggleCluberField(cluber.id, 'permitsBenefits', v)} 
+                                />
+                                <ControlToggle 
+                                    icon={<CalendarDays className="h-4 w-4" />}
+                                    label="Turnos" 
+                                    value={!!cluber.permitsShifts} 
+                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsShifts', v)} 
                                 />
                                 <CincoDosToggle 
                                     value={!!cluber.isCincoDos} 

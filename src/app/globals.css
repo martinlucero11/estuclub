@@ -13,6 +13,26 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- ESTUCLUB PREMIUM SCROLLBARS --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FF007F;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff3399;
+}
+
 h1, h2, h3, h4, .font-branding {
   font-family: var(--font-montserrat), sans-serif;
 }
@@ -173,6 +193,21 @@ h1, h2, h3, h4, .font-branding {
   .mobile-container { @apply w-full max-w-[450px] mx-auto px-5; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+/* --- RESPONSIVE DESKTOP ZOOM (75%) --- */
+@media (min-width: 768px) {
+  .admin-desktop-zoom {
+    zoom: 0.75;
+    min-height: 133.33vh;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-desktop-zoom {
+    zoom: 1;
+    min-height: 100vh;
+  }
 }
 
 

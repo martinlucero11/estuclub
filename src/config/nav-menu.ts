@@ -141,8 +141,14 @@ export const navConfig: NavConfig = {
         },
         {
           title: "Beneficios",
-          href: "/panel-cluber/benefits",
+          href: "/panel-cluber/beneficios",
           icon: Gift,
+          role: ["admin", "supplier"],
+        },
+        {
+          title: "Configuración",
+          href: "/panel-cluber/configuracion",
+          icon: Settings,
           role: ["admin", "supplier"],
         },
         {
@@ -190,6 +196,12 @@ export const navConfig: NavConfig = {
                 title: "Contenido Extremo",
                 href: "/panel-admin/content",
                 icon: Megaphone,
+                role: ["admin"],
+            },
+            {
+                title: "Home Builder",
+                href: "/panel-admin/home-builder",
+                icon: LayoutTemplate,
                 role: ["admin"],
             },
             {

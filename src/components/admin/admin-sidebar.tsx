@@ -23,13 +23,14 @@ import { useAdmin } from '@/context/admin-context';
 import Logo from '@/components/common/Logo';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/firebase/config';
+import { AdminSettingsModal } from './admin-settings-modal';
 
 const navItems = [
   { label: 'Inicio', icon: LayoutDashboard, href: '/admin' },
   { label: 'Solicitudes', icon: ShieldCheck, href: '/verify' },
   { label: 'Comercios', icon: Store, href: '/admin/clubers' },
   { label: 'Riders', icon: Truck, href: '/admin/riders' },
-  { label: 'Marketing', icon: Megaphone, href: '/admin/cms' },
+  { label: 'Marketing', icon: Megaphone, href: '/home-builder' },
   { label: 'Usuarios', icon: Users, href: '/admin/users' },
   { label: 'Métricas', icon: BarChart3, href: '/admin/analytics' },
   { label: 'Ajustes', icon: Settings, href: '#', isGhost: true },
@@ -38,6 +39,7 @@ const navItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { impersonatedUserId, setImpersonatedUserId } = useAdmin();
 
   return (
@@ -97,7 +99,7 @@ export function AdminSidebar() {
             if (item.href === '#') {
               return (
                 <button 
-                  onClick={() => alert('🚀 Función en desarrollo: ¡Próximamente podrás configurar el sistema!')}
+                  onClick={() => setIsSettingsOpen(true)}
                   className="w-full text-left"
                 >
                   {children}
@@ -195,6 +197,11 @@ export function AdminSidebar() {
             )}
           </Button>
       </div>
+
+      <AdminSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </div>
   );
 }

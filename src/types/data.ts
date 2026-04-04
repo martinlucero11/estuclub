@@ -47,6 +47,7 @@ export interface UserProfile {
     level?: number;
     isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
     permitsBenefits?: boolean; // Permiso para crear beneficios (Cluber)
+    permitsShifts?: boolean; // Permiso para gestionar turnos (Cluber)
     location?: {
       address: string;
       city?: string;
@@ -133,6 +134,7 @@ export interface SupplierProfile {
   canCreateBenefits?: boolean;
   canSendNotifications?: boolean;
   announcementsEnabled?: boolean;
+  permitsShifts?: boolean;
   avgRating?: number;
   reviewCount?: number;
   // --- Delivery Lite ---
@@ -205,6 +207,36 @@ export interface Category {
     type: 'delivery' | 'discount' | 'global';
     order: number;
     isActive: boolean;
+}
+
+export interface HomeHero {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+    ctaLink: string;
+    bgImage: string;
+}
+
+export interface HomeBannerConfig {
+    id: string;
+    title: string;
+    image: string;
+    link: string;
+    order: number;
+    isActive: boolean;
+}
+
+export interface HomeConfig {
+    id: string;
+    hero: HomeHero;
+    banners: HomeBannerConfig[];
+    visibility: {
+        showRiders: boolean;
+        showCincoDos: boolean;
+        showBenefits: boolean;
+        showDelivery: boolean;
+    };
+    updatedAt: Timestamp;
 }
 
 export interface Order {

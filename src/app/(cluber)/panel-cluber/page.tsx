@@ -25,6 +25,32 @@ import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 import OrdersDashboard from '@/components/supplier/orders-dashboard';
 import { BenefitRedemptionsTable } from '@/components/supplier/benefit-redemptions-table';
 import { TurneroManager } from '../../../components/supplier/turnero-manager';
+import { Skeleton } from '@/components/ui/skeleton';
+
+// ─── LOADING SKELETON ─────────────────────────────────────
+function CluberSkeleton() {
+    return (
+        <div className="space-y-8 animate-pulse px-4 pt-10">
+            <div className="flex justify-between items-end">
+                <div className="space-y-3">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-48" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-full" />
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+            </div>
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <div className="space-y-4">
+                <Skeleton className="h-6 w-32" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 // ─── PENDING SCREEN ──────────────────────────────────────
 function CluberPending() {
@@ -63,6 +89,8 @@ export default function PanelCluberPage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [activeTab, setActiveTab] = useState<'benefits' | 'delivery' | 'turnero'>('benefits');
 
+    if (isUserLoading) return <CluberSkeleton />;
+
     const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
     const shopId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : userData?.uid;
     const isOpen = effectiveSupplierData?.isOpen ?? false;
@@ -70,7 +98,7 @@ export default function PanelCluberPage() {
     // Dynamic Permissions
     const canBenefits = userData?.permitsBenefits ?? false;
     const canDelivery = effectiveSupplierData?.deliveryEnabled ?? false;
-    const canTurnero = effectiveSupplierData?.appointmentsEnabled ?? false;
+    const canTurnero = userData?.permitsShifts ?? false;
 
     // Set initial tab based on permissions
     useEffect(() => {
@@ -264,7 +292,7 @@ export default function PanelCluberPage() {
 
                 {/* --- FOOTER TOOLS --- */}
                 <div className="flex flex-wrap justify-center gap-4 pt-12">
-                    <Link href="/panel-cluber/supplier-profile">
+                    <Link href="/panel-cluber/configuracion">
                         <Button variant="ghost" className="rounded-2xl h-14 px-8 gap-3 glass-2 border-white/5 hover:bg-white/10 transition-all group shadow-xl">
                             <Settings className="h-4 w-4 text-white group-hover:text-primary group-hover:rotate-45 transition-all" />
                             <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white">Configuración</span>
@@ -372,7 +400,7 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     { 
                         label: "Nuevo Beneficio", 
                         icon: Plus, 
-                        href: "/panel-cluber/benefits", 
+                        href: "/panel-cluber/beneficios", 
                         color: "text-white bg-primary shadow-[0_0_20px_rgba(255,0,127,0.5)] animate-pulse-slow" 
                     },
                     { 

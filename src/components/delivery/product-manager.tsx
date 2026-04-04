@@ -21,6 +21,16 @@ import {
     DialogDescription,
 } from '@/components/ui/dialog';
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -48,6 +58,9 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const [searchTerm, setSearchTerm] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);
+    const [uploadMethod, setUploadMethod] = useState<'upload' | 'link'>('link');
+    const [isUploading, setIsUploading] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
     const firestore = useFirestore();
     const { toast } = useToast();
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierId ? doc(firestore, 'roles_supplier', supplierId) : null);
@@ -123,10 +136,11 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     };
 
     const handleDeleteProduct = async (id: string) => {
-        if (!firestore || !confirm('¿Estás seguro de eliminar este producto?')) return;
+        if (!firestore) return;
         try {
             await deleteDoc(doc(firestore, 'products', id));
-            toast({ title: "Producto eliminado" });
+            toast({ title: "✅ PRODUCTO ELIMINADO", description: "El catálogo ha sido actualizado." });
+            setProductToDelete(null);
         } catch (error) {
             console.error(error);
             toast({ title: "Error al eliminar el producto", variant: "destructive" });
@@ -187,25 +201,105 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             </DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleSaveProduct} className="space-y-4 pt-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="imageUrl" className="text-[10px] font-black uppercase tracking-widest opacity-70">URL de la Foto</Label>
-                                <div className="flex gap-3 items-center">
-                                    <div className="h-16 w-16 rounded-2xl bg-background flex-shrink-0 border border-white/10 overflow-hidden relative">
-                                        {selectedProduct?.imageUrl ? (
-                                            <img src={selectedProduct.imageUrl} alt="Preview" className="h-full w-full object-cover" />
-                                        ) : (
-                                            <ImageIcon className="h-6 w-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
-                                        )}
-                                    </div>
-                                    <Input 
-                                        id="imageUrl" 
-                                        type="url" 
-                                        placeholder="https://ejemplo.com/foto.jpg"
-                                        className="rounded-xl bg-background/50 border-white/10"
-                                        value={selectedProduct?.imageUrl || ''} 
-                                        onChange={e => setSelectedProduct({...selectedProduct, imageUrl: e.target.value})}
-                                    />
-                                </div>
+                            <div className="space-y-4">
+                                <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Imagen del Producto</Label>
+                                
+                                <Tabs value={uploadMethod} onValueChange={(v: any) => setUploadMethod(v)} className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2 h-10 p-1 bg-white/5 rounded-xl border border-white/5">
+                                        <TabsTrigger value="link" className="text-[9px] font-black uppercase tracking-widest">Enlace Externo</TabsTrigger>
+                                        <TabsTrigger value="upload" className="text-[9px] font-black uppercase tracking-widest">Subir Archivo</TabsTrigger>
+                                    </TabsList>
+                                    
+                                    <TabsContent value="link" className="pt-4 space-y-4">
+                                        <div className="flex gap-3 items-center">
+                                            <div className="h-16 w-16 rounded-2xl bg-background flex-shrink-0 border border-white/10 overflow-hidden relative">
+                                                {selectedProduct?.imageUrl ? (
+                                                    <img src={selectedProduct.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                                                ) : (
+                                                    <ImageIcon className="h-6 w-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
+                                                )}
+                                            </div>
+                                            <Input 
+                                                id="imageUrl" 
+                                                type="url" 
+                                                placeholder="https://ejemplo.com/foto.jpg"
+                                                className="rounded-xl bg-background/50 border-white/10"
+                                                value={selectedProduct?.imageUrl || ''} 
+                                                onChange={e => setSelectedProduct({...selectedProduct, imageUrl: e.target.value})}
+                                            />
+                                        </div>
+                                    </TabsContent>
+                                    
+                                    <TabsContent value="upload" className="pt-4">
+                                        <div 
+                                            className={cn(
+                                                "relative group h-32 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-2 cursor-pointer glass-2 overflow-hidden",
+                                                isUploading ? "border-primary animate-pulse" : "border-white/10 hover:border-primary/50"
+                                            )}
+                                            onClick={() => document.getElementById('product-file-upload')?.click()}
+                                        >
+                                            {isUploading ? (
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-primary">Subiendo a Cloud...</span>
+                                                </div>
+                                            ) : selectedProduct?.imageUrl ? (
+                                                <div className="absolute inset-0">
+                                                    <img src={selectedProduct.imageUrl} alt="Uploaded" className="w-full h-full object-cover opacity-40" />
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+                                                        <Check className="h-6 w-6 text-green-500 mb-1" />
+                                                        <span className="text-[8px] font-black uppercase tracking-widest">Imagen Capturada</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="p-3 rounded-full bg-primary/10 text-primary group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,0,127,0.2)]">
+                                                        <Plus className="h-5 w-5" />
+                                                    </div>
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/40">Seleccionar Archivo</span>
+                                                    <div className="absolute inset-0 border-2 border-primary/20 animate-pulse rounded-2xl pointer-events-none" />
+                                                </>
+                                            )}
+                                            <input 
+                                                id="product-file-upload" 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    
+                                                    setIsUploading(true);
+                                                    const formData = new FormData();
+                                                    formData.append('file', file);
+                                                    formData.append('folder', 'cluber');
+
+                                                    try {
+                                                        const idToken = await user?.getIdToken();
+                                                        const res = await fetch('/api/upload-drive', {
+                                                            method: 'POST',
+                                                            headers: { 'Authorization': `Bearer ${idToken}` },
+                                                            body: formData
+                                                        });
+                                                        
+                                                        const result = await res.json();
+                                                        if (result.success && result.contentLink) {
+                                                            setSelectedProduct({ ...selectedProduct, imageUrl: result.contentLink });
+                                                            toast({ title: "✅ IMAGEN SUBIDA", description: "El archivo se guardó en Google Drive." });
+                                                        } else {
+                                                            throw new Error(result.error || 'Upload failed');
+                                                        }
+                                                    } catch (err: any) {
+                                                        console.error(err);
+                                                        toast({ title: "Error de subida", description: err.message, variant: "destructive" });
+                                                    } finally {
+                                                        setIsUploading(false);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </TabsContent>
+                                </Tabs>
                             </div>
 
                             <div className="space-y-2">
@@ -302,8 +396,17 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             </div>
 
                             <DialogFooter className="pt-4">
-                                <Button type="submit" className="w-full rounded-2xl h-12 font-black uppercase tracking-widest text-xs">
-                                    Guardar Producto
+                                <Button 
+                                    type="submit" 
+                                    disabled={isUploading}
+                                    className="w-full rounded-2xl h-12 font-black uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,0,127,0.3)]"
+                                >
+                                    {isUploading ? (
+                                        <>
+                                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                                            Sincronizando Imagen...
+                                        </>
+                                    ) : 'Guardar Producto'}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -361,7 +464,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem 
                                                     className="rounded-xl font-bold text-destructive focus:text-destructive focus:bg-destructive/10"
-                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                    onClick={() => setProductToDelete(product.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4 mr-2" /> Eliminar
                                                 </DropdownMenuItem>
@@ -439,6 +542,26 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             <TabsContent value="menu" className="animate-in fade-in duration-500">
                 <MenuSectionManager supplierId={supplierId} sections={menuSections} products={products || []} />
             </TabsContent>
+
+            <AlertDialog open={!!productToDelete} onOpenChange={(o) => !o && setProductToDelete(null)}>
+                <AlertDialogContent className="rounded-[2.5rem] border-white/10 glass glass-dark">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tighter uppercase italic">¿Confirmar Eliminación?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-xs font-bold uppercase tracking-widest opacity-60">
+                            Esta acción es permanente. El producto desaparecerá del menú de los clientes inmediatamente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="pt-4">
+                        <AlertDialogCancel className="rounded-xl font-black uppercase text-[10px] tracking-widest h-11 border-white/10">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => productToDelete && handleDeleteProduct(productToDelete)}
+                            className="rounded-xl bg-destructive text-destructive-foreground font-black uppercase text-[10px] tracking-widest h-11 px-8 shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:bg-destructive/90"
+                        >
+                            Eliminar Producto
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Tabs>
     );
 }

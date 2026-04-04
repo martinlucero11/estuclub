@@ -3,16 +3,17 @@ import { cn } from '@/lib/utils';
 
 interface LogoProps {
   className?: string;
-  variant?: 'white' | 'rosa' | 'black' | 'default';
+  variant?: 'white' | 'rosa' | 'black' | 'default' | 'rosa-glow';
 }
 
 const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
   ({ className, variant = 'default', ...props }, ref) => {
     const fillColor = {
       white: '#FFFFFF',
-      rosa: '#cb465a',
+      rosa: '#FF007F',
+      'rosa-glow': '#FF007F',
       black: '#000000',
-      default: 'currentColor',
+      default: '#FF007F',
     }[variant];
 
     return (
@@ -22,7 +23,11 @@ const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
         data-name="Capa 2"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 671.3 155.8"
-        className={cn("h-auto w-auto", className)}
+        className={cn(
+            "h-auto w-auto transition-all duration-500", 
+            variant === 'rosa-glow' && "drop-shadow-[0_0_12px_rgba(255,0,127,0.8)] filter transition-all",
+            className
+        )}
         {...props}
       >
         <g id="Capa_1-2" data-name="Capa 1">

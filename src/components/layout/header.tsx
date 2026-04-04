@@ -142,7 +142,7 @@ function AppSidebar() {
             <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black overflow-hidden">
                 <SheetHeader className="p-10 border-b border-black/5 relative bg-primary flex items-center justify-center">
                     <Logo 
-                        variant="white"
+                        variant="rosa-glow"
                         className="h-10 w-auto"
                     />
                 </SheetHeader>
@@ -237,7 +237,7 @@ export default function Header() {
 
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
             <Logo 
-                variant="white"
+                variant="rosa-glow"
                 className="h-8 w-auto transition-transform hover:scale-105 active:scale-95"
             />
         </Link>
