@@ -2,7 +2,7 @@
 
 import React, { createContext, ReactNode, useMemo, useState, useEffect, useRef } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore, doc, getDoc } from 'firebase/firestore';
+import { Firestore, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Auth, User, onAuthStateChanged } from 'firebase/auth';
 import { FirebaseStorage } from 'firebase/storage';
 import { getFirebaseServices } from '@/firebase/services';
@@ -53,10 +53,17 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
+    let userUnsubscribe: (() => void) | null = null;
+    let supplierUnsubscribe: (() => void) | null = null;
+
+    const authUnsubscribe = onAuthStateChanged(services.auth, async (firebaseUser) => {
+      // Clean up previous snapshots if any
+      if (userUnsubscribe) userUnsubscribe();
+      if (supplierUnsubscribe) supplierUnsubscribe();
+
       if (!firebaseUser) {
         setUser(null);
-        setRoles([]);
+        setRoles(['user']);
         setUserData(null);
         setSupplierData(null);
         setIsUserLoading(false);
@@ -65,64 +72,60 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
 
       setUser(firebaseUser);
-      // Keep isUserLoading TRUE until profile fetch completes
       setIsUserLoading(true);
 
-      const fetchId = ++profileFetchId.current;
       const uid = firebaseUser.uid;
 
+      // 1. REAL-TIME SNAPSHOT: Users Collection
+      userUnsubscribe = onSnapshot(doc(services.firestore, 'users', uid), (snapshot) => {
+        if (snapshot.exists()) {
+          setUserData(snapshot.data() as UserProfile);
+        }
+      });
+
+      // 2. REAL-TIME SNAPSHOT: Roles Supplier
+      supplierUnsubscribe = onSnapshot(doc(services.firestore, 'roles_supplier', uid), (snapshot) => {
+        if (snapshot.exists()) {
+          setSupplierData({ id: uid, ...snapshot.data() } as SupplierData);
+        }
+      });
+
       try {
-        // Promise.allSettled: if any doc doesn't exist or rules block it, we don't crash
-        const [userResult, adminResult, supplierResult, riderResult, tokenResult] = await Promise.allSettled([
-          getDoc(doc(services.firestore, 'users', uid)),
+        // One-time fetch for static roles (Admin/Rider)
+        const [adminResult, riderResult, tokenResult] = await Promise.allSettled([
           getDoc(doc(services.firestore, 'roles_admin', uid)),
-          getDoc(doc(services.firestore, 'roles_supplier', uid)),
           getDoc(doc(services.firestore, 'roles_rider', uid)),
           firebaseUser.getIdTokenResult(),
         ]);
 
-        // Abort if a newer fetch superseded us
-        if (fetchId !== profileFetchId.current) return;
-
         const resolvedRoles: string[] = ['user'];
-
-        // Admin: Firestore doc OR Custom Claim
         const adminDoc = adminResult.status === 'fulfilled' ? adminResult.value : null;
-        const token = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
-        if (adminDoc?.exists() || token?.claims?.admin) {
-          resolvedRoles.push('admin');
-        }
-
-        // Supplier: Firestore doc
-        const supplierDoc = supplierResult.status === 'fulfilled' ? supplierResult.value : null;
-        if (supplierDoc?.exists()) {
-          resolvedRoles.push('supplier');
-        }
-
-        // Rider: Firestore doc OR Custom Claim
         const riderDoc = riderResult.status === 'fulfilled' ? riderResult.value : null;
-        if (riderDoc?.exists() || token?.claims?.rider) {
-          resolvedRoles.push('rider');
-        }
+        const token = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
 
-        const userDoc = userResult.status === 'fulfilled' ? userResult.value : null;
+        if (adminDoc?.exists() || token?.claims?.admin) resolvedRoles.push('admin');
+        if (riderDoc?.exists() || token?.claims?.rider) resolvedRoles.push('rider');
+        
+        // We can check supplier role once here; onSnapshot handles Data reactivity
+        const supplierDocRef = doc(services.firestore, 'roles_supplier', uid);
+        const supplierRes = await getDoc(supplierDocRef);
+        if (supplierRes.exists()) resolvedRoles.push('supplier');
 
         setRoles(Array.from(new Set(resolvedRoles)));
-        setUserData(userDoc?.exists() ? (userDoc.data() as any) : null);
-        setSupplierData(supplierDoc?.exists() ? ({ id: uid, ...supplierDoc.data() } as any) : null);
         setUserError(null);
       } catch (error) {
-        if (fetchId !== profileFetchId.current) return;
-        console.error('Error loading profile:', error);
+        console.error('Error loading roles:', error);
         setUserError(error as Error);
       } finally {
-        if (fetchId === profileFetchId.current) {
-          setIsUserLoading(false);
-        }
+        setIsUserLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      authUnsubscribe();
+      if (userUnsubscribe) userUnsubscribe();
+      if (supplierUnsubscribe) supplierUnsubscribe();
+    };
   }, [services.auth, services.firestore]);
 
   const contextValue = useMemo(

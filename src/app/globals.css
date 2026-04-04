@@ -43,44 +43,46 @@ h1, h2, h3, h4, .font-branding {
     /* Estuclub Original Colors */
     --brand-pink: #cb465a;
     --brand-pink-rgb: 203, 70, 90;
+
+    /* High-Fidelity Redesign Palette */
+    --midnight-purple: #0a0118;
+    --dark-teal: #01161d;
+    --luminous-magenta: #ff007f;
+    --electric-teal: #00ffff;
   }
   .dark {
-    --background: 0 0% 0%;   /* Pure Black */
+    --background: 261 100% 5%; /* #0a0118 */
     --foreground: 0 0% 100%; /* Pure White */
-    --card: 0 0% 0%;
+    --card: 261 100% 10%;
     --card-foreground: 0 0% 100%;
-    --popover: 0 0% 0%;
+    --popover: 261 100% 5%;
     --popover-foreground: 0 0% 100%;
-    --primary: 351 56% 54%; /* Rosa Estuclub #cb465a */
+    --primary: 331 100% 50%; /* #ff007f */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 0%;
+    --secondary: 261 100% 5%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 0%;
-    --muted-foreground: 0 0% 100%;
-    --accent: 0 0% 100%;
-    --accent-foreground: 0 0% 0%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 80%;
+    --accent: 331 100% 50%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 100%;
-    --input: 0 0% 100%;
-    --ring: 351 56% 54%;
-
-    /* Estuclub Original Colors */
-    --brand-pink: #cb465a;
-    --brand-pink-rgb: 203, 70, 90;
+    --border: 331 100% 20%;
+    --input: 261 100% 10%;
+    --ring: 331 100% 50%;
   }
 }
 
 @layer base {
   * {
-    @apply border-foreground;
+    @apply border-foreground/10;
   }
   body {
     @apply bg-background text-foreground;
   }
 }
 
-/* Premium Animations */
+/* Premium Animations & Visual Effects */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -91,6 +93,16 @@ h1, h2, h3, h4, .font-branding {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulse-aura {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,0,127,0.1), inset 0 0 5px rgba(255,0,127,0.05); }
+  50% { box-shadow: 0 0 25px rgba(255,0,127,0.3), inset 0 0 15px rgba(255,0,127,0.15); }
+}
+
+@keyframes float-bokeh {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-20px) scale(1.1); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
@@ -99,86 +111,69 @@ h1, h2, h3, h4, .font-branding {
   animation: slideUp 0.4s ease-out forwards;
 }
 
-/* Hide scrollbars */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.animate-pulse-slow {
+    animation: pulse-aura 4s ease-in-out infinite;
 }
 
-/* Glassmorphism */
-.glass {
-  @apply bg-background/50 backdrop-blur-xl border-white/10;
+/* Bokeh Background System */
+.luminous-bokeh {
+    background: radial-gradient(circle at 10% 20%, rgba(255, 0, 127, 0.05), transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.05), transparent 40%),
+                var(--midnight-purple);
+    background-attachment: fixed;
+    position: relative;
+    overflow-x: hidden;
 }
 
-.glass-dark {
-  @apply dark:bg-black/40 dark:backdrop-blur-2xl dark:border-white/10;
+.luminous-bokeh::before {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle at center, rgba(255, 0, 127, 0.03), transparent 70%);
+    top: -100px;
+    left: -100px;
+    z-index: -1;
+    filter: blur(80px);
+    animation: float-bokeh 15s ease-in-out infinite;
 }
 
-.shadow-premium {
-  box-shadow: 
-    0 2px 4px rgba(0,0,0,0.02),
-    0 10px 20px rgba(0,0,0,0.05),
-    0 20px 40px rgba(0,0,0,0.05);
+/* Glassmorphism 2.0 Utilities */
+.glass-2 {
+    @apply backdrop-blur-[12px] bg-black/40 border-white/5;
+    box-shadow: inset 0 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.text-glow {
-  text-shadow: 0 0 10px rgba(203, 70, 90, 0.4);
+.glass-luminous {
+    @apply glass-2;
+    border: 1px solid transparent;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
+                    linear-gradient(to bottom right, rgba(255, 0, 127, 0.2), rgba(0, 255, 255, 0.1));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
 }
 
-/* Dynamic Mesh (Subtle) */
-.mesh-gradient {
-  background-color: var(--background);
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(203, 70, 90, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(203, 70, 90, 0.03) 0px, transparent 50%);
-  background-attachment: fixed;
+.text-glow-premium {
+    text-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
 }
 
-.dark .mesh-gradient {
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(203, 70, 90, 0.08) 0px, transparent 40%),
-    radial-gradient(at 100% 100%, rgba(203, 70, 90, 0.05) 0px, transparent 50%);
+.texture-brushed {
+    background-image: repeating-linear-gradient(
+        120deg,
+        rgba(255, 255, 255, 0.02) 0px,
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 2px
+    );
 }
 
 @layer utilities {
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .mobile-container {
-    @apply w-full max-w-[450px] mx-auto px-5;
-  }
-
-  .glass {
-    @apply backdrop-blur-md bg-white/70 dark:bg-black/20 border border-white/10;
-  }
-  
-  .glass-dark {
-    @apply backdrop-blur-md bg-white/10 border border-white/10;
-  }
-
-  .glass-glow-pink {
-    @apply shadow-[0_0_30px_rgba(203,70,90,0.15)] border-primary/20;
-  }
-
-  /* Z-Index Hierarchy */
-  .z-header { z-index: 100; }
-  .z-sheet { z-index: 200; }
-  .z-modal { z-index: 300; }
-  .z-toast { z-index: 400; }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .mobile-container { @apply w-full max-w-[450px] mx-auto px-5; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
 
 

@@ -68,7 +68,7 @@ export default function PanelCluberPage() {
     const isOpen = effectiveSupplierData?.isOpen ?? false;
 
     // Dynamic Permissions
-    const canBenefits = effectiveSupplierData?.canCreateBenefits ?? false;
+    const canBenefits = userData?.permitsBenefits ?? false;
     const canDelivery = effectiveSupplierData?.deliveryEnabled ?? false;
     const canTurnero = effectiveSupplierData?.appointmentsEnabled ?? false;
 
@@ -175,7 +175,7 @@ export default function PanelCluberPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background pb-24 animate-fade-in relative overflow-x-hidden">
+        <div className="min-h-screen bg-background pb-24 animate-fade-in relative overflow-x-hidden luminous-bokeh">
             <MPRestrictionOverlay />
 
             {/* ─── HEADER FIX ────────────────────────────────────── */}
@@ -184,18 +184,18 @@ export default function PanelCluberPage() {
             <div className="max-w-7xl mx-auto px-6 md:px-8 pt-8 space-y-8">
 
                 {/* Superior Header */}
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-6 rounded-[2.5rem] glass-luminous border-white/10 shadow-2xl">
                     <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 shadow-[0_0_15px_rgba(255,0,127,0.3)]">
                             <Store className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black uppercase tracking-tighter italic">
+                            <h1 className="text-2xl font-black uppercase tracking-tighter italic text-white text-shadow-sm">
                                 {effectiveSupplierData?.name || 'Cluber Panel'}
                             </h1>
                             <div className="flex items-center gap-2">
-                                <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", isOpen ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-red-500")} />
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                                <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", isOpen ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" : "bg-red-500")} />
+                                <span className={cn("text-[10px] font-black uppercase tracking-widest", isOpen ? "text-emerald-400" : "opacity-60")}>
                                     {isOpen ? "Tienda Abierta" : "Tienda Cerrada"}
                                 </span>
                             </div>
@@ -205,20 +205,20 @@ export default function PanelCluberPage() {
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         {isAdmin && <div className="hidden lg:block"><SupplierSelect /></div>}
 
-                        <Card className={cn(
-                            "rounded-2xl border border-white/5 transition-all h-12 flex items-center px-4 gap-4",
-                            isOpen ? "bg-emerald-500/10" : "bg-red-500/10"
+                        <div className={cn(
+                            "rounded-2xl border border-white/10 transition-all h-12 flex items-center px-4 gap-4 glass-2",
+                            isOpen ? "shadow-[0_0_15px_rgba(52,211,153,0.1)]" : "shadow-[0_0_15px_rgba(239,68,68,0.1)]"
                         )}>
-                            <span className={cn("text-[10px] font-black uppercase tracking-widest", isOpen ? "text-emerald-500" : "text-red-500")}>
+                            <span className={cn("text-[10px] font-black uppercase tracking-widest", isOpen ? "text-emerald-400" : "text-red-500")}>
                                 {isOpen ? "En Línea" : "Pausado"}
                             </span>
                             <Switch
                                 checked={isOpen}
                                 onCheckedChange={toggleStoreStatus}
                                 disabled={isUpdating}
-                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500 scale-90"
+                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500 scale-90 shadow-lg"
                             />
-                        </Card>
+                        </div>
                     </div>
                 </header>
 
@@ -227,7 +227,7 @@ export default function PanelCluberPage() {
 
                 {/* --- DYNAMIC SEGMENTED CONTROL --- */}
                 <div className="flex justify-center">
-                    <div className="bg-background dark:bg-white/5 backdrop-blur-xl p-1.5 rounded-[1.5rem] border border-foreground dark:border-white/10 flex items-center gap-1 shadow-inner">
+                    <div className="bg-white/5 backdrop-blur-2xl p-1.5 rounded-[1.8rem] border border-white/10 flex items-center gap-1 shadow-2xl glass-2">
                         {canBenefits && (
                             <TabButton
                                 active={activeTab === 'benefits'}
@@ -265,15 +265,15 @@ export default function PanelCluberPage() {
                 {/* --- FOOTER TOOLS --- */}
                 <div className="flex flex-wrap justify-center gap-4 pt-12">
                     <Link href="/panel-cluber/supplier-profile">
-                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-foreground dark:border-white/5 hover:bg-primary/5 transition-all group">
-                            <Settings className="h-4 w-4 text-foreground group-hover:text-primary group-hover:rotate-45 transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-primary">Configuración</span>
+                        <Button variant="ghost" className="rounded-2xl h-14 px-8 gap-3 glass-2 border-white/5 hover:bg-white/10 transition-all group shadow-xl">
+                            <Settings className="h-4 w-4 text-white group-hover:text-primary group-hover:rotate-45 transition-all" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white">Configuración</span>
                         </Button>
                     </Link>
                     <Link href="/panel-cluber/equipo">
-                        <Button variant="ghost" className="rounded-2xl h-12 px-6 gap-3 border border-foreground dark:border-white/5 hover:bg-primary/5 transition-all group">
-                            <Users className="h-4 w-4 text-foreground group-hover:text-primary transition-all" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground group-hover:text-primary">Equipo Central</span>
+                        <Button variant="ghost" className="rounded-2xl h-14 px-8 gap-3 glass-2 border-white/5 hover:bg-white/10 transition-all group shadow-xl">
+                            <Users className="h-4 w-4 text-white group-hover:text-primary transition-all" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white">Equipo Central</span>
                         </Button>
                     </Link>
                 </div>
@@ -299,10 +299,10 @@ function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, on
             variant="ghost"
             onClick={onClick}
             className={cn(
-                "rounded-[1.2rem] font-black text-[9px] uppercase tracking-[0.2em] px-8 h-12 transition-all duration-500",
+                "rounded-[1.3rem] font-black text-[9px] uppercase tracking-[0.2em] px-8 h-12 transition-all duration-500",
                 active
-                    ? "bg-primary text-white shadow-xl shadow-primary/20 scale-105 z-10"
-                    : "text-foreground hover:bg-background dark:hover:bg-white/5"
+                    ? "bg-primary text-white shadow-[0_0_20px_rgba(255,0,127,0.4)] scale-105 z-10"
+                    : "text-white/40 hover:bg-white/5 hover:text-white"
             )}
         >
             <Icon className={cn("mr-2 h-4 w-4 transition-transform", active && "scale-110")} />
@@ -338,20 +338,25 @@ function CluberStatsHeader({ stats, activeTab }: { stats: any, activeTab: string
 function StatCard({ label, value, trend, icon: Icon, isSocial }: { label: string, value: string, trend?: string, icon: any, isSocial?: boolean }) {
     return (
         <Card className={cn(
-            "rounded-[2.5rem] border border-foreground dark:border-white/5 p-6 relative overflow-hidden transition-all hover:border-primary/20 group",
-            isSocial ? "bg-primary/5 border-primary/20" : "bg-white/50 dark:bg-card/30"
+            "rounded-[2.5rem] border border-white/5 p-6 relative overflow-hidden transition-all hover:scale-[1.02] duration-500 glass-2 group",
+            isSocial ? "bg-primary/5 border-primary/20 shadow-[0_0_30px_rgba(255,0,127,0.05)]" : "bg-black/20"
         )}>
             <div className="flex justify-between items-start">
                 <div className="space-y-1">
-                    <p className="text-[9px] font-black text-foreground uppercase tracking-[0.2em]">{label}</p>
-                    <h3 className={cn("text-2xl font-black tracking-tighter italic", isSocial && "text-primary italic")}>{value}</h3>
+                    <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em]">{label}</p>
+                    <h3 className={cn("text-3xl font-black tracking-tighter italic text-white flex items-center gap-2", isSocial && "text-primary text-glow-premium")}>
+                        {value}
+                        {label === "Estado de Red" && <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]" />}
+                    </h3>
                 </div>
-                <div className={cn("p-2.5 rounded-2xl group-hover:scale-110 transition-transform", isSocial ? "bg-primary text-white" : "bg-primary/10 text-primary")}>
-                    <Icon className="h-4 w-4" />
+                <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-lg", isSocial ? "bg-primary text-white shadow-[0_0_15px_rgba(255,0,127,0.3)]" : "bg-white/5 text-white/60")}>
+                    <Icon className="h-5 w-5" />
                 </div>
             </div>
             {trend && (
-                <p className="text-[8px] font-black text-emerald-500 uppercase tracking-widest mt-2">{trend} vs ayer</p>
+                <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest mt-2 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3" /> {trend} vs ayer
+                </p>
             )}
         </Card>
     )
@@ -363,27 +368,28 @@ function BenefitsModule({ shopId }: { shopId: string }) {
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { label: "Canjear QR", icon: QrCode, href: "/panel-cluber/scanner", color: "text-blue-500 bg-blue-500/10" },
+                    { label: "Canjear QR", icon: QrCode, href: "/panel-cluber/scanner", color: "text-blue-400 bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)]" },
                     { 
                         label: "Nuevo Beneficio", 
                         icon: Plus, 
                         href: "/panel-cluber/benefits", 
-                        color: "text-primary bg-primary/10" 
+                        color: "text-white bg-primary shadow-[0_0_20px_rgba(255,0,127,0.5)] animate-pulse-slow" 
                     },
                     { 
                         label: "Anunciar", 
                         icon: Megaphone, 
                         href: "/panel-cluber/announcements", 
-                        color: "text-orange-500 bg-orange-500/10" 
+                        color: "text-orange-400 bg-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.3)]" 
                     },
-                    { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-500 bg-emerald-500/10" },
+                    { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]" },
                 ].map((btn) => (
                     <Link key={btn.label} href={btn.href}>
-                        <Card className="rounded-[2.5rem] border border-foreground dark:border-white/5 bg-white/30 dark:bg-card/30 hover:bg-primary/5 transition-all group h-32 flex flex-col items-center justify-center text-center gap-3">
-                            <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", btn.color)}>
-                                <btn.icon className="h-6 w-6" />
+                        <Card className="rounded-[2.5rem] border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-500 group h-36 flex flex-col items-center justify-center text-center gap-3 glass-2 shadow-2xl overflow-hidden relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className={cn("p-4 rounded-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 z-10", btn.color)}>
+                                <btn.icon className="h-7 w-7" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-foreground dark:text-white/60">{btn.label}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/70 group-hover:text-white z-10">{btn.label}</span>
                         </Card>
                     </Link>
                 ))}
@@ -391,11 +397,12 @@ function BenefitsModule({ shopId }: { shopId: string }) {
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Flujo de Canjes</h2>
+                        <Clock className="h-4 w-4 text-primary animate-pulse" />
+                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Flujo de Canjes</h2>
                     </div>
                 </div>
-                <Card className="rounded-[3rem] border border-foreground dark:border-white/5 bg-white/50 dark:bg-background/50 overflow-hidden min-h-[400px]">
+                <Card className="rounded-[3rem] border border-white/10 bg-black/40 backdrop-blur-3xl overflow-hidden min-h-[400px] shadow-2xl texture-brushed relative">
+                    <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
                     <BenefitRedemptionsTable supplierId={shopId} />
                 </Card>
             </div>

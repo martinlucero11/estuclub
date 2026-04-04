@@ -223,9 +223,9 @@ export default function VerifyPage() {
       const docRef = doc(firestore, 'roles_supplier', cluberId);
       await updateDoc(docRef, { [field]: value });
       
-      // If toggling isCincoDos, also update the user document
-      if (field === 'isCincoDos') {
-        await updateDoc(doc(firestore, 'users', cluberId), { isCincoDos: value });
+      // Synchronize key fields to the user document for UI reactivity
+      if (field === 'isCincoDos' || field === 'permitsBenefits') {
+        await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
       }
 
       toast({ title: 'Ajuste actualizado', description: `Se cambió ${field} a ${value ? 'ACTIVADO' : 'DESACTIVADO'}.` });
@@ -284,6 +284,7 @@ export default function VerifyPage() {
         storeName: req.supplierName,
         phone: req.commercialPhone,
         logo: req.logo || '',
+        permitsBenefits: false, // Default permission
       }, { merge: true });
 
       // 2. Update User Profile Role
@@ -296,6 +297,7 @@ export default function VerifyPage() {
         logo: req.logo || '',
         address: req.address || '',
         displayName: req.supplierName,
+        permitsBenefits: false, // Sync permission to user doc
       }, { merge: true });
 
       // 3. Mark request as approved
@@ -568,8 +570,8 @@ export default function VerifyPage() {
                                 <ControlToggle 
                                     icon={<Gift className="h-4 w-4" />}
                                     label="Beneficios" 
-                                    value={!!cluber.canCreateBenefits} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'canCreateBenefits', v)} 
+                                    value={!!cluber.permitsBenefits} 
+                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsBenefits', v)} 
                                 />
                                 <CincoDosToggle 
                                     value={!!cluber.isCincoDos} 

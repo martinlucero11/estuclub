@@ -46,6 +46,7 @@ export interface UserProfile {
     xp?: number;
     level?: number;
     isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
+    permitsBenefits?: boolean; // Permiso para crear beneficios (Cluber)
     location?: {
       address: string;
       city?: string;

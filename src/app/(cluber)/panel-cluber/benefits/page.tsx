@@ -21,7 +21,7 @@ interface UserForList {
 }
 
 export default function PanelCluberBenefitsPage() {
-  const { user, roles, supplierData, isUserLoading } = useUser();
+  const { user, roles, userData, supplierData, isUserLoading } = useUser();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   if (isUserLoading || !user) {
@@ -34,7 +34,8 @@ export default function PanelCluberBenefitsPage() {
     roles: roles as UserRole[],
   };
   
-  const canCreate = roles.includes('admin') || supplierData?.canCreatebenefits;
+  // Real-time reactivity via userData.permitsBenefits
+  const canCreate = roles.includes('admin') || !!userData?.permitsBenefits;
 
   return (
     <div className="space-y-4">
