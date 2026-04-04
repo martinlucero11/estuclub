@@ -68,7 +68,7 @@ function UserMenu() {
     return (
       <Button asChild variant="ghost" size="icon" className="hover:bg-white/10" aria-label="Iniciar Sesión">
         <Link href="/login">
-            <LogIn className="h-6 w-6 text-black/60" />
+            <LogIn className="h-6 w-6 text-white" />
         </Link>
       </Button>
     );
@@ -134,8 +134,8 @@ function AppSidebar() {
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-black/5" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
-                        <LayoutGrid className="h-6 w-6 text-black/60 transition-colors" />
+                    <Button variant="ghost" size="icon" className="group hover:bg-white/10" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
+                        <LayoutGrid className="h-6 w-6 text-white transition-colors" />
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
@@ -226,12 +226,12 @@ export default function Header() {
   const { isMobile } = usePlatform();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-primary/90 backdrop-blur-md border-b border-white/20 shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-[#cb465a]/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
       <div className="container relative flex justify-between items-center px-6">
         <div className="flex items-center gap-1">
           <AppSidebar />
-          <Button variant="ghost" size="icon" className="hover:bg-black/5 h-10 w-10">
-             <Search className="h-5 w-5 text-black/60" />
+          <Button variant="ghost" size="icon" className="hover:bg-white/10 h-10 w-10">
+             <Search className="h-5 w-5 text-white" />
           </Button>
         </div>
 

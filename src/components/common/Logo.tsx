@@ -25,7 +25,7 @@ const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
         viewBox="0 0 671.3 155.8"
         className={cn(
             "h-auto w-auto transition-all duration-500", 
-            variant === 'rosa-glow' && "drop-shadow-[0_0_12px_rgba(255,0,127,0.8)] filter transition-all",
+            variant === 'rosa-glow' && "drop-shadow-[0_0_12px_rgba(203,70,90,0.8)] filter transition-all",
             className
         )}
         {...props}

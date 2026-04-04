@@ -87,8 +87,8 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.05)] border-t border-black/5 dark:border-white/10">
-      <div className="grid h-16 grid-cols-5 border-t border-black/5">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.08)] border-t border-white/20">
+      <div className="grid h-16 grid-cols-5 items-center">
         {navItems.map((item: any, index: number) => {
           const isActive = pathname === item.href;
           
@@ -99,9 +99,9 @@ export function BottomNav() {
                 className="relative flex flex-col items-center justify-center text-foreground transition-colors duration-300"
               >
                 <motion.div 
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.9 }}
-                  className="relative -top-5 flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/40 ring-4 ring-background z-10"
+                  className="relative -top-6 flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-primary text-primary-foreground shadow-[0_15px_30px_-5px_rgba(203,70,90,0.4)] ring-4 ring-white z-10"
                 >
                   <item.icon className="h-7 w-7" />
                   {item.href === '#cart' && totalItems > 0 && (
