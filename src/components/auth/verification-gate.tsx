@@ -21,15 +21,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
 
   const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path));
 
-  // ═══════════════════════════════════════════════════════════
-  // RULE 2: ADMIN BYPASS — The Overlord does not queue.
-  // This is the FIRST check. If admin, render children immediately.
-  // ═══════════════════════════════════════════════════════════
-  if (roles.includes('admin')) {
-    return <>{children}</>;
-  }
-
-  // Loading state — show spinner while Firebase resolves
+  // 1. Loading state — show spinner while Firebase resolves
   if (isUserLoading && !isPublicPath) {
     return (
       <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 space-y-4">
@@ -41,7 +33,12 @@ export default function VerificationGate({ children }: { children: React.ReactNo
     );
   }
 
-  // Public paths always pass through
+  // 2. Admin Bypass — The Overlord does not queue.
+  if (roles.includes('admin')) {
+    return <>{children}</>;
+  }
+
+  // 3. Public paths always pass through
   if (isPublicPath) {
     return <>{children}</>;
   }
@@ -52,12 +49,12 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   }
 
   // ── DEMO BYPASS ──
-  const isDemoUser = user.email?.endsWith('@estuclub.com.ar');
+  const isBypassDomain = user.email?.endsWith('@estuclub.com.ar');
 
-  // User exists but email not verified
-  const needsVerification = user && !user.emailVerified && !isDemoUser;
-  // User exists but Firestore profile missing (registration incomplete)
-  const profileMissing = user && !isUserLoading && !userData;
+  // User exists but email not verified (skip if bypass domain)
+  const needsVerification = user && !user.emailVerified && !isBypassDomain;
+  // User exists but Firestore profile missing (skip if bypass domain)
+  const profileMissing = user && !isUserLoading && !userData && !isBypassDomain;
 
   if (!needsVerification && !profileMissing) {
     return <>{children}</>;

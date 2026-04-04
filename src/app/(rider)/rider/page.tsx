@@ -22,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { haptic } from '@/lib/haptics';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
@@ -301,6 +302,7 @@ export default function RiderPage() {
     const [view, setView] = useState<'login' | 'signup'>('login');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isAccepting, setIsAccepting] = useState(false);
+    const [isOnline, setIsOnline] = useState(false);
 
     // ── ADMIN OVERLORD BYPASS ──
     const isAdmin = roles.includes('admin');
@@ -392,46 +394,22 @@ export default function RiderPage() {
     }
 
     // ── STATE 4: Active Rider Dashboard ──
-    const isSubscribed = userData?.subscriptionStatus === 'active' || isAdmin;
+    // ── MEMBERSHIP LOGIC ──
+    const trialEndsAt = userData?.trialEndsAt?.seconds ? userData.trialEndsAt.seconds * 1000 : 0;
+    const membershipPaidUntil = userData?.membershipPaidUntil?.seconds ? userData.membershipPaidUntil.seconds * 1000 : 0;
+    const isTrialActive = Date.now() < trialEndsAt;
+    const isMembershipActive = Date.now() < membershipPaidUntil;
+    const isMembershipWaived = userData?.isMembershipWaived === true;
+    
+    const hasActiveAccess = isTrialActive || isMembershipActive || isMembershipWaived || isAdmin;
     const isMpLinked = userData?.mp_linked === true || isAdmin;
 
+    // NO LONGER BLOCKING ACCESS - Protocolo Demo 4 AM
+    /* 
     if (!isSubscribed || !isMpLinked) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="h-20 w-20 rounded-[2rem] bg-[#cb465a]/20 border border-[#cb465a]/40 flex items-center justify-center shadow-[0_0_30px_rgba(203, 70, 90,0.2)]">
-                    <AlertCircle className="h-10 w-10 text-[#cb465a]" />
-                </div>
-                <div className="space-y-3">
-                    <h1 className="text-3xl font-black tracking-tighter uppercase italic font-montserrat text-white">Acceso Restringido</h1>
-                    <p className="text-foreground font-medium max-w-sm mx-auto text-sm leading-relaxed">
-                        Para recibir pedidos debés estar al día con tu suscripción y vincular tu cuenta de cobros.
-                    </p>
-                </div>
-                <div className="grid grid-cols-1 gap-4 w-full max-w-xs">
-                    {!isMpLinked ? (
-                        <Button asChild className="h-14 bg-[#cb465a] text-white font-black uppercase tracking-widest hover:bg-[#cb465a]/90 rounded-2xl shadow-[0_0_20px_rgba(203, 70, 90,0.2)]">
-                            <Link href={`/api/auth/mercadopago?userId=${user?.uid}`}><CreditCard className="mr-2 h-5 w-5" /> Vincular Mercado Pago</Link>
-                        </Button>
-                    ) : (
-                        <div className="h-14 bg-green-500/10 border border-green-500/20 text-green-500 rounded-2xl flex items-center justify-center gap-2 font-black text-xs uppercase tracking-widest">
-                            <CheckCircle2 className="h-5 w-5" /> Cuenta Vinculada
-                        </div>
-                    )}
-                    {!isSubscribed && (
-                        <Button 
-                            onClick={() => toast({ 
-                                title: "🚀 Función en desarrollo", 
-                                description: "¡Próximamente podrás suscribirte directamente desde la app!" 
-                            })}
-                            className="h-14 bg-transparent border-2 border-[#cb465a] text-[#cb465a] font-black uppercase tracking-widest hover:bg-[#cb465a]/10 rounded-2xl"
-                        >
-                            <Wallet className="mr-2 h-5 w-5" /> Activar Suscripción
-                        </Button>
-                    )}
-                </div>
-            </div>
-        );
+        ...
     }
+    */
 
     // ── FULL DASHBOARD ──
     const handleAcceptOrder = async () => {
@@ -465,12 +443,22 @@ export default function RiderPage() {
                         </div>
                     </CardContent>
                 </Card>
-                <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
+                <Card className={cn(
+                    "rounded-[2rem] overflow-hidden backdrop-blur-md border-b-4",
+                    hasActiveAccess ? "bg-white/[0.03] border-[#cb465a]/20 border-b-emerald-500/50" : "bg-red-500/5 border-red-500/20 border-b-red-500"
+                )}>
                     <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
                         <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Suscripción</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-5 text-center flex items-center justify-center">
-                        <Badge className="bg-[#cb465a] text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-[#cb465a]/30">ACTIVA</Badge>
+                    <CardContent className="p-5 text-center flex flex-col items-center justify-center gap-2">
+                        {hasActiveAccess ? (
+                             <Badge className="bg-emerald-500 text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-emerald-500/30">ACTIVA</Badge>
+                        ) : (
+                            <>
+                                <Badge className="bg-red-500 text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-red-500/30">VENCIDA</Badge>
+                                <Button size="sm" className="h-7 px-3 bg-white/10 hover:bg-white/20 text-white text-[8px] font-black uppercase rounded-lg">Renovar</Button>
+                            </>
+                        )}
                     </CardContent>
                 </Card>
                 <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
@@ -496,6 +484,66 @@ export default function RiderPage() {
                     </CardContent>
                 </Card>
             </header>
+
+            {!hasActiveAccess && (
+                <motion.div 
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="p-6 rounded-[2.5rem] bg-gradient-to-br from-red-500/20 to-black border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.1)] relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 p-4 opacity-10"><AlertTriangle className="h-12 w-12 text-red-500" /></div>
+                    <div className="relative z-10 space-y-2">
+                        <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">Acceso Restringido</p>
+                        <h3 className="text-lg font-black text-white uppercase italic leading-none">Tu acceso de 48hs ha expirado</h3>
+                        <p className="text-xs font-bold text-foreground/60 leading-relaxed max-w-sm">
+                            Tu período de prueba ha finalizado. Regularizá tu membresía mensual para seguir recibiendo pedidos en tiempo real.
+                        </p>
+                        <div className="pt-2">
+                            <Button className="h-10 px-8 rounded-xl bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[9px] shadow-lg shadow-red-500/20">Regularizar Ahora</Button>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
+
+            <div className="flex items-center justify-center px-4">
+                <Button 
+                    onClick={() => {
+                        if (!hasActiveAccess) {
+                            toast({ 
+                                variant: 'destructive',
+                                title: "Membresía Requerida", 
+                                description: "Tu acceso gratuito de 48hs expiró. Regularizá tu membresía para seguir operando." 
+                            });
+                            haptic.vibrateError();
+                            return;
+                        }
+                        setIsOnline(!isOnline);
+                        haptic.vibrateMedium();
+                    }}
+                    className={cn(
+                        "w-full max-w-xs h-20 rounded-[2.5rem] font-black uppercase italic tracking-[0.2em] text-lg transition-all duration-500 shadow-2xl overflow-hidden relative group",
+                        isOnline && hasActiveAccess 
+                            ? "bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600" 
+                            : "bg-white/5 border border-white/10 text-foreground/40 hover:bg-white/10"
+                    )}
+                >
+                    {isOnline && hasActiveAccess && (
+                        <motion.div 
+                            initial={{ x: '-100%' }}
+                            animate={{ x: '200%' }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
+                        />
+                    )}
+                    <div className="flex items-center gap-4 relative z-10">
+                        {isOnline && hasActiveAccess ? (
+                            <><Zap className="h-6 w-6 animate-pulse fill-white" /> RECIBIENDO PEDIDOS</>
+                        ) : (
+                            <><Bike className="h-6 w-6 opacity-40" /> RECIBIR PEDIDOS</>
+                        )}
+                    </div>
+                </Button>
+            </div>
 
             {/* Active Orders Section */}
             {activeOrders.length > 0 && (
@@ -622,8 +670,15 @@ export default function RiderPage() {
                                         <span className="text-xs font-bold uppercase tracking-tight truncate flex-1">{selectedOrder.deliveryAddress}</span>
                                     </div>
                                 </div>
-                                <Button onClick={handleAcceptOrder} disabled={isAccepting} className="w-full h-16 bg-[#cb465a] text-white font-black text-lg uppercase tracking-[0.2em] hover:bg-[#cb465a]/90 rounded-[2rem] shadow-[0_0_30px_rgba(203, 70, 90,0.3)] mt-6 transition-all active:scale-95">
-                                    {isAccepting ? "Procesando..." : "ACEPTAR ENVÍO"}
+                                <Button 
+                                    onClick={handleAcceptOrder} 
+                                    disabled={isAccepting || !hasActiveAccess || !isOnline} 
+                                    className={cn(
+                                        "w-full h-16 text-white font-black text-lg uppercase tracking-[0.2em] rounded-[2rem] mt-6 transition-all active:scale-95",
+                                        (!hasActiveAccess || !isOnline) ? "bg-white/5 text-white/20" : "bg-[#cb465a] hover:bg-[#cb465a]/90 shadow-[0_0_30px_rgba(203, 70, 90,0.3)]"
+                                    )}
+                                >
+                                    {isAccepting ? "Procesando..." : (!hasActiveAccess ? "MEMBRESÍA REQUERIDA" : !isOnline ? "PONERSE ONLINE" : "ACEPTAR ENVÍO")}
                                 </Button>
                             </div>
                         </motion.div>

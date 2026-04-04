@@ -129,21 +129,32 @@ export default function VerifyPage() {
   const handleApproveRider = async (app: RiderApplication) => {
     setProcessingId(app.id);
     try {
-      await updateDoc(doc(firestore, 'rider_applications', app.id), {
-        status: 'approved',
-        approvedAt: serverTimestamp(),
-      });
-      await updateDoc(doc(firestore, 'users', app.userId), {
+      // 1. Update/Create User Profile
+      await setDoc(doc(firestore, 'users', app.userId), {
+        uid: app.userId,
+        email: app.email,
+        firstName: app.userName.split(' ')[0],
+        lastName: app.userName.split(' ').slice(1).join(' ') || '',
+        phone: app.phone,
         role: 'rider',
         isVerified: true,
         approvedAt: serverTimestamp(),
-      });
+        trialEndsAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours trial
+      }, { merge: true });
+
+      // 2. Create/Update Rider Role
       await setDoc(doc(firestore, 'roles_rider', app.userId), {
         active: true,
         userId: app.userId,
         userName: app.userName,
         email: app.email,
         assignedAt: serverTimestamp(),
+      }, { merge: true });
+
+      // 3. Update Application Status
+      await updateDoc(doc(firestore, 'rider_applications', app.id), {
+        status: 'approved',
+        approvedAt: serverTimestamp(),
       });
       toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota.` });
     } catch (error) {
@@ -161,9 +172,9 @@ export default function VerifyPage() {
         status: 'rejected',
         rejectedAt: serverTimestamp(),
       });
-      await updateDoc(doc(firestore, 'users', app.userId), {
+      await setDoc(doc(firestore, 'users', app.userId), {
         role: 'rider_rejected',
-      });
+      }, { merge: true });
       toast({ title: 'Rider Rechazado', description: 'La solicitud fue denegada.' });
     } catch (error) {
       console.error('Reject error:', error);
@@ -212,12 +223,19 @@ export default function VerifyPage() {
   const handleVerifyCluber = async (cluberId: string, name: string) => {
     setProcessingId(cluberId);
     try {
+      // 1. Update Supplier Role
       const docRef = doc(firestore, 'roles_supplier', cluberId);
       await updateDoc(docRef, {
         verified: true,
         verifiedAt: serverTimestamp(),
-        isVisible: true // Auto visibility on verify
+        isVisible: true
       });
+
+      // 2. Update User Profile Role
+      await setDoc(doc(firestore, 'users', cluberId), {
+        role: 'supplier',
+        isVerified: true,
+      }, { merge: true });
       toast({ title: '✅ CLUBER VERIFICADO', description: `${name} tiene sello oficial.` });
     } catch (error) {
       console.error('Verify error:', error);

@@ -65,6 +65,9 @@ export interface UserProfile {
     // Rider & Subscription Info
     subscriptionStatus?: 'none' | 'pending' | 'active' | 'expired';
     subscriptionPaidAt?: Timestamp;
+    trialEndsAt?: Timestamp;
+    membershipPaidUntil?: Timestamp;
+    isMembershipWaived?: boolean;
     addresses?: UserAddress[];
     createdAt: Timestamp;
 }

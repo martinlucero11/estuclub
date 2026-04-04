@@ -11,15 +11,28 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
+import { HomeSectionTable } from '@/components/admin/home-sections/home-section-table';
+import BenefitAdminList from '@/components/admin/benefit-admin-list';
+import AnnouncementAdminList from '@/components/admin/announcement-admin-list';
+import { useState } from 'react';
 
 export default function AdminCMSPage() {
     const { toast } = useToast();
 
+    const [activeTab, setActiveTab] = useState('banners');
+    
     const handleAction = (type: string) => {
-        toast({
-            title: `Sección: ${type}`,
-            description: "🚀 Función en desarrollo: ¡Próximamente podrás editar este contenido!",
-        });
+        if (type === 'Anuncios') setActiveTab('announcements');
+        else if (type === 'Beneficios') setActiveTab('benefits');
+        else if (type === 'Categorías') setActiveTab('categories');
+        else if (type === 'Turnos') setActiveTab('turns');
+        else if (type === 'Delivery') setActiveTab('delivery');
+        else {
+            toast({
+                title: `Sección: ${type}`,
+                description: "🚀 Iniciando editor de contenido...",
+            });
+        }
     };
 
     return (
@@ -43,7 +56,7 @@ export default function AdminCMSPage() {
                 </Button>
             </div>
 
-            <Tabs defaultValue="banners" className="space-y-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
                 <TabsList className="bg-card/50 border border-white/5 p-1 rounded-2xl w-full h-auto flex flex-wrap gap-1 shadow-inner">
                     <TabsTrigger value="banners" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">Banners</TabsTrigger>
                     <TabsTrigger value="categories" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">Categorías</TabsTrigger>
@@ -53,64 +66,98 @@ export default function AdminCMSPage() {
                     <TabsTrigger value="delivery" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3 data-[state=active]:bg-orange-500 data-[state=active]:text-white">Delivery</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="banners" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Banner Hero" 
-                        desc="Editor de carrusel principal" 
-                        icon={<ImageIcon className="h-6 w-6" />} 
-                        onClick={() => handleAction('Banner Hero')}
-                    />
-                    <CMSCard 
-                        title="Promos Grid" 
-                        desc="Sección de ofertas flash" 
-                        icon={<Zap className="h-6 w-6" />} 
-                        onClick={() => handleAction('Promos Grid')}
-                    />
+                <TabsContent value="banners" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Banner Hero" 
+                            desc="Editor de carrusel principal" 
+                            icon={<ImageIcon className="h-6 w-6" />} 
+                            onClick={() => handleAction('Banner Hero')}
+                        />
+                        <CMSCard 
+                            title="Promos Grid" 
+                            desc="Sección de ofertas flash" 
+                            icon={<Zap className="h-6 w-6" />} 
+                            onClick={() => handleAction('Promos Grid')}
+                        />
+                    </div>
+                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Gestión de Secciones de Inicio</h2>
+                        <HomeSectionTable />
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="categories" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Icon Mappings" 
-                        desc="Gestión de emojis y colores" 
-                        icon={<Layout className="h-6 w-6" />} 
-                        onClick={() => handleAction('Categorías')}
-                    />
+                <TabsContent value="categories" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Icon Mappings" 
+                            desc="Gestión de emojis y colores" 
+                            icon={<Layout className="h-6 w-6" />} 
+                            onClick={() => handleAction('Categorías')}
+                        />
+                    </div>
+                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Gestión de Categorías</h2>
+                        <p className="text-sm opacity-60">Utiliza la tabla de Secciones para gestionar el orden y visibilidad de las categorías en la home.</p>
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="benefits" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Destacados" 
-                        desc="Beneficios top de la semana" 
-                        icon={<Gift className="h-6 w-6" />} 
-                        onClick={() => handleAction('Beneficios')}
-                    />
+                <TabsContent value="benefits" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Destacados" 
+                            desc="Beneficios top de la semana" 
+                            icon={<Gift className="h-6 w-6" />} 
+                            onClick={() => handleAction('Beneficios')}
+                        />
+                    </div>
+                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Todos los Beneficios</h2>
+                        <BenefitAdminList />
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="announcements" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Push Notify" 
-                        desc="Enviador de notificaciones" 
-                        icon={<MessageSquare className="h-6 w-6" />} 
-                        onClick={() => handleAction('Anuncios')}
-                    />
+                <TabsContent value="announcements" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Push Notify" 
+                            desc="Enviador de notificaciones" 
+                            icon={<MessageSquare className="h-6 w-6" />} 
+                            onClick={() => handleAction('Anuncios')}
+                        />
+                    </div>
+                    <div className="bg-card/30 border border-white/5 rounded-[2.5rem] p-8 shadow-premium overflow-hidden">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Lista de Anuncios</h2>
+                        <AnnouncementAdminList />
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="turns" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Agenda Config" 
-                        desc="Gestión de turnos médicos" 
-                        icon={<CalendarIcon className="h-6 w-6" />} 
-                        onClick={() => handleAction('Turnos')}
-                    />
+                <TabsContent value="turns" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Agenda Config" 
+                            desc="Gestión de turnos médicos" 
+                            icon={<CalendarIcon className="h-6 w-6" />} 
+                            onClick={() => handleAction('Turnos')}
+                        />
+                    </div>
+                    <div className="p-8 text-center bg-card/30 border border-white/5 rounded-[2.5rem]">
+                        <p className="text-sm opacity-40 uppercase tracking-widest font-black italic">Módulo de Turnos Activo</p>
+                    </div>
                 </TabsContent>
 
-                <TabsContent value="delivery" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 focus-visible:outline-none">
-                    <CMSCard 
-                        title="Tarifas Envío" 
-                        desc="Configuración de logística" 
-                        icon={<Truck className="h-6 w-6" />} 
-                        onClick={() => handleAction('Delivery')}
-                    />
+                <TabsContent value="delivery" className="space-y-8 focus-visible:outline-none">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <CMSCard 
+                            title="Tarifas Envío" 
+                            desc="Configuración de logística" 
+                            icon={<Truck className="h-6 w-6" />} 
+                            onClick={() => handleAction('Delivery')}
+                        />
+                    </div>
+                    <div className="p-8 text-center bg-card/30 border border-white/5 rounded-[2.5rem]">
+                        <p className="text-sm opacity-40 uppercase tracking-widest font-black italic">Módulo de Logística Activo</p>
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>

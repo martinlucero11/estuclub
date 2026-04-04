@@ -4,6 +4,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -40,6 +41,7 @@ const formSchema = z.object({
 });
 
 export default function LoginForm() {
+  const router = useRouter();
   const { toast } = useToast();
   const firestore = useFirestore();
   const auth = useAuthService();
@@ -121,7 +123,9 @@ export default function LoginForm() {
 
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, values.password);
       
-      if (!userCredential.user.emailVerified) {
+      const isBypassDomain = userCredential.user.email?.endsWith('@estuclub.com.ar');
+      
+      if (!userCredential.user.emailVerified && !isBypassDomain) {
         setUnverifiedCredentials({ email: loginEmail, password: values.password });
         setShowVerificationAlert(true);
         await signOut(auth);
@@ -133,6 +137,17 @@ export default function LoginForm() {
         title: 'Iniciando sesión...',
         description: 'Serás redirigido en un momento.',
       });
+
+      // RBAC Redirection Logic
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const role = userDoc.exists() ? userDoc.data().role : 'user';
+
+      if (role === 'admin') router.push('/admin');
+      else if (role === 'rider') router.push('/rider');
+      else if (role === 'supplier') router.push('/panel-cluber');
+      else router.push('/');
+
     } catch (error: any) {
       let description = "Las credenciales son incorrectas. Por favor, inténtalo de nuevo.";
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {

@@ -7,8 +7,9 @@ import * as z from 'zod';
 import { 
     Store, MapPin, Building2, Phone, Mail, Lock, 
     Loader2, CheckCircle2, ChevronRight, ArrowLeft, 
-    ImageIcon, User as UserIcon 
+    ImageIcon, User as UserIcon, Wallet, ExternalLink
 } from 'lucide-react';
+import { getMPOAuthUrl } from '@/lib/mercadopago';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -174,15 +175,32 @@ export function CluberSignupFlow() {
     if (isSuccess) {
         return (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-8 py-10">
-                <div className="h-24 w-24 bg-primary/10 mx-auto rounded-[2.5rem] flex items-center justify-center animate-bounce-slow border border-primary/20 shadow-2xl shadow-primary/10">
-                    <Building2 className="h-10 w-10 text-primary" />
+                <div className="h-24 w-24 bg-emerald-500/10 mx-auto rounded-[2.5rem] flex items-center justify-center animate-bounce-slow border border-emerald-500/20 shadow-2xl shadow-emerald-500/10">
+                    <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                 </div>
-                <div className="space-y-3">
-                    <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white font-montserrat">¡Postulación Enviada!</h2>
-                    <p className="text-sm text-foreground font-bold opacity-70 italic max-w-xs mx-auto uppercase tracking-widest">Analizaremos tu local en breve. Bienvenido a la red Estuclub.</p>
+                <div className="space-y-3 px-4">
+                    <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white font-montserrat">¡Casi listo!</h2>
+                    <p className="text-xs font-bold text-foreground font-inter opacity-70 uppercase tracking-widest leading-relaxed">
+                        Tu cuenta ha sido creada. Ahora, para poder cobrar tus ventas, <span className="text-[#cb465a]">necesitás vincular tu cuenta de Mercado Pago</span>.
+                    </p>
                 </div>
-                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-background border border-white/5 text-foreground font-black uppercase tracking-widest rounded-3xl">
-                    VOLVER AL INICIO
+                <div className="space-y-4 px-4 pt-2">
+                    <Button 
+                        onClick={() => {
+                            const u = auth.currentUser;
+                            if (u) {
+                                haptic.vibrateMedium();
+                                window.location.href = getMPOAuthUrl(u.uid);
+                            }
+                        }}
+                        className="w-full h-18 bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-[0_0_40px_rgba(203,70,90,0.3)] group py-8"
+                    >
+                        <Wallet className="mr-3 h-6 w-6" /> VINCULAR MERCADO PAGO <ExternalLink className="ml-2 h-4 w-4 opacity-40 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                    </Button>
+                    <p className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.3em]">Serás redirigido a Mercado Pago para autorizar la conexión.</p>
+                </div>
+                <Button variant="ghost" onClick={() => window.location.href = '/'} className="w-full h-12 text-foreground/20 font-black uppercase tracking-widest text-[9px]">
+                    OMITIR POR AHORA (NO PODRÁS COBRAR)
                 </Button>
             </motion.div>
         );
