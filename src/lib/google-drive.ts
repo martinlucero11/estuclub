@@ -5,7 +5,7 @@ import path from 'path';
 // Initialize Auth with Service Account for better reliability
 const auth = new google.auth.GoogleAuth({
     keyFile: path.join(process.cwd(), 'service-account.json'),
-    scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.metadata'],
+    scopes: ['https://www.googleapis.com/auth/drive.file'],
 });
 
 const drive = google.drive({
@@ -73,6 +73,9 @@ export async function uploadFileToDrive(
             code: error.code,
             errors: error.errors
         });
+        if (error.response?.data) {
+            console.error('GOOGLE DRIVE API ERROR DATA:', JSON.stringify(error.response.data, null, 2));
+        }
         throw error;
     }
 }

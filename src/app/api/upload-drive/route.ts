@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
 import { uploadFileToDrive } from '@/lib/google-drive';
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb',
+        },
+    },
+};
+
 export async function POST(req: NextRequest) {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -54,6 +62,9 @@ export async function POST(req: NextRequest) {
             code: error.code,
             errors: error.errors
         });
+        if (error.response?.data) {
+            console.error('GOOGLE DRIVE API ERROR DATA (RESPONSE):', JSON.stringify(error.response.data, null, 2));
+        }
         return NextResponse.json({ 
             error: error.message || 'Internal Server Error' 
         }, { status: 500 });
