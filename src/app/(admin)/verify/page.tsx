@@ -129,13 +129,21 @@ export default function VerifyPage() {
   const handleApproveRider = async (app: RiderApplication) => {
     setProcessingId(app.id);
     try {
+      // data sanitization to prevent firebase undefined errors
+      const userId = app.userId || '';
+      const email = app.email || '';
+      const userName = app.userName || 'Rider';
+      const phone = app.phone || '';
+
+      if (!userId) throw new Error('Missing userId');
+
       // 1. Update/Create User Profile
-      await setDoc(doc(firestore, 'users', app.userId), {
-        uid: app.userId,
-        email: app.email,
-        firstName: (app.userName || 'Rider').split(' ')[0],
-        lastName: (app.userName || '').split(' ').slice(1).join(' ') || 'Sin_Apellido',
-        phone: app.phone,
+      await setDoc(doc(firestore, 'users', userId), {
+        uid: userId,
+        email: email,
+        firstName: userName.split(' ')[0],
+        lastName: userName.split(' ').slice(1).join(' ') || 'Sin_Apellido',
+        phone: phone,
         role: 'rider',
         isVerified: true,
         approvedAt: serverTimestamp(),
@@ -143,11 +151,11 @@ export default function VerifyPage() {
       }, { merge: true });
 
       // 2. Create/Update Rider Role
-      await setDoc(doc(firestore, 'roles_rider', app.userId), {
+      await setDoc(doc(firestore, 'roles_rider', userId), {
         active: true,
-        userId: app.userId,
-        userName: app.userName,
-        email: app.email,
+        userId: userId,
+        userName: userName,
+        email: email,
         assignedAt: serverTimestamp(),
       }, { merge: true });
 
@@ -156,7 +164,7 @@ export default function VerifyPage() {
         status: 'approved',
         approvedAt: serverTimestamp(),
       });
-      toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota.` });
+      toast({ title: '✅ RIDER ACTIVADO', description: `${userName} ya es parte de la flota.` });
     } catch (error) {
       console.error('Approve error:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la activación.' });
@@ -168,11 +176,16 @@ export default function VerifyPage() {
   const handleRejectRider = async (app: RiderApplication) => {
     setProcessingId(app.id);
     try {
-      await updateDoc(doc(firestore, 'rider_applications', app.id), {
+      const sanitizedAppId = app.id || '';
+      const sanitizedUserId = app.userId || '';
+
+      if (!sanitizedAppId || !sanitizedUserId) throw new Error('Missing application or userId');
+
+      await updateDoc(doc(firestore, 'rider_applications', sanitizedAppId), {
         status: 'rejected',
         rejectedAt: serverTimestamp(),
       });
-      await setDoc(doc(firestore, 'users', app.userId), {
+      await setDoc(doc(firestore, 'users', sanitizedUserId), {
         role: 'rider_rejected',
       }, { merge: true });
       toast({ title: 'Rider Rechazado', description: 'La solicitud fue denegada.' });
@@ -204,14 +217,20 @@ export default function VerifyPage() {
   const handleApproveComedor = async (app: ComedorApplication) => {
     setProcessingId(app.id);
     try {
-      await updateDoc(doc(firestore, 'comedor_applications', app.id), {
+      const sanitizedAppId = app.id || '';
+      const sanitizedUserId = app.userId || '';
+      const firstName = app.firstName || 'Alumno';
+
+      if (!sanitizedAppId || !sanitizedUserId) throw new Error('Missing application or userId');
+
+      await updateDoc(doc(firestore, 'comedor_applications', sanitizedAppId), {
         status: 'approved',
         approvedAt: serverTimestamp(),
       });
-      await updateDoc(doc(firestore, 'users', app.userId), {
+      await updateDoc(doc(firestore, 'users', sanitizedUserId), {
         isCincoDos: true,
       });
-      toast({ title: '✅ AFILIADO ACTIVADO', description: `${app.firstName} ya es parte de Cinco.Dos.` });
+      toast({ title: '✅ AFILIADO ACTIVADO', description: `${firstName} ya es parte de Cinco.Dos.` });
     } catch (error) {
       console.error('Approve error:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la afiliación.' });
@@ -223,8 +242,13 @@ export default function VerifyPage() {
   const handleVerifyCluber = async (cluberId: string, name: string) => {
     setProcessingId(cluberId);
     try {
+      const sanitizedId = cluberId || '';
+      const sanitizedName = name || 'Comercio';
+
+      if (!sanitizedId) throw new Error('Missing cluberId');
+
       // 1. Update Supplier Role
-      const docRef = doc(firestore, 'roles_supplier', cluberId);
+      const docRef = doc(firestore, 'roles_supplier', sanitizedId);
       await updateDoc(docRef, {
         verified: true,
         verifiedAt: serverTimestamp(),
@@ -232,11 +256,11 @@ export default function VerifyPage() {
       });
 
       // 2. Update User Profile Role
-      await setDoc(doc(firestore, 'users', cluberId), {
+      await setDoc(doc(firestore, 'users', sanitizedId), {
         role: 'supplier',
         isVerified: true,
       }, { merge: true });
-      toast({ title: '✅ CLUBER VERIFICADO', description: `${name} tiene sello oficial.` });
+      toast({ title: '✅ CLUBER VERIFICADO', description: `${sanitizedName} tiene sello oficial.` });
     } catch (error) {
       console.error('Verify error:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo verificar.' });
