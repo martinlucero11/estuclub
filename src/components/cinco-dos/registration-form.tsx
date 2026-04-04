@@ -105,8 +105,8 @@ export function CincoDosForm({ onSuccess }: { onSuccess: () => void }) {
         <Card className="bg-[#000000]/80 backdrop-blur-3xl border-0 shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-hidden rounded-[2rem] relative z-10">
             <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
             <div className="p-8 border-b border-white/5 relative flex flex-col items-center sm:items-start text-center sm:text-left">
-                <h2 className="text-2xl font-bold text-white tracking-tight">Afiliación a la Red</h2>
-                <p className="text-sm text-foreground mt-2 font-medium">Completa tu perfil para solicitar acceso a la mesa principal de Cinco.Dos</p>
+                <h2 className="text-2xl font-bold text-white tracking-tight leading-tight">Registrate a nuestra red de estudiantes en Leandro N. Alem</h2>
+                <p className="text-sm text-foreground mt-2 font-medium italic">Acceso a almuerzos gratuitos, coworking e internet de alta velocidad.</p>
             </div>
         <CardContent className="p-6">
             <Form {...form}>

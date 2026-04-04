@@ -23,8 +23,8 @@ export default function HomeBoardSelector({ activeBoard, onChange, isStudent }: 
     const tabWidth = 100 / tabs.length;
 
     return (
-        <div className="flex justify-center mb-8 px-2 max-w-lg mx-auto">
-            <div className="relative flex p-1.5 bg-white/10 dark:bg-black/20 backdrop-blur-3xl border border-white/20 dark:border-white/10 rounded-[2rem] shadow-2xl w-full">
+        <div className="flex justify-center mb-0 px-2 max-w-lg mx-auto">
+            <div className="relative flex p-1.5 bg-white/60 dark:bg-black/40 backdrop-blur-2xl border border-white/40 dark:border-white/10 rounded-[2.2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full">
                 {/* Background Slider */}
                 {activeIndex !== -1 && (
                     <motion.div

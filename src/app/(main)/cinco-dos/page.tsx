@@ -100,7 +100,7 @@ export default function CincoDosPage() {
                                 </span>
                             </div>
                             <p className="text-white/80 text-sm md:text-base max-w-lg mx-auto leading-relaxed font-light">
-                                Acceso exclusivo a la <strong className="font-bold text-white">red gastronómica estudiantil</strong> de Leandro N. Alem. Regístrate para unirte a la mesa central y acceder a nuestra red de menús diarios en EstuClub.
+                                Registrate a nuestra red de estudiantes en Leandro N. Alem. Si sos estudiante de nivel secundario, terciario, universitario o superior, podes acceder a nuestros almuerzos gratuitos dos veces por semana, y aprovechar nuestros espacios de coworking e internet gratuito.
                             </p>
                             
                             {/* Dynamic Instagram Links */}

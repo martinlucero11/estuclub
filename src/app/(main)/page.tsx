@@ -154,18 +154,20 @@ export default function HomePage() {
     return (
         <MainLayout>
             <div className="mx-auto w-full px-4 pt-4">
+                {canSwitch && (
+                    <div className="mb-8">
+                        <HomeBoardSelector 
+                            activeBoard={activeBoard} 
+                            onChange={setActiveBoard} 
+                            isStudent={isStudent}
+                        />
+                    </div>
+                )}
+
                 <div className="flex justify-between items-start mb-6">
                     <WelcomeMessage />
                     <ModeToggle />
                 </div>
-
-                {canSwitch && (
-                    <HomeBoardSelector 
-                        activeBoard={activeBoard} 
-                        onChange={setActiveBoard} 
-                        isStudent={isStudent}
-                    />
-                )}
 
                 <Suspense fallback={<HomeSectionsSkeleton />}>
                     <HomeContent activeBoard={activeBoard} />
