@@ -52,6 +52,19 @@ interface ComedorApplication {
   createdAt: any;
 }
 
+interface SupplierRequest {
+  id: string;
+  userId: string;
+  supplierName: string;
+  category: string;
+  address: string;
+  commercialPhone: string;
+  logo: string;
+  fachada: string;
+  status: 'pending' | 'approved' | 'rejected';
+  requestedAt: any;
+}
+
 export default function VerifyPage() {
   const { userData, roles, isUserLoading } = useUser();
   const firestore = useFirestore();
@@ -94,6 +107,14 @@ export default function VerifyPage() {
     );
   }, [firestore]);
 
+  const supplierRequestsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'supplier_requests').withConverter(createConverter<SupplierRequest>()),
+      where('status', '==', 'pending')
+    );
+  }, [firestore]);
+
   const allClubersQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
@@ -113,10 +134,7 @@ export default function VerifyPage() {
   const { data: applications, isLoading: isLoadingRiders } = useCollection<RiderApplication>(pendingRiderQuery);
   const { data: allClubers, isLoading: isLoadingManagement } = useCollection<SupplierProfile>(allClubersQuery);
   const { data: comedorApps, isLoading: isLoadingComedor } = useCollection<ComedorApplication>(pendingComedorQuery);
-
-  const pendingClubers = useMemo(() => {
-    return allClubers?.filter(c => !c.verified) || [];
-  }, [allClubers]);
+  const { data: pendingClubers, isLoading: isLoadingPendingClubers } = useCollection<SupplierRequest>(supplierRequestsQuery);
 
   const filteredManagementClubers = useMemo(() => {
     if (!searchQuery) return allClubers || [];
@@ -239,28 +257,41 @@ export default function VerifyPage() {
     }
   };
 
-  const handleVerifyCluber = async (cluberId: string, name: string) => {
-    setProcessingId(cluberId);
+  const handleVerifyCluber = async (req: SupplierRequest) => {
+    setProcessingId(req.id);
     try {
-      const sanitizedId = cluberId || '';
-      const sanitizedName = name || 'Comercio';
+      const userId = req.userId || '';
+      if (!userId) throw new Error('Missing userId on request');
 
-      if (!sanitizedId) throw new Error('Missing cluberId');
-
-      // 1. Update Supplier Role
-      const docRef = doc(firestore, 'roles_supplier', sanitizedId);
-      await updateDoc(docRef, {
+      // 1. Create/Update Supplier Role
+      const docRef = doc(firestore, 'roles_supplier', userId);
+      await setDoc(docRef, {
+        id: userId,
+        name: req.supplierName,
+        type: req.category,
+        address: req.address,
+        whatsapp: req.commercialPhone,
+        logoUrl: req.logo,
+        coverUrl: req.fachada,
         verified: true,
         verifiedAt: serverTimestamp(),
-        isVisible: true
-      });
+        isVisible: true,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
 
       // 2. Update User Profile Role
-      await setDoc(doc(firestore, 'users', sanitizedId), {
+      await setDoc(doc(firestore, 'users', userId), {
         role: 'supplier',
         isVerified: true,
       }, { merge: true });
-      toast({ title: '✅ CLUBER VERIFICADO', description: `${sanitizedName} tiene sello oficial.` });
+
+      // 3. Mark request as approved
+      await updateDoc(doc(firestore, 'supplier_requests', req.id), {
+        status: 'approved',
+        approvedAt: serverTimestamp(),
+      });
+
+      toast({ title: '✅ CLUBER VERIFICADO', description: `${req.supplierName} tiene sello oficial.` });
     } catch (error) {
       console.error('Verify error:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo verificar.' });
@@ -303,7 +334,7 @@ export default function VerifyPage() {
              </div>
              <div className="bg-black/40 border border-[#cb465a]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(255,0,127,0.1)]">
                 <p className="text-[9px] font-black text-[#cb465a] uppercase tracking-widest mb-1">En Cola</p>
-                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + pendingClubers.length + (comedorApps?.length || 0)}</p>
+                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + (pendingClubers?.length || 0) + (comedorApps?.length || 0)}</p>
              </div>
           </div>
         </header>
@@ -314,7 +345,7 @@ export default function VerifyPage() {
               Riders ({applications?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="pending-clubers" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
-              Clubers ({pendingClubers.length})
+              Clubers ({(pendingClubers?.length || 0)})
             </TabsTrigger>
             <TabsTrigger value="cinco-dos" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-amber-500 data-[state=active]:text-black transition-all duration-500 h-14">
               Cinco.Dos ({comedorApps?.length || 0})
@@ -417,7 +448,7 @@ export default function VerifyPage() {
 
           {/* PENDING CLUBERS TAB */}
           <TabsContent value="pending-clubers" className="space-y-8 focus-visible:outline-none">
-             {pendingClubers.length === 0 ? (
+             {!pendingClubers || (pendingClubers?.length || 0) === 0 ? (
                 <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
                     <Building className="h-16 w-16 text-[#cb465a] mb-4 opacity-20" />
                     <p className="text-xs font-black uppercase tracking-widest text-foreground/40">Sin comercios pendientes</p>
@@ -428,16 +459,16 @@ export default function VerifyPage() {
                     <Card key={cluber.id} className="rounded-[2.5rem] border-white/5 glass-dark p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
                     <div className="flex items-center gap-6">
                         <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
-                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
+                        {cluber.logo ? <img src={cluber.logo} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
                         </div>
                         <div>
-                        <h3 className="text-xl font-black uppercase tracking-tighter">{cluber.name}</h3>
+                        <h3 className="text-xl font-black uppercase tracking-tighter">{cluber.supplierName}</h3>
                         <p className="text-[10px] font-bold text-foreground opacity-70 mb-2 italic">{cluber.address}</p>
-                        <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-[#cb465a]/20 font-black text-[8px] uppercase tracking-widest">{cluber.type}</Badge>
+                        <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-[#cb465a]/20 font-black text-[8px] uppercase tracking-widest">{cluber.category}</Badge>
                         </div>
                     </div>
                     <Button
-                        onClick={() => handleVerifyCluber(cluber.id, cluber.name)}
+                        onClick={() => handleVerifyCluber(cluber)}
                         disabled={processingId === cluber.id}
                         className="h-12 px-10 rounded-2xl bg-white text-[#000000] font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-primary hover:text-white border-2 border-white transition-all shrink-0"
                     >
