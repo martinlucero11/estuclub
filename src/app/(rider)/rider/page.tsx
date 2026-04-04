@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useUser, useFirestore, useCollection, useAuthService } from '@/firebase';
-import { collection, query, where, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, Timestamp, onSnapshot } from 'firebase/firestore';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Order } from '@/types/data';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -302,17 +302,80 @@ export default function RiderPage() {
     const [view, setView] = useState<'login' | 'signup'>('login');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isAccepting, setIsAccepting] = useState(false);
-    const [isOnline, setIsOnline] = useState(false);
+    const [isOnline, setIsOnline] = useState(userData?.isOnline === true);
+
+    // Sync isOnline state with Firestore effectively
+    useEffect(() => {
+        if (userData?.isOnline !== undefined) {
+            setIsOnline(userData.isOnline);
+        }
+    }, [userData?.isOnline]);
+
+    const handleToggleOnline = async () => {
+        if (!user?.uid) return;
+        if (!hasActiveAccess) {
+            toast({ 
+                variant: 'destructive',
+                title: "Membresía Requerida", 
+                description: "Tu acceso gratuito de 48hs expiró. Regularizá tu membresía para seguir operando." 
+            });
+            haptic.vibrateError();
+            return;
+        }
+
+        const newStatus = !isOnline;
+        setIsOnline(newStatus);
+        haptic.vibrateMedium();
+
+        try {
+            const userRef = doc(firestore, 'users', user.uid);
+            await updateDoc(userRef, { 
+                isOnline: newStatus,
+                lastStatusChange: serverTimestamp()
+            });
+        } catch (error) {
+            // Rollback on error
+            setIsOnline(!newStatus);
+            toast({ variant: 'destructive', title: 'Error de Red', description: 'No se pudo sincronizar tu estado.' });
+        }
+    };
+
+    // ── REAL-TIME ORDER SYNC ──
+    const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
+    const [ordersLoading, setOrdersLoading] = useState(true);
+
+    useEffect(() => {
+        if (!firestore || !user?.uid || !isOnline) {
+            setAvailableOrders([]);
+            setOrdersLoading(false);
+            return;
+        }
+
+        const q = query(
+            collection(firestore, 'orders').withConverter(createConverter<Order>()), 
+            where('status', '==', 'pending')
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const orders = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+            setAvailableOrders(orders);
+            setOrdersLoading(false);
+            
+            if (!snapshot.metadata.hasPendingWrites && snapshot.docChanges().some(c => c.type === 'added')) {
+                haptic.vibrateSuccess();
+            }
+        }, (error) => {
+            console.error('Order stream error:', error);
+            setOrdersLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, [firestore, user?.uid, isOnline]);
 
     // ── ADMIN OVERLORD BYPASS ──
     const isAdmin = roles.includes('admin');
     const isApprovedRider = userData?.role === 'rider' || isAdmin;
     const isPendingRider = userData?.role === 'rider_pending' && !isAdmin;
-
-    const ordersQuery = useMemo(() => {
-        if (!firestore || (!userData?.mp_linked && !isAdmin)) return null;
-        return query(collection(firestore, 'orders').withConverter(createConverter<Order>()), where('status', '==', 'searching_rider'));
-    }, [firestore, userData?.mp_linked, isAdmin]);
 
     const myOrdersQuery = useMemo(() => {
         if (!firestore || !user?.uid) return null;
@@ -323,12 +386,12 @@ export default function RiderPage() {
         );
     }, [firestore, user]);
 
-    const { data: availableOrders, isLoading: ordersLoading } = useCollection(ordersQuery);
     const { data: myOrders, isLoading: myOrdersLoading } = useCollection(myOrdersQuery);
 
     const activeOrders = useMemo(() => myOrders?.filter(o => ['assigned', 'at_store', 'on_the_way'].includes(o.status)) || [], [myOrders]);
     const historyOrders = useMemo(() => myOrders?.filter(o => ['delivered', 'completed'].includes(o.status)) || [], [myOrders]);
     const totalEarnings = useMemo(() => historyOrders.reduce((sum, o) => sum + (o.deliveryCost || 0), 0), [historyOrders]);
+
 
     if (isUserLoading) return null;
 
@@ -517,8 +580,7 @@ export default function RiderPage() {
                             haptic.vibrateError();
                             return;
                         }
-                        setIsOnline(!isOnline);
-                        haptic.vibrateMedium();
+                        handleToggleOnline();
                     }}
                     className={cn(
                         "w-full max-w-xs h-20 rounded-[2.5rem] font-black uppercase italic tracking-[0.2em] text-lg transition-all duration-500 shadow-2xl overflow-hidden relative group",

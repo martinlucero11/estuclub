@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy, Timestamp } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 import Link from 'next/link';
@@ -165,7 +165,10 @@ export default function VerifyPage() {
         role: 'rider',
         isVerified: true,
         approvedAt: serverTimestamp(),
-        trialEndsAt: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours trial
+        trialEndsAt: Timestamp.fromMillis(Date.now() + 48 * 60 * 60 * 1000), // 48 hours trial
+        // Real-time Logistics
+        isOnline: false,
+        lastStatusChange: serverTimestamp(),
       }, { merge: true });
 
       // 2. Create/Update Rider Role
@@ -271,18 +274,28 @@ export default function VerifyPage() {
         type: req.category,
         address: req.address,
         whatsapp: req.commercialPhone,
-        logoUrl: req.logo,
-        coverUrl: req.fachada,
+        logoUrl: req.logo || '',
+        coverUrl: req.fachada || '',
         verified: true,
         verifiedAt: serverTimestamp(),
         isVisible: true,
         createdAt: serverTimestamp(),
+        // Mandatory Specification Aliases
+        storeName: req.supplierName,
+        phone: req.commercialPhone,
+        logo: req.logo || '',
       }, { merge: true });
 
       // 2. Update User Profile Role
       await setDoc(doc(firestore, 'users', userId), {
         role: 'supplier',
         isVerified: true,
+        // MANDATORY SYNC
+        storeName: req.supplierName,
+        phone: req.commercialPhone,
+        logo: req.logo || '',
+        address: req.address || '',
+        displayName: req.supplierName,
       }, { merge: true });
 
       // 3. Mark request as approved

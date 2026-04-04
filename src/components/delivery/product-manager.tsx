@@ -18,6 +18,7 @@ import {
     DialogTitle, 
     DialogTrigger,
     DialogFooter,
+    DialogDescription,
 } from '@/components/ui/dialog';
 import {
     DropdownMenu,
@@ -108,6 +109,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                 isActive: selectedProduct.isActive ?? true,
                 stockAvailable: selectedProduct.stockAvailable ?? true,
                 createdAt: selectedProduct.id ? selectedProduct.createdAt : serverTimestamp(),
+                updatedAt: serverTimestamp(),
             };
 
             await setDoc(productRef, productData, { merge: true });
@@ -135,7 +137,8 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
         if (!firestore) return;
         try {
             await updateDoc(doc(firestore, 'products', product.id), {
-                [field]: !product[field]
+                [field]: !product[field],
+                updatedAt: serverTimestamp()
             });
         } catch (error) {
             console.error(error);

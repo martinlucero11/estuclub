@@ -1,5 +1,4 @@
 
-
 /**
  * @file Centralized type definitions for application-wide data models.
  */
@@ -19,7 +18,7 @@ export type WhereFilter = {
 /**
  * Defines the possible roles a user can have within the application.
  */
-export type UserRole = 'admin' | 'supplier' | 'cluber' | 'user' | 'rider' | 'rider_pending' | 'cluber_pending';
+export type UserRole = 'admin' | 'supplier' | 'cluber' | 'user' | 'rider' | 'rider_pending' | 'cluber_pending' | 'rider_rejected';
 
 /**
  * Represents the data stored for a user in the /users collection.
@@ -30,6 +29,7 @@ export interface UserProfile {
     username: string;
     firstName: string;
     lastName: string;
+    displayName?: string;
     email: string;
     dni: string;
     phone: string;
@@ -69,7 +69,17 @@ export interface UserProfile {
     membershipPaidUntil?: Timestamp;
     isMembershipWaived?: boolean;
     addresses?: UserAddress[];
+    // Real-time Logistics
+    isOnline?: boolean;
+    lastStatusChange?: Timestamp;
+    // Supplier Sync Aliases (Requested Specification)
+    storeName?: string;
+    address?: string;
+    // phone?: string; // Already exists as phone
+    description?: string;
+    logo?: string;
     createdAt: Timestamp;
+    updatedAt?: Timestamp;
 }
 
 /**
@@ -116,6 +126,7 @@ export interface SupplierProfile {
   featuredRank?: number; // Admin-controlled
   homeCarousels?: string[]; // Admin-controlled
   createdAt?: Timestamp;
+  updatedAt?: Timestamp;
   // --- Module Capabilities ---
   appointmentsEnabled?: boolean;
   canCreateBenefits?: boolean;
@@ -148,315 +159,170 @@ export interface SupplierProfile {
   menuSections?: string[]; // Custom subcategories defined by the supplier
   mp_linked?: boolean;
   mp_grace_period_end?: Timestamp;
+  // Specific Specification Aliases
+  storeName?: string;
+  phone?: string;
+  logo?: string;
   isCincoDos?: boolean; // PWA plus membership
   commissionPercentage?: number; // Admin-controlled
   [key: string]: any;
 }
 
-
-export const benefitCategories = [
-  'Turismo',
-  'Comercios',
-  'Eventos',
-  'Comida',
-  'Educación',
-  'Entretenimiento',
-] as const;
-export type BenefitCategory = typeof benefitCategories[number];
-
-export interface Benefit {
-  id: string;
-  title: string;
-  description: string;
-  category: BenefitCategory;
-  highlight?: string;
-  image: string;
-  imageUrl: string;
-  location?: string;
-  ownerId: string;
-  createdAt?: Timestamp;
-  points: number;
-  cost?: number;
-  redemptionLimit?: number;
-  validUntil?: Timestamp;
-  availableDays?: string[];
-  redemptionCount?: number;
-  active?: boolean;
-  isFeatured: boolean; // Admin-controlled
-  isVisible: boolean; // Admin or Owner controlled
-  featuredRank?: number; // Admin-controlled
-  supplierName?: string;
-  status?: 'active' | 'inactive';
-  stock?: number;
-  minLevel?: number;
-  isExclusive?: boolean;
-  targetAudience?: 'all' | 'level_1' | 'level_2' | 'level_3' | 'cinco_dos';
-  linkedProductIds?: string[]; // IDs of delivery products this benefit applies to
-  discountAmount?: number; // Optional discount amount in currency
-  discountPercentage?: number; // Optional percentage discount
-  [key: string]: any;
-}
-
-// Serializable type for client-side components
-export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'validUntil'> & {
-  createdAt: string; // Always a string
-  validUntil?: string; // Optional string
-  linkedProductIds?: string[];
-};
-
-/**
- * Represents an announcement in the /announcements collection.
- */
-export interface Announcement {
-  id: string; // Document ID
-  supplierId: string;
-  title: string;
-  content: string;
-  authorId?: string;
-  authorUsername?: string;
-  imageUrl?: string;
-  linkUrl?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  isVisible?: boolean; // New field
-  submittedAt: Timestamp;
-  approvedAt?: Timestamp;
-  createdAt: Timestamp;
-  [key: string]: any;
-}
-
-export interface SerializableAnnouncement extends Omit<Announcement, 'createdAt' | 'submittedAt' | 'approvedAt'> {
-  id: string;
-  createdAt: string;
-  submittedAt?: string;
-  approvedAt?: string;
-}
-
-export type CarouselItem = (SerializableBenefit & { type: 'benefit' }) | (SerializableAnnouncement & { type: 'announcement' });
-
-export interface Service {
-  id: string;
-  name: string;
-  description: string;
-  duration: number; // in minutes
-  [key: string]: any;
-}
-
-export interface DaySchedule {
-  active: boolean;
-  startTime: string; // "HH:mm"
-  endTime: string;   // "HH:mm"
-  [key: string]: any;
-}
-
 export interface Availability {
-    schedule: {
-        [day: string]: DaySchedule;
+  schedule: {
+    [day: string]: {
+      active: boolean;
+      startTime: string;
+      endTime: string;
     };
-    [key: string]: any;
-}
-
-export interface Appointment {
-    id: string;
-    userId: string;
-    userName: string;
-    userDni: string;
-    userPhone: string;
-    serviceId: string;
-    serviceName: string;
-    supplierId: string;
-    startTime: Date | Timestamp;
-    endTime: Date | Timestamp;
-    status: 'confirmed' | 'cancelled';
-    createdAt: Timestamp;
-    [key: string]: any;
-}
-
-export interface BenefitRedemption {
-  id: string;
-  benefitId: string;
-  benefitTitle: string;
-  benefitDescription: string;
-  benefitImageUrl: string;
-  benefitLocation?: string;
-  supplierId: string;
-  supplierName: string;
-  userId: string;
-  userName: string;
-  userDni: string;
-  redeemedAt: Timestamp;
-  qrCodeValue: string;
-  status: 'pending' | 'used';
-  usedAt?: Timestamp;
-  pointsGranted: number;
-  [key: string]: any;
-}
-
-export type SerializableBenefitRedemption = Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> & {
-  redeemedAt: string;
-  usedAt?: string;
-};
-
-export interface Banner {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  link?: string;
-  isActive: boolean;
-  colorScheme: 'pink' | 'yellow' | 'blue';
-  createdAt: Timestamp;
-  [key: string]: any;
-}
-
-export type SerializableBanner = Omit<Banner, 'createdAt'> & {
-  createdAt: string;
-};
-
-export interface Category {
-  id: string;
-  name: string;
-  emoji: string;
-  colorClass: string;
-  order?: number;
-  type: 'perks' | 'delivery';
-  [key: string]: any;
-}
-
-// Discriminated union for HomeSection.block
-type DynamicContentConfig = {
-  contentType: "perks" | "suppliers" | "announcements" | "banners" | "benefits_nearby" | "suppliers_nearby" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo";
-  mode: "auto" | "manual";
-  query?: {
-    filters?: WhereFilter[];
-    sort?: { field: string; direction: "asc" | "desc" };
-    limit?: number;
   };
-  items?: string[];
 }
-
-export type HomeSectionBlock =
-  | (DynamicContentConfig & {
-      kind: "carousel";
-      layout?: { itemWidth?: number };
-    })
-  | (DynamicContentConfig & {
-      kind: "grid";
-      layout?: { gridPreset?: "1x4" | "1x5" | "2x4" | "2x5" };
-    })
-  | {
-      kind: "banner";
-      bannerId: string;
-    }
-    | {
-      kind: "categories";
-    }
-  | {
-      kind: "message";
-      message: {
-        title?: string;
-        body: string;
-        imageUrl?: string;
-        alignment?: 'left' | 'center';
-      };
-    };
-
-export interface HomeSection {
-  id: string;
-  title: string;
-  order: number;
-  isActive: boolean;
-  targetBoard: 'perks' | 'delivery';
-  createdAt?: Timestamp;
-  block: HomeSectionBlock;
-}
-
-
-export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
-    createdAt: string;
-};
-
-export interface AppointmentSlot {
-    id: string;
-    supplierId: string;
-    startTime: Timestamp;
-    endTime: Timestamp;
-    status: 'available' | 'booked';
-    bookedBy?: string; // UID of the student who booked it
-    [key: string]: any;
-}
-
-export interface Notification {
-  id: string;
-  title: string;
-  description: string;
-  type: 'benefit' | 'announcement' | 'appointment';
-  referenceId: string; // ID of the benefit, announcement, etc.
-  supplierId?: string; // ID of the supplier who triggered it
-  target?: 'all' | 'subscribers'; // Who should receive it
-  createdAt: Timestamp;
-}
-
-/**
- * --- Delivery Lite Models ---
- */
 
 export interface Product {
     id: string;
     supplierId: string;
     name: string;
-    description: string;
+    description?: string;
     price: number;
-    originalPrice?: number; // Pre-discount price
+    originalPrice?: number;
     imageUrl?: string;
-    category?: string; // Global category
-    menuSection?: string; // Supplier's custom subcategory
-    stockAvailable: boolean;
+    category: string; // e.g. 'Comida Rápida' (Global App Category)
+    menuSection?: string; // e.g. 'Hamburguesas' (Local Supplier Categories)
     isActive: boolean;
+    stockAvailable: boolean;
+    order?: number;
     viewsCount?: number;
     salesCount?: number;
     createdAt: Timestamp;
+    updatedAt?: Timestamp;
+}
+
+export interface Category {
+    id: string;
+    name: string;
+    icon: string;
+    type: 'delivery' | 'discount' | 'global';
+    order: number;
+    isActive: boolean;
+}
+
+export interface Order {
+    id: string;
+    shortId: string;
+    customerId: string;
+    customerName: string;
+    customerPhone: string;
+    supplierId: string;
+    supplierName: string;
+    supplierPhone: string;
+    supplierLogo?: string;
+    supplierCoords: { latitude: number; longitude: number };
+    items: OrderItem[];
+    subtotal: number;
+    deliveryFee: number;
+    deliveryCost?: number; // alias
+    total: number;
+    status: OrderStatus;
+    paymentMethod: 'cash_at_door' | 'mp_link' | 'mp_qr';
+    paymentStatus: 'pending' | 'paid' | 'failed';
+    deliveryPaymentStatus?: 'pending' | 'paid'; // for door payment
+    deliveryAddress: string;
+    deliveryNotes?: string;
+    deliveryCoords: { latitude: number; longitude: number };
+    riderId?: string;
+    riderName?: string;
+    riderPhone?: string;
+    riderLocation?: { latitude: number; longitude: number };
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+    estimatedDeliveryTime?: Timestamp;
 }
 
 export interface OrderItem {
     productId: string;
     name: string;
     price: number;
-    originalPrice?: number;
     quantity: number;
-    imageUrl?: string;
+    notes?: string;
 }
 
-export interface Order {
+export type OrderStatus = 
+    'pending' | 
+    'searching_rider' |
+    'assigned' | 
+    'at_store' | 
+    'on_the_way' | 
+    'delivered' | 
+    'completed' | 
+    'cancelled';
+
+export interface Benefit {
     id: string;
-    userId: string;
-    userName: string;
-    userPhone: string;
     supplierId: string;
     supplierName: string;
-    items: OrderItem[];
-    subtotal: number;
-    deliveryCost: number;
-    totalAmount: number;
-    // Payment at Door Structure
-    itemsTotal: number;
-    serviceFee: number;
-    totalPaidOnline: number;
-    deliveryFee: number;
-    deliveryPaymentStatus: 'pending' | 'paid' | 'not_applicable';
-    distanceKm?: number;
-    status: 'pending_payment' | 'pending' | 'accepted' | 'shipped' | 'completed' | 'cancelled' | 'searching_rider' | 'assigned' | 'at_store' | 'on_the_way' | 'delivered' | 'paid';
-    riderId?: string;
-    deliveryAddress?: string;
-    deliveryAddressLabel?: string; // "Casa", "Trabajo", etc.
-    deliveryNote?: string;
-    deliveryPin?: string; // 4-digit code for validation
-    type: 'delivery' | 'pickup';
+    supplierLogo?: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    category: string;
+    points?: number;
+    redemptionCount?: number;
+    isVisible: boolean;
+    isFeatured: boolean;
+    isExclusive?: boolean;
     createdAt: Timestamp;
-    updatedAt: Timestamp;
+    updatedAt?: Timestamp;
 }
 
-export type SerializableOrder = Omit<Order, 'createdAt' | 'updatedAt'> & {
-    createdAt: string;
-    updatedAt: string;
+export interface Announcement {
+    id: string;
+    supplierId: string;
+    authorUsername: string;
+    title: string;
+    content: string;
+    imageUrl?: string;
+    linkUrl?: string;
+    status: 'pending' | 'approved' | 'rejected';
+    isVisible: boolean;
+    submittedAt: Timestamp;
+    updatedAt?: Timestamp;
+    createdAt?: Timestamp; // safety alias
+}
+
+export interface Banner {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    link?: string;
+    isActive: boolean;
+    colorScheme?: 'pink' | 'yellow' | 'blue';
+    order?: number;
+    createdAt: Timestamp;
+    updatedAt?: Timestamp;
+}
+
+export interface HomeSection {
+    id: string;
+    title: string;
+    type: 'carousel' | 'grid' | 'categories' | 'highlights';
+    order: number;
+    isActive: boolean;
+    dataSource?: 'products' | 'suppliers' | 'benefits' | 'announcements';
+    queryLimit?: number;
+    filterByField?: string;
+    filterByValue?: any;
+    updatedAt?: Timestamp;
+}
+
+// Serializable versions for Next.js SSR/Client boundary if needed
+export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'updatedAt'> & {
+    createdAt: { seconds: number; nanoseconds: number };
+    updatedAt?: { seconds: number; nanoseconds: number };
 };
 
+export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'updatedAt' | 'createdAt'> & {
+    submittedAt: { seconds: number; nanoseconds: number };
+    updatedAt?: { seconds: number; nanoseconds: number };
+    createdAt?: { seconds: number; nanoseconds: number };
+};

@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useDoc, useStorage } from '@/firebase';
-import { doc, updateDoc, GeoPoint } from 'firebase/firestore';
+import { doc, updateDoc, GeoPoint, serverTimestamp } from 'firebase/firestore';
 import { useEffect, useState, useRef, useMemo } from 'react';
 import { Save, Loader2, Camera, Truck, Clock, MapPin } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
@@ -226,11 +226,33 @@ export default function EditSupplierProfileForm() {
       await updateDoc(supplierRef, {
           ...dataToSave,
           slug: newSlug,
+          // Mandatory Specification Aliases
+          storeName: values.name,
+          address: values.address || '',
+          phone: values.whatsapp || '',
+          description: values.description || '',
+          logo: values.logoUrl || '',
+          updatedAt: serverTimestamp(),
+      });
+
+      // Synchronize with the main users collection for generic UI
+      const userRef = doc(firestore, 'users', user.uid);
+      await updateDoc(userRef, {
+          displayName: values.name,
+          phoneNumber: values.whatsapp,
+          photoURL: values.logoUrl,
+          // Specific Aliases for User Document consistency
+          storeName: values.name,
+          address: values.address || '',
+          phone: values.whatsapp || '',
+          description: values.description || '',
+          logo: values.logoUrl || '',
+          updatedAt: serverTimestamp(),
       });
 
       toast({
         title: 'Perfil actualizado',
-        description: 'Tu información pública ha sido guardada.',
+        description: 'Tu información pública ha sido guardada en todos los registros.',
       });
     } catch (error: any) {
       console.error('Error updating supplier profile:', error);
