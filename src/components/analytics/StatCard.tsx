@@ -38,7 +38,7 @@ export function StatCard({ title, value, icon: Icon, href, description, trend, t
                 className={cn(
                     "group relative overflow-hidden h-full transition-all duration-700",
                     !noGlass 
-                        ? "border-black/20 dark:border-white/20 bg-white/60 dark:bg-white/5 backdrop-blur-2xl shadow-xl hover:shadow-primary/40 hover:border-primary/60" 
+                        ? "border-border bg-background/60 backdrop-blur-2xl shadow-xl hover:shadow-primary/40 hover:border-primary/60" 
                         : "bg-transparent border-none shadow-none",
                     (href || onClick) && "cursor-pointer active:scale-95"
                 )}
@@ -51,25 +51,25 @@ export function StatCard({ title, value, icon: Icon, href, description, trend, t
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 relative z-10">
-                    <CardTitle className="text-[12px] font-black uppercase tracking-[0.3em] text-foreground/80 dark:text-white/70 group-hover:text-primary dark:group-hover:text-white transition-all duration-500">
+                    <CardTitle className="text-[12px] font-black uppercase tracking-[0.3em] text-foreground/80 group-hover:text-primary transition-all duration-500">
                         {title}
                     </CardTitle>
-                    <div className="p-3.5 rounded-[1.5rem] bg-black/[0.03] dark:bg-white/5 border border-black/10 dark:border-white/10 group-hover:bg-primary group-hover:border-primary/50 group-hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
-                        <Icon className="h-4.5 w-4.5 text-foreground/60 dark:text-white group-hover:text-white transition-colors duration-500" />
+                    <div className="p-3.5 rounded-[1.5rem] bg-muted border border-border group-hover:bg-primary group-hover:border-primary/50 group-hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.4)] transition-all duration-500">
+                        <Icon className="h-4.5 w-4.5 text-foreground/60 group-hover:text-white transition-colors duration-500" />
                     </div>
                 </CardHeader>
 
                 <CardContent className="pt-2 relative z-10">
                     <div className="flex items-baseline gap-4">
-                        <div className="text-5xl font-black tracking-tighter text-foreground dark:text-white drop-shadow-sm dark:drop-shadow-[0_2px_15px_rgba(0,0,0,0.5)] transition-transform duration-500 group-hover:scale-105 origin-left">
+                        <div className="text-5xl font-black tracking-tighter text-foreground transition-transform duration-500 group-hover:scale-105 origin-left">
                             {value}
                         </div>
                         {trend && (
                             <div className={cn(
                                 "flex items-center text-[11px] font-black px-3 py-1.5 rounded-2xl border-2 backdrop-blur-md shadow-sm transition-all duration-500 group-hover:scale-110",
-                                isUp ? "text-green-700 dark:text-green-400 bg-green-500/10 border-green-500/20 shadow-green-500/5" : 
-                                isDown ? "text-red-700 dark:text-red-400 bg-red-500/10 border-red-500/20 shadow-red-500/5" : 
-                                "text-foreground dark:text-white bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10"
+                                isUp ? "text-green-700 bg-green-500/10 border-green-500/20 shadow-green-500/5" : 
+                                isDown ? "text-red-700 bg-red-500/10 border-red-500/20 shadow-red-500/5" : 
+                                "text-foreground bg-muted border-border"
                             )}>
                                 {isUp && <ArrowUpRight className="h-3 w-3 mr-1" />}
                                 {isDown && <ArrowDownRight className="h-3 w-3 mr-1" />}
@@ -81,7 +81,7 @@ export function StatCard({ title, value, icon: Icon, href, description, trend, t
                     
                     {description && (
                         <div className="mt-5 space-y-2">
-                            <p className="text-[10px] text-foreground/70 dark:text-white/50 font-black uppercase tracking-[0.2em] leading-relaxed group-hover:text-primary dark:group-hover:text-white transition-colors duration-500">
+                            <p className="text-[10px] text-foreground/70 font-black uppercase tracking-[0.2em] leading-relaxed group-hover:text-primary transition-colors duration-500">
                                 {description}
                             </p>
                             <div className="h-[1px] w-full bg-gradient-to-r from-primary/30 via-transparent to-transparent" />

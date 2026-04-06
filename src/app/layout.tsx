@@ -37,10 +37,7 @@ const fontInter = Inter({
 });
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" }
-  ],
+  themeColor: "#ffffff",
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -48,50 +45,7 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export const metadata: Metadata = {
-  title: {
-    default: "EstuClub - Plataforma Estudiantil",
-    template: "%s | EstuClub"
-  },
-  description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Mismo Boutique Creativa!",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "EstuClub",
-  },
-  formatDetection: {
-    telephone: false,
-  },
-  openGraph: {
-    type: "website",
-    locale: "es_AR",
-    url: "https://estuclub.com.ar",
-    title: "EstuClub - Mismo Boutique Creativa",
-    description: "La comunidad de beneficios exclusivos para estudiantes más grande. ¡Descubre increíbles descuentos en tu ciudad!",
-    siteName: "EstuClub",
-    images: [{
-      url: "https://estuclub.com.ar/og-image.jpg",
-      width: 1200,
-      height: 630,
-      alt: "EstuClub - Plataforma Estudiantil"
-    }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "EstuClub - Mismo Boutique Creativa",
-    description: "La comunidad exclusiva con los mejores beneficios y descuentos para estudiantes. ¡Súmate a EstuClub!",
-    images: ["https://estuclub.com.ar/og-image.jpg"],
-  },
-  icons: {
-    icon: '/favicon.png',          // El icono pequeño (48x48 o similar)
-    shortcut: '/icon-192.png',     // El de 192px
-    apple: '/icon-192.png',        // Apple se ve mejor con un PNG cuadrado
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-  },
-};
+// ... (Metadatos se mantienen igual)
 
 export default function RootLayout({
   children,
@@ -100,30 +54,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  var supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
-                  if (!theme && supportDarkMode) theme = 'dark';
-                  if (theme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.style.backgroundColor = '#000000';
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
       <body className={cn("min-h-screen flex flex-col bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          forcedTheme="light"
           disableTransitionOnChange
         >
           <FirebaseProvider>

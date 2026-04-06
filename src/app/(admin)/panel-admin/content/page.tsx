@@ -31,14 +31,24 @@ import {
   X
 } from 'lucide-react';
 import { useUser, useFirestore, useCollection } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  serverTimestamp,
+  collectionGroup,
+  addDoc 
+} from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { Benefit, Announcement, Banner, SerializableBenefit, SerializableAnnouncement } from '@/types/data';
+import { Benefit, Announcement, Banner, Service, Product } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { cn } from '@/lib/utils';
 import { 
@@ -46,13 +56,11 @@ import {
     DialogContent, 
     DialogHeader, 
     DialogTitle, 
-    DialogTrigger,
     DialogFooter
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { addDoc } from 'firebase/firestore';
 
 export default function ContentCommandCenterPage() {
     const { isAdmin, isUserLoading } = useUser();
@@ -73,10 +81,20 @@ export default function ContentCommandCenterPage() {
     const bannersQuery = useMemo(() => 
         query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc')), 
     [firestore]);
+
+    const servicesQuery = useMemo(() => 
+        query(collectionGroup(firestore, 'services').withConverter(createConverter<Service>()), orderBy('name', 'asc')),
+    [firestore]);
+
+    const productsQuery = useMemo(() => 
+        query(collectionGroup(firestore, 'products').withConverter(createConverter<Product>()), orderBy('name', 'asc')),
+    [firestore]);
     
     const { data: benefits, isLoading: loadingBenefits } = useCollection(benefitsQuery);
     const { data: announcements, isLoading: loadingAnnouncements } = useCollection(announcementsQuery);
     const { data: banners, isLoading: loadingBanners } = useCollection(bannersQuery);
+    const { data: services, isLoading: loadingServices } = useCollection(servicesQuery);
+    const { data: products, isLoading: loadingProducts } = useCollection(productsQuery);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<any>(null);
@@ -86,21 +104,49 @@ export default function ContentCommandCenterPage() {
     if (!isAdmin) return <div className="p-20 text-center font-black uppercase text-[#cb465a]">OVERLORD ACCESS REQUIRED</div>;
 
     // ── ACTIONS ───────────────────────────────────────────
-    const handleToggleActive = async (id: string, current: boolean, type: 'perk' | 'announcement') => {
+    const handleToggleActive = async (item: any, type: string) => {
         try {
-            const ref = doc(firestore, type === 'perk' ? 'perks' : 'announcements', id);
-            await updateDoc(ref, { isVisible: !current });
-            toast({ title: "Estado Actualizado", description: `El contenido ahora está ${!current ? 'Visible' : 'Oculto'}.` });
+            let ref;
+            let updateField = 'isVisible';
+            
+            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
+            else if (type === 'banner') {
+                ref = doc(firestore, 'banners', item.id);
+                updateField = 'isActive';
+            }
+            else if (type === 'service') {
+                ref = doc(firestore, 'roles_supplier', item.supplierId, 'services', item.id);
+                updateField = 'isActive';
+            }
+            else if (type === 'product') {
+                ref = doc(firestore, 'roles_supplier', item.supplierId, 'products', item.id);
+                updateField = 'isActive';
+            }
+
+            if (!ref) return;
+
+            const currentValue = item[updateField];
+            await updateDoc(ref, { [updateField]: !currentValue });
+            toast({ title: "Estado Actualizado", description: `El contenido ahora está ${!currentValue ? 'Activo' : 'Inactivo'}.` });
         } catch (e) {
+            console.error(e);
             toast({ variant: "destructive", title: "Error al actualizar" });
         }
     };
 
-    const handleDelete = async (id: string, type: 'perk' | 'announcement' | 'banner') => {
+    const handleDelete = async (item: any, type: string) => {
         if (!confirm("¿Estás seguro de eliminar este contenido permanentemente?")) return;
         try {
-            const coll = type === 'perk' ? 'perks' : (type === 'announcement' ? 'announcements' : 'banners');
-            await deleteDoc(doc(firestore, coll, id));
+            let ref;
+            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
+            else if (type === 'banner') ref = doc(firestore, 'banners', item.id);
+            else if (type === 'service') ref = doc(firestore, 'roles_supplier', item.supplierId, 'services', item.id);
+            else if (type === 'product') ref = doc(firestore, 'roles_supplier', item.supplierId, 'products', item.id);
+
+            if (!ref) return;
+            await deleteDoc(ref);
             toast({ title: "Eliminado", description: "Contenido removido del sistema." });
         } catch (e) {
             toast({ variant: "destructive", title: "Error al eliminar" });
@@ -111,51 +157,75 @@ export default function ContentCommandCenterPage() {
         e.preventDefault();
         setIsSaving(true);
         const formData = new FormData(e.currentTarget);
-        const type = activeTab === 'benefits' ? 'perks' : (activeTab === 'announcements' ? 'announcements' : 'banners');
         
         const data: any = {
             updatedAt: serverTimestamp(),
         };
 
+        let type = '';
+        let pathParts: string[] = [];
+
         if (activeTab === 'benefits') {
+            type = 'perks';
             data.title = formData.get('title');
             data.description = formData.get('description');
             data.category = formData.get('category');
             data.imageUrl = formData.get('imageUrl');
             data.points = Number(formData.get('points')) || 0;
-            data.isVisible = true;
-            data.isFeatured = false;
+            data.isService = formData.get('isService') === 'true';
         } else if (activeTab === 'announcements') {
+            type = 'announcements';
             data.title = formData.get('title');
             data.content = formData.get('content');
             data.imageUrl = formData.get('imageUrl');
             data.linkUrl = formData.get('linkUrl');
-            data.status = 'approved';
-            data.isVisible = true;
-        } else {
+        } else if (activeTab === 'banners') {
+            type = 'banners';
             data.title = formData.get('title');
             data.description = formData.get('description');
             data.imageUrl = formData.get('imageUrl');
             data.link = formData.get('link');
-            data.isActive = true;
             data.colorScheme = formData.get('colorScheme') || 'pink';
+        } else if (activeTab === 'services') {
+            data.name = formData.get('title');
+            data.description = formData.get('description');
+            data.duration = Number(formData.get('duration')) || 30;
+            data.price = Number(formData.get('price')) || 0;
+            data.imageUrl = formData.get('imageUrl');
+            if (editingItem) {
+                pathParts = ['roles_supplier', editingItem.supplierId, 'services', editingItem.id];
+            }
+        } else if (activeTab === 'products') {
+            data.name = formData.get('title');
+            data.description = formData.get('description');
+            data.price = Number(formData.get('price')) || 0;
+            data.imageUrl = formData.get('imageUrl');
+            data.stockAvailable = formData.get('stockAvailable') === 'true';
+            if (editingItem) {
+                pathParts = ['roles_supplier', editingItem.supplierId, 'products', editingItem.id];
+            }
         }
 
         try {
             if (editingItem) {
-                await updateDoc(doc(firestore, type, editingItem.id), data);
+                const ref = pathParts.length > 0 
+                    ? doc(firestore, pathParts[0], ...pathParts.slice(1)) 
+                    : doc(firestore, type, editingItem.id);
+                await updateDoc(ref, data);
                 toast({ title: "Actualizado", description: "Contenido modificado correctamente." });
             } else {
+                if (activeTab === 'services' || activeTab === 'products') {
+                    throw new Error("La creación directa de servicios/productos desde Overlord está deshabilitada. Úselo para editar.");
+                }
                 data.createdAt = serverTimestamp();
-                if (activeTab === 'announcements') data.submittedAt = serverTimestamp();
                 await addDoc(collection(firestore, type), data);
                 toast({ title: "Creado", description: "Nuevo contenido añadido al sistema." });
             }
             setIsEditorOpen(false);
             setEditingItem(null);
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
-            toast({ variant: "destructive", title: "Error al guardar" });
+            toast({ variant: "destructive", title: "Error al guardar", description: e.message });
         } finally {
             setIsSaving(false);
         }
@@ -163,7 +233,6 @@ export default function ContentCommandCenterPage() {
 
     return (
         <div className="min-h-screen bg-black pb-32 selection:bg-[#cb465a]/30">
-            {/* Header: Command Style */}
             <header className="pt-16 pb-12 px-6 md:px-12 bg-gradient-to-b from-[#cb465a]/20 to-transparent">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-8">
                     <div className="space-y-4">
@@ -179,25 +248,18 @@ export default function ContentCommandCenterPage() {
                         <h1 className="text-6xl md:text-[5.5rem] font-black text-white uppercase tracking-tighter italic leading-[0.9] font-montserrat drop-shadow-2xl">
                             CONTENIDO <br/><span className="text-[#cb465a]">EXTREMO</span>
                         </h1>
-                        <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.5em] ml-2">Gestión de Beneficios, Anuncios y Banners</p>
+                        <p className="text-[10px] font-black text-white/50 uppercase tracking-[0.5em] ml-2">Gestión de Beneficios, Anuncios, Turnos y Productos</p>
                     </div>
 
                     <div className="flex flex-col items-end gap-4">
-                         <div className="flex gap-3 bg-white/5 backdrop-blur-xl p-4 rounded-3xl border border-white/10">
-                            <div className="h-10 w-10 rounded-full bg-[#cb465a]/20 flex items-center justify-center">
-                                <Zap className="h-5 w-5 text-[#cb465a]" />
-                            </div>
-                            <div className="pr-4">
-                                <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-widest leading-tight">Master Difusión</p>
-                                <p className="text-xs font-bold text-white/80">Monitor de Tráfico Activo</p>
-                            </div>
-                        </div>
-                        <Button 
-                            onClick={() => { setEditingItem(null); setIsEditorOpen(true); }}
-                            className="bg-[#cb465a] hover:bg-[#cb465a]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#cb465a]/20"
-                        >
-                            <Plus className="mr-2 h-4 w-4" /> Crear Nuevo ({activeTab === 'benefits' ? 'Beneficio' : (activeTab === 'announcements' ? 'Anuncio' : 'Banner')})
-                        </Button>
+                        {['benefits', 'announcements', 'banners'].includes(activeTab) && (
+                            <Button 
+                                onClick={() => { setEditingItem(null); setIsEditorOpen(true); }}
+                                className="bg-[#cb465a] hover:bg-[#cb465a]/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 rounded-2xl shadow-xl shadow-[#cb465a]/20"
+                            >
+                                <Plus className="mr-2 h-4 w-4" /> Crear Nuevo
+                            </Button>
+                        )}
                     </div>
                 </div>
             </header>
@@ -206,10 +268,12 @@ export default function ContentCommandCenterPage() {
                 
                 <Tabs defaultValue="benefits" onValueChange={setActiveTab} className="space-y-10">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                        <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-[2rem] h-16 w-full md:w-auto shadow-2xl backdrop-blur-lg">
-                            <TabsTrigger value="benefits" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Beneficios</TabsTrigger>
-                            <TabsTrigger value="announcements" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Anuncios</TabsTrigger>
-                            <TabsTrigger value="banners" className="rounded-[1.5rem] px-8 font-black uppercase text-[10px] tracking-[0.2em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Banners</TabsTrigger>
+                        <TabsList className="bg-white/5 border border-white/10 p-1.5 rounded-[2rem] h-16 w-full md:w-auto shadow-2xl backdrop-blur-lg flex overflow-x-auto no-scrollbar">
+                            <TabsTrigger value="benefits" className="rounded-[1.5rem] px-6 font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Beneficios</TabsTrigger>
+                            <TabsTrigger value="announcements" className="rounded-[1.5rem] px-6 font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Anuncios</TabsTrigger>
+                            <TabsTrigger value="services" className="rounded-[1.5rem] px-6 font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Servicios</TabsTrigger>
+                            <TabsTrigger value="products" className="rounded-[1.5rem] px-6 font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Productos</TabsTrigger>
+                            <TabsTrigger value="banners" className="rounded-[1.5rem] px-6 font-black uppercase text-[9px] tracking-widest data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-full">Banners</TabsTrigger>
                         </TabsList>
 
                         <div className="relative w-full md:w-80 group">
@@ -236,10 +300,11 @@ export default function ContentCommandCenterPage() {
                                         isVisible={!!benefit.isVisible}
                                         stats={`${benefit.redemptionCount || 0} canjes`}
                                         type="perk"
-                                        onToggle={() => handleToggleActive(benefit.id, !!benefit.isVisible, 'perk')}
-                                        onDelete={() => handleDelete(benefit.id, 'perk')}
+                                        onToggle={() => handleToggleActive(benefit, 'perk')}
+                                        onDelete={() => handleDelete(benefit, 'perk')}
+                                        onEdit={() => { setEditingItem(benefit); setIsEditorOpen(true); }}
                                         owner={benefit.supplierName || 'Estuclub Global'}
-                                        badge={benefit.isExclusive ? 'EXCLUSIVO' : undefined}
+                                        badge={benefit.isService ? 'SERVICIO/TURNO' : (benefit.isExclusive ? 'EXCLUSIVO' : undefined)}
                                     />
                                 ))}
                             </div>
@@ -259,11 +324,57 @@ export default function ContentCommandCenterPage() {
                                         isVisible={!!ann.isVisible}
                                         stats={ann.submittedAt ? new Date(ann.submittedAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                                         type="announcement"
-                                        onToggle={() => handleToggleActive(ann.id, !!ann.isVisible, 'announcement')}
-                                        onDelete={() => handleDelete(ann.id, 'announcement')}
+                                        onToggle={() => handleToggleActive(ann, 'announcement')}
+                                        onDelete={() => handleDelete(ann, 'announcement')}
                                         onEdit={() => { setEditingItem(ann); setIsEditorOpen(true); }}
                                         owner="Comunicación"
                                         status={ann.status}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    {/* SERVICES TAB */}
+                    <TabsContent value="services" className="space-y-6 focus-visible:outline-none">
+                        {loadingServices ? <LoadingGrid /> : (
+                            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {services?.filter(s => s.name.toLowerCase().includes(search.toLowerCase())).map(service => (
+                                    <ContentCard 
+                                        key={service.id}
+                                        title={service.name}
+                                        subtitle={`${service.duration} mins - $${service.price || 0}`}
+                                        image={service.imageUrl}
+                                        isVisible={!!service.isActive}
+                                        stats="Servicio de Turno"
+                                        type="service"
+                                        onToggle={() => handleToggleActive(service, 'service')}
+                                        onDelete={() => handleDelete(service, 'service')}
+                                        onEdit={() => { setEditingItem(service); setIsEditorOpen(true); }}
+                                        owner="Profesional"
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    {/* PRODUCTS TAB */}
+                    <TabsContent value="products" className="space-y-6 focus-visible:outline-none">
+                        {loadingProducts ? <LoadingGrid /> : (
+                            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {products?.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map(product => (
+                                    <ContentCard 
+                                        key={product.id}
+                                        title={product.name}
+                                        subtitle={`$${product.price} - ${product.stockAvailable ? 'Con Stock' : 'Sin Stock'}`}
+                                        image={product.imageUrl}
+                                        isVisible={!!product.isActive}
+                                        stats="Producto Delivery"
+                                        type="product"
+                                        onToggle={() => handleToggleActive(product, 'product')}
+                                        onDelete={() => handleDelete(product, 'product')}
+                                        onEdit={() => { setEditingItem(product); setIsEditorOpen(true); }}
+                                        owner="Delivery"
                                     />
                                 ))}
                             </div>
@@ -283,8 +394,8 @@ export default function ContentCommandCenterPage() {
                                         isVisible={!!banner.isActive}
                                         stats={banner.link || 'Sin link'}
                                         type="banner"
-                                        onToggle={() => handleToggleActive(banner.id, !!banner.isActive, 'perk' as any)} // reusing toggle but needs collection fix
-                                        onDelete={() => handleDelete(banner.id, 'banner')}
+                                        onToggle={() => handleToggleActive(banner, 'banner')}
+                                        onDelete={() => handleDelete(banner, 'banner')}
                                         onEdit={() => { setEditingItem(banner); setIsEditorOpen(true); }}
                                         owner="Marketing"
                                         badge={banner.colorScheme?.toUpperCase()}
@@ -302,15 +413,15 @@ export default function ContentCommandCenterPage() {
                 <DialogContent className="bg-black/95 border-white/10 text-white max-w-2xl rounded-[3rem] p-10">
                     <DialogHeader>
                         <DialogTitle className="text-4xl font-black italic tracking-tighter uppercase mb-4">
-                            {editingItem ? 'Editar' : 'Crear'} <span className="text-[#cb465a]">{activeTab === 'benefits' ? 'Beneficio' : (activeTab === 'announcements' ? 'Anuncio' : 'Banner')}</span>
+                            {editingItem ? 'Editar' : 'Crear'} <span className="text-[#cb465a]">{activeTab}</span>
                         </DialogTitle>
                     </DialogHeader>
                     
                     <form onSubmit={handleSave} className="space-y-6">
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Título</Label>
-                                <Input name="title" defaultValue={editingItem?.title} required className="h-12 bg-white/5 border-white/10 rounded-xl" />
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Nombre/Título</Label>
+                                <Input name="title" defaultValue={editingItem?.title || editingItem?.name} required className="h-12 bg-white/5 border-white/10 rounded-xl" />
                             </div>
                             
                             {activeTab === 'benefits' && (
@@ -330,22 +441,36 @@ export default function ContentCommandCenterPage() {
                                 </div>
                             )}
 
-                            {activeTab === 'banners' && (
+                            {activeTab === 'services' && (
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Esquema de Color</Label>
-                                    <Select name="colorScheme" defaultValue={editingItem?.colorScheme || 'pink'}>
-                                        <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-black border-white/10">
-                                            <SelectItem value="pink">Rosa Estuclub</SelectItem>
-                                            <SelectItem value="yellow">Amarillo Impact</SelectItem>
-                                            <SelectItem value="blue">Azul Cyber</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Duración (min)</Label>
+                                    <Input type="number" name="duration" defaultValue={editingItem?.duration || 30} className="h-12 bg-white/5 border-white/10 rounded-xl" />
                                 </div>
                             )}
                         </div>
+
+                        {(activeTab === 'products' || activeTab === 'services') && (
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Precio ($)</Label>
+                                    <Input type="number" name="price" defaultValue={editingItem?.price || 0} className="h-12 bg-white/5 border-white/10 rounded-xl" />
+                                </div>
+                                {activeTab === 'products' && (
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Stock Disponible</Label>
+                                        <Select name="stockAvailable" defaultValue={editingItem?.stockAvailable?.toString() || 'true'}>
+                                            <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-black border-white/10 text-white">
+                                                <SelectItem value="true">Sí (En Stock)</SelectItem>
+                                                <SelectItem value="false">No (Sin Stock)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">
@@ -353,7 +478,7 @@ export default function ContentCommandCenterPage() {
                             </Label>
                             <Textarea 
                                 name={activeTab === 'announcements' ? 'content' : 'description'} 
-                                defaultValue={activeTab === 'announcements' ? editingItem?.content : editingItem?.description} 
+                                defaultValue={activeTab === 'announcements' ? editingItem?.content : (editingItem?.description || '')} 
                                 required 
                                 className="min-h-[120px] bg-white/5 border-white/10 rounded-xl" 
                             />
@@ -364,17 +489,24 @@ export default function ContentCommandCenterPage() {
                             <Input name="imageUrl" defaultValue={editingItem?.imageUrl} required className="h-12 bg-white/5 border-white/10 rounded-xl" />
                         </div>
 
-                        {(activeTab === 'announcements' || activeTab === 'banners') && (
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Enlace de Acción (Link)</Label>
-                                <Input name={activeTab === 'announcements' ? 'linkUrl' : 'link'} defaultValue={activeTab === 'announcements' ? editingItem?.linkUrl : editingItem?.link} className="h-12 bg-white/5 border-white/10 rounded-xl" />
-                            </div>
-                        )}
-
                         {activeTab === 'benefits' && (
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Puntos</Label>
-                                <Input type="number" name="points" defaultValue={editingItem?.points || 0} className="h-12 bg-white/5 border-white/10 rounded-xl" />
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Puntos</Label>
+                                    <Input type="number" name="points" defaultValue={editingItem?.points || 0} className="h-12 bg-white/5 border-white/10 rounded-xl" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/50 px-2">Tratar como Turno</Label>
+                                    <Select name="isService" defaultValue={editingItem?.isService?.toString() || 'false'}>
+                                        <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-black border-white/10 text-white">
+                                            <SelectItem value="false">No (Beneficio normal)</SelectItem>
+                                            <SelectItem value="true">Sí (Ocultar de beneficios)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         )}
 
@@ -414,7 +546,7 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
                 
                 <div className="absolute top-4 left-4 flex gap-2">
                     <Badge className={cn("rounded-lg font-black text-[9px] px-3 py-1 uppercase tracking-widest", isVisible ? "bg-green-500 text-white" : "bg-white/10 text-white/40")}>
-                        {isVisible ? 'En Al aire' : 'Oculto'}
+                        {isVisible ? 'Al aire' : 'Oculto'}
                     </Badge>
                     {badge && <Badge className="bg-amber-500 text-white rounded-lg font-black text-[9px] px-3 py-1 border-none tracking-widest">{badge}</Badge>}
                 </div>
@@ -425,7 +557,7 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
                         <h4 className="text-xl font-black text-white uppercase tracking-tighter leading-tight italic font-montserrat truncate max-w-[200px]">{title}</h4>
                      </div>
                      <div className="h-10 w-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white/60">
-                        {type === 'perk' ? <Heart className="h-5 w-5" /> : <Megaphone className="h-5 w-5" />}
+                        {type === 'perk' ? <Heart className="h-5 w-5" /> : (type === 'service' ? <Clock className="h-5 w-5" /> : <Megaphone className="h-5 w-5" />)}
                      </div>
                 </div>
             </div>
@@ -469,5 +601,3 @@ function ContentCard({ title, subtitle, image, isVisible, stats, type, onToggle,
         </Card>
     );
 }
-
-

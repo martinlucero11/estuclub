@@ -12,15 +12,41 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// MISSION 2: Background Notification Display
 messaging.onBackgroundMessage((payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+    
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+        body: payload.notification.body,
+        icon: '/favicon.png', // Main Estuclub Icon
+        badge: '/favicon.png',
+        data: {
+            url: payload.data?.url || '/' // DEEP LINKING SUPPORT
+        }
+    };
 
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/logo.svg',
-    badge: '/logo.svg',
-    data: payload.data
-  };
+    self.registration.showNotification(notificationTitle, notificationOptions);
+});
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+// MISSION 2: Deep Linking Click Handler
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const urlToOpen = event.notification.data.url;
+
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+            // If window already open, focus it and navigate
+            for (let i = 0; i < windowClients.length; i++) {
+                const client = windowClients[i];
+                if (client.url === urlToOpen && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            // If no window, open new one
+            if (clients.openWindow) {
+                return clients.openWindow(urlToOpen);
+            }
+        })
+    );
 });

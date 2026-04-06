@@ -9,10 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, serverTimestamp, addDoc, doc, updateDoc, query } from 'firebase/firestore';
+import { collection, serverTimestamp, addDoc, doc, updateDoc, query, collectionGroup } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import { Save, Search, Layout, Database, Settings2, Eye, MessageSquare, Plus } from 'lucide-react';
-import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock, Product } from '@/types/data';
+import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock, Product, Service } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,9 +25,9 @@ import { cn } from '@/lib/utils';
 const formSchema = z.object({
   title: z.string().optional(),
   isActive: z.boolean().default(true),
-  targetBoard: z.enum(['perks', 'delivery']).default('perks'),
+  targetBoard: z.enum(['perks', 'delivery', 'turns']).default('perks'),
   
-  contentType: z.enum(["perks", "suppliers", "announcements", "banners", "categories", "banner", "message", "benefits_nearby", "suppliers_nearby", "delivery_suppliers", "delivery_products", "delivery_promos", "productexmplsupplier", "minisuppliers", "supplierpromo"]),
+  contentType: z.enum(["perks", "suppliers", "announcements", "banners", "categories", "banner", "message", "benefits_nearby", "suppliers_nearby", "delivery_suppliers", "delivery_products", "delivery_promos", "productexmplsupplier", "minisuppliers", "supplierpromo", "professionals", "services", "products"]),
 
   layout_kind: z.enum(["carousel", "grid"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
@@ -65,7 +65,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface HomeSectionFormProps {
     section?: HomeSection | null;
     onSuccess: () => void;
-    defaultBoard: 'perks' | 'delivery';
+    defaultBoard: 'perks' | 'delivery' | 'turns';
 }
 
 export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectionFormProps) {
@@ -87,8 +87,11 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     const announcementsQuery = useMemo(() => firestore ? query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>())) : null, [firestore]);
     const { data: announcements } = useCollection(announcementsQuery);
 
-    const productsQuery = useMemo(() => firestore ? query(collection(firestore, 'products').withConverter(createConverter<Product>())) : null, [firestore]);
+    const productsQuery = useMemo(() => firestore ? query(collectionGroup(firestore, 'products').withConverter(createConverter<Product>())) : null, [firestore]);
     const { data: products } = useCollection(productsQuery);
+
+    const servicesQuery = useMemo(() => firestore ? query(collectionGroup(firestore, 'services').withConverter(createConverter<Service>())) : null, [firestore]);
+    const { data: services } = useCollection(servicesQuery);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -194,10 +197,11 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     const selectableItems = useMemo(() => {
         let items: { id: string; name: string }[] = [];
         if (watchContentType === 'perks' && benefits) items = benefits.map(b => ({ id: b.id, name: b.title }));
-        if ((watchContentType === 'suppliers' || watchContentType === 'minisuppliers' || watchContentType === 'supplierpromo') && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
+        if ((watchContentType === 'suppliers' || watchContentType === 'minisuppliers' || watchContentType === 'supplierpromo' || watchContentType === 'delivery_suppliers' || watchContentType === 'professionals') && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
         if (watchContentType === 'announcements' && announcements) items = announcements.map(a => ({ id: a.id, name: a.title }));
         if (watchContentType === 'banners' && banners) items = banners.map(b => ({ id: b.id, name: b.title || `Banner sin título (${b.id.substring(0,5)})` }));
-        if ((watchContentType === 'delivery_products' || watchContentType === 'delivery_promos' || watchContentType === 'productexmplsupplier') && products) items = products.map(p => ({ id: p.id, name: p.name }));
+        if ((watchContentType === 'delivery_products' || watchContentType === 'delivery_promos' || watchContentType === 'productexmplsupplier' || watchContentType === 'products') && products) items = products.map(p => ({ id: p.id, name: p.name }));
+        if (watchContentType === 'services' && services) items = services.map(s => ({ id: s.id, name: s.name }));
         
         if (!searchTerm) return items;
         return items.filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -260,7 +264,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                     };
                     
                     if (values.query_isVisible) {
-                        const visibilityField = (values.contentType === 'banners' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers' || values.contentType === 'supplierpromo') ? 'isActive' : 'isVisible';
+                        const visibilityField = (values.contentType === 'banners' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers' || values.contentType === 'supplierpromo' || values.contentType === 'products' || values.contentType === 'services') ? 'isActive' : 'isVisible';
                         queryObj.filters.push({ field: visibilityField, op: '==', value: true });
                     }
 
@@ -338,7 +342,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                             <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Título de la Sección</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="Ej: Ofertas Destacadas" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="targetBoard" render={({ field }) => (
-                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="perks">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem></SelectContent></Select></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="perks">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem><SelectItem value="turns">Turnos (Profesionales)</SelectItem></SelectContent></Select></FormItem>
                         )} />
                     </div>
                     <FormField control={form.control} name="contentType" render={({ field }) => (
@@ -362,6 +366,10 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                                 <SelectItem value="categories">Grilla de Categorías</SelectItem>
                                 <SelectItem value="banner">Banner Individual</SelectItem>
                                 <SelectItem value="message">Mensaje Home (Configurable)</SelectItem>
+                                <Separator className="my-1" />
+                                <SelectItem value="professionals">Turnos (Profesionales)</SelectItem>
+                                <SelectItem value="services">Turnos (Servicios)</SelectItem>
+                                <SelectItem value="products">Global (Productos)</SelectItem>
                             </SelectContent>
                         </Select><FormMessage /></FormItem>
                     )} />

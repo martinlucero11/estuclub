@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -37,15 +35,13 @@ export default function PanelCluberLayout({
 
   return (
     <RoleProvider availableRoles={availableRoles}>
-      <div className="flex min-h-screen flex-col relative overflow-hidden bg-white">
-        <div className="fixed inset-0 bg-[radial-gradient(circle_at_50%_-20%,rgba(203,70,90,0.08),transparent_80%)] pointer-events-none z-0" />
+      <div className="flex min-h-screen flex-col relative overflow-hidden bg-white dashboard-root">
         <DashboardHeader />
         {/* Add bottom padding for mobile to avoid overlap with BottomNav */}
-        <main className="flex-1 p-4 md:p-8 pb-20 relative z-10">
+        <main className="flex-1 p-4 md:p-8 pb-20 relative z-10 bg-[#F9FAFB]">
             {children}
         </main>
       </div>
     </RoleProvider>
   );
 }
-

@@ -239,11 +239,6 @@ function DeliveryPageContent() {
                 ) : (
                   <div className="space-y-8">
                     <WelcomeMessage />
-                    {!categoryFilter && suppliers && suppliers.length > 0 && (
-                        <div className="animate-in fade-in duration-1000 delay-300">
-                             <StoreMap suppliers={suppliers as SupplierProfile[]} />
-                        </div>
-                    )}
                   </div>
                 )}
                 

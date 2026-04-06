@@ -14,10 +14,10 @@ interface HomeSectionDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     section?: HomeSection | null;
-    defaultBoard?: 'perks' | 'delivery';
+    defaultBoard?: 'perks' | 'delivery' | 'turns';
 }
 
-export function HomeSectionDialog({ isOpen, onOpenChange, section, defaultBoard }: HomeSectionDialogProps) {
+export function HomeSectionDialog({ isOpen, onOpenChange, section, defaultBoard = 'perks' }: HomeSectionDialogProps) {
     const isEditMode = !!section;
     
     return (

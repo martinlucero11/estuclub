@@ -1,6 +1,31 @@
-kind: "AppHostingConfig"
+kind: "AppStack"
 schemaVersion: "v1"
 
 env:
+  # --- VARIABLES PÚBLICAS (Se pueden ver) ---
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyBAW-IVnjtxmCaxi9c_XtgoktXDb24lcik"
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "studio-7814845508-d173f.firebaseapp.com"
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "studio-7814845508-d173f"
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "studio-7814845508-d173f.firebasestorage.app"
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "742876183164"
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:742876183164:web:6c68ce673ae45af89ea7f9"
+  - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
+    value: "BFp8_dzQcHkXTre2tT6YT85zBrFz0xoB7QCRXmfVbsTOOW9IMClQSueOt2yeLpSuWMWKABJVfredoC-cFM58ULE"
+  - variable: NEXT_PUBLIC_MAPS_API_KEY
+    value: "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: "https://estuclub.com.ar"
+
+  # --- SECRETOS (Referencia a la "Caja Fuerte") ---
   - variable: FIREBASE_SERVICE_ACCOUNT
-    value: "FIREBASE_SERVICE_ACCOUNT"
+    secret: FIREBASE_SERVICE_ACCOUNT_PROD
+  - variable: MP_ACCESS_TOKEN
+    secret: MP_ACCESS_TOKEN_PROD
+  - variable: GOOGLE_REFRESH_TOKEN
+    secret: GOOGLE_REFRESH_TOKEN_PROD

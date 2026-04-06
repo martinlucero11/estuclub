@@ -3,8 +3,8 @@
 
 import { useMemo } from 'react';
 import { useFirestore, useCollection, useDocOnce, useCollectionOnce } from '@/firebase';
-import { collection, query, where, orderBy, doc, limit as firestoreLimit, DocumentData, Query } from 'firebase/firestore';
-import { HomeSection, Benefit, SupplierProfile, Announcement, Banner, Category, Product } from '@/types/data';
+import { collection, query, where, orderBy, doc, limit as firestoreLimit, DocumentData, Query, collectionGroup } from 'firebase/firestore';
+import { HomeSection, Benefit, SupplierProfile, Announcement, Banner, Category, Product, Service } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { makeBenefitSerializable } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,7 +15,7 @@ import { isStoreOpen } from '@/lib/utils';
 import { PerksGrid, SuppliersGrid, AnnouncementsGrid, ProductsGrid } from '@/components/home/grids';
 import { CategoryGrid } from '@/components/home/category-grid';
 import { SingleBanner } from '@/components/home/single-banner';
-import { PerksCarousel, SuppliersCarousel, MiniSuppliersCarousel, AnnouncementsCarousel, BannersCarousel, ProductsCarousel, ProductsWithSupplierCarousel, SupplierPromoCarousel } from '@/components/home/carousels';
+import { PerksCarousel, SuppliersCarousel, MiniSuppliersCarousel, AnnouncementsCarousel, BannersCarousel, ProductsCarousel, ProductsWithSupplierCarousel, SupplierPromoCarousel, ServicesCarousel } from '@/components/home/carousels';
 import { NearbyPerksCarousel, NearbySuppliersCarousel } from '@/components/home/nearby-carousels';
 
 const SectionSkeleton = () => <Skeleton className="h-48 w-full" />;
@@ -24,7 +24,9 @@ function useDocumentsByIds<T extends { id: string }>(collectionName: string, ids
     const firestore = useFirestore();
     const queryForIds = useMemo(() => {
         if (!firestore || ids.length === 0) return null;
-        // Firestore 'in' query is limited to 30 documents
+        // Handling services or products requires knowing their parent supplier paths if using manual IDs, 
+        // but HomeSection manual mode usually refers to root collections. 
+        // For services/products we'd need more logic, but user likely wants 'perks' or 'suppliers' here.
         return query(
             collection(firestore, collectionName).withConverter(createConverter<T>()),
             where('__name__', 'in', ids.slice(0, 30))
@@ -118,9 +120,9 @@ function SectionContent({ section }: { section: HomeSection }) {
     }
 
     // Dynamic content (carousel/grid)
-    const collectionName = (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers' || block.contentType === 'minisuppliers' || block.contentType === 'supplierpromo') 
+    const collectionName = (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers' || block.contentType === 'minisuppliers' || block.contentType === 'supplierpromo' || block.contentType === 'professionals') 
         ? 'roles_supplier' 
-        : (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos' || block.contentType === 'productexmplsupplier')
+        : (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos' || block.contentType === 'productexmplsupplier' || block.contentType === 'products')
             ? 'products'
             : block.contentType;
     
@@ -130,6 +132,7 @@ function SectionContent({ section }: { section: HomeSection }) {
         if (collectionName === 'perks') return createConverter<Benefit>();
         if (collectionName === 'announcements') return createConverter<Announcement>();
         if (collectionName === 'banners') return createConverter<Banner>();
+        if (collectionName === 'services') return createConverter<Service>();
         return null;
     }, [collectionName]);
 
@@ -142,8 +145,18 @@ function SectionContent({ section }: { section: HomeSection }) {
     } else { // Auto mode
         const autoQuery = useMemo(() => {
             if (!firestore) return null;
-            let baseColl = collection(firestore, collectionName);
-            let q: Query<DocumentData> = converter ? baseColl.withConverter(converter as any) : query(baseColl);
+            
+            let q: Query<DocumentData>;
+            if (collectionName === 'services' || collectionName === 'products') {
+                 // Products and Services are usually subcollections, so use collectionGroup for auto mode across all suppliers
+                 q = query(collectionGroup(firestore, collectionName));
+            } else {
+                 q = query(collection(firestore, collectionName));
+            }
+            
+            if (converter) {
+                q = q.withConverter(converter as any);
+            }
 
             block.query?.filters?.forEach(f => {
                 let field = f.field;
@@ -157,7 +170,14 @@ function SectionContent({ section }: { section: HomeSection }) {
                 }
             });
 
-            // Extra filter for delivery_suppliers (already has isVisible/isActive from query but we reinforce it)
+            // Extra filter for professionals
+            if (block.contentType === 'professionals') {
+                if (!block.query?.filters?.some(f => f.field === 'appointmentsEnabled')) {
+                    q = query(q, where('appointmentsEnabled', '==', true));
+                }
+            }
+
+            // Extra filter for delivery_suppliers
             if (block.contentType === 'delivery_suppliers') {
                 if (!block.query?.filters?.some(f => f.field === 'deliveryEnabled')) {
                     q = query(q, where('deliveryEnabled', '==', true));
@@ -179,7 +199,7 @@ function SectionContent({ section }: { section: HomeSection }) {
 
             if (block.query?.sort?.field) {
                 q = query(q, orderBy(block.query.sort.field, block.query.sort.direction || 'desc'));
-            } else if (['perks', 'announcements', 'banners'].includes(block.contentType)) {
+            } else if (['perks', 'announcements', 'banners', 'services', 'products'].includes(block.contentType)) {
                 q = query(q, orderBy('createdAt', 'desc'));
             }
 
@@ -201,7 +221,7 @@ function SectionContent({ section }: { section: HomeSection }) {
         return (
             <div className="py-8 px-1">
                 <p className="text-foreground italic text-sm opacity-50">
-                    No se encontraron {block.contentType.includes('product') ? 'productos' : 'locales'} en esta sección.
+                    No se encontraron {block.contentType.includes('product') ? 'productos' : block.contentType === 'services' ? 'servicios' : 'locales'} en esta sección.
                 </p>
             </div>
         );
@@ -212,9 +232,18 @@ function SectionContent({ section }: { section: HomeSection }) {
 
     if (block.kind === 'carousel') {
         if (block.contentType === 'perks') {
-             const safeItems = (items as Benefit[]).filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos);
+             // FILTER OUT SERVICES AND RESTRICTED AUDIENCES
+             const safeItems = (items as Benefit[]).filter(b => {
+                 const isService = !!b.isService;
+                 const restrictedCincoDos = !!b.isCincoDosOnly && !isCincoDos;
+                 // If role-based student check is needed, it would be here, but current logic prioritizes visibility for all unless explicitly blocked
+                 return !isService && !restrictedCincoDos;
+             });
              props.items = safeItems.map(makeBenefitSerializable);
              Component = PerksCarousel;
+        } else if (block.contentType === 'services') {
+             props.items = items;
+             Component = ServicesCarousel;
         } else {
              // Filter closed stores if applicable
              const isDeliverySupplierType = ['delivery_suppliers', 'minisuppliers', 'supplierpromo'].includes(block.contentType);
@@ -222,18 +251,23 @@ function SectionContent({ section }: { section: HomeSection }) {
                 ? (items as SupplierProfile[]).filter(isStoreOpen)
                 : items;
                 
-             if (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers') Component = SuppliersCarousel;
+             if (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers' || block.contentType === 'professionals') Component = SuppliersCarousel;
              if (block.contentType === 'minisuppliers') Component = MiniSuppliersCarousel;
              if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
              if (block.contentType === 'banners') Component = BannersCarousel;
-             if (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos') Component = ProductsCarousel;
+             if (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos' || block.contentType === 'products') Component = ProductsCarousel;
              if (block.contentType === 'productexmplsupplier') Component = ProductsWithSupplierCarousel;
              if (block.contentType === 'supplierpromo') Component = SupplierPromoCarousel;
         }
     } else if (block.kind === 'grid') {
         if (block.contentType === 'perks') {
             Component = PerksGrid;
-            const safeItems = (items as Benefit[]).filter(b => b.targetAudience !== 'cinco_dos' || isCincoDos);
+            // FILTER OUT SERVICES AND RESTRICTED AUDIENCES
+            const safeItems = (items as Benefit[]).filter(b => {
+                const isService = !!b.isService;
+                const restrictedCincoDos = !!b.isCincoDosOnly && !isCincoDos;
+                return !isService && !restrictedCincoDos;
+            });
             props.items = safeItems.map(makeBenefitSerializable);
         } else {
             Component = (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers') 

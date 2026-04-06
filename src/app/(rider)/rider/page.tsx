@@ -28,6 +28,7 @@ import { setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
 import { createConverter } from '@/lib/firestore-converter';
 import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
+import { StarRating } from '@/components/reviews/star-rating';
 
 // ─── MAP COMPONENT ──────────────────────────────────────────
 function RiderMap({ orders, onOrderSelect }: { orders: Order[], onOrderSelect: (order: Order) => void }) {
@@ -60,6 +61,18 @@ function RiderMap({ orders, onOrderSelect }: { orders: Order[], onOrderSelect: (
                     </span>
                 </motion.button>
             ))}
+        </div>
+    );
+}
+
+function AverageRating({ rating, count }: { rating?: number; count?: number }) {
+    if (!count || count === 0) return null;
+    
+    return (
+        <div className="flex items-center gap-1.5 bg-[#cb465a]/10 text-[#cb465a] px-3 py-1 rounded-full border border-[#cb465a]/20 shadow-sm animate-in fade-in duration-500">
+            <StarRating rating={rating || 0} readonly size="sm" />
+            <span className="text-xs font-black">{(rating || 0).toFixed(1)}</span>
+            <span className="text-[10px] opacity-60 font-bold">({count})</span>
         </div>
     );
 }
@@ -537,13 +550,11 @@ export default function RiderPage() {
                 </Card>
                 <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
                     <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Rango Rider</CardTitle>
+                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Reputación</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl font-black tracking-tighter text-white font-inter">NIVEL {Math.floor((userData?.xp || 0) / 1000) + 1}</span>
-                            <Trophy className="h-3.5 w-3.5 text-amber-500/40" />
-                        </div>
+                    <CardContent className="p-5 flex flex-col items-center justify-center">
+                        <AverageRating rating={userData?.avgRating} count={userData?.reviewCount} />
+                        {!userData?.reviewCount && <span className="text-[10px] font-black opacity-20 italic">SIN RESEÑAS</span>}
                     </CardContent>
                 </Card>
             </header>

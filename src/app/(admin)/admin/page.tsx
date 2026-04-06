@@ -12,7 +12,8 @@ import {
     Layers,
     ArrowRight,
     TrendingUp,
-    Megaphone
+    Megaphone,
+    Zap
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { Card, CardContent } from '@/components/ui/card';
@@ -78,12 +79,21 @@ export default function AdminControlCentralPage() {
                     />
 
                     <AdminModule
-                        title="Marketing"
-                        desc="Gestión de Banners, Categorías y envío de Push Notifications."
+                        title="Home Builder"
+                        desc="Constructor visual de las pantallas de Inicio, Delivery y Turnos."
+                        icon={Zap}
+                        href="/admin/home-builder"
+                        items={["Order Designer", "Bloques Dinámicos", "Presets de Grilla"]}
+                        accent="orange"
+                    />
+
+                    <AdminModule
+                        title="Gestión CMS"
+                        desc="Central de contenidos: Beneficios, Anuncios, Servicios y Productos."
                         icon={Megaphone}
                         href="/admin/cms"
-                        items={["Banner Home", "Categorías Globales", "Push Directo"]}
-                        accent="orange"
+                        items={["Editor de Perks", "Anuncios Globales", "Catálogo Central"]}
+                        accent="primary"
                     />
 
                     <AdminModule
@@ -104,14 +114,6 @@ export default function AdminControlCentralPage() {
                         accent="purple"
                     />
 
-                    <AdminModule
-                        title="Sistema"
-                        desc="Configuración técnica del servidor, mantenimiento de DB y logs de MP."
-                        icon={Settings}
-                        onClick={() => alert('🚀 Función en desarrollo: ¡Próximamente podrás configurar el sistema!')}
-                        items={["MP Webhooks", "Cron Jobs", "Ajustes Globales"]}
-                        accent="slate"
-                    />
                 </div>
             </div>
         </div>

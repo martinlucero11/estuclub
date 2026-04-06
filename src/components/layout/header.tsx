@@ -139,7 +139,7 @@ function AppSidebar() {
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
-            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-white border-r border-black/5 overflow-hidden">
+            <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-background border-r border-border overflow-hidden">
                 <SheetHeader className="p-10 border-b border-black/5 relative bg-primary flex items-center justify-center">
                     <Logo 
                         variant="white"
@@ -147,7 +147,7 @@ function AppSidebar() {
                     />
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium bg-white">
+                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium bg-background">
                     <nav className="flex flex-col gap-6">
                         {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => (
                             <div key={section.title} className="space-y-4 mb-2">
@@ -201,7 +201,7 @@ function AppSidebar() {
                                                 <SheetClose asChild key={item.href}>
                                                     <Link href={item.href}>
                                                         <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-black uppercase tracking-widest", pathname === item.href ? "bg-primary text-white" : "text-black/60 hover:bg-primary/5 hover:text-primary")}>
-                                                            <div className={cn("mr-4 p-2.5 rounded-xl border-2", pathname === item.href ? "bg-white text-primary border-white" : "bg-white text-primary border-primary")}>
+                                                            <div className={cn("mr-4 p-2.5 rounded-xl border-2", pathname === item.href ? "bg-background text-primary border-background" : "bg-background text-primary border-primary")}>
                                                                 {item.icon && <item.icon className="h-4 w-4" />}
                                                             </div>
                                                             {item.title}

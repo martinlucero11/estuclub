@@ -96,6 +96,16 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                 updatedAt: serverTimestamp()
             };
 
+            // MISSION 2: LOGISTICS & ESTIMATION (Corazón de Estuclub)
+            if ((newStatus === 'accepted' || newStatus === 'searching_rider') && !order.startTime) {
+                const now = new Date();
+                const prepTime = supplierData?.avgPrepTime || 30; // 30 min default
+                const estTime = new Date(now.getTime() + prepTime * 60000);
+                
+                updatePayload.startTime = serverTimestamp();
+                updatePayload.estimatedDeliveryTime = Timestamp.fromDate(estTime);
+            }
+
             // LOGISTICS AUTOMATION: If accepted and delivery, find a rider
             if (newStatus === 'accepted' && order.type === 'delivery') {
                 const origin = supplierData?.location?.address || supplierData?.address || '';
@@ -118,6 +128,19 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             await updateDoc(orderRef, updatePayload);
             
             const displayStatus = updatePayload.status as keyof typeof statusConfig;
+
+            // MISSION 6: TRIGGER STATUS NOTIFICATION
+            fetch('/api/notifications/notify-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: order.customerId || order.userId,
+                    orderId: order.id,
+                    status: updatePayload.status,
+                    supplierName: supplierData?.name || 'El Local'
+                })
+            }).catch(e => console.error("Notification trigger error:", e));
+
             toast({
                 title: "Estado actualizado",
                 description: `Pedido marcado como: ${statusConfig[displayStatus].label}`,
@@ -171,7 +194,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
         <div className="space-y-8 animate-in fade-in duration-700">
             {/* Master Switch - Sticky in Header context */}
             <Card className={cn(
-                "rounded-[2.5rem] border border-black/5 transition-all p-6 md:p-8 flex items-center justify-between shadow-xl relative overflow-hidden",
+                "rounded-[2.5rem] border border-border transition-all p-6 md:p-8 flex items-center justify-between shadow-xl relative overflow-hidden",
                 isClosed ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100"
             )}>
                 <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12">
@@ -187,7 +210,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-white/40 p-2 rounded-3xl border border-black/5 backdrop-blur-md z-10 shadow-sm">
+                <div className="flex items-center gap-4 bg-background/40 p-2 rounded-3xl border border-border backdrop-blur-md z-10 shadow-sm">
                     <span className={cn("text-[9px] font-black uppercase px-2", isClosed ? "text-black/40" : "text-primary italic animate-pulse")}>
                         {isClosed ? "DESCONECTADO" : "RECIBIENDO"}
                     </span>
@@ -200,11 +223,11 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             </Card>
 
             <Tabs defaultValue="orders" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2 mx-auto max-w-sm mb-10 h-12 p-1 bg-black/5 rounded-2xl border border-black/5">
-                    <TabsTrigger value="orders" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
+                <TabsList className="grid w-full grid-cols-2 mx-auto max-w-sm mb-10 h-12 p-1 bg-muted rounded-2xl border border-border">
+                    <TabsTrigger value="orders" className="font-black rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
                         <Package className="h-3.5 w-3.5" /> Pedidos
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="font-black rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
+                    <TabsTrigger value="settings" className="font-black rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-xl text-[10px] uppercase tracking-widest gap-2">
                         <Clock className="h-3.5 w-3.5" /> Ajustes
                     </TabsTrigger>
                 </TabsList>
@@ -212,31 +235,31 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                 <TabsContent value="orders" className="space-y-8 animate-in fade-in duration-500">
                     {/* Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                        <Card className="rounded-3xl border border-border bg-background overflow-hidden relative h-24 shadow-lg group">
                             <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><Clock className="h-12 w-12" /></div>
                             <CardHeader className="p-5 space-y-0 relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Pendientes</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pendientes</p>
                                 <CardTitle className="text-2xl font-black tracking-tight text-yellow-500 italic">{stats.pending}</CardTitle>
                             </CardHeader>
                         </Card>
-                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                        <Card className="rounded-3xl border border-border bg-background overflow-hidden relative h-24 shadow-lg group">
                             <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><ShoppingBag className="h-12 w-12" /></div>
                             <CardHeader className="p-5 space-y-0 relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Hoy</p>
-                                <CardTitle className="text-2xl font-black tracking-tight text-blue-500 italic">{stats.today} <span className="text-[10px] uppercase font-bold text-black/20">pedidos</span></CardTitle>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Hoy</p>
+                                <CardTitle className="text-2xl font-black tracking-tight text-blue-500 italic">{stats.today} <span className="text-[10px] uppercase font-bold text-muted-foreground/50">pedidos</span></CardTitle>
                             </CardHeader>
                         </Card>
-                        <Card className="rounded-3xl border border-black/5 bg-white overflow-hidden relative h-24 shadow-lg group">
+                        <Card className="rounded-3xl border border-border bg-background overflow-hidden relative h-24 shadow-lg group">
                             <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:scale-110 transition-transform"><CheckCircle2 className="h-12 w-12" /></div>
                             <CardHeader className="p-5 space-y-0 relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-black/40">Ventas Hoy</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ventas Hoy</p>
                                 <CardTitle className="text-2xl font-black tracking-tight text-emerald-500 italic">${stats.totalSales.toLocaleString()}</CardTitle>
                             </CardHeader>
                         </Card>
                     </div>
 
-                    <div className="rounded-[2.5rem] border border-black/5 bg-white shadow-xl overflow-hidden">
-                        <div className="border-b border-black/5 bg-black/[0.02] px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="rounded-[2.5rem] border border-border bg-background shadow-xl overflow-hidden">
+                        <div className="border-b border-border bg-muted/50 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center"><Package className="h-4 w-4 text-primary" /></div>
                                 <h2 className="text-sm font-black tracking-tight uppercase text-black">Pedidos Recientes</h2>
@@ -328,7 +351,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                         Estado <ChevronDown className="ml-1.5 h-3 w-3" />
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
-                                                                <DropdownMenuContent className="rounded-2xl border-black/5 bg-white shadow-2xl w-44 p-2">
+                                                                <DropdownMenuContent className="rounded-2xl border-border bg-background shadow-2xl w-44 p-2">
                                                                     {(['pending', 'accepted', 'searching_rider', 'assigned', 'shipped', 'completed', 'cancelled'] as const).map(s => (
                                                                         <DropdownMenuItem key={s} onClick={() => handleUpdateStatus(order, s)} className="rounded-xl font-black py-2 text-[10px] uppercase tracking-[0.1em] focus:bg-primary/10 focus:text-primary cursor-pointer transition-all">
                                                                             {statusConfig[s].label}

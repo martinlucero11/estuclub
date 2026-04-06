@@ -5,7 +5,6 @@ import { Suspense, useMemo, useEffect, useState } from 'react';
 import { ArrowRight, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/main-layout';
-import { ModeToggle } from '@/components/layout/mode-toggle';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser, useCollection, useFirestore } from '@/firebase';
@@ -21,6 +20,7 @@ import dynamic from 'next/dynamic';
 const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
 const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
 const AvatarOnboarding = dynamic(() => import('@/components/profile/avatar-onboarding').then(m => m.AvatarOnboarding), { ssr: false });
+const OrderTracker = dynamic(() => import('@/components/delivery/order-tracker').then(m => m.OrderTracker), { ssr: false });
 
 function HomeSectionsSkeleton() {
     return (
@@ -164,9 +164,11 @@ export default function HomePage() {
                     </div>
                 )}
 
+                {/* MISSION 3: Real-time Order Tracking Widget */}
+                {activeBoard !== 'turns' && <OrderTracker />}
+
                 <div className="flex justify-between items-start mb-6">
                     <WelcomeMessage />
-                    <ModeToggle />
                 </div>
 
                 <Suspense fallback={<HomeSectionsSkeleton />}>

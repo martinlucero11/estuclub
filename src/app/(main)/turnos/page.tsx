@@ -2,109 +2,90 @@
 'use client';
 
 import MainLayout from '@/components/layout/main-layout';
-import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Building, Briefcase, Heart, ShoppingBag, Wrench, Search, Users, CalendarDays, CalendarClock } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CalendarClock, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { BackButton } from '@/components/ui/back-button';
-import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { EmptyState } from '@/components/ui/empty-state';
-import { CluberCategory, SupplierProfile } from '@/types/data';
+import { HomeSection } from '@/types/data';
 import { useMemo } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 import { Button } from '@/components/ui/button';
+import HomeSectionRenderer from '@/components/home/home-section-renderer';
 
-const categoryIcons: Record<CluberCategory, React.ElementType> = {
-    Comercio: ShoppingBag,
-    Profesional: Briefcase,
-    Empresa: Building,
-    Emprendimiento: Users,
-    Salud: Heart,
-    Estética: Briefcase,
-    Servicios: Wrench,
-};
-
-function TurnosPageSkeleton() {
+function TurnsHomeSkeleton() {
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                    <Card key={i} className="p-6 flex flex-col items-center justify-center">
-                        <Skeleton className="h-20 w-20 rounded-full" />
-                        <Skeleton className="mt-4 h-5 w-3/4" />
-                        <Skeleton className="mt-1 h-4 w-1/2" />
-                    </Card>
-                ))}
-            </div>
+        <div className="space-y-12">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-4">
+                    <Skeleton className="h-4 w-48 rounded-full" />
+                    <div className="flex gap-4 overflow-hidden">
+                        {[...Array(3)].map((_, j) => (
+                            <Skeleton key={j} className="h-48 min-w-[280px] rounded-[2.5rem]" />
+                        ))}
+                    </div>
+                </div>
+            ))}
         </div>
     );
 }
 
-function CluberList() {
+function TurnsHomeSections() {
     const firestore = useFirestore();
     
-    const clubersQuery = useMemo(
-        () => {
-            if (!firestore) return null;
-            return query(
-                collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), 
-                where('appointmentsEnabled', '==', true), 
-                orderBy('name'),
-                limit(50)
-            );
-        },
-        [firestore]
-    );
+    const sectionsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'home_sections').withConverter(createConverter<HomeSection>()),
+            where('targetBoard', '==', 'turns'),
+            where('isActive', '==', true),
+            orderBy('order', 'asc')
+        );
+    }, [firestore]);
 
-    const { data: clubers, isLoading, error } = useCollectionOnce(clubersQuery);
-    
-    if (isLoading) {
-        return <TurnosPageSkeleton />;
-    }
+    const { data: sections, isLoading, error } = useCollection(sectionsQuery);
+
+    if (isLoading) return <TurnsHomeSkeleton />;
 
     if (error) {
-        console.error("Error real fetching clubers con turnos:", error);
-        return <p className="text-destructive text-center">Error al cargar los Clubers: {error.message}</p>;
+        return (
+            <div className="py-20 text-center">
+                <p className="text-destructive font-bold uppercase tracking-widest text-[10px]">Error de Conexión</p>
+                <p className="text-foreground opacity-40 text-xs mt-2">{error.message}</p>
+            </div>
+        );
     }
 
-    return (
-        <div className="space-y-6">
-            {clubers && clubers.length === 0 ? (
-                <EmptyState
-                    icon={CalendarDays}
-                    title="No hay turnos disponibles"
-                    description="Ningún Cluber tiene habilitada la reserva de turnos en este momento."
-                />
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-stagger">
-                    {clubers?.map(cluber => {
-                        const TypeIcon = categoryIcons[cluber.type] || Users;
-                        const cluberInitials = cluber.name.split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase();
+        return (
+            <EmptyState
+                icon={Zap}
+                title="Próximamente"
+                description="Estamos preparando las mejores opciones para tus turnos. ¡Vuelve pronto!"
+            >
+                <Button asChild variant="outline" className="rounded-2xl h-12 px-8 font-black uppercase text-[10px] tracking-widest">
+                    <Link href="/admin/home-builder">Configurar en Admin</Link>
+                </Button>
+            </EmptyState>
+        );
 
-                        return (
-                            <Link key={cluber.id} href={`/proveedores/view?slug=${cluber.slug}`} className="group block h-full">
-                                <Card className="flex h-full flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1 active:scale-[0.97]">
-                                    <Avatar className="h-20 w-20 border-2 border-foreground group-hover:border-primary transition-colors">
-                                        <AvatarImage src={cluber.logoUrl} alt={cluber.name} className="object-cover" />
-                                        <AvatarFallback className="bg-background text-xl font-semibold text-foreground">
-                                            {cluberInitials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <h3 className="mt-4 font-bold text-lg text-foreground">{cluber.name}</h3>
-                                    <div className="mt-1 flex items-center gap-2 text-sm text-foreground">
-                                        <TypeIcon className="h-4 w-4" />
-                                        <p className="capitalize">{cluber.type}</p>
-                                    </div>
-                                    <p className="text-xs text-foreground mt-2 line-clamp-2">{cluber.description}</p>
-                                </Card>
-                            </Link>
-                        );
-                    })}
+    return (
+        <div className="space-y-12 pb-20 animate-in fade-in duration-1000">
+            {sections.map((section) => (
+                <div key={section.id} className="space-y-6">
+                    {section.title && (
+                        <div className="flex items-center gap-4 px-1">
+                             <div className="h-1 w-8 bg-primary rounded-full hidden md:block" />
+                             <h2 className="text-xl md:text-2xl font-black italic tracking-tighter uppercase font-montserrat">
+                                {section.title}
+                             </h2>
+                        </div>
+                    )}
+                    <HomeSectionRenderer section={section} />
                 </div>
-            )}
+            ))}
         </div>
     );
 }
@@ -113,21 +94,26 @@ export default function TurnosPage() {
     return (
         <MainLayout>
             <BackButton />
-            <div className="flex-1 space-y-8 p-4 md:p-8">
-                <PageHeader title="Solicitar Turno" className="flex-col md:flex-row items-start md:items-center">
-                     <Button asChild>
+            <div className="flex-1 p-4 md:p-8 max-w-7xl mx-auto min-h-screen">
+                <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-1000">
+                    <div className="space-y-2">
+                        <PageHeader title="Agendar Turnos" className="p-0 border-none bg-transparent shadow-none" />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">
+                             Servicios • Profesionales • Estética
+                        </p>
+                    </div>
+                    
+                    <Button asChild className="h-14 px-10 rounded-[1.5rem] bg-primary text-white font-black uppercase text-xs tracking-widest shadow-2xl hover:scale-105 transition-all">
                         <Link href="/mis-turnos">
-                            <CalendarClock className="mr-2 h-4 w-4" />
+                            <CalendarClock className="mr-3 h-5 w-5" />
                             Mis Turnos
                         </Link>
                     </Button>
-                </PageHeader>
-                <p className="text-foreground -mt-8 mb-8">
-                    Selecciona un Cluber para ver sus servicios y reservar un turno.
-                </p>
-                <CluberList />
+                </header>
+
+                <TurnsHomeSections />
             </div>
         </MainLayout>
-    )
+    );
 }
 

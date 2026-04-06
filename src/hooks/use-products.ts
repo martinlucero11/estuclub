@@ -21,7 +21,7 @@ export function useProducts(supplierId?: string, activeOnly: boolean = true) {
             collection(firestore, 'products').withConverter(createConverter<Product>()),
             where('supplierId', '==', supplierId),
             orderBy('createdAt', 'desc'),
-            limit(100)
+            limit(20)
         );
 
         if (activeOnly) {

@@ -90,11 +90,23 @@ export const getHomeSectionColumns = (
     header: 'Tipo de Sección',
     cell: ({ row }) => {
         const block = row.original.block;
-        const description =
-            'contentType' in block && block.contentType
-            ? `${block.kind} · ${block.contentType}`
-            : block.kind;
-        return <Badge variant="secondary" className="capitalize">{description}</Badge>;
+        let description: string = block.kind;
+        if ('contentType' in block && block.contentType) {
+            const typeLabels: Record<string, string> = {
+                perks: 'Beneficios',
+                suppliers: 'Clubers',
+                delivery_suppliers: 'Delivery',
+                professionals: 'Profesionales',
+                services: 'Servicios',
+                products: 'Productos',
+                announcements: 'Anuncios',
+                banners: 'Banners',
+                benefits_nearby: 'Beneficios GPS',
+                suppliers_nearby: 'Clubers GPS'
+            };
+            description = `${block.kind} · ${typeLabels[block.contentType] || block.contentType}`;
+        }
+        return <Badge variant="secondary" className="capitalize font-bold">{description}</Badge>;
     }
   },
    {

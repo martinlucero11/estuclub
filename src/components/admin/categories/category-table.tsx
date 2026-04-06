@@ -18,9 +18,10 @@ import { cn } from '@/lib/utils';
 
 interface CategoryTableProps {
     className?: string;
+    search?: string;
 }
 
-export function CategoryTable({ className }: CategoryTableProps) {
+export function CategoryTable({ className, search }: CategoryTableProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -36,7 +37,13 @@ export function CategoryTable({ className }: CategoryTableProps) {
             orderBy('order', 'asc')
         ), [firestore]);
     
-    const { data: categories, isLoading } = useCollection(categoriesQuery);
+    const { data: allCategories, isLoading } = useCollection(categoriesQuery);
+
+    const categories = useMemo(() => {
+        if (!allCategories) return [];
+        if (!search) return allCategories;
+        return allCategories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+    }, [allCategories, search]);
 
     const handleToggleActive = async (categoryId: string, isActive: boolean) => {
         const categoryRef = doc(firestore, 'categories', categoryId);

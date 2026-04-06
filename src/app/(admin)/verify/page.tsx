@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy, Timestamp, deleteField } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
 import Link from 'next/link';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  ExternalLink, Loader2,  CheckCircle, User,
+  ExternalLink, Loader2,  CheckCircle, User, Users,
   Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera,
   ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Utensils, Gift,
   CalendarDays, CalendarClock
@@ -237,12 +237,19 @@ export default function VerifyPage() {
 
   const handleToggleCluberField = async (cluberId: string, field: string, value: boolean) => {
     try {
-      const docRef = doc(firestore, 'roles_supplier', cluberId);
-      await updateDoc(docRef, { [field]: value });
+      const permissionFields = ['permitsBenefits', 'permitsShifts', 'permitsAds', 'permitsTeam', 'isCincoDos'];
       
-      // Synchronize key fields to the user document for UI reactivity
-      if (field === 'isCincoDos' || field === 'permitsBenefits') {
+      if (permissionFields.includes(field)) {
+        // MISSION 1: CENTRALIZACIÓN EN COLECCIÓN USERS (SSoT)
         await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
+        
+        // ELIMINAR DUPLICADO DE ROLES_SUPPLIER
+        const docRef = doc(firestore, 'roles_supplier', cluberId);
+        await updateDoc(docRef, { [field]: deleteField() });
+      } else {
+        // Campos operativos (isVisible, isFeatured, deliveryEnabled, etc.) se mantienen en roles_supplier
+        const docRef = doc(firestore, 'roles_supplier', cluberId);
+        await updateDoc(docRef, { [field]: value });
       }
 
       toast({ title: 'Ajuste actualizado', description: `Se cambió ${field} a ${value ? 'ACTIVADO' : 'DESACTIVADO'}.` });
@@ -669,6 +676,24 @@ export default function VerifyPage() {
                                     label="Beneficios" 
                                     value={!!cluber.permitsBenefits} 
                                     onChange={(v) => handleToggleCluberField(cluber.id, 'permitsBenefits', v)} 
+                                />
+                                <ControlToggle 
+                                    icon={<CalendarClock className="h-4 w-4" />}
+                                    label="Turnos" 
+                                    value={!!cluber.permitsShifts} 
+                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsShifts', v)} 
+                                />
+                                <ControlToggle 
+                                    icon={<Megaphone className="h-4 w-4" />}
+                                    label="Ads" 
+                                    value={!!cluber.permitsAds} 
+                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsAds', v)} 
+                                />
+                                <ControlToggle 
+                                    icon={<Users className="h-4 w-4" />}
+                                    label="Equipo" 
+                                    value={!!cluber.permitsTeam} 
+                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsTeam', v)} 
                                 />
                                 <CincoDosToggle 
                                     value={!!cluber.isCincoDos} 

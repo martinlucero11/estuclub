@@ -16,9 +16,10 @@ import { createConverter } from '@/lib/firestore-converter';
 
 interface BannerTableProps {
     className?: string;
+    search?: string;
 }
 
-export function BannerTable({ className }: BannerTableProps) {
+export function BannerTable({ className, search }: BannerTableProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -33,7 +34,13 @@ export function BannerTable({ className }: BannerTableProps) {
             orderBy('createdAt', 'desc')
         ), [firestore]);
     
-    const { data: banners, isLoading } = useCollection(bannersQuery);
+    const { data: allBanners, isLoading } = useCollection(bannersQuery);
+
+    const banners = useMemo(() => {
+        if (!allBanners) return [];
+        if (!search) return allBanners;
+        return allBanners.filter(b => b.title.toLowerCase().includes(search.toLowerCase()));
+    }, [allBanners, search]);
 
     const handleToggleActive = async (bannerId: string, isActive: boolean) => {
         const bannerRef = doc(firestore, 'banners', bannerId);

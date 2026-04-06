@@ -15,7 +15,7 @@ import { HomeSectionDialog } from '@/components/admin/home-builder/home-section-
 import { createConverter } from '@/lib/firestore-converter';
 
 interface HomeSectionTableProps {
-    targetBoard: 'perks' | 'delivery';
+    targetBoard: 'perks' | 'delivery' | 'turns';
 }
 
 export function HomeSectionTable({ targetBoard }: HomeSectionTableProps) {

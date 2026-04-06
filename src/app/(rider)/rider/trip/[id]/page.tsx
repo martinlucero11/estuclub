@@ -56,6 +56,25 @@ export default function RiderTripPage() {
     const userRef = order?.userId ? doc(firestore, 'users', order.userId) : null;
     const { data: student } = useDoc<UserProfile>(userRef);
 
+    // MISSION 4: Real-time GPS Tracking (watchPosition)
+    useEffect(() => {
+        if (!firestore || !id || order?.status !== 'on_the_way') return;
+
+        const watchId = navigator.geolocation.watchPosition(
+            (pos) => {
+                const { latitude, longitude } = pos.coords;
+                updateDoc(doc(firestore, 'orders', id as string), {
+                    riderLocation: { latitude, longitude },
+                    updatedAt: Timestamp.now()
+                }).catch(err => console.error("GPS Update Error:", err));
+            },
+            (err) => console.error("Geolocation error:", err),
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        );
+
+        return () => navigator.geolocation.clearWatch(watchId);
+    }, [firestore, id, order?.status]);
+
     const handleValidatePin = async () => {
         if (!order || !firestore || !id) return;
         
@@ -79,6 +98,19 @@ export default function RiderTripPage() {
             
             toast({ title: "🎁 ¡Entrega Confirmada!", description: "El pedido ha sido finalizado con éxito." });
             setShowPinModal(false);
+
+            // MISSION 6: TRIGGER STATUS NOTIFICATION
+            fetch('/api/notifications/notify-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: order.customerId || order.userId,
+                    orderId: order.id,
+                    status: 'delivered',
+                    supplierName: order.supplierName || 'El Local'
+                })
+            }).catch(e => console.error("Notification trigger error:", e));
+
         } catch (error) {
             console.error("Error validating PIN:", error);
             toast({ variant: 'destructive', title: "Error", description: "No se pudo finalizar la entrega." });
@@ -95,6 +127,19 @@ export default function RiderTripPage() {
                 status: newStatus,
                 updatedAt: Timestamp.now()
             });
+
+            // MISSION 6: TRIGGER STATUS NOTIFICATION
+            fetch('/api/notifications/notify-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: order.customerId || order.userId,
+                    orderId: order.id,
+                    status: newStatus,
+                    supplierName: order.supplierName || 'El Local'
+                })
+            }).catch(e => console.error("Notification trigger error:", e));
+
             toast({ title: "Estado Actualizado", description: `Pedido marcado como ${newStatus.replace('_', ' ')}.` });
         } catch (error) {
             toast({ variant: 'destructive', title: "Error" });
@@ -194,31 +239,33 @@ export default function RiderTripPage() {
                     </div>
                 </div>
 
-                {/* MIDWAY STATUS ACTIONS */}
+                {/* MISSION 4: ERGONOMIC OVERRIDE BUTTONS (MIN 60PX) */}
                 {!isDelivered && (
-                    <div className="grid grid-cols-2 gap-3">
-                        <Button 
-                            variant="outline" 
-                            disabled={order.status === 'at_store'}
-                            onClick={() => handleUpdateStatus('at_store')}
-                            className={cn(
-                                "h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-white/10",
-                                order.status === 'at_store' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-white/5 text-foreground"
-                            )}
-                        >
-                             <StoreIcon className="mr-2 h-4 w-4" /> Llegué al Local
-                        </Button>
-                        <Button 
-                            variant="outline" 
-                            disabled={order.status === 'on_the_way'}
-                            onClick={() => handleUpdateStatus('on_the_way')}
-                            className={cn(
-                                "h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-white/10",
-                                order.status === 'on_the_way' ? "bg-blue-500/10 border-blue-500/20 text-blue-500" : "bg-white/5 text-foreground"
-                            )}
-                        >
-                             <Truck className="mr-2 h-4 w-4" /> Lo tengo / Voy
-                        </Button>
+                    <div className="grid grid-cols-1 gap-4">
+                        {order.status === 'assigned' && (
+                            <Button 
+                                onClick={() => handleUpdateStatus('at_store')}
+                                className="h-20 rounded-[2rem] bg-amber-500 hover:bg-amber-600 text-black font-black uppercase tracking-widest text-lg shadow-xl shadow-amber-500/20"
+                            >
+                                <StoreIcon className="mr-3 h-6 w-6" /> LLEGUÉ AL LOCAL
+                            </Button>
+                        )}
+                        {order.status === 'at_store' && (
+                            <Button 
+                                onClick={() => handleUpdateStatus('on_the_way')}
+                                className="h-20 rounded-[2rem] bg-blue-500 hover:bg-blue-600 text-white font-black uppercase tracking-widest text-lg shadow-xl shadow-blue-500/20"
+                            >
+                                <Truck className="mr-3 h-6 w-6" /> YA LO TENGO / VOY
+                            </Button>
+                        )}
+                        {order.status === 'on_the_way' && (
+                            <Button 
+                                onClick={() => handleUpdateStatus('arrived')}
+                                className="h-20 rounded-[2rem] bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase tracking-widest text-lg shadow-xl shadow-emerald-500/20"
+                            >
+                                <MapPin className="mr-3 h-6 w-6" /> ESTOY EN LA PUERTA 🔔
+                            </Button>
+                        )}
                     </div>
                 )}
 

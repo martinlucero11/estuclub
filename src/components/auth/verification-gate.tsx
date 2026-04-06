@@ -24,7 +24,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   // 1. Loading state — show spinner while Firebase resolves
   if (isUserLoading && !isPublicPath) {
     return (
-      <div className="fixed inset-0 z-[9999] bg-white flex flex-col items-center justify-center p-6 space-y-4">
+      <div className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center p-6 space-y-4">
         <Loader2 className="h-10 w-10 text-[#cb465a] animate-spin" />
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#cb465a]">
           Cargando Estuclub...
@@ -91,7 +91,7 @@ export default function VerificationGate({ children }: { children: React.ReactNo
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center p-6">
+    <div className="fixed inset-0 z-[9999] bg-background flex items-center justify-center p-6">
       <Card className="w-full max-w-md rounded-[3rem] border-none shadow-2xl overflow-hidden p-10 text-center space-y-6">
         <Mail className="h-12 w-12 text-[#cb465a] mx-auto opacity-20" />
         <h2 className="text-2xl font-black uppercase tracking-tighter text-[#cb465a]">

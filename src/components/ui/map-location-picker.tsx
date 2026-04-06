@@ -149,7 +149,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
     };
 
     return (
-        <div className={cn("relative w-full h-[300px] rounded-[2rem] overflow-hidden border border-white/10 shadow-premium group", className)}>
+        <div className={cn("relative w-full h-[300px] rounded-[2rem] overflow-hidden border border-border shadow-premium group", className)}>
             <div ref={mapRef} className="w-full h-full bg-background" />
             
             {/* Center Pin overlay */}
@@ -162,7 +162,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
 
             {/* Address Overlay */}
             <div className="absolute top-4 inset-x-4 z-20">
-                <div className="bg-background/80 backdrop-blur-xl p-3 rounded-2xl border border-white/10 shadow-2xl flex items-center gap-3">
+                <div className="bg-background/80 backdrop-blur-xl p-3 rounded-2xl border border-border shadow-2xl flex items-center gap-3">
                     <div className={cn(
                         "h-8 w-8 rounded-xl flex items-center justify-center shrink-0",
                         isGeocoding ? "bg-primary/10" : "bg-background dark:bg-white/5"
@@ -182,7 +182,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                     variant="outline" 
                     size="icon" 
                     onClick={handleCurrentLocation}
-                    className="h-10 w-10 rounded-xl glass glass-dark border-white/5 shadow-xl hover:bg-white/10"
+                    className="h-10 w-10 rounded-xl glass glass-dark border-border shadow-xl hover:bg-muted"
                 >
                     <Navigation className="h-4 w-4 text-foreground" />
                 </Button>
@@ -191,7 +191,7 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
             {!isLoaded && (
                 <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex items-center justify-center flex-col gap-3">
                     <Loader2 className="h-8 w-8 animate-spin text-[#cb465a]" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white italic">Inicializando Mapa...</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-foreground italic">Inicializando Mapa...</span>
                 </div>
             )}
         </div>

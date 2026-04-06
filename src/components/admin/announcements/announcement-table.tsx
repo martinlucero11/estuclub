@@ -16,9 +16,10 @@ import { createConverter } from '@/lib/firestore-converter';
 
 interface AnnouncementTableProps {
     className?: string;
+    search?: string;
 }
 
-export function AnnouncementTable({ className }: AnnouncementTableProps) {
+export function AnnouncementTable({ className, search }: AnnouncementTableProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -33,7 +34,13 @@ export function AnnouncementTable({ className }: AnnouncementTableProps) {
             orderBy('submittedAt', 'desc')
         ), [firestore]);
     
-    const { data: announcements, isLoading } = useCollection(announcementsQuery);
+    const { data: allAnnouncements, isLoading } = useCollection(announcementsQuery);
+
+    const announcements = useMemo(() => {
+        if (!allAnnouncements) return [];
+        if (!search) return allAnnouncements;
+        return allAnnouncements.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
+    }, [allAnnouncements, search]);
 
     const handleToggleVisibility = async (announcementId: string, isVisible: boolean) => {
         const announcementRef = doc(firestore, 'announcements', announcementId);

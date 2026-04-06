@@ -5,6 +5,7 @@ import { useUser } from "@/firebase";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { OrderStaleMonitor } from "@/components/admin/order-stale-monitor";
 
 export default function AdminLayout({
   children,
@@ -34,9 +35,9 @@ export default function AdminLayout({
   if (!isAdmin) return null;
 
   return (
-    <div className="flex min-h-screen bg-white relative overflow-hidden">
+    <div className="flex min-h-screen bg-white relative">
       <AdminSidebar />
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0">
         {/* Continuous Background Accents */}
         <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
@@ -48,9 +49,10 @@ export default function AdminLayout({
            </div>
         </header>
 
-        <div className="flex-1 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 relative">
+        <div className="flex-1 p-8 md:p-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 relative overflow-x-hidden overflow-y-auto">
           {children}
         </div>
+        <OrderStaleMonitor />
       </main>
     </div>
   );

@@ -56,7 +56,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
 
         // Filter Orders by Date
         const filteredOrders = allOrders.filter(o => o.createdAt && isAfter(o.createdAt.toDate(), startDate));
-        const successfulOrders = filteredOrders.filter(o => o.status === 'delivered' || o.status === 'completed' || o.status === 'searching_rider' || o.status === 'accepted' || o.status === 'pending_payment');
+        const successfulOrders = filteredOrders.filter(o => o.status === 'delivered' || o.status === 'completed' || o.status === 'searching_rider' || o.status === 'accepted');
 
         // 1. Peak Ordering Hours
         const heatmapData = successfulOrders.reduce((acc, o) => {
@@ -104,6 +104,10 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                 return ratioB - ratioA;
             })[0];
 
+        // 4. Store Conversion Rate
+        const totalViews = allProducts.reduce((sum, p) => sum + (p.viewsCount || 0), 0);
+        const conversionRate = totalViews > 0 ? (successfulOrders.length / totalViews) * 100 : 0;
+
         return {
             totalRevenue,
             totalOrders: successfulOrders.length,
@@ -112,7 +116,9 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
             peakHourLabel,
             topSeller,
             ghostProduct,
-            filteredOrders
+            filteredOrders,
+            totalViews,
+            conversionRate
         };
     }, [allOrders, allProducts, dateFilter]);
 
@@ -169,34 +175,22 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                     </CardContent>
                 </Card>
 
-                <Card className="glass glass-dark border-destructive/20 rounded-[2rem] bg-gradient-to-br from-destructive/5 to-transparent relative overflow-hidden group">
+                <Card className="glass glass-dark border-blue-500/20 rounded-[2rem] bg-gradient-to-br from-blue-500/5 to-transparent relative overflow-hidden group">
                     <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-                        <Ghost className="h-32 w-32 text-destructive" />
+                        <TrendingUp className="h-32 w-32 text-blue-500" />
                     </div>
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-destructive flex items-center gap-2">
-                            <Ghost className="h-4 w-4" /> Producto Fantasma
+                        <CardTitle className="text-xs font-black uppercase tracking-[0.2em] text-blue-500 flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" /> Eficiencia del Local
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="relative z-10">
-                        {stats.ghostProduct && stats.ghostProduct.viewsCount > 0 && stats.ghostProduct.salesCount === 0 ? (
-                            <>
-                                <div className="text-xl font-black text-foreground truncate">{stats.ghostProduct.name}</div>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-destructive/10 text-destructive rounded-md text-[10px] font-black uppercase">
-                                        LO VENDA: 0
-                                    </div>
-                                    <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-primary/10 text-primary rounded-md text-[10px] font-black uppercase">
-                                        LO VEN: {stats.ghostProduct.viewsCount}
-                                    </div>
-                                </div>
-                                <p className="text-[10px] font-medium text-destructive/80 mt-2 flex items-center gap-1">
-                                    <AlertTriangle className="h-3 w-3" /> Revisá foto o precio.
-                                </p>
-                            </>
-                        ) : (
-                            <div className="text-foreground text-sm font-medium italic">Catálogo saludable.</div>
-                        )}
+                        <div className="text-4xl font-black text-foreground tracking-tighter">
+                            {stats.conversionRate.toFixed(1)}<span className="text-blue-500 text-2xl">%</span>
+                        </div>
+                        <p className="text-[10px] font-medium text-foreground mt-2 opacity-60">
+                            {stats.totalOrders} pedidos de {stats.totalViews} visitas totales.
+                        </p>
                     </CardContent>
                 </Card>
             </div>

@@ -44,6 +44,7 @@ const announcementSchema = z.object({
   isStudentOnly: z.boolean().default(false),
   isCincoDosOnly: z.boolean().default(false),
   minLevel: z.coerce.number().min(1).max(10).default(1),
+  isPushEnabled: z.boolean().default(false),
   ownerId: z.string().optional(),
 });
 
@@ -79,6 +80,7 @@ export function AnnouncementDialog({ isOpen, onOpenChange, announcement }: Annou
       isStudentOnly: announcement?.isStudentOnly ?? false,
       isCincoDosOnly: announcement?.isCincoDosOnly ?? false,
       minLevel: announcement?.minLevel ?? 1,
+      isPushEnabled: false,
       ownerId: announcement?.supplierId || '',
     },
   });
@@ -121,6 +123,19 @@ export function AnnouncementDialog({ isOpen, onOpenChange, announcement }: Annou
           createdAt: serverTimestamp(),
         });
         toast({ title: 'Anuncio creado', description: 'El anuncio ha sido publicado.' });
+
+        // MISSION 6: Trigger Push Notification if enabled
+        if (values.isPushEnabled) {
+          fetch('/api/notifications/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: values.title,
+              body: values.content.slice(0, 100) + '...',
+              url: values.linkUrl || '/'
+            })
+          }).catch(err => console.error('Push error:', err));
+        }
       }
       onOpenChange(false);
     } catch (error) {
@@ -292,17 +307,31 @@ export function AnnouncementDialog({ isOpen, onOpenChange, announcement }: Annou
                         </FormItem>
                     )}
                 />
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 h-[72px] mt-auto">
-                    <span className="text-[10px] font-black uppercase tracking-widest">¿Visible?</span>
-                    <FormField
-                        control={form.control}
-                        name="isVisible"
-                        render={({ field }) => (
-                            <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary" />
-                            </FormControl>
-                        )}
-                    />
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 h-[34px]">
+                        <span className="text-[9px] font-black uppercase tracking-widest">¿Visible?</span>
+                        <FormField
+                            control={form.control}
+                            name="isVisible"
+                            render={({ field }) => (
+                                <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary h-4" />
+                                </FormControl>
+                            )}
+                        />
+                    </div>
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/20 h-[34px]">
+                        <span className="text-[9px] font-black uppercase tracking-widest text-primary">Push 🔔</span>
+                        <FormField
+                            control={form.control}
+                            name="isPushEnabled"
+                            render={({ field }) => (
+                                <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} className="data-[state=checked]:bg-primary h-4" />
+                                </FormControl>
+                            )}
+                        />
+                    </div>
                 </div>
             </div>
 

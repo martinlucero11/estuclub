@@ -68,9 +68,10 @@ export default function PanelCluberPage() {
     const isOpen = effectiveSupplierData?.isOpen ?? false;
 
     // Dynamic Permissions
+    // MISSION 1: CENTRALIZACIÓN DE PERMISOS EN COLECCIÓN USERS (SSoT)
     const canBenefits = userData?.permitsBenefits ?? false;
-    const canDelivery = effectiveSupplierData?.deliveryEnabled ?? false;
-    const canTurnero = effectiveSupplierData?.appointmentsEnabled ?? false;
+    const canDelivery = userData?.permitsDelivery ?? false; // Centralized
+    const canTurnero = userData?.permitsShifts ?? false;    // Centralized
 
     // Set initial tab based on permissions
     useEffect(() => {
@@ -182,7 +183,6 @@ export default function PanelCluberPage() {
 
                 {/* Superior Header */}
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 rounded-[3rem] bg-white border border-black/5 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-transparent pointer-events-none" />
                     <div className="flex items-center gap-5 relative z-10">
                         <div className="h-16 w-16 rounded-[1.5rem] bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner group-hover:scale-105 transition-transform duration-500">
                             <Store className="h-7 w-7 text-primary" />
@@ -400,7 +400,6 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     </div>
                 </div>
                 <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[400px] shadow-2xl relative">
-                    <div className="absolute inset-x-0 top-0 h-[100px] bg-gradient-to-b from-primary/[0.03] to-transparent pointer-events-none" />
                     <BenefitRedemptionsTable supplierId={shopId} />
                 </Card>
             </div>
@@ -418,7 +417,6 @@ function DeliveryModule({ shopId }: { shopId: string }) {
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Catálogo de Productos</h2>
                 </div>
                 <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[500px] shadow-2xl relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent pointer-events-none" />
                     <ProductManager supplierId={shopId} />
                 </Card>
             </div>

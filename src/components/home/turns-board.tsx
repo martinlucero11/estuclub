@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { useCollectionOnce, useFirestore } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
-import { SupplierProfile, CluberCategory, Benefit } from '@/types/data';
+import { collection, query, where, orderBy, limit, collectionGroup } from 'firebase/firestore';
+import { SupplierProfile, CluberCategory, Benefit, Service } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -52,16 +52,16 @@ export default function TurnsBoard() {
 
     const servicesQuery = useMemo(() => {
         if (!firestore) return null;
-        // Generic services/perks that are actually just and highlighted as turns services
+        // Query the actual services collection group across all suppliers
         return query(
-            collection(firestore, 'perks').withConverter(createConverter<Benefit>()),
+            collectionGroup(firestore, 'services').withConverter(createConverter<Service>()),
             orderBy('createdAt', 'desc'),
             limit(10)
         );
     }, [firestore]);
 
     const { data: suppliers, isLoading: loadingSuppliers } = useCollectionOnce(turnsQuery);
-    const { data: allPerks, isLoading: loadingPerks } = useCollectionOnce(servicesQuery);
+    const { data: allServices, isLoading: loadingServices } = useCollectionOnce(servicesQuery);
 
     const groupedSuppliers = useMemo(() => {
         if (!suppliers) return {};
@@ -75,13 +75,13 @@ export default function TurnsBoard() {
     }, [suppliers]);
 
     const serviceCards = useMemo(() => {
-        if (!allPerks || !suppliers) return [];
+        if (!allServices || !suppliers) return [];
         const turnSupplierIds = new Set(suppliers.map(s => s.id));
-        // Only show perks/services from suppliers who have turns enabled
-        return allPerks.filter(p => turnSupplierIds.has(p.supplierId));
-    }, [allPerks, suppliers]);
+        // Only show services from suppliers who have turns enabled
+        return (allServices as Service[]).filter(s => turnSupplierIds.has(s.supplierId));
+    }, [allServices, suppliers]);
 
-    if (loadingSuppliers || loadingPerks) {
+    if (loadingSuppliers || loadingServices) {
         return (
             <div className="space-y-12 py-4">
                 {[...Array(2)].map((_, i) => (
@@ -131,7 +131,7 @@ export default function TurnsBoard() {
                                    <div className="aspect-video relative rounded-[1.5rem] overflow-hidden mb-4 border border-black/5">
                                        <Image 
                                             src={optimizeImage(service.imageUrl || DEFAULT_SERVICE_IMAGE, 600)} 
-                                            alt={service.title} 
+                                            alt={service.name} 
                                             fill 
                                             className="object-cover transition-transform duration-700 group-hover:scale-110" 
                                         />
@@ -141,7 +141,7 @@ export default function TurnsBoard() {
                                            </div>
                                        </div>
                                    </div>
-                                    <h3 className="font-black text-base tracking-tighter italic text-black leading-tight mb-1">{service.title}</h3>
+                                    <h3 className="font-black text-base tracking-tighter italic text-black leading-tight mb-1">{service.name}</h3>
                                     <p className="text-[10px] font-bold text-black/40 uppercase mb-3">{suppliers.find(s => s.id === service.supplierId)?.name}</p>
                                     <div className="flex items-center justify-between pt-2 border-t border-black/5">
                                         <div className="flex items-center gap-2">

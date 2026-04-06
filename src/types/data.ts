@@ -46,7 +46,11 @@ export interface UserProfile {
     xp?: number;
     level?: number;
     isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
-    permitsBenefits?: boolean; // Permiso para crear beneficios (Cluber)
+    permitsBenefits?: boolean; // Permisos Centralizados (Mission 1)
+    permitsShifts?: boolean;
+    permitsAds?: boolean;
+    permitsTeam?: boolean;
+    permitsDelivery?: boolean;
     location?: {
       address: string;
       city?: string;
@@ -69,6 +73,8 @@ export interface UserProfile {
     trialEndsAt?: Timestamp;
     membershipPaidUntil?: Timestamp;
     isMembershipWaived?: boolean;
+    avgRating?: number;
+    reviewCount?: number;
     addresses?: UserAddress[];
     // Real-time Logistics
     isOnline?: boolean;
@@ -237,10 +243,19 @@ export interface Order {
     riderName?: string;
     riderPhone?: string;
     riderLocation?: { latitude: number; longitude: number };
+    deliveryPin?: string; // 4-digit PIN for secure delivery
+    deliveryPinValidated?: boolean;
     type: 'delivery' | 'pickup';
     createdAt: Timestamp;
     updatedAt: Timestamp;
+    startTime?: Timestamp;
     estimatedDeliveryTime?: Timestamp;
+    reviewed?: boolean;
+    // Aliases for legacy compatibility
+    userId?: string;
+    userName?: string;
+    userPhone?: string;
+    deliveryNote?: string;
 }
 
 export interface OrderItem {
@@ -248,6 +263,7 @@ export interface OrderItem {
     name: string;
     price: number;
     quantity: number;
+    imageUrl?: string;
     notes?: string;
 }
 
@@ -257,6 +273,8 @@ export type OrderStatus =
     'searching_rider' |
     'assigned' | 
     'at_store' | 
+    'on_the_way' | 
+    'arrived' |
     'shipped' |
     'delivered' | 
     'completed' | 
@@ -277,6 +295,7 @@ export interface Benefit {
     isVisible: boolean;
     isFeatured: boolean;
     isExclusive?: boolean;
+    isService?: boolean; // If true, this item should be treated as a turn service
     // Targeting
     isStudentOnly?: boolean;
     isCincoDosOnly?: boolean;
@@ -317,11 +336,25 @@ export interface Banner {
     updatedAt?: Timestamp;
 }
 
+export interface Service {
+    id: string;
+    supplierId: string;
+    name: string;
+    description: string;
+    duration: number; // in minutes
+    price?: number;
+    imageUrl?: string;
+    isActive: boolean;
+    category?: string;
+    createdAt?: Timestamp;
+    updatedAt?: Timestamp;
+}
+
 export interface HomeSection {
   id: string;
   title?: string;
   isActive: boolean;
-  targetBoard: 'perks' | 'delivery';
+  targetBoard: 'perks' | 'delivery' | 'turns';
   block: HomeSectionBlock;
   order: number;
   createdAt: Timestamp;
@@ -333,7 +366,7 @@ export type HomeSectionBlock =
   | { kind: 'message'; message: { title?: string; body: string; imageUrl?: string; alignment?: 'left' | 'center' } }
   | { 
       kind: 'carousel' | 'grid'; 
-      contentType: "perks" | "suppliers" | "announcements" | "banners" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo" | "benefits_nearby" | "suppliers_nearby";
+      contentType: "perks" | "suppliers" | "announcements" | "banners" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo" | "benefits_nearby" | "suppliers_nearby" | "services" | "products" | "professionals";
       mode: 'auto' | 'manual';
       query?: {
         filters?: WhereFilter[];

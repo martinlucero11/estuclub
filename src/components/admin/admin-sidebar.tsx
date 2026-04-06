@@ -25,11 +25,12 @@ import { signOut } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 
 const navItems = [
-  { label: 'Inicio', icon: LayoutDashboard, href: '/admin' },
+  { label: 'Consola', icon: LayoutDashboard, href: '/admin' },
+  { label: 'Home Builder', icon: Zap, href: '/admin/home-builder' },
+  { label: 'Gestión CMS', icon: Megaphone, href: '/admin/cms' },
   { label: 'Solicitudes', icon: ShieldCheck, href: '/verify' },
   { label: 'Comercios', icon: Store, href: '/admin/clubers' },
   { label: 'Riders', icon: Truck, href: '/admin/riders' },
-  { label: 'Marketing', icon: Megaphone, href: '/admin/cms' },
   { label: 'Usuarios', icon: Users, href: '/admin/users' },
   { label: 'Métricas', icon: BarChart3, href: '/admin/analytics' },
   { label: 'Ajustes', icon: Settings, href: '#', isGhost: true },

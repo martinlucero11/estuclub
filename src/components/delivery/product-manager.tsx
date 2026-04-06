@@ -33,6 +33,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ProductManagerProps {
     supplierId: string;
@@ -50,6 +60,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const [selectedProduct, setSelectedProduct] = useState<Partial<Product> | null>(null);
     const [uploadMethod, setUploadMethod] = useState<'upload' | 'link'>('link');
     const [isUploading, setIsUploading] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
     const firestore = useFirestore();
     const { toast } = useToast();
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierId ? doc(firestore, 'roles_supplier', supplierId) : null);
@@ -124,26 +135,34 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
         }
     };
 
-    const handleDeleteProduct = async (id: string) => {
-        if (!firestore || !confirm('¿Estás seguro de eliminar este producto?')) return;
+    const handleDeleteProduct = async () => {
+        if (!firestore || !productToDelete) return;
         try {
-            await deleteDoc(doc(firestore, 'products', id));
-            toast({ title: "Producto eliminado" });
+            await deleteDoc(doc(firestore, 'products', productToDelete));
+            toast({ title: "✅ PRODUCTO ELIMINADO", description: "El catálogo ha sido actualizado." });
         } catch (error) {
             console.error(error);
-            toast({ title: "Error al eliminar el producto", variant: "destructive" });
+            toast({ title: "Error al eliminar", description: "No se pudo borrar el producto.", variant: "destructive" });
+        } finally {
+            setProductToDelete(null);
         }
     };
 
     const toggleStatus = async (product: Product, field: 'isActive' | 'stockAvailable') => {
         if (!firestore) return;
+        const newValue = !product[field];
         try {
             await updateDoc(doc(firestore, 'products', product.id), {
-                [field]: !product[field],
+                [field]: newValue,
                 updatedAt: serverTimestamp()
+            });
+            toast({ 
+                title: newValue ? "Activado" : "Desactivado", 
+                description: `${product.name} se ha marcado como ${newValue ? 'disponible' : 'no disponible'}.` 
             });
         } catch (error) {
             console.error(error);
+            toast({ title: "Error", description: "No se pudo actualizar el estado.", variant: "destructive" });
         }
     };
 
@@ -453,7 +472,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem 
                                                     className="rounded-xl font-black text-[10px] uppercase tracking-widest py-3 text-red-500 focus:text-red-600 focus:bg-red-50 cursor-pointer"
-                                                    onClick={() => handleDeleteProduct(product.id)}
+                                                    onClick={() => setProductToDelete(product.id)}
                                                 >
                                                     <Trash2 className="h-4 w-4 mr-2" /> Eliminar
                                                 </DropdownMenuItem>
@@ -531,6 +550,27 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
             <TabsContent value="menu" className="animate-in fade-in duration-500">
                 <MenuSectionManager supplierId={supplierId} sections={menuSections} products={products || []} />
             </TabsContent>
+
+            {/* MISSION 3: MODAL DE CONFIRMACIÓN ELEGANTE */}
+            <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
+                <AlertDialogContent className="rounded-[2.5rem] border-none shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-2xl font-black tracking-tighter uppercase italic">¿Confirmar Eliminación?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm font-bold text-black/60">
+                            Esta acción es irreversible. El producto desaparecerá del menú de los clientes inmediatamente.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="gap-3">
+                        <AlertDialogCancel className="rounded-2xl h-12 font-black uppercase tracking-widest text-[10px] border-black/5 bg-black/5 hover:bg-black/10 transition-all">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleDeleteProduct}
+                            className="rounded-2xl h-12 font-black uppercase tracking-widest text-[10px] bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
+                        >
+                            Eliminar Producto
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Tabs>
     );
 }

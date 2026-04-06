@@ -11,6 +11,8 @@ body {
   position: relative;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #FFFFFF;
+  color: #000000;
 }
 
 h1, h2, h3, h4, .font-branding {
@@ -19,156 +21,78 @@ h1, h2, h3, h4, .font-branding {
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Pure White */
-    --foreground: 0 0% 0%;   /* Pure Black */
-    --card: 0 0% 100%;
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 0 0% 0%;   /* #000000 */
+    --card: 0 0% 98%;       /* #F9FAFB */
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
-    --primary: 351 56% 54%; /* Rosa Estuclub #cb465a */
+    --primary: 351 56% 54%; /* #cb465a */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 100%;
+    --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 100%;
-    --muted-foreground: 0 0% 0%;
-    --accent: 0 0% 0%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 351 56% 54%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 0%;
-    --input: 0 0% 0%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
     --ring: 351 56% 54%;
     --radius: 1rem;
 
-    /* Estuclub Original Colors */
+    /* MISSION 2: BRANDING Pink #cb465a */
     --brand-pink: #cb465a;
     --brand-pink-rgb: 203, 70, 90;
-
-    /* High-Fidelity Redesign Palette */
-    --midnight-purple: #0a0118;
-    --dark-teal: #01161d;
-    --electric-teal: #00ffff;
-  }
-  .dark {
-    --background: 261 100% 5%; /* #0a0118 */
-    --foreground: 0 0% 100%; /* Pure White */
-    --card: 261 100% 10%;
-    --card-foreground: 0 0% 100%;
-    --popover: 261 100% 5%;
-    --popover-foreground: 0 0% 100%;
-    --primary: 351 56% 54%; /* Rosa Estuclub #cb465a */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 261 100% 5%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 80%;
-    --accent: 351 56% 54%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 331 100% 20%;
-    --input: 261 100% 10%;
-    --ring: 351 56% 54%;
   }
 }
 
 @layer base {
   * {
-    @apply border-foreground/10;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
 }
 
-/* Premium Animations & Visual Effects */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* MISSION 2: Professional Scrollbar (6px, #cb465a) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+::-webkit-scrollbar-track {
+  background: #F9FAFB;
 }
 
-@keyframes pulse-aura {
-  0%, 100% { box-shadow: 0 0 10px rgba(203,70,90,0.1), inset 0 0 5px rgba(203,70,90,0.05); }
-  50% { box-shadow: 0 0 25px rgba(203,70,90,0.3), inset 0 0 15px rgba(203,70,90,0.15); }
+::-webkit-scrollbar-thumb {
+  background: #cb465a;
+  border-radius: 10px;
 }
 
-@keyframes float-bokeh {
-    0%, 100% { transform: translateY(0px) scale(1); }
-    50% { transform: translateY(-20px) scale(1.1); }
+::-webkit-scrollbar-thumb:hover {
+  background: #b03a4d;
+}
+
+/* Base Scale for Professional Dashboard */
+.dashboard-root {
+  font-size: 0.875rem; /* text-sm as base */
+}
+
+/* CLEAN UI COMPONENTS */
+.card-professional {
+  @apply bg-[#F9FAFB] border border-black/5 rounded-[2rem] shadow-sm;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out forwards;
-}
-
-.animate-pulse-slow {
-    animation: pulse-aura 4s ease-in-out infinite;
-}
-
-/* Bokeh Background System */
-.luminous-bokeh {
-    background: radial-gradient(circle at 10% 20%, rgba(203, 70, 90, 0.05), transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.05), transparent 40%),
-                var(--midnight-purple);
-    background-attachment: fixed;
-    position: relative;
-    overflow-x: hidden;
-}
-
-.luminous-bokeh::before {
-    content: '';
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle at center, rgba(203, 70, 90, 0.03), transparent 70%);
-    top: -100px;
-    left: -100px;
-    z-index: -1;
-    filter: blur(80px);
-    animation: float-bokeh 15s ease-in-out infinite;
-}
-
-/* Glassmorphism 2.0 Utilities */
-.glass-2 {
-    @apply backdrop-blur-[12px] bg-black/40 border-white/5;
-    box-shadow: inset 0 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.glass-dark {
-    @apply backdrop-blur-[20px] bg-white/10 border-white/20;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-}
-
-.glass-luminous {
-    @apply glass-2;
-    border: 1px solid transparent;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), 
-                    linear-gradient(to bottom right, rgba(255, 0, 127, 0.2), rgba(0, 255, 255, 0.1));
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-}
-
-.text-glow-premium {
-    text-shadow: 0 0 15px rgba(203, 70, 90, 0.5);
-}
-
-.texture-brushed {
-    background-image: repeating-linear-gradient(
-        120deg,
-        rgba(255, 255, 255, 0.02) 0px,
-        rgba(255, 255, 255, 0.02) 1px,
-        transparent 1px,
-        transparent 2px
-    );
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @layer utilities {
