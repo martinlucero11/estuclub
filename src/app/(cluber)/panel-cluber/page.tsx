@@ -34,17 +34,17 @@ function CluberPending() {
                 <Store className="h-12 w-12 text-indigo-500 animate-pulse" />
             </div>
             <div className="space-y-3">
-                <h1 className="text-3xl font-black tracking-tighter uppercase italic text-indigo-500 font-montserrat leading-none">Verificando tu <br /> Negocio</h1>
+                <h1 className="text-3xl font-black tracking-tighter uppercase italic text-primary font-montserrat leading-none">Verificando tu <br /> Cluber</h1>
                 <p className="text-sm text-foreground font-bold max-w-xs mx-auto leading-relaxed italic uppercase tracking-widest opacity-60">
-                    Nuestro equipo de expansión está revisando tu postulación comercial.
+                    Nuestro equipo de expansión está revisando tu postulación de Cluber.
                 </p>
             </div>
             <div className="p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10 max-w-xs">
                 <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Estatus: Pendiente
                 </p>
-                <p className="text-[9px] font-bold text-foreground leading-relaxed italic">
-                    Recibirás una notificación y un email en cuanto tu local esté habilitado para vender.
+                <p className="text-9px font-bold text-foreground leading-relaxed italic">
+                    Recibirás una notificación y un email en cuanto tu Club esté habilitado para operar.
                 </p>
             </div>
             <Button asChild variant="ghost" className="text-foreground font-black text-[10px] uppercase tracking-[0.3em]">
@@ -134,8 +134,8 @@ export default function PanelCluberPage() {
             const docRef = doc(firestore, 'roles_supplier', shopId);
             await updateDoc(docRef, { isOpen: !isOpen });
             toast({
-                title: isOpen ? "Tienda Cerrada" : "Tienda Abierta",
-                description: isOpen ? "Ya no recibirás pedidos por ahora." : "¡Listo para vender!",
+                title: isOpen ? "Cluber Cerrado" : "Cluber Abierto",
+                description: isOpen ? "Ya no recibirás actividad por ahora." : "¡Listo para operar!",
                 variant: isOpen ? "destructive" : "default"
             });
         } catch (error) {
@@ -143,7 +143,7 @@ export default function PanelCluberPage() {
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "No se pudo actualizar el estado de la tienda."
+                description: "No se pudo actualizar el estado de tu Club."
             });
         } finally {
             setIsUpdating(false);
@@ -163,7 +163,7 @@ export default function PanelCluberPage() {
                         <div className="space-y-2">
                             <h1 className="text-3xl font-black uppercase tracking-tighter font-montserrat">ACCESO DENEGADO</h1>
                             <p className="text-xs font-bold opacity-60 uppercase tracking-widest leading-relaxed">
-                                Esta área está reservada para <br /> <span className="font-black">Comercios Aliados</span>
+                                Esta área está reservada para <br /> <span className="font-black">Clubers Aliados</span>
                             </p>
                         </div>
                         <Button asChild className="h-14 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(203, 70, 90,0.3)]">

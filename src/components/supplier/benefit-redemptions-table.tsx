@@ -26,7 +26,7 @@ export function BenefitRedemptionsTable({ supplierId }: { supplierId: string }) 
     const redemptionsQuery = useMemo(() => {
         if (!firestore || !supplierId) return null;
         return query(
-            collection(firestore, 'benefit_redemptions').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', supplierId),
             orderBy('redeemedAt', 'desc'),
             limit(20)

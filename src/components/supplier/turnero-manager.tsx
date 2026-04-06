@@ -123,15 +123,15 @@ function AgendaView({ supplierId }: { supplierId: string }) {
     return (
         <div className="space-y-6">
             {!appointments || appointments.length === 0 ? (
-                <Card className="rounded-[3rem] border-2 border-dashed border-black/5 bg-black/[0.01] py-24 text-center flex flex-col items-center justify-center gap-4 shadow-inner">
+                <div className="py-32 text-center bg-black/[0.02] border-2 border-dashed border-black/5 rounded-[3rem] shadow-inner flex flex-col items-center justify-center gap-6">
                     <div className="h-24 w-24 rounded-[3rem] bg-white flex items-center justify-center shadow-xl border border-black/5">
                         <Calendar className="h-10 w-10 text-primary/40" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-xl font-black tracking-tighter uppercase italic text-black">Agenda Libre</p>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30">No hay turnos programados para hoy</p>
+                        <p className="text-xl font-black tracking-tighter uppercase italic text-black opacity-40">Agenda Libre</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-black/20 mt-1">No hay turnos programados para hoy</p>
                     </div>
-                </Card>
+                </div>
             ) : (
                 <div className="grid gap-6">
                     {appointments.map((apt) => (
@@ -240,8 +240,8 @@ function ServicesView({ supplierId }: { supplierId: string }) {
                          <div className="h-20 w-20 rounded-[2rem] bg-white flex items-center justify-center mx-auto mb-6 shadow-xl border border-black/5">
                              <Info className="h-8 w-8 text-black/20" />
                          </div>
-                         <p className="text-xl font-black tracking-tighter uppercase italic text-black">Sin servicios</p>
-                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/30 mt-1">Habilita una prestación para comenzar a dar turnos</p>
+                         <p className="text-xl font-black tracking-tighter uppercase italic text-black opacity-40">Sin servicios</p>
+                         <p className="text-[10px] font-black uppercase tracking-widest text-black/20 mt-1">Habilita una prestación para comenzar a dar turnos</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -69,9 +69,11 @@ interface BenefitDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   benefit?: Benefit | SerializableBenefit | null;
+  forceSupplierId?: string;
+  forceSupplierName?: string;
 }
 
-export function BenefitDialog({ isOpen, onOpenChange, benefit }: BenefitDialogProps) {
+export function BenefitDialog({ isOpen, onOpenChange, benefit, forceSupplierId, forceSupplierName }: BenefitDialogProps) {
   const isEditing = !!benefit;
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -151,15 +153,16 @@ export function BenefitDialog({ isOpen, onOpenChange, benefit }: BenefitDialogPr
         toast({ title: 'Beneficio actualizado', description: 'Los cambios han sido guardados.' });
       } else {
         const perksRef = collection(firestore, 'perks');
-        const supplier = suppliers?.find(s => s.id === values.ownerId);
+        const supplierName = forceSupplierName || suppliers?.find(s => s.id === values.ownerId)?.name || 'Proveedor Estuclub';
+        
         await addDoc(perksRef, {
           ...dataToSave,
-          supplierId: values.ownerId,
-          supplierName: supplier?.name || 'Proveedor Estuclub',
+          supplierId: forceSupplierId || values.ownerId,
+          supplierName: supplierName,
           createdAt: serverTimestamp(),
           redemptionCount: 0,
         });
-        toast({ title: 'Beneficio creado', description: 'El nuevo beneficio ya está disponible.' });
+        toast({ title: 'Beneficio lanzado', description: 'El beneficio ya está disponible en Estuclub.' });
       }
       onOpenChange(false);
     } catch (error) {
@@ -190,28 +193,30 @@ export function BenefitDialog({ isOpen, onOpenChange, benefit }: BenefitDialogPr
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-8 -mt-6 bg-card rounded-t-[3rem] max-h-[70vh] overflow-y-auto custom-scrollbar relative z-20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                    control={form.control}
-                    name="ownerId"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 text-primary">Proveedor Responsable</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger className="h-14 rounded-2xl bg-background border-white/5 focus:ring-primary shadow-sm font-bold">
-                                <SelectValue placeholder="Busca un cluber..." />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
-                            {suppliers?.map(s => (
-                                <SelectItem key={s.id} value={s.id} className="font-bold">{s.name}</SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                {!forceSupplierId && (
+                    <FormField
+                        control={form.control}
+                        name="ownerId"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                            <FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 text-primary">Proveedor Responsable</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                                <FormControl>
+                                <SelectTrigger className="h-14 rounded-2xl bg-background border-white/5 focus:ring-primary shadow-sm font-bold">
+                                    <SelectValue placeholder="Busca un cluber..." />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-2xl border-white/10 shadow-2xl">
+                                {suppliers?.map(s => (
+                                    <SelectItem key={s.id} value={s.id} className="font-bold">{s.name}</SelectItem>
+                                ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 <FormField
                     control={form.control}

@@ -37,7 +37,7 @@ export function DashboardHeader() {
                 <SelectContent className="bg-white border-black/5 rounded-2xl shadow-2xl">
                   {dashboardRoles.map(role => (
                     <SelectItem key={role} value={role} className="text-[10px] font-black uppercase tracking-widest focus:bg-primary focus:text-white rounded-xl py-2 cursor-pointer transition-all">
-                      {capitalize(role)}
+                      {role === 'supplier' ? 'Cluber' : capitalize(role)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -45,7 +45,7 @@ export function DashboardHeader() {
             ) : (
               <div className="hidden md:flex font-black text-[9px] text-black/40 uppercase tracking-[0.3em] items-center gap-2">
                 <div className="h-1 w-1 rounded-full bg-primary animate-pulse" />
-                Vista: {capitalize(activeRole)}
+                Vista: {activeRole === 'supplier' ? 'Cluber' : capitalize(activeRole)}
               </div>
             )}
         </div>

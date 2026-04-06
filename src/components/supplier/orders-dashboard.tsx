@@ -206,7 +206,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                         {isClosed ? "ESTADO: CERRADO" : "ESTADO: EN LÍNEA"}
                     </h3>
                     <p className="text-[12px] font-bold text-black uppercase tracking-tight opacity-70">
-                        {isClosed ? "Tu local no es visible para los estudiantes." : "Tu local está recibiendo pedidos activamente."}
+                        {isClosed ? "Tu Club no es visible para los estudiantes." : "Tu Club está recibiendo actividad activa."}
                     </p>
                 </div>
 
@@ -308,7 +308,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                 </div>
                                                                 <div className="flex items-center gap-2 text-[10px] text-foreground font-medium opacity-60">
                                                                     <MapPin className="h-3 w-3" />
-                                                                    <span className="line-clamp-1">{order.deliveryAddress || 'Retiro en local'}</span>
+                                                                    <span className="line-clamp-1">{order.deliveryAddress || 'Retiro en Club'}</span>
                                                                 </div>
                                                             </div>
                                                             

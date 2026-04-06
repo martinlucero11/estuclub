@@ -21,7 +21,7 @@ interface UserForList {
 }
 
 export default function PanelCluberBenefitsPage() {
-  const { user, roles, userData, isUserLoading } = useUser();
+  const { user, roles, userData, supplierData, isUserLoading } = useUser();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   if (isUserLoading || !user) {
@@ -89,13 +89,18 @@ export default function PanelCluberBenefitsPage() {
               </div>
               <div className="space-y-1">
                   <p className="text-lg font-black uppercase tracking-tighter italic text-black opacity-40">Módulo Bloqueado</p>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-black/20">Tu comercio aún no cuenta con permisos de publicación de beneficios</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-black/20">Tu Club aún no cuenta con permisos de publicación de beneficios</p>
               </div>
           </div>
       )}
 
       {canCreate && (
-        <BenefitDialog isOpen={isFormOpen} onOpenChange={setIsFormOpen} />
+        <BenefitDialog 
+          isOpen={isFormOpen} 
+          onOpenChange={setIsFormOpen} 
+          forceSupplierId={user.uid}
+          forceSupplierName={supplierData?.name || supplierData?.storeName || `${userData?.firstName || ''} ${userData?.lastName || ''}`.trim() || 'Mi Club'}
+        />
       )}
     </div>
   );

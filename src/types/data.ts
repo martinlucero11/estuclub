@@ -85,6 +85,8 @@ export interface UserProfile {
     // phone?: string; // Already exists as phone
     description?: string;
     logo?: string;
+    theme?: 'light' | 'dark';
+    notificationsEnabled?: boolean;
     createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
@@ -302,6 +304,27 @@ export interface Benefit {
     minLevel?: number;
     createdAt: Timestamp;
     updatedAt?: Timestamp;
+}
+
+export interface BenefitRedemption {
+    id: string;
+    perkId: string;
+    benefitTitle: string;
+    userId: string;
+    userName: string;
+    userDni?: string;
+    supplierId: string;
+    supplierName: string;
+    redeemedAt: Timestamp;
+    usedAt?: Timestamp;
+    status: 'pending' | 'used';
+    qrCodeValue?: string;
+    pointsGranted?: number;
+}
+
+export interface SerializableBenefitRedemption extends Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> {
+    redeemedAt: string;
+    usedAt?: string;
 }
 
 export interface Announcement {

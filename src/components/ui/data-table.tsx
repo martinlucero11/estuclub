@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "./skeleton"
+import { Search } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -117,8 +118,16 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No hay resultados.
+                <TableCell colSpan={columns.length} className="h-72 text-center">
+                  <div className="flex flex-col items-center justify-center gap-4 animate-in fade-in zoom-in duration-700">
+                    <div className="h-20 w-20 rounded-[2rem] bg-muted/30 flex items-center justify-center border border-border shadow-inner group-hover:scale-110 transition-transform">
+                      <Search className="h-8 w-8 text-muted-foreground/30" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-black tracking-tighter uppercase italic text-foreground opacity-40">Sin resultados</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">No se encontraron datos para esta vista</p>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

@@ -95,7 +95,7 @@ export default function CluberConfiguracionPage() {
                 </div>
                 <div>
                     <h1 className="text-4xl font-black uppercase tracking-tighter italic text-white leading-none">Ajustes <span className="text-primary italic">Generales</span></h1>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1">Preferencias y Perfil Comercial</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1">Preferencias y Perfil de Cluber</p>
                 </div>
             </header>
 
@@ -142,13 +142,13 @@ export default function CluberConfiguracionPage() {
                 <Card className="rounded-[2.5rem] border-white/5 glass-dark overflow-hidden shadow-2xl">
                     <CardHeader className="border-b border-white/5 p-8 bg-white/5">
                         <CardTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
-                            <Building className="h-5 w-5 text-primary" /> Datos del Comercio
+                            <Building className="h-5 w-5 text-primary" /> Datos del Cluber
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Nombre Fantasía</Label>
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Nombre del Cluber</Label>
                                 <Input 
                                     value={storeName} 
                                     onChange={(e) => setStoreName(e.target.value)}
