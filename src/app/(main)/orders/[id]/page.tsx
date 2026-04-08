@@ -310,7 +310,7 @@ export default function OrderTrackingPage() {
                         <Separator className="bg-white/10 my-4" />
                         <div className="flex justify-between text-lg font-black italic uppercase tracking-tighter">
                             <span className="text-pink-500">Monto Final</span>
-                            <span className="text-white">$ {order.totalAmount.toLocaleString()}</span>
+                            <span className="text-white">$ {order.total.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

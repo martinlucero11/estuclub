@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useAuthService } from '@/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -9,11 +9,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Moon, Sun, Bell, Building, Phone, MapPin, Save, LogOut } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+    Settings, Moon, Sun, Bell, Building, Phone, 
+    MapPin, Save, LogOut, CreditCard, ExternalLink, 
+    ShieldCheck 
+} from 'lucide-react';
 import { haptic } from '@/lib/haptics';
 import { signOut } from 'firebase/auth';
-import { useAuthService } from '@/firebase';
 import SplashScreen from '@/components/layout/splash-screen';
+import { cn } from '@/lib/utils';
 
 export default function CluberConfiguracionPage() {
     const { user, userData, supplierData, isUserLoading } = useUser();
@@ -22,6 +27,7 @@ export default function CluberConfiguracionPage() {
     const { toast } = useToast();
     
     const [isSaving, setIsSaving] = useState(false);
+    const [isLinking, setIsLinking] = useState(false);
     const [theme, setTheme] = useState<'light' | 'dark'>(userData?.theme || 'dark');
     const [notifications, setNotifications] = useState(userData?.notificationsEnabled ?? true);
     
@@ -72,6 +78,42 @@ export default function CluberConfiguracionPage() {
             toast({ title: "Error al guardar", variant: "destructive" });
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleMPLink = async () => {
+        if (!user) return;
+        haptic.vibrateSubtle();
+        setIsLinking(true);
+        
+        try {
+            // 1. Create secure state using the API
+            const stateRes = await fetch('/api/mp/create-state', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.uid })
+            });
+            
+            const data = await stateRes.json();
+            if (!data.stateId) throw new Error('Failed to generate OAuth state');
+
+            // 2. Redirect to MP Auth
+            const appId = process.env.NEXT_PUBLIC_MP_APP_ID;
+            const redirectUri = encodeURIComponent(`${window.location.origin}/api/mp/callback`);
+            
+            // Authorization URL
+            const authUrl = `https://auth.mercadopago.com.ar/authorization?client_id=${appId}&response_type=code&platform_id=mp&state=${data.stateId}&redirect_uri=${redirectUri}`;
+            
+            window.location.href = authUrl;
+
+        } catch (error) {
+            console.error(error);
+            toast({ 
+                title: "Error de vinculación", 
+                description: "No pudimos iniciar la conexión con Mercado Pago.", 
+                variant: "destructive" 
+            });
+            setIsLinking(false);
         }
     };
 
@@ -135,6 +177,69 @@ export default function CluberConfiguracionPage() {
                                 onCheckedChange={setNotifications} 
                             />
                         </div>
+                    </CardContent>
+                </Card>
+
+                {/* PAGOS Y BILLETERA */}
+                <Card className="rounded-[2.5rem] border-black/5 dark:border-white/5 bg-primary/5 overflow-hidden shadow-2xl border-2 border-primary/20">
+                    <CardHeader className="border-b border-black/5 dark:border-white/5 p-8 bg-black/5 dark:bg-white/5">
+                        <CardTitle className="text-xl font-black uppercase tracking-widest text-foreground flex items-center gap-3">
+                            <CreditCard className="h-5 w-5 text-primary" /> Pagos y Liquidaciones
+                        </CardTitle>
+                        <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Configura cómo recibes tu dinero</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-8 space-y-6">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-white/5 rounded-3xl border border-white/5 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <CreditCard className="h-20 w-20 text-primary rotate-12" />
+                            </div>
+                            
+                            <div className="flex items-center gap-6 relative z-10 w-full md:w-auto">
+                                <div className={cn(
+                                    "h-16 w-16 rounded-2xl flex items-center justify-center border-2 transition-all duration-500",
+                                    supplierData?.mp_linked ? "bg-green-500/10 border-green-500/20 shadow-[0_0_20px_rgba(34,197,94,0.2)]" : "bg-white/5 border-white/10"
+                                )}>
+                                    {supplierData?.mp_linked ? (
+                                        <ShieldCheck className="h-8 w-8 text-green-500" />
+                                    ) : (
+                                        <CreditCard className="h-8 w-8 text-foreground/20" />
+                                    )}
+                                </div>
+                                <div className="space-y-1">
+                                    <h4 className="text-base font-black uppercase tracking-tighter italic">Mercado Pago</h4>
+                                    <p className="text-[10px] font-bold text-foreground/40 uppercase tracking-widest">
+                                        {supplierData?.mp_linked 
+                                            ? `VINCULADO: ID ${supplierData.mp_credentials?.mp_user_id || 'Activo'}` 
+                                            : "Tu cuenta de Mercado Pago no está conectada"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="relative z-10 w-full md:w-auto">
+                                {supplierData?.mp_linked ? (
+                                    <div className="flex flex-col items-end gap-1">
+                                         <Badge className="bg-green-500/20 text-green-500 border-green-500/30 px-4 py-2 rounded-full font-black text-[9px] uppercase tracking-widest">Cuenta Operativa</Badge>
+                                         <p className="text-[8px] text-foreground/20 font-black uppercase tracking-widest mt-2 cursor-pointer hover:text-primary transition-colors" onClick={handleMPLink}>Sincronizar de nuevo</p>
+                                    </div>
+                                ) : (
+                                    <Button 
+                                        onClick={handleMPLink}
+                                        disabled={isLinking}
+                                        className="w-full md:w-auto h-12 px-8 rounded-xl bg-[#009ee3] text-white font-black uppercase tracking-widest text-[10px] hover:bg-[#009ee3]/90 shadow-lg shadow-[#009ee3]/20"
+                                    >
+                                        {isLinking ? (
+                                            <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            <><ExternalLink className="h-4 w-4 mr-2" /> Vincular Mercado Pago</>
+                                        )}
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                        
+                        <p className="text-[9px] text-foreground/40 italic text-center font-bold uppercase tracking-widest">
+                            Al vincular tu cuenta, los pagos de tus clientes impactarán directamente en tu billetera de Mercado Pago.
+                        </p>
                     </CardContent>
                 </Card>
 
