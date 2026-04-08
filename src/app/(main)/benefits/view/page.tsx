@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { notFound, useSearchParams } from 'next/navigation';
 import type { SerializableBenefit } from '@/types/data';
-import BenefitDetailSkeleton from '@/components/perks/perk-detail-skeleton';
+import BenefitDetailSkeleton from '@/components/benefits/benefit-detail-skeleton';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import Link from 'next/link';
 
-const RedeemPerkDialog = dynamic(() => import('@/components/perks/redeem-perk-dialog'), {
+const RedeemBenefitDialog = dynamic(() => import('@/components/benefits/redeem-benefit-dialog'), {
   ssr: false,
   loading: () => <Button className="w-full h-12 rounded-xl" disabled>Cargando...</Button>
 });
@@ -35,7 +35,7 @@ export default function BenefitDetailPage() {
 
     const benefitRef = useMemo(() => {
         if (!id) return null;
-        return doc(firestore, 'perks', id).withConverter(createConverter<SerializableBenefit>());
+        return doc(firestore, 'benefits', id).withConverter(createConverter<SerializableBenefit>());
     }, [id, firestore]);
     
     const { data: benefit, isLoading, error } = useDocOnce(benefitRef);
@@ -254,7 +254,7 @@ export default function BenefitDetailPage() {
                                     </Button>
                                 )}
                                 
-                                <RedeemPerkDialog perk={serializableBenefit}>
+                                <RedeemBenefitDialog benefit={serializableBenefit}>
                                     <Button 
                                         className="w-full h-16 rounded-[1.5rem] font-black uppercase tracking-[0.2em] text-base shadow-xl transition-all hover:scale-[1.02] active:scale-95" 
                                         variant={serializableBenefit.linkedProductIds && serializableBenefit.linkedProductIds.length > 0 && linkedProducts && linkedProducts.length > 0 ? "outline" : "default"}
@@ -267,7 +267,7 @@ export default function BenefitDetailPage() {
                                             </span>
                                         )}
                                     </Button>
-                                </RedeemPerkDialog>
+                                </RedeemBenefitDialog>
                             </CardFooter>
                         </div>
                     </Card>

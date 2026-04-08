@@ -17,7 +17,7 @@ export default function OfflineWarmer() {
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(
-      collection(firestore, 'perks'),
+      collection(firestore, 'benefits'),
       where('isVisible', '==', true),
       limit(50) // Cache a reasonable amount of benefits
     );

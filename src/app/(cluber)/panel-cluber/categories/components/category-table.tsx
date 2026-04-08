@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import DeleteConfirmationDialog from '@/components/admin/delete-confirmation-dialog';
 import { createConverter } from '@/lib/firestore-converter';
 
-export function CategoryTable({ type = 'perks' }: { type?: 'perks' | 'delivery' }) {
+export function CategoryTable({ type = 'benefits' }: { type?: 'benefits' | 'delivery' }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -30,7 +30,7 @@ export function CategoryTable({ type = 'perks' }: { type?: 'perks' | 'delivery' 
     const categories = useMemo(() => {
         if (!rawCategories) return [];
         return [...rawCategories]
-            .filter(c => (c.type || 'perks') === type)
+            .filter(c => (c.type || 'benefits') === type)
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }, [rawCategories, type]);
     const [isReorderDialogOpen, setIsReorderDialogOpen] = useState(false);

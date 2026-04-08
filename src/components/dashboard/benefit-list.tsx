@@ -34,7 +34,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const benefitsQuery = useMemo(() => {
     if (!firestore) return null;
-    let q = query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()));
+    let q = query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()));
     if (!isAdmin) {
       q = query(q, where('supplierId', '==', user.uid));
     }
@@ -69,7 +69,7 @@ export default function BenefitList({ user }: BenefitListProps) {
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!benefitIdToDelete) return;
-    const benefitRef = doc(firestore, 'perks', benefitIdToDelete);
+    const benefitRef = doc(firestore, 'benefits', benefitIdToDelete);
     try {
       await deleteDoc(benefitRef);
       toast({ title: 'Beneficio eliminado', description: 'El beneficio ha sido eliminado con éxito.' });

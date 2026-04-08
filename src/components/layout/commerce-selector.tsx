@@ -55,11 +55,11 @@ export function CommerceSelector() {
                         <ChevronsUpDown className="h-3 w-3 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[280px] p-0 glass glass-dark border-primary/20 rounded-2xl overflow-hidden shadow-2xl" align="start">
+                <PopoverContent className="w-[280px] p-0 bg-popover border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-2xl" align="start">
                     <Command className="bg-transparent">
-                        <div className="flex items-center border-b border-white/10 px-3">
+                        <div className="flex items-center border-b border-black/5 dark:border-white/10 px-3">
                             <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-                            <CommandInput placeholder="Buscar comercio..." className="h-12 bg-transparent text-xs font-bold" />
+                            <CommandInput placeholder="Buscar comercio..." className="h-12 bg-transparent text-xs font-bold text-foreground" />
                         </div>
                         <CommandList className="max-h-[300px] scrollbar-premium">
                             <CommandEmpty className="py-6 text-center text-xs font-medium text-foreground italic">
@@ -90,14 +90,14 @@ export function CommerceSelector() {
                                             setOpen(false);
                                         }}
                                     >
-                                        <div className="w-6 h-6 rounded-md overflow-hidden bg-background flex items-center justify-center border border-white/10">
+                                        <div className="w-6 h-6 rounded-md overflow-hidden bg-background flex items-center justify-center border border-black/5 dark:border-white/10">
                                             {supplier.logoUrl ? (
                                                 <img src={supplier.logoUrl} alt={supplier.name} className="w-full h-full object-cover" />
                                             ) : (
                                                 <Store className="h-3 w-3 opacity-20" />
                                             )}
                                         </div>
-                                        <span className="truncate">{supplier.name}</span>
+                                        <span className="truncate text-foreground">{supplier.name}</span>
                                         {impersonatedSupplierId === supplier.id && (
                                             <Check className="ml-auto h-4 w-4 text-primary" />
                                         )}

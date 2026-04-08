@@ -13,17 +13,41 @@ import {
     ArrowRight,
     TrendingUp,
     Megaphone,
-    Zap
+    Zap,
+    Wrench,
+    Loader2,
+    Ticket
 } from 'lucide-react';
-import { useUser } from '@/firebase';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useUser, useFirestore } from '@/firebase';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { KPIWidgets } from '@/components/admin/kpi-widgets';
+import { seedBenefits } from '@/lib/seed-benefits';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminControlCentralPage() {
+    const firestore = useFirestore();
+    const { userData, user } = useUser();
+    const { toast } = useToast();
+    const [isSeeding, setIsSeeding] = React.useState(false);
+
+    const handleSeed = async () => {
+        if (!firestore || !user) return;
+        setIsSeeding(true);
+        try {
+            await seedBenefits(firestore, user.uid, userData?.firstName || 'Admin');
+            toast({ title: "✅ Éxito", description: "Datos de demo sembrados en Leandro N. Alem." });
+        } catch (error) {
+            toast({ variant: "destructive", title: "❌ Error", description: "Ocurrió un fallo al sembrar datos." });
+        } finally {
+            setIsSeeding(false);
+        }
+    };
+
     return (
-        <div className="space-y-12 animate-in fade-in duration-1000">
+        <div className="space-y-8 animate-in fade-in duration-1000">
             {/* Top Branding & Welcome */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div className="space-y-2">
@@ -33,7 +57,7 @@ export default function AdminControlCentralPage() {
                         </Badge>
                         <div className="h-1 w-8 bg-primary/20 rounded-full" />
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-none font-montserrat">
+                    <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter italic leading-none font-montserrat">
                         PANEL <span className="text-primary italic">ADMIN</span>
                     </h1>
                     <p className="text-[10px] font-black opacity-40 uppercase tracking-[0.4em] ml-1">
@@ -42,24 +66,17 @@ export default function AdminControlCentralPage() {
                 </div>
             </div>
 
-            {/* Real-Time Pulse: KPIs */}
-            <div className="space-y-6">
-                <div className="flex items-center gap-4 px-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">Métricas de Impacto</h2>
-                </div>
-                <KPIWidgets />
-            </div>
+            <KPIWidgets />
 
             {/* THE COMMAND GRID: Module Access */}
-            <div className="space-y-8">
-                <div className="flex items-center gap-6 px-2">
+            <div className="space-y-6">
+                <div className="flex items-center gap-4 px-2">
                     <Layers className="h-4 w-4 text-primary" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground">Módulos de Gestión</h2>
-                    <div className="h-[1px] flex-1 bg-white/5" />
+                    <div className="h-[1px] flex-1 bg-black/5" />
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     <AdminModule
                         title="Comercios"
                         desc="Control total de locales, feature toggles y métricas de venta por sede."
@@ -114,6 +131,14 @@ export default function AdminControlCentralPage() {
                         accent="purple"
                     />
 
+                    <AdminModule
+                        title="Cupones"
+                        desc="Sistema de descuentos, cupones de un solo uso y límites globales."
+                        icon={Ticket}
+                        href="/admin/coupons"
+                        items={["ALEM3D Engine", "Single-Use", "Usage Limits"]}
+                        accent="orange"
+                    />
                 </div>
             </div>
         </div>
@@ -133,8 +158,8 @@ function AdminModule({ title, desc, icon: Icon, href, items, accent, ...props }:
     const colorClass = accentColors[accent as keyof typeof accentColors] || accentColors.primary;
 
     const Content = (
-        <Card className={cn("rounded-[2.5rem] p-1 group transition-all duration-500 overflow-hidden border-white/5 bg-card/30 hover:bg-card/50 shadow-premium relative", colorClass)}>
-            <CardContent className="p-8 space-y-6 relative z-10">
+        <Card className={cn("rounded-3xl p-1 group transition-all duration-500 overflow-hidden border-black/5 bg-card/30 hover:bg-card/50 shadow-sm relative", colorClass)}>
+            <CardContent className="p-6 space-y-4 relative z-10">
                 <div className="flex justify-between items-start">
                     <div className="h-14 w-14 rounded-2xl bg-background/50 flex items-center justify-center border border-white/5 group-hover:scale-110 transition-transform duration-500 shadow-inner">
                         <Icon className="h-7 w-7" />

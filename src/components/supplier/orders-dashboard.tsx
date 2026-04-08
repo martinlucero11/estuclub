@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useAdmin } from '@/context/admin-context';
 import { collection, query, where, orderBy, limit, doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
@@ -17,7 +17,9 @@ import {
     Phone,
     ShoppingBag,
     Navigation,
-    ChevronDown
+    ChevronDown,
+    Bell,
+    BellOff
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -57,16 +59,19 @@ const statusConfig = {
 
 export default function OrdersDashboard({ supplierId: propSupplierId }: { supplierId?: string }) {
     const firestore = useFirestore();
-    const { user, supplierData: ownSupplierData, roles } = useUser();
+    const { user, supplierData: ownSupplierData } = useUser();
     const { impersonatedSupplierData } = useAdmin();
     const { toast } = useToast();
+    
+    // Core Layout State
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<string>('orders');
 
-    // Determine the active supplier context
+    // Context Resolution
     const supplierId = propSupplierId || user?.uid;
     const supplierData = propSupplierId && propSupplierId !== user?.uid ? impersonatedSupplierData : ownSupplierData;
 
+    // Data Fetching
     const ordersQuery = useMemo(() => {
         if (!firestore || !supplierId) return null;
         return query(
@@ -78,6 +83,65 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
     }, [firestore, supplierId]);
 
     const { data: orders, isLoading } = useCollection(ordersQuery);
+
+    // Audio Alert System
+    const [isAudioEnabled, setIsAudioEnabled] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // Initial audio container setup
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2858/2858-preview.mp3');
+            audio.loop = true;
+            audioRef.current = audio;
+        }
+        
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current = null;
+            }
+        };
+    }, []);
+
+    // Recursive Alert Loop Logic
+    useEffect(() => {
+        if (!audioRef.current || !isAudioEnabled) {
+            if (audioRef.current) audioRef.current.pause();
+            return;
+        }
+
+        const pendingOrdersCount = orders?.filter(o => o.status === 'pending').length || 0;
+        
+        if (pendingOrdersCount > 0) {
+            audioRef.current.play().catch(e => console.error("Audio playback error:", e));
+        } else {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    }, [orders, isAudioEnabled]);
+
+    const handleToggleAudio = () => {
+        haptic.vibrateSubtle();
+        const newState = !isAudioEnabled;
+        setIsAudioEnabled(newState);
+        
+        // Browsers require a user interaction to unlock audio content
+        if (newState && audioRef.current) {
+            const pendingOrdersCount = orders?.filter(o => o.status === 'pending').length || 0;
+            audioRef.current.play()
+                .then(() => {
+                    if (pendingOrdersCount === 0) {
+                        audioRef.current?.pause();
+                        audioRef.current!.currentTime = 0;
+                    }
+                    toast({ title: "Alertas Activas", description: "Sonará un timbre mientras tengas pedidos pendientes." });
+                })
+                .catch(e => console.error("Initial audio unlock failed:", e));
+        } else {
+            toast({ title: "Alertas Desactivadas", description: "Ya no recibirás avisos sonoros." });
+        }
+    };
 
     const filteredOrders = useMemo(() => {
         if (!orders) return [];
@@ -219,6 +283,23 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                         onCheckedChange={handleTogglePause}
                         className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500"
                     />
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleToggleAudio}
+                        className={cn(
+                            "rounded-2xl h-11 px-6 font-black uppercase tracking-widest text-[10px] gap-2 transition-all active:scale-95 border-2 shadow-sm",
+                            isAudioEnabled 
+                                ? "bg-primary/5 border-primary/20 text-primary shadow-primary/10" 
+                                : "bg-background border-border text-foreground/40"
+                        )}
+                    >
+                        {isAudioEnabled ? <Bell className="h-4 w-4 animate-bounce" /> : <BellOff className="h-4 w-4" />}
+                        {isAudioEnabled ? "Alertas Activas" : "Activar Sonido"}
+                    </Button>
                 </div>
             </Card>
 

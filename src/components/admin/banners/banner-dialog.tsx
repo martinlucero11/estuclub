@@ -31,7 +31,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Image as ImageIcon, Link as LinkIcon, Save, Plus } from 'lucide-react';
-import type { Banner } from '@/types/data';
+import type { Announcement } from '@/types/data';
 
 const bannerSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres.'),
@@ -42,21 +42,21 @@ const bannerSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-type BannerFormValues = z.infer<typeof bannerSchema>;
+type AnnouncementFormValues = z.infer<typeof bannerSchema>;
 
-interface BannerDialogProps {
+interface AnnouncementDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  banner?: Banner | null;
+  banner?: Announcement | null;
 }
 
-export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps) {
+export function AnnouncementDialog({ isOpen, onOpenChange, banner }: AnnouncementDialogProps) {
   const isEditing = !!banner;
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<BannerFormValues>({
+  const form = useForm<AnnouncementFormValues>({
     resolver: zodResolver(bannerSchema),
     defaultValues: {
       title: banner?.title || '',
@@ -82,23 +82,23 @@ export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps
     }
   });
 
-  const onSubmit = async (values: BannerFormValues) => {
+  const onSubmit = async (values: AnnouncementFormValues) => {
     setIsSubmitting(true);
     try {
       if (isEditing && banner) {
-        const bannerRef = doc(firestore, 'banners', banner.id);
+        const bannerRef = doc(firestore, 'announcements', banner.id);
         await updateDoc(bannerRef, {
           ...values,
           updatedAt: serverTimestamp(),
         });
-        toast({ title: 'Banner actualizado', description: 'Los cambios se han guardado.' });
+        toast({ title: 'Announcement actualizado', description: 'Los cambios se han guardado.' });
       } else {
-        const bannersRef = collection(firestore, 'banners');
+        const bannersRef = collection(firestore, 'announcements');
         await addDoc(bannersRef, {
           ...values,
           createdAt: serverTimestamp(),
         });
-        toast({ title: 'Banner creado', description: 'El nuevo banner está listo.' });
+        toast({ title: 'Announcement creado', description: 'El nuevo banner está listo.' });
       }
       onOpenChange(false);
     } catch (error) {
@@ -118,7 +118,7 @@ export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps
       <DialogContent className="sm:max-w-[500px] rounded-[2rem] border-white/10 shadow-3xl bg-card/95 backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle className="text-3xl font-black italic tracking-tighter uppercase font-montserrat">
-            {isEditing ? 'Editar' : 'Nuevo'} <span className="text-primary italic">Banner</span>
+            {isEditing ? 'Editar' : 'Nuevo'} <span className="text-primary italic">Announcement</span>
           </DialogTitle>
           <DialogDescription className="text-[10px] font-black uppercase tracking-widest opacity-40">
             {isEditing ? 'Modifica los detalles del elemento visual.' : 'Configura una nueva pieza publicitaria para el home.'}
@@ -223,7 +223,7 @@ export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps
                 {isSubmitting ? 'Guardando...' : (
                     <>
                         {isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                        {isEditing ? 'Guardar Cambios' : 'Crear Banner'}
+                        {isEditing ? 'Guardar Cambios' : 'Crear Announcement'}
                     </>
                 )}
               </Button>

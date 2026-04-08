@@ -173,7 +173,7 @@ export default function SeedPage() {
     ];
 
     perks.forEach((p) => {
-      const ref = doc(firestore, 'perks', p.id);
+      const ref = doc(firestore, 'benefits', p.id);
       batch.set(ref, p, { merge: true });
     });
 

@@ -20,7 +20,7 @@ import {
   collection, query, orderBy, doc, updateDoc, deleteDoc, 
   serverTimestamp, collectionGroup, addDoc 
 } from 'firebase/firestore';
-import { Benefit, Announcement, Banner, Service, Product, Category, HomeSection } from '@/types/data';
+import { Benefit, Announcement, Service, Product, Category, HomeSection, Banner } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { cn } from '@/lib/utils';
 import { 
@@ -32,7 +32,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { HomeSectionTable } from '@/components/admin/home-sections/home-section-table';
 import BenefitAdminList from '@/components/admin/benefit-admin-list';
-import { BannerTable } from '@/components/admin/banners/banner-table';
 import { CategoryTable } from '@/components/admin/categories/category-table';
 import { AnnouncementTable } from '@/components/admin/announcements/announcement-table';
 
@@ -41,19 +40,15 @@ export default function AdminCMSPage() {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [search, setSearch] = useState('');
-    const [activeTab, setActiveTab] = useState('banners');
+    const [activeTab, setActiveTab] = useState('announcements');
     
     // --- DATA FETCHING ---
     const benefitsQuery = useMemo(() => 
-        query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc')), 
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc')), 
     [firestore]);
     
     const announcementsQuery = useMemo(() => 
         query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>()), orderBy('createdAt', 'desc')), 
-    [firestore]);
-
-    const bannersQuery = useMemo(() => 
-        query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc')), 
     [firestore]);
 
     const servicesQuery = useMemo(() => 
@@ -63,12 +58,16 @@ export default function AdminCMSPage() {
     const productsQuery = useMemo(() => 
         query(collectionGroup(firestore, 'products').withConverter(createConverter<Product>()), orderBy('name', 'asc')),
     [firestore]);
+
+    const bannersManagerQuery = useMemo(() => 
+        query(collection(firestore, 'banners').withConverter(createConverter<Banner>()), orderBy('createdAt', 'desc')),
+    [firestore]);
     
     const { data: benefits, isLoading: loadingBenefits } = useCollection(benefitsQuery);
     const { data: announcements, isLoading: loadingAnnouncements } = useCollection(announcementsQuery);
-    const { data: banners, isLoading: loadingBanners } = useCollection(bannersQuery);
     const { data: services, isLoading: loadingServices } = useCollection(servicesQuery);
     const { data: products, isLoading: loadingProducts } = useCollection(productsQuery);
+    const { data: banners, isLoading: loadingBanners } = useCollection(bannersManagerQuery);
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<any>(null);
@@ -83,12 +82,9 @@ export default function AdminCMSPage() {
             let ref;
             let updateField = 'isVisible';
             
-            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            if (type === 'perk') ref = doc(firestore, 'benefits', item.id);
             else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
-            else if (type === 'banner') {
-                ref = doc(firestore, 'banners', item.id);
-                updateField = 'isActive';
-            }
+            else if (type === 'banner') ref = doc(firestore, 'banners', item.id);
             else if (type === 'service') {
                 ref = doc(firestore, 'roles_supplier', item.supplierId, 'services', item.id);
                 updateField = 'isActive';
@@ -113,7 +109,7 @@ export default function AdminCMSPage() {
         if (!confirm("¿Estás seguro de eliminar este contenido permanentemente?")) return;
         try {
             let ref;
-            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            if (type === 'perk') ref = doc(firestore, 'benefits', item.id);
             else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
             else if (type === 'banner') ref = doc(firestore, 'banners', item.id);
             else if (type === 'service') ref = doc(firestore, 'roles_supplier', item.supplierId, 'services', item.id);
@@ -140,7 +136,7 @@ export default function AdminCMSPage() {
         let pathParts: string[] = [];
 
         if (activeTab === 'benefits') {
-            type = 'perks';
+            type = 'benefits';
             data.title = formData.get('title');
             data.description = formData.get('description');
             data.category = formData.get('category');
@@ -156,10 +152,9 @@ export default function AdminCMSPage() {
         } else if (activeTab === 'banners') {
             type = 'banners';
             data.title = formData.get('title');
-            data.description = formData.get('description');
             data.imageUrl = formData.get('imageUrl');
-            data.link = formData.get('link');
-            data.colorScheme = formData.get('colorScheme') || 'pink';
+            data.linkUrl = formData.get('linkUrl');
+            data.isActive = true;
         } else if (activeTab === 'services') {
             data.name = formData.get('title');
             data.description = formData.get('description');
@@ -209,31 +204,31 @@ export default function AdminCMSPage() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-inner">
-                            <Megaphone className="h-6 w-6 text-orange-500" />
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-inner">
+                            <Megaphone className="h-6 w-6 text-primary" />
                         </div>
-                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.3em] border-white/5 opacity-40">Marketing HQ</Badge>
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-[0.3em] border-black/5 dark:border-white/5 opacity-40">Marketing HQ</Badge>
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-tight font-montserrat">
-                        Admin <span className="text-orange-500 italic">CMS</span>
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-tight font-montserrat text-foreground">
+                        Admin <span className="text-primary italic">CMS</span>
                     </h1>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 ml-1 italic">Gestión de Experiencia Global • v3.0</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-40 ml-1 italic text-foreground/60">Gestión de Experiencia Global • v3.0</p>
                 </div>
                 
                 <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                     <div className="relative w-full md:w-64 group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30 group-focus-within:text-orange-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/30 group-focus-within:text-primary transition-colors" />
                         <Input 
                             placeholder="Filtrar contenido..." 
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="h-12 pl-12 rounded-xl bg-card/30 border-white/5 focus:bg-card/50 text-white font-bold transition-all text-xs"
+                            className="h-12 pl-12 rounded-xl bg-card/30 border-black/5 dark:border-white/5 focus:bg-card/50 text-foreground font-bold transition-all text-xs"
                         />
                     </div>
-                    {['banners', 'perks', 'announcements'].includes(activeTab) && (
+                    {['announcements', 'benefits', 'banners'].includes(activeTab) && (
                         <Button 
                             onClick={() => { setEditingItem(null); setIsEditorOpen(true); }}
-                            className="rounded-2xl h-14 bg-orange-500 text-white font-black uppercase text-[10px] tracking-widest px-8 shadow-xl hover:shadow-orange-500/20 transition-all w-full md:w-auto"
+                            className="rounded-2xl h-14 bg-primary text-white font-black uppercase text-[10px] tracking-widest px-8 shadow-xl hover:shadow-primary/20 transition-all w-full md:w-auto"
                         >
                             <Plus className="mr-2 h-4 w-4" /> Nuevo Item
                         </Button>
@@ -242,18 +237,18 @@ export default function AdminCMSPage() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                <TabsList className="bg-card/30 border border-white/5 p-1.5 rounded-2xl w-full h-auto flex flex-wrap gap-1.5 shadow-inner backdrop-blur-xl">
-                    <TabsTrigger value="banners" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Banners</TabsTrigger>
-                    <TabsTrigger value="categories" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Categorías</TabsTrigger>
-                    <TabsTrigger value="benefits" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Beneficios</TabsTrigger>
-                    <TabsTrigger value="announcements" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Anuncios</TabsTrigger>
-                    <TabsTrigger value="services" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Servicios</TabsTrigger>
-                    <TabsTrigger value="products" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Productos</TabsTrigger>
+                <TabsList className="bg-card/30 border border-black/10 dark:border-white/5 p-1.5 rounded-2xl w-full h-auto flex flex-wrap gap-1.5 shadow-inner backdrop-blur-xl">
+                    <TabsTrigger value="announcements" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Anuncios</TabsTrigger>
+                    <TabsTrigger value="banners" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Banners</TabsTrigger>
+                    <TabsTrigger value="categories" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Categorías</TabsTrigger>
+                    <TabsTrigger value="benefits" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Beneficios</TabsTrigger>
+                    <TabsTrigger value="services" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Servicios</TabsTrigger>
+                    <TabsTrigger value="products" className="flex-1 min-w-[120px] rounded-xl font-black uppercase text-[9px] tracking-widest py-3.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Productos</TabsTrigger>
                 </TabsList>
 
-                {/* Banners & Home Config */}
-                <TabsContent value="banners" className="space-y-12 animate-in fade-in duration-700">
-                    <BannerTable search={search} />
+                {/* Announcements & Home Config */}
+                <TabsContent value="announcements" className="space-y-12 animate-in fade-in duration-700">
+                    <AnnouncementTable search={search} />
                     
                     <div className="bg-card/30 border border-white/5 rounded-[3rem] p-8 md:p-12 shadow-premium overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-8 opacity-[0.02] pointer-events-none">
@@ -268,22 +263,60 @@ export default function AdminCMSPage() {
                             <Tabs defaultValue="delivery" className="w-full lg:w-auto">
                                 <TabsList className="bg-background/50 border border-white/5 p-1.5 rounded-[1.5rem] h-14 w-full lg:w-[400px] shadow-inner backdrop-blur-md">
                                     <TabsTrigger value="delivery" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Delivery Home</TabsTrigger>
-                                    <TabsTrigger value="perks" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Benefits Home</TabsTrigger>
+                                    <TabsTrigger value="benefits" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.2em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Benefits Home</TabsTrigger>
                                 </TabsList>
                                 
                                 <TabsContent value="delivery" className="mt-8 focus-visible:outline-none animate-in slide-in-from-right-4 duration-500">
                                     <HomeSectionTable targetBoard="delivery" />
                                 </TabsContent>
-                                <TabsContent value="perks" className="mt-8 focus-visible:outline-none animate-in slide-in-from-right-4 duration-500">
-                                    <HomeSectionTable targetBoard="perks" />
+                                <TabsContent value="benefits" className="mt-8 focus-visible:outline-none animate-in slide-in-from-right-4 duration-500">
+                                    <HomeSectionTable targetBoard="benefits" />
                                 </TabsContent>
                             </Tabs>
                         </div>
                     </div>
                 </TabsContent>
 
+                <TabsContent value="banners" className="space-y-8 animate-in fade-in duration-700">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {loadingBanners ? [1,2,3].map(i => <div key={i} className="h-48 rounded-[2rem] bg-card/30 animate-pulse" />) : 
+                            banners?.filter(b => b.title?.toLowerCase().includes(search.toLowerCase())).map(banner => (
+                                <ContentCard 
+                                    key={banner.id}
+                                    title={banner.title || 'Banner de Publicidad'}
+                                    subtitle={banner.linkUrl || 'Sin enlace'}
+                                    image={banner.imageUrl}
+                                    isVisible={true}
+                                    stats="Publicidad"
+                                    type="banner"
+                                    onToggle={() => {}}
+                                    onDelete={() => handleDelete(banner, 'banner')}
+                                    onEdit={() => { setEditingItem(banner); setIsEditorOpen(true); }}
+                                    owner="Publicidad"
+                                />
+                            ))
+                        }
+                    </div>
+                </TabsContent>
+
                 <TabsContent value="categories" className="animate-in fade-in duration-700">
-                    <CategoryTable search={search} />
+                    <Tabs defaultValue="benefits" className="space-y-8">
+                        <TabsList className="bg-background/50 border border-white/5 p-1.5 rounded-2xl h-14 w-full md:w-[600px] shadow-inner backdrop-blur-md">
+                            <TabsTrigger value="benefits" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-primary data-[state=active]:text-white transition-all">Benefits Home</TabsTrigger>
+                            <TabsTrigger value="delivery" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all">Delivery Home</TabsTrigger>
+                            <TabsTrigger value="turns" className="flex-1 rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-all">Turns Home</TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="benefits" className="focus-visible:outline-none animate-in slide-in-from-left-4 duration-500">
+                            <CategoryTable type="benefits" search={search} />
+                        </TabsContent>
+                        <TabsContent value="delivery" className="focus-visible:outline-none animate-in slide-in-from-left-4 duration-500">
+                            <CategoryTable type="delivery" search={search} />
+                        </TabsContent>
+                        <TabsContent value="turns" className="focus-visible:outline-none animate-in slide-in-from-left-4 duration-500">
+                            <CategoryTable type="turns" search={search} />
+                        </TabsContent>
+                    </Tabs>
                 </TabsContent>
 
                 <TabsContent value="benefits" className="space-y-8 animate-in fade-in duration-700">
@@ -307,10 +340,6 @@ export default function AdminCMSPage() {
                             ))
                         }
                     </div>
-                </TabsContent>
-
-                <TabsContent value="announcements" className="animate-in fade-in duration-700">
-                    <AnnouncementTable search={search} />
                 </TabsContent>
 
                 <TabsContent value="services" className="space-y-8 animate-in fade-in duration-700">
@@ -426,15 +455,23 @@ export default function AdminCMSPage() {
                             <Label className="text-[10px] font-black uppercase tracking-widest text-white/40 px-2">Descripción / Contenido</Label>
                             <Textarea 
                                 name={activeTab === 'announcements' ? 'content' : 'description'} 
-                                defaultValue={activeTab === 'announcements' ? editingItem?.content : (editingItem?.description || '')} 
+                                defaultValue={activeTab === 'announcements' ? (editingItem?.content || editingItem?.description || '') : (editingItem?.description || '')} 
                                 required 
                                 className="min-h-[120px] bg-white/5 border-white/10 rounded-2xl focus:border-orange-500/50 transition-all" 
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-white/40 px-2">URL Imagen</Label>
-                            <Input name="imageUrl" defaultValue={editingItem?.imageUrl} required className="h-14 bg-white/5 border-white/10 rounded-2xl" />
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-white/40 px-2">URL Imagen</Label>
+                                <Input name="imageUrl" defaultValue={editingItem?.imageUrl} required className="h-14 bg-white/5 border-white/10 rounded-2xl" />
+                            </div>
+                            {activeTab === 'announcements' && (
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-white/40 px-2">URL Enlace (Link)</Label>
+                                    <Input name="linkUrl" defaultValue={editingItem?.linkUrl || editingItem?.link || ''} className="h-14 bg-white/5 border-white/10 rounded-2xl" />
+                                </div>
+                            )}
                         </div>
 
                         <DialogFooter className="pt-6">

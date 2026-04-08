@@ -71,7 +71,7 @@ export const getCategoryColumns = (
                 "font-black uppercase text-[10px] tracking-widest",
                 type === 'delivery' ? "border-primary text-primary bg-primary/5" : "border-blue-500 text-blue-500 bg-blue-500/5"
             )}>
-                {type === 'delivery' ? 'Delivery' : 'perks'}
+                {type === 'delivery' ? 'Delivery' : 'benefits'}
             </Badge>
         );
     }

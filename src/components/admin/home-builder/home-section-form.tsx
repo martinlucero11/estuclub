@@ -11,8 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc, query, collectionGroup } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
-import { Save, Search, Layout, Database, Settings2, Eye, MessageSquare, Plus } from 'lucide-react';
-import { HomeSection, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, Announcement, HomeSectionBlock, Product, Service } from '@/types/data';
+import { Save, Search, Layout, Database, Settings2, Eye, MessageSquare, Plus, Megaphone } from 'lucide-react';
+import { HomeSection, Announcement, Banner, Benefit, SupplierProfile, benefitCategories, deliveryCategories, cluberCategories, WhereFilter, HomeSectionBlock, Product, Service } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { createConverter } from '@/lib/firestore-converter';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,11 +25,11 @@ import { cn } from '@/lib/utils';
 const formSchema = z.object({
   title: z.string().optional(),
   isActive: z.boolean().default(true),
-  targetBoard: z.enum(['perks', 'delivery', 'turns']).default('perks'),
+  targetBoard: z.enum(['benefits', 'delivery', 'turns']).default('benefits'),
   
-  contentType: z.enum(["perks", "suppliers", "announcements", "banners", "categories", "banner", "message", "benefits_nearby", "suppliers_nearby", "delivery_suppliers", "delivery_products", "delivery_promos", "productexmplsupplier", "minisuppliers", "supplierpromo", "professionals", "services", "products"]),
+  contentType: z.enum(["benefits", "suppliers", "announcements", "announcements", "categories", "banner", "message", "benefits_nearby", "suppliers_nearby", "delivery_suppliers", "delivery_products", "delivery_promos", "productexmplsupplier", "minisuppliers", "supplierpromo", "professionals", "services", "products"]),
 
-  layout_kind: z.enum(["carousel", "grid"]),
+  layout_kind: z.enum(["carousel", "grid", "single"]),
   layout_gridPreset: z.enum(["1x4", "1x5", "2x4", "2x5"]).optional(),
 
   data_source_mode: z.enum(["auto", "manual"]),
@@ -50,7 +50,7 @@ const formSchema = z.object({
   message_imageUrl: z.string().optional(),
   message_alignment: z.enum(["left", "center"]).default("left"),
 }).refine(data => {
-    if (data.contentType === 'banner') {
+    if (data.contentType === 'banner' && data.layout_kind === 'single') {
         return !!data.manual_bannerId;
     }
     return true;
@@ -65,7 +65,7 @@ type FormValues = z.infer<typeof formSchema>;
 interface HomeSectionFormProps {
     section?: HomeSection | null;
     onSuccess: () => void;
-    defaultBoard: 'perks' | 'delivery' | 'turns';
+    defaultBoard: 'benefits' | 'delivery' | 'turns';
 }
 
 export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectionFormProps) {
@@ -75,14 +75,14 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     const isEditMode = !!section;
     
     // Data fetching for manual selection
-    const bannersQuery = useMemo(() => firestore ? query(collection(firestore, 'banners').withConverter(createConverter<Banner>())) : null, [firestore]);
-    const { data: banners } = useCollection(bannersQuery);
-
-    const benefitsQuery = useMemo(() => firestore ? query(collection(firestore, 'perks').withConverter(createConverter<Benefit>())) : null, [firestore]);
+    const benefitsQuery = useMemo(() => firestore ? query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())) : null, [firestore]);
     const { data: benefits } = useCollection(benefitsQuery);
 
     const suppliersQuery = useMemo(() => firestore ? query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>())) : null, [firestore]);
     const { data: suppliers } = useCollection(suppliersQuery);
+
+    const bannersQuery = useMemo(() => firestore ? query(collection(firestore, 'banners').withConverter(createConverter<Banner>())) : null, [firestore]);
+    const { data: banners } = useCollection(bannersQuery);
 
     const announcementsQuery = useMemo(() => firestore ? query(collection(firestore, 'announcements').withConverter(createConverter<Announcement>())) : null, [firestore]);
     const { data: announcements } = useCollection(announcementsQuery);
@@ -100,7 +100,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                 title: '',
                 isActive: true,
                 targetBoard: defaultBoard,
-                contentType: (defaultBoard === 'delivery' ? 'delivery_suppliers' : 'perks') as any,
+                contentType: (defaultBoard === 'delivery' ? 'delivery_suppliers' : 'benefits') as any,
                 layout_kind: 'carousel' as const,
                 data_source_mode: 'auto' as const,
                 query_isFeatured: false,
@@ -196,10 +196,10 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
     
     const selectableItems = useMemo(() => {
         let items: { id: string; name: string }[] = [];
-        if (watchContentType === 'perks' && benefits) items = benefits.map(b => ({ id: b.id, name: b.title }));
+        if (watchContentType === 'benefits' && benefits) items = benefits.map(b => ({ id: b.id, name: b.title }));
         if ((watchContentType === 'suppliers' || watchContentType === 'minisuppliers' || watchContentType === 'supplierpromo' || watchContentType === 'delivery_suppliers' || watchContentType === 'professionals') && suppliers) items = suppliers.map(s => ({ id: s.id, name: s.name }));
-        if (watchContentType === 'announcements' && announcements) items = announcements.map(a => ({ id: a.id, name: a.title }));
-        if (watchContentType === 'banners' && banners) items = banners.map(b => ({ id: b.id, name: b.title || `Banner sin título (${b.id.substring(0,5)})` }));
+        if (watchContentType === 'announcements' && announcements) items = announcements.map(a => ({ id: a.id, name: a.title || `Anuncio sin título (${a.id.substring(0,5)})` }));
+        if (watchContentType === 'banner' && banners) items = banners.map(b => ({ id: b.id, name: b.title || `Banner sin título (${b.id.substring(0,5)})` }));
         if ((watchContentType === 'delivery_products' || watchContentType === 'delivery_promos' || watchContentType === 'productexmplsupplier' || watchContentType === 'products') && products) items = products.map(p => ({ id: p.id, name: p.name }));
         if (watchContentType === 'services' && services) items = services.map(s => ({ id: s.id, name: s.name }));
         
@@ -222,11 +222,14 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
 
             switch (values.contentType) {
                 case 'banner':
-                    finalBlock = {
-                        kind: 'banner',
-                        bannerId: values.manual_bannerId!,
-                    };
-                    break;
+                    if (values.layout_kind === 'single') {
+                        finalBlock = {
+                            kind: 'banner',
+                            bannerId: values.manual_bannerId!,
+                        };
+                        break;
+                    }
+                    // If not single, fall through to default for carousel/grid
                 case 'categories':
                     finalBlock = {
                         kind: 'categories',
@@ -264,7 +267,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                     };
                     
                     if (values.query_isVisible) {
-                        const visibilityField = (values.contentType === 'banners' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers' || values.contentType === 'supplierpromo' || values.contentType === 'products' || values.contentType === 'services') ? 'isActive' : 'isVisible';
+                        const visibilityField = (values.contentType === 'announcements' || values.contentType === 'delivery_products' || values.contentType === 'delivery_promos' || values.contentType === 'productexmplsupplier' || values.contentType === 'minisuppliers' || values.contentType === 'supplierpromo' || values.contentType === 'products' || values.contentType === 'services') ? 'isActive' : 'isVisible';
                         queryObj.filters.push({ field: visibilityField, op: '==', value: true });
                     }
 
@@ -322,7 +325,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
             setIsSubmitting(false);
         }
     }
-    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'banner' || watchContentType === 'message' || watchContentType === 'benefits_nearby' || watchContentType === 'suppliers_nearby';
+    const isSpecialKind = watchContentType === 'categories' || watchContentType === 'message' || watchContentType === 'benefits_nearby' || watchContentType === 'suppliers_nearby';
 
     return (
         <Form {...form}>
@@ -342,20 +345,19 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                             <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Título de la Sección</FormLabel><FormControl><Input {...field} className="rounded-xl h-12 bg-background/50 border-white/5" placeholder="Ej: Ofertas Destacadas" /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField control={form.control} name="targetBoard" render={({ field }) => (
-                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="perks">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem><SelectItem value="turns">Turnos (Profesionales)</SelectItem></SelectContent></Select></FormItem>
+                            <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Destino (Board)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5"><SelectItem value="benefits">Beneficios (Global)</SelectItem><SelectItem value="delivery">Delivery (Lite)</SelectItem><SelectItem value="turns">Turnos (Profesionales)</SelectItem></SelectContent></Select></FormItem>
                         )} />
                     </div>
                     <FormField control={form.control} name="contentType" render={({ field }) => (
                         <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Tipo de Contenido</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent className="rounded-xl border-white/5">
-                                <SelectItem value="perks">Beneficios</SelectItem>
+                                <SelectItem value="benefits">Beneficios</SelectItem>
                                 <SelectItem value="suppliers">Proveedores (Clubers)</SelectItem>
                                 <SelectItem value="delivery_suppliers">Delivery (Locales)</SelectItem>
                                 <SelectItem value="benefits_nearby">Beneficios Cercanos (GPS)</SelectItem>
                                 <SelectItem value="suppliers_nearby">Clubers Cercanos (GPS)</SelectItem>
-                                <SelectItem value="announcements">Anuncios</SelectItem>
-                                <SelectItem value="banners">Carrusel de Banners</SelectItem>
+                                <SelectItem value="announcements">Anuncios (Social / Feed)</SelectItem>
                                 <Separator className="my-1" />
                                 <SelectItem value="delivery_products">Delivery (Productos)</SelectItem>
                                 <SelectItem value="delivery_promos">Delivery (Promociones)</SelectItem>
@@ -364,7 +366,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                                 <SelectItem value="supplierpromo">Delivery (Destacado Grande)</SelectItem>
                                 <Separator className="my-1" />
                                 <SelectItem value="categories">Grilla de Categorías</SelectItem>
-                                <SelectItem value="banner">Banner Individual</SelectItem>
+                                <SelectItem value="banner">Banners Publicitarios (Imagen)</SelectItem>
                                 <SelectItem value="message">Mensaje Home (Configurable)</SelectItem>
                                 <Separator className="my-1" />
                                 <SelectItem value="professionals">Turnos (Profesionales)</SelectItem>
@@ -391,6 +393,9 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                                 <SelectContent className="rounded-xl border-white/5">
                                     <SelectItem value="carousel">Carrusel (Scroll Horizontal)</SelectItem>
                                     <SelectItem value="grid">Grilla (Estática)</SelectItem>
+                                    {watchContentType === 'banner' && (
+                                        <SelectItem value="single">Banner Individual (Estatico)</SelectItem>
+                                    )}
                                 </SelectContent>
                             </Select><FormMessage /></FormItem>
                         )} />
@@ -411,7 +416,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                 )}
 
                 {/* 3. Data Source */}
-                 {!isSpecialKind && (
+                 {(!isSpecialKind && watchLayoutKind !== 'single') && (
                      <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium">
                         <div className="space-y-1">
                             <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
@@ -444,7 +449,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                                      <FormField control={form.control} name="query_isVisible" render={({ field }) => (
                                         <FormItem className="flex items-center justify-between rounded-2xl border border-white/5 bg-background/30 p-4 shadow-inner">
                                             <div className="space-y-0.5">
-                                                <FormLabel className="text-[10px] font-black uppercase tracking-widest">{watchContentType === 'banners' ? 'Solo Activos' : 'Solo Visibles'}</FormLabel>
+                                                <FormLabel className="text-[10px] font-black uppercase tracking-widest">{watchContentType === 'announcements' ? 'Solo Activos' : 'Solo Visibles'}</FormLabel>
                                             </div>
                                             <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                                         </FormItem>
@@ -452,7 +457,7 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {watchContentType === 'perks' && <FormField control={form.control} name="query_category" render={({ field }) => (
+                                    {watchContentType === 'benefits' && <FormField control={form.control} name="query_category" render={({ field }) => (
                                         <FormItem><FormLabel className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-60">Categoría (Opcional)</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="rounded-xl h-12 bg-background/50 border-white/5"><SelectValue placeholder="Todas las categorías" /></SelectTrigger></FormControl><SelectContent className="rounded-xl border-white/5">{benefitCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></FormItem>
                                     )} />}
                                     {watchContentType === 'delivery_suppliers' && <FormField control={form.control} name="query_deliveryCategory" render={({ field }) => (
@@ -519,7 +524,69 @@ export function HomeSectionForm({ section, onSuccess, defaultBoard }: HomeSectio
                      </div>
                  )}
 
-                {/* 4. Special Kinds */}
+                 {/* 4. Choice for Single Banner Selection (Manual) */}
+                 {(watchContentType === 'banner' && watchLayoutKind === 'single') && (
+                    <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium border-orange-500/20 bg-orange-500/5">
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
+                                <Megaphone className="h-5 w-5 text-orange-500" />
+                                Configuración del Banner
+                            </h3>
+                            <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Selecciona una imagen de publicidad estática.</p>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="relative group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-500" />
+                                <Input 
+                                    placeholder="Buscar banner por título..." 
+                                    className="pl-12 h-14 rounded-2xl bg-background/50 border-white/10" 
+                                    value={searchTerm} 
+                                    onChange={e => setSearchTerm(e.target.value)} 
+                                />
+                            </div>
+
+                            <ScrollArea className="h-48 rounded-2xl border border-white/5 bg-black/20 p-4">
+                                <div className="grid grid-cols-1 gap-2">
+                                    {(banners || []).filter(b => !searchTerm || b.title?.toLowerCase().includes(searchTerm.toLowerCase())).map(b => (
+                                        <div 
+                                            key={b.id} 
+                                            onClick={() => form.setValue('manual_bannerId', b.id, { shouldDirty: true })}
+                                            className={cn(
+                                                "flex items-center gap-4 p-3 rounded-xl cursor-pointer transition-all border",
+                                                form.watch('manual_bannerId') === b.id 
+                                                    ? "bg-orange-500/10 border-orange-500/30 text-orange-500" 
+                                                    : "bg-white/5 border-transparent hover:bg-white/10"
+                                            )}
+                                        >
+                                            <div className="w-16 h-10 rounded-lg overflow-hidden border border-white/10 bg-slate-800">
+                                                <img src={b.imageUrl} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-[11px] font-black uppercase truncate">{b.title || 'Sin Título'}</p>
+                                                <p className="text-[9px] opacity-40 truncate">ID: {b.id}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </ScrollArea>
+                            
+                            {form.watch('manual_bannerId') && banners?.find(b => b.id === form.watch('manual_bannerId')) && (
+                                <div className="mt-4 p-4 rounded-2xl bg-black/40 border border-white/5 animate-in fade-in zoom-in-95">
+                                    <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-3">Previsualización de Imagen</p>
+                                    <div className="aspect-[21/9] w-full rounded-xl overflow-hidden border border-white/10">
+                                         <img 
+                                            src={banners.find(b => b.id === form.watch('manual_bannerId'))?.imageUrl} 
+                                            className="w-full h-full object-cover" 
+                                         />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                 {/* 5. Special Kinds */}
                 {watchContentType === 'message' && (
                     <div className="space-y-6 rounded-[2rem] border border-white/5 bg-card/30 p-8 shadow-premium border-primary/20 bg-primary/5">
                         <div className="space-y-1">

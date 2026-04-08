@@ -82,14 +82,12 @@ export function BottomNav() {
         ? { href: '/', label: 'Beneficios', icon: Ticket, highlight: true }
         : { href: '/delivery', label: 'Delivery', icon: ShoppingBag, highlight: true };
       
-      // Replace one of the items or add to it. Let's replace the "Categories/Search" (index 1) or "Profile" (index 4)
-      // Actually, let's keep it consistent: [Home, ContextSwitch, Cart, Special, Profile]
       navItems = [...navItems];
       navItems[1] = switchItem;
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-2xl pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.08)] border-t border-white/20">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-2xl pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.08)] border-t border-white/20">
       <div className="grid h-16 grid-cols-5 items-center">
         {navItems.map((item: any, index: number) => {
           const isActive = pathname === item.href;
@@ -103,7 +101,7 @@ export function BottomNav() {
                 <motion.div 
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.9 }}
-                  className="relative -top-6 flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-primary text-primary-foreground shadow-[0_15px_30px_-5px_rgba(203,70,90,0.4)] ring-4 ring-white z-10"
+                  className="relative -top-6 flex h-14 w-14 items-center justify-center rounded-[1.2rem] bg-primary text-primary-foreground shadow-[0_15px_30px_-5px_rgba(203,70,90,0.4)] ring-4 ring-white dark:ring-black z-10"
                 >
                   <item.icon className="h-7 w-7" />
                   {item.href === '#cart' && totalItems > 0 && (
@@ -122,7 +120,6 @@ export function BottomNav() {
                       </motion.div>
                   )}
                 </motion.div>
-                {/* Fallback label for screen readers or forced display */}
                 <span className="sr-only mt-3 text-[9px] font-black uppercase tracking-[0.05em] text-primary">{item.label}</span>
               </button>
             );
@@ -154,7 +151,7 @@ export function BottomNav() {
                   )}
                 >
                     <motion.div animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }} className="flex flex-col items-center relative">
-                        <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+                        <item.icon className={cn("h-5 w-5 text-primary", isActive ? "opacity-100 stroke-[2.5px]" : "opacity-60")} />
                         {totalItems > 0 && (
                             <div className="absolute -top-1.5 -right-2 bg-primary text-primary-foreground text-[10px] font-black h-4 w-4 rounded-full flex items-center justify-center shadow-sm">
                                 {totalItems}
@@ -162,7 +159,7 @@ export function BottomNav() {
                         )}
                         <span className={cn(
                             "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
-                            isActive ? "text-primary scale-105" : "text-foreground opacity-60"
+                            isActive ? "text-primary scale-105" : "text-foreground opacity-40"
                         )}>
                             {item.label}
                         </span>
@@ -194,13 +191,13 @@ export function BottomNav() {
                 animate={isActive ? { y: -2, scale: 1.1 } : { y: 0, scale: 1 }}
                 className="flex flex-col items-center"
                 >
-                <item.icon className={cn("h-5 w-5", (isActive || item.highlight) && "stroke-[2.5px]")} />
-                <span className={cn(
-                    "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
-                    isActive ? "text-primary scale-105" : "text-foreground opacity-60"
-                )}>
-                    {item.label}
-                </span>
+                    <item.icon className={cn("h-5 w-5 text-primary", (isActive || item.highlight) ? "opacity-100 stroke-[2.5px]" : "opacity-60")} />
+                    <span className={cn(
+                        "text-[9px] mt-1 font-black uppercase tracking-[0.05em] transition-all text-center px-1 font-montserrat",
+                        isActive ? "text-primary scale-105" : "text-foreground opacity-40"
+                    )}>
+                        {item.label}
+                    </span>
                 </motion.div>
                 {isActive && (
                 <motion.div 
@@ -217,4 +214,3 @@ export function BottomNav() {
 }
 
 export default BottomNav;
-

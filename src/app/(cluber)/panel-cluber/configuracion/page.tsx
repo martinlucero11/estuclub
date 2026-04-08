@@ -94,16 +94,16 @@ export default function CluberConfiguracionPage() {
                     <Settings className="h-7 w-7 text-primary" />
                 </div>
                 <div>
-                    <h1 className="text-4xl font-black uppercase tracking-tighter italic text-white leading-none">Ajustes <span className="text-primary italic">Generales</span></h1>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter italic text-foreground leading-none">Ajustes <span className="text-primary italic">Generales</span></h1>
                     <p className="text-[10px] font-black uppercase tracking-widest text-foreground/40 mt-1">Preferencias y Perfil de Cluber</p>
                 </div>
             </header>
 
             <div className="grid gap-6">
                 {/* APARIENCIA Y NOTIFICACIONES */}
-                <Card className="rounded-[2.5rem] border-white/5 glass-dark overflow-hidden shadow-2xl">
-                    <CardHeader className="border-b border-white/5 p-8 bg-white/5">
-                        <CardTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+                <Card className="rounded-[2.5rem] border-black/5 dark:border-white/5 bg-card/50 dark:bg-card/30 overflow-hidden shadow-2xl">
+                    <CardHeader className="border-b border-black/5 dark:border-white/5 p-8 bg-black/5 dark:bg-white/5">
+                        <CardTitle className="text-xl font-black uppercase tracking-widest text-foreground flex items-center gap-3">
                             <Moon className="h-5 w-5 text-primary" /> Interfaz y Alertas
                         </CardTitle>
                     </CardHeader>
@@ -139,9 +139,9 @@ export default function CluberConfiguracionPage() {
                 </Card>
 
                 {/* PERFIL COMERCIAL */}
-                <Card className="rounded-[2.5rem] border-white/5 glass-dark overflow-hidden shadow-2xl">
-                    <CardHeader className="border-b border-white/5 p-8 bg-white/5">
-                        <CardTitle className="text-xl font-black uppercase tracking-widest text-white flex items-center gap-3">
+                <Card className="rounded-[2.5rem] border-black/5 dark:border-white/5 bg-card/50 dark:bg-card/30 overflow-hidden shadow-2xl">
+                    <CardHeader className="border-b border-black/5 dark:border-white/5 p-8 bg-black/5 dark:bg-white/5">
+                        <CardTitle className="text-xl font-black uppercase tracking-widest text-foreground flex items-center gap-3">
                             <Building className="h-5 w-5 text-primary" /> Datos del Cluber
                         </CardTitle>
                     </CardHeader>

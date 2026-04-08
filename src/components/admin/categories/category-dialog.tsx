@@ -35,7 +35,7 @@ import type { Category } from '@/types/data';
 const categorySchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
   icon: z.string().min(1, 'Agrega un emoji o icono (Ej: 🍔).'),
-  type: z.enum(['delivery', 'discount', 'global']).default('global'),
+  type: z.enum(['delivery', 'benefits', 'turns', 'global']).default('global'),
   isActive: z.boolean().default(true),
   order: z.coerce.number().min(0).default(0),
 });
@@ -47,9 +47,10 @@ interface CategoryDialogProps {
   onOpenChange: (open: boolean) => void;
   category?: Category | null;
   nextOrder?: number;
+  defaultType?: 'delivery' | 'benefits' | 'turns' | 'global';
 }
 
-export function CategoryDialog({ isOpen, onOpenChange, category, nextOrder = 0 }: CategoryDialogProps) {
+export function CategoryDialog({ isOpen, onOpenChange, category, nextOrder = 0, defaultType }: CategoryDialogProps) {
   const isEditing = !!category;
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -60,7 +61,7 @@ export function CategoryDialog({ isOpen, onOpenChange, category, nextOrder = 0 }
     defaultValues: {
       name: category?.name || '',
       icon: category?.icon || '',
-      type: category?.type || 'global',
+      type: category?.type || defaultType || 'global',
       isActive: category?.isActive ?? true,
       order: category?.order ?? nextOrder,
     },
@@ -72,7 +73,7 @@ export function CategoryDialog({ isOpen, onOpenChange, category, nextOrder = 0 }
         form.reset({
             name: category?.name || '',
             icon: category?.icon || '',
-            type: category?.type || 'global',
+            type: category?.type || defaultType || 'global',
             isActive: category?.isActive ?? true,
             order: category?.order ?? nextOrder,
         });
@@ -168,7 +169,8 @@ export function CategoryDialog({ isOpen, onOpenChange, category, nextOrder = 0 }
                     <SelectContent>
                       <SelectItem value="global" className="font-bold">Global (Todos)</SelectItem>
                       <SelectItem value="delivery" className="font-bold text-blue-400">Delivery Only</SelectItem>
-                      <SelectItem value="discount" className="font-bold text-primary">Benefits Only</SelectItem>
+                      <SelectItem value="benefits" className="font-bold text-primary">Benefits Only</SelectItem>
+                      <SelectItem value="turns" className="font-bold text-orange-500">Turnos Only</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormDescription className="text-[8px] font-bold uppercase tracking-widest opacity-30">Determina en qué board aparecerá la categoría.</FormDescription>

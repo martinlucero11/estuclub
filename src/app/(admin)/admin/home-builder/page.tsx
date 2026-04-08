@@ -9,7 +9,7 @@ import { HomeSectionDialog } from "@/components/admin/home-builder/home-section-
 
 export default function HomeBuilderPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'delivery' | 'perks' | 'turns'>('delivery');
+    const [activeTab, setActiveTab] = useState<'delivery' | 'benefits' | 'turns'>('delivery');
 
     return (
         <div className="flex-1 space-y-8 p-8 pt-6 animate-in fade-in duration-700">
@@ -38,7 +38,7 @@ export default function HomeBuilderPage() {
                         <Truck className="h-4 w-4" />
                         Delivery
                     </TabsTrigger>
-                    <TabsTrigger value="perks" className="flex-1 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white gap-2">
+                    <TabsTrigger value="benefits" className="flex-1 rounded-xl font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-orange-500 data-[state=active]:text-white gap-2">
                         <Star className="h-4 w-4" />
                         Beneficios
                     </TabsTrigger>
@@ -59,14 +59,14 @@ export default function HomeBuilderPage() {
                         <HomeSectionTable targetBoard="delivery" />
                     </TabsContent>
 
-                    <TabsContent value="perks" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <TabsContent value="benefits" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="space-y-4 mb-6">
                             <h3 className="text-2xl font-extrabold tracking-tight uppercase italic">Home Beneficios</h3>
                             <p className="text-xs font-bold opacity-40 uppercase tracking-widest leading-relaxed">
                                 Estas secciones aparecerán en la pestaña de beneficios globales.
                             </p>
                         </div>
-                        <HomeSectionTable targetBoard="perks" />
+                        <HomeSectionTable targetBoard="benefits" />
                     </TabsContent>
 
                     <TabsContent value="turns" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -1,10 +1,9 @@
-import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
-import path from 'path';
+import { getDriveClient } from '@/lib/google-drive';
 
 /**
- * API Route to upload Rider documents to Google Drive using a Service Account.
+ * API Route to upload Rider documents to Google Drive using Centralized Auth.
  * Creates a folder RIDER_[DNI]_[APELLIDO] and uploads face + vehicle photos.
  */
 async function bufferToStream(buffer: Buffer): Promise<Readable> {
@@ -20,7 +19,6 @@ export async function POST(req: NextRequest) {
     const fotoRostro = formData.get('fotoRostro') as File;
     const fotoVehiculo = formData.get('fotoVehiculo') as File;
     const userId = formData.get('userId') as string;
-    const firstName = formData.get('firstName') as string;
     const lastName = formData.get('lastName') as string;
     const dni = formData.get('dni') as string;
 
@@ -33,13 +31,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error: Missing Parent Folder ID' }, { status: 500 });
     }
 
-    // Initialize Auth with Service Account
-    const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), 'service-account.json'),
-      scopes: ['https://www.googleapis.com/auth/drive.file'],
-    });
-
-    const drive = google.drive({ version: 'v3', auth });
+    // Use Centralized Auth
+    const drive = await getDriveClient();
 
     // 1. Create sub-folder: RIDER_[DNI]_[APELLIDO]
     const folderName = `RIDER_${dni}_${lastName.toUpperCase()}`;
@@ -57,7 +50,7 @@ export async function POST(req: NextRequest) {
       throw new Error('Failed to create Drive folder');
     }
 
-    // MANDATORY: Set FOLDER permissions to anyone with link can view
+    // Set FOLDER permissions
     await drive.permissions.create({
       fileId: folderId,
       requestBody: { role: 'reader', type: 'anyone' },
@@ -87,7 +80,6 @@ export async function POST(req: NextRequest) {
         requestBody: { role: 'reader', type: 'anyone' },
       });
 
-      // Get fresh link
       const meta = await drive.files.get({ fileId, fields: 'webViewLink' });
       fotoRostroLink = meta.data.webViewLink || '';
     }
@@ -113,7 +105,6 @@ export async function POST(req: NextRequest) {
         requestBody: { role: 'reader', type: 'anyone' },
       });
 
-      // Get fresh link
       const meta = await drive.files.get({ fileId, fields: 'webViewLink' });
       fotoVehiculoLink = meta.data.webViewLink || '';
     }
@@ -126,12 +117,12 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('CRITICAL RIDER UPLOAD ERROR:', {
-      message: error.message,
-      code: error.code,
-      errors: error.errors
-    });
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    console.error('RIDER UPLOAD ERROR:', error.message);
+    return NextResponse.json({ 
+        error: error.message || 'Error interno en el servidor',
+        code: error.code || 'UNKNOWN'
+    }, { status: 500 });
   }
 }
+
 

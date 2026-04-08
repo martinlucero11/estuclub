@@ -3,7 +3,7 @@
 
 import Image from 'next/image';
 import { ColumnDef } from '@tanstack/react-table';
-import type { SerializableBanner } from '@/types/data';
+import type { SerializableAnnouncement } from '@/types/data';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,13 +11,13 @@ import { ArrowUpDown, Link as LinkIcon, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 // Define the shape of the actions props
-interface BannerActionsProps {
+interface AnnouncementActionsProps {
   onEdit: () => void;
   onDelete: () => void;
 }
 
 // Actions component for the dropdown
-const BannerActions: React.FC<BannerActionsProps> = ({ onEdit, onDelete }) => (
+const AnnouncementActions: React.FC<AnnouncementActionsProps> = ({ onEdit, onDelete }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -37,11 +37,11 @@ const BannerActions: React.FC<BannerActionsProps> = ({ onEdit, onDelete }) => (
 
 
 // This type is used to define the shape of our data.
-export const getBannerColumns = (
+export const getAnnouncementColumns = (
     onToggleActive: (bannerId: string, isActive: boolean) => void,
-    onEdit: (banner: SerializableBanner) => void,
+    onEdit: (banner: SerializableAnnouncement) => void,
     onDelete: (bannerId: string) => void
-): ColumnDef<SerializableBanner>[] => [
+): ColumnDef<SerializableAnnouncement>[] => [
   {
     accessorKey: 'imageUrl',
     header: 'Imagen',
@@ -97,7 +97,7 @@ export const getBannerColumns = (
     cell: ({ row }) => {
       const banner = row.original;
       return (
-        <BannerActions 
+        <AnnouncementActions 
             onEdit={() => onEdit(banner)}
             onDelete={() => onDelete(banner.id)}
         />

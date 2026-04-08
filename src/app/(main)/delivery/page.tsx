@@ -303,14 +303,14 @@ function DeliveryHomeSections() {
                             <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-foreground/80 tracking-[0.2em]">
                                 {section.title}
                             </h2>
-                            {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
+                            {'contentType' in section.block && section.block.contentType && section.block.contentType !== 'announcements' && (
                                 <Button variant="ghost" asChild className="h-auto p-0 text-sm font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
                                     <Link href={
                                         ['suppliers', 'minisuppliers', 'supplierpromo', 'suppliers_nearby'].includes(section.block.contentType as string)
                                             ? '/proveedores' 
                                             : ['delivery_suppliers', 'delivery_products', 'delivery_promos', 'productexmplsupplier'].includes(section.block.contentType as string)
                                                 ? '/delivery'
-                                                : ['benefits_nearby', 'perks'].includes(section.block.contentType as string)
+                                                : ['benefits_nearby', 'benefits'].includes(section.block.contentType as string)
                                                     ? '/benefits'
                                                     : `/${section.block.contentType}`
                                     }>

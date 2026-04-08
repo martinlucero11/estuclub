@@ -21,10 +21,12 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MapPin, Truck, ShoppingBag, CreditCard, Sparkles, Info, ShieldCheck, Home, Briefcase, Plus, Save, Target, ChevronDown, Timer } from 'lucide-react';
+import { Loader2, MapPin, Truck, ShoppingBag, CreditCard, Sparkles, Info, ShieldCheck, Home, Briefcase, Plus, Save, Target, ChevronDown, Timer, Ticket } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { MapLocationPicker } from '@/components/ui/map-location-picker';
 import { Badge } from '@/components/ui/badge';
+import { validateCoupon } from '@/lib/actions/coupon-actions';
+import { haptic } from '@/lib/haptics';
 
 interface CheckoutDialogProps {
     open: boolean;
@@ -49,6 +51,11 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
     const [note, setNote] = useState('');
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [shippingDetails, setShippingDetails] = useState<{ rate: number, distance: number } | null>(null);
+
+    // --- COUPON STATE ---
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<{ id: string, code: string, amount: number } | null>(null);
+    const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
     // ── INITIAL ADDRESS LOGIC ─────────────────────────────
     useEffect(() => {
@@ -106,11 +113,50 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
     const deliveryCost = type === 'delivery' ? (shippingDetails?.rate || 0) : 0;
     const serviceFee = Math.round(subtotal * SERVICE_FEE_PERCENTAGE);
-    const totalPaidOnline = subtotal + serviceFee;
+    
+    // Total calculation with discount
+    const discountAmount = appliedCoupon?.amount || 0;
+    const itemsTotalAfterDiscount = Math.max(0, subtotal - discountAmount);
+    
+    const totalPaidOnline = itemsTotalAfterDiscount + serviceFee;
     const totalAtDoor = deliveryCost;
     
     const isNoteMissing = type === 'delivery' && address.length > 0 && note.trim().length < 3;
-    const canPlaceOrder = subtotal >= (supplierProfile?.minOrderAmount || 0) && (!isNoteMissing);
+    const isBelowMinimum = subtotal < (supplierProfile?.minOrderAmount || 0);
+    const canPlaceOrder = !isBelowMinimum && !isNoteMissing;
+
+    // --- COUPON ACTIONS ---
+    const handleApplyCoupon = async () => {
+        if (!couponCode || !user) return;
+        setIsValidatingCoupon(true);
+        haptic.vibrateMedium();
+
+        try {
+            const res = await validateCoupon(couponCode, user.uid, subtotal);
+            if (res.success && res.couponId && res.discountAmount !== undefined) {
+                setAppliedCoupon({
+                    id: res.couponId,
+                    code: res.code || couponCode.toUpperCase(),
+                    amount: res.discountAmount
+                });
+                toast({ title: "✅ Cupón Aplicado", description: `Descuento de $${res.discountAmount.toLocaleString()} aplicado.` });
+                haptic.vibrateSuccess();
+            } else {
+                toast({ variant: "destructive", title: "Cupón Inválido", description: res.message });
+                haptic.vibrateError();
+            }
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Ocurrió un error al validar el cupón." });
+        } finally {
+            setIsValidatingCoupon(false);
+        }
+    };
+
+    const removeCoupon = () => {
+        setAppliedCoupon(null);
+        setCouponCode('');
+        haptic.vibrateMedium();
+    };
 
     // ── ACTIONS ───────────────────────────────────────────
     const handleSaveAddress = async () => {
@@ -160,10 +206,23 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                 userPhone: profile?.phone || '',
                 supplierId,
                 supplierName: supplierName || 'Commerce',
-                items: items.map(i => ({ ...i })),
+                supplierPhone: supplierProfile?.whatsappContact || '',
+                supplierLogo: supplierProfile?.logoUrl || '',
+                supplierCoords: supplierProfile?.location || { latitude: 0, longitude: 0 },
+                items: items.map(i => ({ 
+                    productId: i.productId,
+                    name: i.name,
+                    price: i.price,
+                    quantity: i.quantity,
+                    imageUrl: i.imageUrl || null
+                })),
+
                 
                 // NEW STRUCTURE for Door Payment
                 itemsTotal: Math.round(subtotal),
+                discountAmount: Math.round(discountAmount),
+                couponId: appliedCoupon?.id || null,
+                couponCode: appliedCoupon?.code || null,
                 serviceFee: Math.round(serviceFee),
                 totalPaidOnline: Math.round(totalPaidOnline),
                 deliveryFee: Math.round(deliveryCost),
@@ -355,6 +414,14 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                             <span>Subtotal Comida</span>
                             <span className="text-foreground">$ {subtotal.toLocaleString()}</span>
                         </div>
+
+                        {appliedCoupon && (
+                            <div className="flex justify-between items-center text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none animate-in fade-in slide-in-from-left-2 duration-300">
+                                <span className="flex items-center gap-1"><Sparkles className="h-3 w-3" /> Descuento ({appliedCoupon.code})</span>
+                                <span>- $ {appliedCoupon.amount.toLocaleString()}</span>
+                            </div>
+                        )}
+
                         <div className="flex justify-between items-center text-[10px] font-black text-foreground uppercase tracking-widest leading-none">
                             <span>Tarifa de Servicio (5%)</span>
                             <span className="text-foreground">$ {serviceFee.toLocaleString()}</span>
@@ -380,11 +447,50 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                         )}
                     </div>
 
-                    {!canPlaceOrder && (
-                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-500/20 flex gap-3 items-center">
+                    {/* Coupon Input */}
+                    <div className="space-y-2">
+                         <div className="flex items-center justify-between px-1">
+                            <Label className="text-[8px] font-black uppercase tracking-[0.15em] text-foreground">¿Tenés un cupón?</Label>
+                            {appliedCoupon && (
+                                <button onClick={removeCoupon} className="text-[8px] font-black text-primary uppercase tracking-widest hover:underline transition-all">Quitar Cupón</button>
+                            )}
+                         </div>
+                         <div className="flex gap-2">
+                             <div className="relative flex-1 group/coupon">
+                                <Ticket className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground opacity-40 group-focus-within/coupon:text-primary transition-colors" />
+                                <Input 
+                                    className="h-12 pl-12 bg-background border-foreground rounded-[1rem] font-bold uppercase placeholder:text-foreground/30 focus:bg-white transition-all shadow-sm"
+                                    placeholder="CÓDIGO (EJ: ALEM3D)"
+                                    value={couponCode}
+                                    onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                                    disabled={!!appliedCoupon || isValidatingCoupon}
+                                />
+                             </div>
+                             <Button 
+                                variant="outline"
+                                disabled={!couponCode || !!appliedCoupon || isValidatingCoupon}
+                                onClick={handleApplyCoupon}
+                                className="h-12 w-14 rounded-[1rem] border-foreground hover:bg-primary/5 transition-all shrink-0"
+                             >
+                                {isValidatingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                             </Button>
+                         </div>
+                    </div>
+
+                    {isBelowMinimum && (
+                        <div className="p-3 rounded-xl bg-amber-50 border border-amber-500/20 flex gap-3 items-center animate-in zoom-in-95 duration-300">
                             <Info className="h-4 w-4 text-amber-500 shrink-0" />
                             <p className="text-[9px] font-black uppercase tracking-widest text-amber-600 leading-tight">
-                                Mínimo de compra:<br/><span className="text-sm tracking-tighter">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>
+                                Mínimo de compra para este local:<br/><span className="text-sm tracking-tighter">${supplierProfile?.minOrderAmount?.toLocaleString()}</span>
+                            </p>
+                        </div>
+                    )}
+
+                    {isNoteMissing && !isBelowMinimum && (
+                        <div className="p-3 rounded-xl bg-blue-50 border border-blue-500/20 flex gap-3 items-center animate-in zoom-in-95 duration-300">
+                            <Target className="h-4 w-4 text-blue-500 shrink-0" />
+                            <p className="text-[9px] font-black uppercase tracking-widest text-blue-600 leading-tight">
+                                REFERENCIAS OBLIGATORIAS:<br/><span className="text-[7px] text-blue-500/60 uppercase tracking-widest">Indica piso, depto o descripción de la casa</span>
                             </p>
                         </div>
                     )}

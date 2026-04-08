@@ -2,7 +2,7 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-import type { Banner } from '@/types/data';
+import type { Announcement } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -10,12 +10,12 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
-interface BannerActionsProps {
+interface AnnouncementActionsProps {
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const BannerActions: React.FC<BannerActionsProps> = ({ onEdit, onDelete }) => (
+const AnnouncementActions: React.FC<AnnouncementActionsProps> = ({ onEdit, onDelete }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="h-8 w-8 p-0">
@@ -37,11 +37,11 @@ const BannerActions: React.FC<BannerActionsProps> = ({ onEdit, onDelete }) => (
   </DropdownMenu>
 );
 
-export const getBannerColumns = (
+export const getAnnouncementColumns = (
     onToggleActive: (bannerId: string, isActive: boolean) => void,
-    onEdit: (banner: Banner) => void,
+    onEdit: (banner: Announcement) => void,
     onDelete: (bannerId: string) => void
-): ColumnDef<Banner>[] => [
+): ColumnDef<Announcement>[] => [
   {
     accessorKey: 'imageUrl',
     header: 'Imagen',
@@ -51,7 +51,7 @@ export const getBannerColumns = (
             <div className="relative h-12 w-24 rounded-lg overflow-hidden border bg-muted">
                 <Image 
                     src={imageUrl} 
-                    alt={row.original.title || 'Banner'} 
+                    alt={row.original.title || 'Announcement'} 
                     fill 
                     className="object-cover"
                 />
@@ -93,7 +93,7 @@ export const getBannerColumns = (
     cell: ({ row }) => {
       const banner = row.original;
       return (
-        <BannerActions 
+        <AnnouncementActions 
             onEdit={() => onEdit(banner)}
             onDelete={() => onDelete(banner.id)}
         />

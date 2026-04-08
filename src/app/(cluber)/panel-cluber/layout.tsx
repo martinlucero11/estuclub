@@ -37,8 +37,8 @@ export default function PanelCluberLayout({
     <RoleProvider availableRoles={availableRoles}>
       <div className="flex min-h-screen flex-col relative overflow-hidden bg-white dashboard-root">
         <DashboardHeader />
-        {/* Add bottom padding for mobile to avoid overlap with BottomNav */}
-        <main className="flex-1 p-4 md:p-8 pb-20 relative z-10 bg-[#F9FAFB]">
+        {/* Main Content Area: Simplified background and improved spacing */}
+        <main className="flex-1 p-4 md:p-10 pb-32 relative z-10 bg-[#fafafa]">
             {children}
         </main>
       </div>

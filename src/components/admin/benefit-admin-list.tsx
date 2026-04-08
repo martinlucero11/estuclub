@@ -24,7 +24,7 @@ function BenefitAdminListItem({ benefit }: { benefit: SerializableBenefit }) {
   const firestore = useFirestore();
 
   const handleDelete = async () => {
-    const benefitRef = doc(firestore, 'perks', benefit.id);
+    const benefitRef = doc(firestore, 'benefits', benefit.id);
     try {
         await deleteDoc(benefitRef);
         toast({
@@ -116,7 +116,7 @@ export default function BenefitAdminList({ supplierId }: { supplierId?: string }
 
   const benefitsQuery = useMemo(
     () => {
-        const baseCollection = collection(firestore, 'perks').withConverter(createConverter<Benefit>());
+        const baseCollection = collection(firestore, 'benefits').withConverter(createConverter<Benefit>());
         if (supplierId) {
             return query(baseCollection, where('supplierId', '==', supplierId), orderBy('createdAt', 'desc'))
         }

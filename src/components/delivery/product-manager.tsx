@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Plus, Edit2, Trash2, Package, Search, MoreVertical, Check, X, ImageIcon, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +34,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { OptimizedImage } from '../common/OptimizedImage';
+import { saveProductOperation, deleteProductAction, toggleProductStatusAction } from '@/lib/actions/product-actions';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -61,7 +64,9 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const [uploadMethod, setUploadMethod] = useState<'upload' | 'link'>('link');
     const [isUploading, setIsUploading] = useState(false);
     const [productToDelete, setProductToDelete] = useState<string | null>(null);
+    const [isPending, startTransition] = useTransition();
     const firestore = useFirestore();
+    const router = useRouter();
     const { toast } = useToast();
     const { data: supplierProfile } = useDoc<SupplierProfile>(supplierId ? doc(firestore, 'roles_supplier', supplierId) : null);
     
@@ -89,81 +94,64 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
 
     const handleSaveProduct = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Saving product. Supplier ID: supplierId
-        // Selected Product: selectedProduct
-
-        if (!firestore || !selectedProduct?.name || !selectedProduct?.price) {
-            console.error("Missing required fields or firestore:", { firestore, name: selectedProduct?.name, price: selectedProduct?.price });
-            return;
-        }
         
-        if (!supplierId || typeof supplierId !== 'string') {
-            console.error("Supplier ID is invalid:", supplierId);
-            toast({ 
-                title: "Error de configuración", 
-                description: "No se encontró el ID del proveedor. Reintenta en unos segundos.",
-                variant: "destructive" 
-            });
+        if (!supplierId) {
+            toast({ title: "Error", description: "No se encontró el ID del proveedor.", variant: "destructive" });
             return;
         }
 
-        try {
-            const productRef = selectedProduct.id 
-                ? doc(firestore, 'products', selectedProduct.id)
-                : doc(collection(firestore, 'products'));
-
+        startTransition(async () => {
             const productData = {
                 ...selectedProduct,
-                id: productRef.id,
                 supplierId: supplierId,
-                category: selectedProduct.category || '',
-                menuSection: selectedProduct.menuSection || '',
-                imageUrl: selectedProduct.imageUrl || '',
-                isActive: selectedProduct.isActive ?? true,
-                stockAvailable: selectedProduct.stockAvailable ?? true,
-                createdAt: selectedProduct.id ? selectedProduct.createdAt : serverTimestamp(),
-                updatedAt: serverTimestamp(),
+                category: selectedProduct?.category || '',
+                menuSection: selectedProduct?.menuSection || '',
+                imageUrl: selectedProduct?.imageUrl || '',
+                isActive: selectedProduct?.isActive ?? true,
+                stockAvailable: selectedProduct?.stockAvailable ?? true,
             };
 
-            await setDoc(productRef, productData, { merge: true });
-            setIsEditing(false);
-            setSelectedProduct(null);
-            toast({ title: selectedProduct.id ? "Producto actualizado" : "Producto creado" });
-        } catch (error) {
-            console.error(error);
-            toast({ title: "Error al guardar el producto", variant: "destructive" });
-        }
+            const result = await saveProductOperation(productData);
+
+            if (result.success) {
+                toast({ title: selectedProduct?.id ? "Producto actualizado" : "Producto creado" });
+                setIsEditing(false);
+                setSelectedProduct(null);
+                router.refresh();
+            } else {
+                toast({ title: "Error al guardar", description: result.error, variant: "destructive" });
+            }
+        });
     };
 
-    const handleDeleteProduct = async () => {
-        if (!firestore || !productToDelete) return;
-        try {
-            await deleteDoc(doc(firestore, 'products', productToDelete));
-            toast({ title: "✅ PRODUCTO ELIMINADO", description: "El catálogo ha sido actualizado." });
-        } catch (error) {
-            console.error(error);
-            toast({ title: "Error al eliminar", description: "No se pudo borrar el producto.", variant: "destructive" });
-        } finally {
-            setProductToDelete(null);
-        }
+    const handleDeleteProduct = () => {
+        if (!productToDelete) return;
+        startTransition(async () => {
+             const result = await deleteProductAction(productToDelete);
+             if (result.success) {
+                 toast({ title: "✅ PRODUCTO ELIMINADO" });
+                 router.refresh();
+             } else {
+                 toast({ title: "Error", description: result.error, variant: "destructive" });
+             }
+             setProductToDelete(null);
+        });
     };
 
-    const toggleStatus = async (product: Product, field: 'isActive' | 'stockAvailable') => {
-        if (!firestore) return;
+    const toggleStatus = (product: Product, field: 'isActive' | 'stockAvailable') => {
         const newValue = !product[field];
-        try {
-            await updateDoc(doc(firestore, 'products', product.id), {
-                [field]: newValue,
-                updatedAt: serverTimestamp()
-            });
-            toast({ 
-                title: newValue ? "Activado" : "Desactivado", 
-                description: `${product.name} se ha marcado como ${newValue ? 'disponible' : 'no disponible'}.` 
-            });
-        } catch (error) {
-            console.error(error);
-            toast({ title: "Error", description: "No se pudo actualizar el estado.", variant: "destructive" });
-        }
+        startTransition(async () => {
+            const result = await toggleProductStatusAction(product.id, field, newValue);
+            if (result.success) {
+                toast({ 
+                    title: newValue ? "Activado" : "Desactivado", 
+                    description: `${product.name} actualizado.` 
+                });
+                router.refresh();
+            } else {
+                toast({ title: "Error", description: result.error, variant: "destructive" });
+            }
+        });
     };
 
     return (
@@ -221,7 +209,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                         <div className="flex gap-3 items-center">
                                             <div className="h-16 w-16 rounded-2xl bg-black/5 flex-shrink-0 border border-black/5 overflow-hidden relative shadow-inner">
                                                 {selectedProduct?.imageUrl ? (
-                                                    <img src={selectedProduct.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                                                    <OptimizedImage src={selectedProduct.imageUrl} alt="Preview" fill />
                                                 ) : (
                                                     <ImageIcon className="h-6 w-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-20" />
                                                 )}
@@ -252,7 +240,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                 </div>
                                             ) : selectedProduct?.imageUrl ? (
                                                 <div className="absolute inset-0">
-                                                    <img src={selectedProduct.imageUrl} alt="Uploaded" className="w-full h-full object-cover opacity-40" />
+                                                    <OptimizedImage src={selectedProduct.imageUrl} alt="Uploaded" fill className="opacity-40" />
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
                                                         <Check className="h-6 w-6 text-green-500 mb-1" />
                                                         <span className="text-[8px] font-black uppercase tracking-widest">Imagen Capturada</span>
@@ -406,13 +394,13 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             <DialogFooter className="pt-4">
                                 <Button 
                                     type="submit" 
-                                    disabled={isUploading}
+                                    disabled={isUploading || isPending}
                                     className="w-full rounded-2xl h-12 font-black uppercase tracking-widest text-xs shadow-[0_0_20px_rgba(255,0,127,0.3)]"
                                 >
-                                    {isUploading ? (
+                                    {(isUploading || isPending) ? (
                                         <>
                                             <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                            Sincronizando Imagen...
+                                            Procesando...
                                         </>
                                     ) : 'Guardar Producto'}
                                 </Button>
@@ -441,7 +429,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                             <div className="flex gap-5 items-start mb-6">
                                 <div className="h-24 w-24 rounded-[2rem] bg-black/5 flex-shrink-0 border border-black/5 overflow-hidden relative shadow-inner">
                                     {product.imageUrl ? (
-                                        <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover transition-transform group-hover:scale-110 duration-700" />
+                                        <OptimizedImage src={product.imageUrl} alt={product.name} fill className="transition-transform group-hover:scale-110 duration-700" />
                                     ) : (
                                         <ImageIcon className="h-8 w-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10" />
                                     )}
@@ -522,6 +510,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                             "h-12 w-12 rounded-[1.2rem] border-black/5 transition-all shadow-md hover:scale-110",
                                             product.isActive ? "bg-emerald-50 text-emerald-500 border-emerald-200" : "bg-black/5 text-black/20 opacity-50"
                                         )}
+                                        disabled={isPending}
                                         onClick={() => toggleStatus(product, 'isActive')}
                                         title={product.isActive ? "Visible" : "Oculto"}
                                     >
@@ -530,6 +519,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
+                                        disabled={isPending}
                                         className={cn(
                                             "h-12 w-12 rounded-[1.2rem] border-black/5 transition-all shadow-md hover:scale-110",
                                             product.stockAvailable ? "bg-primary/5 text-primary border-primary/20" : "bg-red-50 text-red-500 border-red-200"

@@ -20,6 +20,7 @@ const config = {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui"],
         montserrat: ["var(--font-montserrat)", "sans-serif"],
         inter: ["var(--font-inter)", "sans-serif"],
+        lobster: ["var(--font-lobster)", "cursive"],
       },
       colors: {
         border: "hsl(var(--border))",

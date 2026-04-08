@@ -22,9 +22,11 @@ import { ProductManager } from '@/components/delivery/product-manager';
 import SupplierSelect from '@/components/admin/SupplierSelect';
 import { cn } from '@/lib/utils';
 import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
+import MPLinkCard from '@/components/payment/mp-link-card';
 import OrdersDashboard from '@/components/supplier/orders-dashboard';
-import { BenefitRedemptionsTable } from '@/components/supplier/benefit-redemptions-table';
+import { RedemptionsTable } from '@/components/supplier/benefit-redemptions-table';
 import { TurneroManager } from '../../../components/supplier/turnero-manager';
+import { seedBenefits } from '@/lib/seed-benefits';
 
 // ─── PENDING SCREEN ──────────────────────────────────────
 function CluberPending() {
@@ -69,9 +71,9 @@ export default function PanelCluberPage() {
 
     // Dynamic Permissions
     // MISSION 1: CENTRALIZACIÓN DE PERMISOS EN COLECCIÓN USERS (SSoT)
-    const canBenefits = userData?.permitsBenefits ?? false;
-    const canDelivery = userData?.permitsDelivery ?? false; // Centralized
-    const canTurnero = userData?.permitsShifts ?? false;    // Centralized
+    const canBenefits = userData?.permitsBenefits || effectiveSupplierData?.canCreateBenefits || false;
+    const canDelivery = userData?.permitsDelivery || effectiveSupplierData?.deliveryEnabled || false;
+    const canTurnero = userData?.permitsShifts || effectiveSupplierData?.appointmentsEnabled || false;
 
     // Set initial tab based on permissions
     useEffect(() => {
@@ -94,7 +96,8 @@ export default function PanelCluberPage() {
         return query(
             collection(firestore, 'orders'),
             where('supplierId', '==', shopId),
-            where('status', 'in', ['pending', 'accepted', 'searching_rider', 'assigned', 'shipped'])
+            where('status', 'in', ['pending', 'accepted', 'searching_rider', 'assigned', 'shipped']),
+            limit(30)
         );
     }, [firestore, shopId]);
     const { data: activeOrders } = useCollection(ordersQuery);
@@ -103,12 +106,14 @@ export default function PanelCluberPage() {
     const redemptionsQuery = useMemo(() => {
         if (!firestore || !shopId) return null;
         return query(
-            collection(firestore, 'benefitRedemptions'),
+            collection(firestore, 'redemptions'),
             where('supplierId', '==', shopId),
-            where('createdAt', '>=', startOfDay)
+            where('createdAt', '>=', startOfDay),
+            limit(30)
         );
     }, [firestore, shopId, startOfDay]);
     const { data: todayRedemptions } = useCollection(redemptionsQuery);
+
 
     // 3. Appointments Today
     const appointmentsQuery = useMemo(() => {
@@ -150,6 +155,28 @@ export default function PanelCluberPage() {
         }
     };
 
+    const handleSeedData = async () => {
+        if (!firestore || !shopId) return;
+        setIsUpdating(true);
+        try {
+            const sName = effectiveSupplierData?.name || userData?.firstName || 'Cluber Demo';
+            await seedBenefits(firestore, shopId, sName);
+            toast({
+                title: "Sembrado Exitoso",
+                description: "Se han insertado 25 beneficios de alta fidelidad.",
+            });
+        } catch (error) {
+            console.error("Error seeding data:", error);
+            toast({
+                variant: "destructive",
+                title: "Error de Sembrado",
+                description: "Hubo un problema al insertar los datos de prueba."
+            });
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     if (isUserLoading) return null;
     if (userData?.role === 'cluber_pending' && !isAdmin) return <CluberPending />;
     if (!roles.includes('supplier') && !roles.includes('cluber') && !isAdmin) {
@@ -176,10 +203,10 @@ export default function PanelCluberPage() {
     }
 
     return (
-        <div className="min-h-screen bg-white pb-24 animate-fade-in relative overflow-x-hidden">
+        <div className="animate-fade-in relative">
             <MPRestrictionOverlay />
             
-            <div className="max-w-7xl mx-auto px-6 md:px-8 pt-8 space-y-8">
+            <div className="max-w-7xl mx-auto space-y-10">
 
                 {/* Superior Header */}
                 <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 rounded-[3rem] bg-white border border-black/5 shadow-2xl relative overflow-hidden group">
@@ -283,6 +310,19 @@ export default function PanelCluberPage() {
                             <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-blue-500">Mi Equipo</span>
                         </Button>
                     </Link>
+                    <Button 
+                        variant="ghost" 
+                        onClick={handleSeedData}
+                        disabled={isUpdating}
+                        className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-primary/5 hover:scale-105 transition-all group shadow-xl"
+                    >
+                        <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center">
+                            <Sparkles className={cn("h-4 w-4 text-primary", isUpdating && "animate-spin")} />
+                        </div>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-primary">
+                            {isUpdating ? 'Sembrando...' : 'Sembrar Datos'}
+                        </span>
+                    </Button>
                 </div>
 
                 {isAdmin && (
@@ -400,7 +440,7 @@ function BenefitsModule({ shopId }: { shopId: string }) {
                     </div>
                 </div>
                 <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[400px] shadow-2xl relative">
-                    <BenefitRedemptionsTable supplierId={shopId} />
+                    <RedemptionsTable supplierId={shopId} />
                 </Card>
             </div>
         </div>
@@ -410,6 +450,24 @@ function BenefitsModule({ shopId }: { shopId: string }) {
 function DeliveryModule({ shopId }: { shopId: string }) {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* CONEXIÓN MERCADO PAGO */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                <div className="md:col-span-5">
+                    <MPLinkCard />
+                </div>
+                <div className="md:col-span-7 bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 flex flex-col justify-center gap-4 h-full min-h-[180px]">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                            <Info className="h-5 w-5 text-primary" />
+                        </div>
+                        <h3 className="text-sm font-black uppercase tracking-tight italic">Configuración de Pagos</h3>
+                    </div>
+                    <p className="text-[10px] font-bold text-black/60 uppercase tracking-widest leading-relaxed">
+                        Es obligatorio vincular tu cuenta de Mercado Pago para procesar pedidos de delivery. Esto nos permite acreditar tus ventas y gestionar comisiones automáticamente.
+                    </p>
+                </div>
+            </div>
+
             <OrdersDashboard supplierId={shopId} />
             <div className="space-y-4">
                 <div className="flex items-center gap-2 px-2">

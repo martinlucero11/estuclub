@@ -3,8 +3,9 @@ export const dynamic = 'force-dynamic';
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy, Timestamp, deleteField } from 'firebase/firestore';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ import {
   ExternalLink, Loader2,  CheckCircle, User, Users,
   Building, ShieldCheck, ShieldX, Fingerprint, Phone, Car, Camera,
   ChevronRight, Zap, Search, Settings2, Globe, Star, Megaphone, Truck, Utensils, Gift,
-  CalendarDays, CalendarClock
+  CalendarDays, CalendarClock, TrendingDown
 } from 'lucide-react';
 
 import {
@@ -31,6 +32,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { approveRiderOperation, approveSupplierOperation, rejectRiderOperation } from '@/lib/actions/role-actions';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 
 interface RiderApplication {
   id: string;
@@ -73,13 +76,26 @@ interface SupplierRequest {
   requestedAt: any;
 }
 
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
 export default function VerifyPage() {
   const { userData, roles, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'riders' | 'pending-clubers' | 'management' | 'cinco-dos' | 'appointments'>('riders');
   const [searchQuery, setSearchQuery] = useState('');
+  const [configCluber, setConfigCluber] = useState<SupplierProfile | null>(null);
 
   const isAdmin = roles.includes('admin');
 
@@ -161,186 +177,117 @@ export default function VerifyPage() {
     ) || [];
   }, [allClubers, searchQuery]);
 
-  const handleApproveRider = async (app: RiderApplication) => {
-    setProcessingId(app.id);
-    try {
-      // data sanitization to prevent firebase undefined errors
-      const userId = app.userId || '';
-      const email = app.email || '';
-      const userName = app.userName || 'Rider';
-      const phone = app.phone || '';
-
-      if (!userId) throw new Error('Missing userId');
-
-      // 1. Update/Create User Profile
-      await setDoc(doc(firestore, 'users', userId), {
-        uid: userId,
-        email: email,
-        firstName: userName.split(' ')[0],
-        lastName: userName.split(' ').slice(1).join(' ') || 'Sin_Apellido',
-        phone: phone,
-        role: 'rider',
-        isVerified: true,
-        approvedAt: serverTimestamp(),
-        trialEndsAt: Timestamp.fromMillis(Date.now() + 48 * 60 * 60 * 1000), // 48 hours trial
-        // Real-time Logistics
-        isOnline: false,
-        lastStatusChange: serverTimestamp(),
-      }, { merge: true });
-
-      // 2. Create/Update Rider Role
-      await setDoc(doc(firestore, 'roles_rider', userId), {
-        active: true,
-        userId: userId,
-        userName: userName,
-        email: email,
-        assignedAt: serverTimestamp(),
-      }, { merge: true });
-
-      // 3. Update Application Status
-      await updateDoc(doc(firestore, 'rider_applications', app.id), {
-        status: 'approved',
-        approvedAt: serverTimestamp(),
-      });
-      toast({ title: '✅ RIDER ACTIVADO', description: `${userName} ya es parte de la flota.` });
-    } catch (error) {
-      console.error('Approve error:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la activación.' });
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  const handleRejectRider = async (app: RiderApplication) => {
-    setProcessingId(app.id);
-    try {
-      const sanitizedAppId = app.id || '';
-      const sanitizedUserId = app.userId || '';
-
-      if (!sanitizedAppId || !sanitizedUserId) throw new Error('Missing application or userId');
-
-      await updateDoc(doc(firestore, 'rider_applications', sanitizedAppId), {
-        status: 'rejected',
-        rejectedAt: serverTimestamp(),
-      });
-      await setDoc(doc(firestore, 'users', sanitizedUserId), {
-        role: 'rider_rejected',
-      }, { merge: true });
-      toast({ title: 'Rider Rechazado', description: 'La solicitud fue denegada.' });
-    } catch (error) {
-      console.error('Reject error:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo rechazar.' });
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  const handleToggleCluberField = async (cluberId: string, field: string, value: boolean) => {
-    try {
-      const permissionFields = ['permitsBenefits', 'permitsShifts', 'permitsAds', 'permitsTeam', 'isCincoDos'];
-      
-      if (permissionFields.includes(field)) {
-        // MISSION 1: CENTRALIZACIÓN EN COLECCIÓN USERS (SSoT)
-        await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
+  const handleApproveRider = (app: RiderApplication) => {
+    startTransition(async () => {
+      try {
+        const result = await approveRiderOperation(app.id, {
+          userId: app.userId,
+          email: app.email,
+          userName: app.userName,
+          phone: app.phone
+        });
         
-        // ELIMINAR DUPLICADO DE ROLES_SUPPLIER
-        const docRef = doc(firestore, 'roles_supplier', cluberId);
-        await updateDoc(docRef, { [field]: deleteField() });
-      } else {
-        // Campos operativos (isVisible, isFeatured, deliveryEnabled, etc.) se mantienen en roles_supplier
-        const docRef = doc(firestore, 'roles_supplier', cluberId);
-        await updateDoc(docRef, { [field]: value });
+        if (result.success) {
+          toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota.` });
+          router.refresh();
+        } else {
+          toast({ variant: 'destructive', title: 'Error de Seguridad', description: (result as any).error || 'Error desconocido' });
+        }
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Fallo Crítico', description: error.message });
       }
-
-      toast({ title: 'Ajuste actualizado', description: `Se cambió ${field} a ${value ? 'ACTIVADO' : 'DESACTIVADO'}.` });
-    } catch (error) {
-      console.error('Toggle error:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el ajuste.' });
-    }
+    });
   };
 
-  const handleApproveComedor = async (app: ComedorApplication) => {
-    setProcessingId(app.id);
-    try {
-      const sanitizedAppId = app.id || '';
-      const sanitizedUserId = app.userId || '';
-      const firstName = app.firstName || 'Alumno';
-
-      if (!sanitizedAppId || !sanitizedUserId) throw new Error('Missing application or userId');
-
-      await updateDoc(doc(firestore, 'comedor_applications', sanitizedAppId), {
-        status: 'approved',
-        approvedAt: serverTimestamp(),
-      });
-      await updateDoc(doc(firestore, 'users', sanitizedUserId), {
-        isCincoDos: true,
-      });
-      toast({ title: '✅ AFILIADO ACTIVADO', description: `${firstName} ya es parte de Cinco.Dos.` });
-    } catch (error) {
-      console.error('Approve error:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la afiliación.' });
-    } finally {
-      setProcessingId(null);
-    }
+  const handleRejectRider = (app: RiderApplication) => {
+    startTransition(async () => {
+      try {
+        const result = await rejectRiderOperation(app.id, app.userId);
+        if (result.success) {
+          toast({ title: 'Rider Rechazado', description: 'La solicitud fue denegada correctamente.' });
+          router.refresh();
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: (result as any).error || 'Error desconocido' });
+        }
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error', description: error.message });
+      }
+    });
   };
 
-  const handleVerifyCluber = async (req: SupplierRequest) => {
-    setProcessingId(req.id);
-    try {
-      const userId = req.userId || '';
-      if (!userId) throw new Error('Missing userId on request');
+  const handleToggleCluberField = (cluberId: string, field: string, value: boolean) => {
+    startTransition(async () => {
+      try {
+        const permissionFields = ['permitsBenefits', 'permitsShifts', 'permitsAds', 'permitsTeam', 'isCincoDos'];
+        
+        if (permissionFields.includes(field)) {
+          await updateDoc(doc(firestore, 'users', cluberId), { [field]: value });
+          const docRef = doc(firestore, 'roles_supplier', cluberId);
+          await updateDoc(docRef, { [field]: deleteField() });
+        } else {
+          const docRef = doc(firestore, 'roles_supplier', cluberId);
+          await updateDoc(docRef, { [field]: value });
+        }
 
-      // 1. Create/Update Supplier Role
-      const docRef = doc(firestore, 'roles_supplier', userId);
-      await setDoc(docRef, {
-        id: userId,
-        name: req.supplierName,
-        type: req.category,
-        address: req.address,
-        whatsapp: req.commercialPhone,
-        logoUrl: req.logo || '',
-        coverUrl: req.fachada || '',
-        verified: true,
-        verifiedAt: serverTimestamp(),
-        isVisible: true,
-        createdAt: serverTimestamp(),
-        // Mandatory Specification Aliases
-        storeName: req.supplierName,
-        phone: req.commercialPhone,
-        logo: req.logo || '',
-        permitsBenefits: false, // Default permission
-      }, { merge: true });
+        toast({ title: 'Ajuste actualizado', description: `Se cambió ${field} a ${value ? 'ACTIVADO' : 'DESACTIVADO'}.` });
+        router.refresh();
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el ajuste.' });
+      }
+    });
+  };
 
-      // 2. Update User Profile Role
-      await setDoc(doc(firestore, 'users', userId), {
-        role: 'supplier',
-        isVerified: true,
-        // MANDATORY SYNC
-        storeName: req.supplierName,
-        phone: req.commercialPhone,
-        logo: req.logo || '',
-        address: req.address || '',
-        displayName: req.supplierName,
-        permitsBenefits: false, // Sync permission to user doc
-      }, { merge: true });
+  const handleApproveComedor = (app: ComedorApplication) => {
+    startTransition(async () => {
+      try {
+        const sanitizedAppId = app.id || '';
+        const sanitizedUserId = app.userId || '';
+        const firstName = app.firstName || 'Alumno';
 
-      // 3. Mark request as approved
-      await updateDoc(doc(firestore, 'supplier_requests', req.id), {
-        status: 'approved',
-        approvedAt: serverTimestamp(),
-      });
+        if (!sanitizedAppId || !sanitizedUserId) throw new Error('Missing application or userId');
 
-      toast({ title: '✅ CLUBER VERIFICADO', description: `${req.supplierName} tiene sello oficial.` });
-    } catch (error) {
-      console.error('Verify error:', error);
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo verificar.' });
-    } finally {
-      setProcessingId(null);
-    }
+        await updateDoc(doc(firestore, 'comedor_applications', sanitizedAppId), {
+          status: 'approved',
+          approvedAt: serverTimestamp(),
+        });
+        await updateDoc(doc(firestore, 'users', sanitizedUserId), {
+          isCincoDos: true,
+        });
+        toast({ title: '✅ AFILIADO ACTIVADO', description: `${firstName} ya es parte de Cinco.Dos.` });
+        router.refresh();
+      } catch (error) {
+        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo completar la afiliación.' });
+      }
+    });
+  };
+
+  const handleVerifyCluber = (req: SupplierRequest) => {
+    startTransition(async () => {
+      try {
+        const result = await approveSupplierOperation(req.id, {
+          userId: req.userId,
+          supplierName: req.supplierName,
+          category: req.category,
+          address: req.address,
+          commercialPhone: req.commercialPhone,
+          logo: req.logo,
+          fachada: req.fachada
+        });
+
+        if (result.success) {
+          toast({ title: '✅ CLUBER VERIFICADO', description: `${req.supplierName} tiene sello oficial.` });
+          router.refresh();
+        } else {
+          toast({ variant: 'destructive', title: 'Error de Verificación', description: (result as any).error || 'Error desconocido' });
+        }
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error de Seguridad', description: error.message });
+      }
+    });
   };
 
   return (
-    <div className="min-h-screen bg-[#000000] p-4 md:p-8 selection:bg-[#cb465a]/30">
+    <div className="bg-transparent p-2 md:p-4 selection:bg-[#cb465a]/30">
       <div className="mb-8 mt-4 relative z-[60]">
           <Button asChild variant="ghost" className="h-14 px-8 rounded-2xl bg-white/5 border border-white/10 text-white hover:bg-[#cb465a]/20 transition-all font-black uppercase text-[10px] tracking-widest gap-3">
             <Link href="/admin" className="flex items-center gap-3">
@@ -348,8 +295,8 @@ export default function VerifyPage() {
             </Link>
           </Button>
       </div>
-      <div className="max-w-7xl mx-auto space-y-12">
-        <header className="pt-4 pb-10 px-0 flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-white/5 mb-10">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <header className="pt-2 pb-6 px-0 flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 mb-6">
           <div className="space-y-5">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-[#cb465a] flex items-center justify-center shadow-[0_0_30px_#cb465a]">
@@ -357,42 +304,42 @@ export default function VerifyPage() {
               </div>
               <Badge className="bg-white/10 text-white border-white/20 uppercase font-black text-[10px] tracking-[0.3em] px-4 py-1.5 rounded-full">HQ Monitor</Badge>
             </div>
-            <h1 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-[0.85] font-montserrat drop-shadow-2xl">
+            <h1 className="text-3xl md:text-4xl font-black text-foreground uppercase tracking-tighter leading-none font-montserrat">
               CENTRO DE <br/><span className="text-[#cb465a]">VERIFICACIÓN</span>
             </h1>
-            <p className="text-[11px] font-black text-white/40 uppercase tracking-[0.6em] ml-2 opacity-60">ADMINISTRACIÓN TOTAL CLUBERS & RIDERS</p>
+            <p className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.4em] ml-1 opacity-60">ADMINISTRACIÓN TOTAL CLUBERS & RIDERS</p>
           </div>
 
           <div className="flex items-center gap-4 bg-white/5 backdrop-blur-xl p-5 rounded-[2.5rem] border border-white/10">
              <div className="h-12 w-12 rounded-2xl bg-[#cb465a]/20 flex items-center justify-center">
                 <Zap className="h-6 w-6 text-[#cb465a] animate-pulse" />
              </div>
-             <div className="pr-6">
-                <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-widest leading-tight">Master Center</p>
-                <p className="text-sm font-bold text-white/80">System Active</p>
+             <div className="pr-4">
+                <p className="text-[9px] font-black text-[#cb465a] uppercase tracking-widest leading-tight">Master Center</p>
+                <p className="text-xs font-bold text-foreground/80">System Active</p>
              </div>
-             <div className="bg-black/40 border border-[#cb465a]/30 p-5 rounded-2xl flex flex-col items-center justify-center min-w-[110px] shadow-[0_0_40px_rgba(255,0,127,0.1)]">
-                <p className="text-[9px] font-black text-[#cb465a] uppercase tracking-widest mb-1">En Cola</p>
-                <p className="text-4xl font-black text-white leading-none">{(applications?.length || 0) + (pendingClubers?.length || 0) + (comedorApps?.length || 0)}</p>
+             <div className="bg-black/5 border border-white/10 p-3 rounded-2xl flex flex-col items-center justify-center min-w-[90px]">
+                <p className="text-[8px] font-black text-[#cb465a] uppercase tracking-widest mb-0.5">En Cola</p>
+                <p className="text-3xl font-black text-foreground leading-none">{(applications?.length || 0) + (pendingClubers?.length || 0) + (comedorApps?.length || 0)}</p>
              </div>
           </div>
         </header>
 
-        <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-10">
-          <TabsList className="bg-background/50 border border-white/5 p-2 rounded-3xl w-full h-auto flex flex-wrap gap-2 shadow-2xl overflow-hidden">
-            <TabsTrigger value="riders" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
+         <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-6">
+          <TabsList className="bg-background/50 border border-white/5 p-1 rounded-2xl w-full h-auto flex flex-wrap gap-1 shadow-sm overflow-hidden">
+            <TabsTrigger value="riders" className="flex-1 min-w-[100px] rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-11">
               Riders ({applications?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="pending-clubers" className="flex-1 min-w-[100px] rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-[#cb465a] data-[state=active]:text-white transition-all duration-500 h-11">
               Clubers ({(pendingClubers?.length || 0)})
             </TabsTrigger>
-            <TabsTrigger value="cinco-dos" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-amber-500 data-[state=active]:text-black transition-all duration-500 h-14">
+            <TabsTrigger value="cinco-dos" className="flex-1 min-w-[100px] rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-amber-500 data-[state=active]:text-black transition-all duration-500 h-11">
               Cinco.Dos ({comedorApps?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-500 h-14">
+            <TabsTrigger value="appointments" className="flex-1 min-w-[100px] rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-all duration-500 h-11">
               Turnos ({appointments?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="management" className="flex-1 min-w-[140px] rounded-2xl font-black uppercase text-[10px] tracking-[0.15em] data-[state=active]:bg-white data-[state=active]:text-black transition-all duration-500 h-14">
+            <TabsTrigger value="management" className="flex-1 min-w-[100px] rounded-xl font-black uppercase text-[9px] tracking-[0.1em] data-[state=active]:bg-foreground data-[state=active]:text-background transition-all duration-500 h-11">
               Gestión Total
             </TabsTrigger>
           </TabsList>
@@ -401,7 +348,7 @@ export default function VerifyPage() {
           <TabsContent value="appointments" className="space-y-10 focus-visible:outline-none">
             {isLoadingAppointments ? (
               <div className="grid gap-8">
-                {[1, 2].map(i => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+                {[1, 2].map(i => <Skeleton className="h-48 rounded-[2.5rem]" key={i} />)}
               </div>
             ) : (!appointments || appointments.length === 0) ? (
               <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
@@ -478,7 +425,7 @@ export default function VerifyPage() {
           <TabsContent value="riders" className="space-y-10 focus-visible:outline-none">
             {isLoadingRiders ? (
               <div className="grid gap-8">
-                {[1, 2].map(i => <Skeleton key={i} className="h-64 rounded-[2.5rem]" />)}
+                {[1, 2].map(i => <Skeleton className="h-64 rounded-[2.5rem]" key={i} />)}
               </div>
             ) : (!applications || applications.length === 0) ? (
               <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
@@ -490,15 +437,15 @@ export default function VerifyPage() {
                 {applications.map((app) => (
                   <div key={app.id} className="glass-dark rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-                      <div className="relative aspect-video rounded-[2rem] overflow-hidden group">
-                        <img src={app.fotoRostroUrl} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="relative aspect-video rounded-[2rem] overflow-hidden group border border-white/10">
+                        <OptimizedImage src={app.fotoRostroUrl} alt="Foto Rostro" fill className="w-full h-full" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                             <Button asChild size="sm" className="bg-white text-black"><a href={app.fotoRostroUrl} target="_blank">Ver Rostro</a></Button>
                         </div>
                       </div>
-                      <div className="relative aspect-video rounded-[2rem] overflow-hidden group">
-                        <img src={app.fotoVehiculoUrl} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="relative aspect-video rounded-[2rem] overflow-hidden group border border-white/10">
+                        <OptimizedImage src={app.fotoVehiculoUrl} alt="Foto Vehículo" fill className="w-full h-full" />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
                             <Button asChild size="sm" className="bg-white text-black"><a href={app.fotoVehiculoUrl} target="_blank">Ver Vehículo</a></Button>
                         </div>
                       </div>
@@ -509,8 +456,8 @@ export default function VerifyPage() {
                             <p className="text-[10px] font-bold text-foreground opacity-70">Patente: {app.patente} | DNI: {app.dni}</p>
                         </div>
                         <div className="flex gap-3 shrink-0">
-                            <Button variant="ghost" onClick={() => handleRejectRider(app)} disabled={!!processingId} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest text-destructive hover:bg-destructive/10 shrink-0">Rechazar</Button>
-                            <Button onClick={() => handleApproveRider(app)} disabled={!!processingId} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest bg-green-500 hover:bg-green-600 text-white px-8 shrink-0">Aprobar</Button>
+                            <Button variant="ghost" onClick={() => handleRejectRider(app)} disabled={isPending} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest text-destructive hover:bg-destructive/10 shrink-0">Rechazar</Button>
+                            <Button onClick={() => handleApproveRider(app)} disabled={isPending} className="h-10 rounded-xl font-black uppercase text-[10px] tracking-widest bg-green-500 hover:bg-green-600 text-white px-8 shrink-0">Aprobar</Button>
                         </div>
                     </div>
                   </div>
@@ -523,7 +470,7 @@ export default function VerifyPage() {
           <TabsContent value="cinco-dos" className="space-y-10 focus-visible:outline-none">
             {isLoadingComedor ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+                {[1, 2, 3].map(i => <Skeleton className="h-48 rounded-[2.5rem]" key={i} />)}
               </div>
             ) : (!comedorApps || comedorApps.length === 0) ? (
               <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/5">
@@ -533,7 +480,7 @@ export default function VerifyPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {comedorApps.map((app) => (
-                        <Card key={app.id} className="rounded-[3rem] border-white/5 bg-[#000000]/40 backdrop-blur-xl p-8 space-y-6 hover:border-amber-500/20 transition-all shadow-premium group">
+                        <Card key={app.id} className="rounded-[3rem] border-white/5 bg-background/40 backdrop-blur-xl p-8 space-y-6 hover:border-amber-500/20 transition-all shadow-premium group">
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_0_20px_rgba(251,191,36,0.1)]">
@@ -554,10 +501,10 @@ export default function VerifyPage() {
                             </div>
                             <Button
                                 onClick={() => handleApproveComedor(app)}
-                                disabled={processingId === app.id}
+                                disabled={isPending}
                                 className="w-full h-12 rounded-2xl bg-amber-400 text-black font-black uppercase tracking-widest text-[9px] hover:bg-amber-500 transition-all border-none"
                             >
-                                {processingId === app.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "APROBAR AFILIACIÓN"}
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "APROBAR AFILIACIÓN"}
                             </Button>
                         </Card>
                     ))}
@@ -577,8 +524,8 @@ export default function VerifyPage() {
                 {pendingClubers.map((cluber) => (
                     <Card key={cluber.id} className="rounded-[2.5rem] border-white/5 glass-dark p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-xl">
                     <div className="flex items-center gap-6">
-                        <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
-                        {cluber.logo ? <img src={cluber.logo} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
+                        <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0 relative">
+                        {cluber.logo ? <OptimizedImage src={cluber.logo} alt={cluber.supplierName} fill /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
                         </div>
                         <div>
                         <h3 className="text-xl font-black uppercase tracking-tighter">{cluber.supplierName}</h3>
@@ -588,10 +535,10 @@ export default function VerifyPage() {
                     </div>
                     <Button
                         onClick={() => handleVerifyCluber(cluber)}
-                        disabled={processingId === cluber.id}
+                        disabled={isPending}
                         className="h-12 px-10 rounded-2xl bg-white text-[#000000] font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-primary hover:text-white border-2 border-white transition-all shrink-0"
                     >
-                        {processingId === cluber.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "VERIFICAR COMERCIO"}
+                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "VERIFICAR COMERCIO"}
                     </Button>
                     </Card>
                 ))}
@@ -603,20 +550,19 @@ export default function VerifyPage() {
           <TabsContent value="management" className="space-y-8 focus-visible:outline-none">
              <div className="relative group">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within:text-[#cb465a] transition-colors" />
-                <Input 
+                 <Input 
                     placeholder="BUSCAR COMERCIO POR NOMBRE O ID..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-20 pl-16 rounded-[2rem] bg-white/5 border-white/5 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 text-lg font-black uppercase tracking-widest placeholder:text-white/10"
+                    className="h-14 pl-14 rounded-2xl bg-white/5 border-white/5 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 text-sm font-black uppercase tracking-widest placeholder:text-foreground/10"
                 />
              </div>
-
              {isLoadingManagement ? (
                 <div className="grid gap-6">
-                    {[1, 2, 3].map(i => <Skeleton key={i} className="h-48 rounded-[2.5rem]" />)}
+                    {[1, 2, 3].map(i => <Skeleton className="h-48 rounded-[2.5rem]" key={i} />)}
                 </div>
-             ) : (
-                <div className="grid gap-6">
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-24">
                     {filteredManagementClubers.map((cluber) => (
                         <Card key={cluber.id} className="rounded-[3rem] border-white/5 bg-background/40 p-8 space-y-8 hover:border-[#cb465a]/20 transition-all group overflow-hidden relative">
                              {/* Decorative Background Icon */}
@@ -624,8 +570,8 @@ export default function VerifyPage() {
 
                              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                                 <div className="flex items-center gap-6">
-                                    <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0">
-                                        {cluber.logoUrl ? <img src={cluber.logoUrl} className="w-full h-full object-cover" /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
+                                    <div className="h-20 w-20 rounded-[1.5rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center overflow-hidden shrink-0 relative">
+                                        {cluber.logoUrl ? <OptimizedImage src={cluber.logoUrl} alt={cluber.name} fill /> : <Building className="h-10 w-10 text-[#cb465a] opacity-20" />}
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
@@ -646,128 +592,186 @@ export default function VerifyPage() {
                                 </div>
                              </div>
 
-                             <div className="flex flex-wrap gap-4 items-center w-full relative z-10">
-                                <ControlToggle 
-                                    icon={<Globe className="h-4 w-4" />}
-                                    label="Visibilidad" 
-                                    value={!!cluber.isVisible} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'isVisible', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Star className="h-4 w-4" />}
-                                    label="Destacado" 
-                                    value={!!cluber.isFeatured} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'isFeatured', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Truck className="h-4 w-4" />}
-                                    label="Delivery" 
-                                    value={!!cluber.deliveryEnabled} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'deliveryEnabled', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Megaphone className="h-4 w-4" />}
-                                    label="Anuncios" 
-                                    value={!!cluber.announcementsEnabled} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'announcementsEnabled', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Gift className="h-4 w-4" />}
-                                    label="Beneficios" 
-                                    value={!!cluber.permitsBenefits} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsBenefits', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<CalendarClock className="h-4 w-4" />}
-                                    label="Turnos" 
-                                    value={!!cluber.permitsShifts} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsShifts', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Megaphone className="h-4 w-4" />}
-                                    label="Ads" 
-                                    value={!!cluber.permitsAds} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsAds', v)} 
-                                />
-                                <ControlToggle 
-                                    icon={<Users className="h-4 w-4" />}
-                                    label="Equipo" 
-                                    value={!!cluber.permitsTeam} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'permitsTeam', v)} 
-                                />
-                                <CincoDosToggle 
-                                    value={!!cluber.isCincoDos} 
-                                    onChange={(v) => handleToggleCluberField(cluber.id, 'isCincoDos', v)} 
-                                />
-                                <div className="flex items-center justify-between p-5 rounded-[1.5rem] glass-dark border border-white/5 flex-1 min-w-[200px]">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2.5 rounded-xl bg-white/5"><Settings2 className="h-4 w-4 text-white/40" /></div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Controles</span>
+                             <div className="flex items-center justify-between p-6 rounded-[2rem] bg-black/10 border border-white/5 group-hover:border-[#cb465a]/20 transition-all relative z-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center">
+                                        <Settings2 className="h-6 w-6 text-foreground/40 group-hover:text-[#cb465a] transition-colors" />
                                     </div>
-                                    <Button 
-                                        size="sm" 
-                                        variant="ghost" 
-                                        className="h-10 text-[9px] font-bold uppercase tracking-widest bg-white/5 hover:bg-white/10 text-white shrink-0" 
-                                        onClick={() => window.location.href = `/admin/clubers`}
-                                    >
-                                        Gestionar
-                                    </Button>
+                                    <div className="space-y-0.5">
+                                        <p className="text-xs font-black uppercase tracking-widest">Ajustes de Operación</p>
+                                        <p className="text-[9px] font-bold text-foreground/30 uppercase tracking-[0.2em]">Configurar permisos y visibilidad</p>
+                                    </div>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  className="h-12 px-8 rounded-xl bg-white/5 border border-white/5 hover:bg-[#cb465a] hover:text-white font-black uppercase text-[10px] tracking-widest transition-all"
+                                  onClick={() => setConfigCluber(cluber)}
+                                >
+                                  CONFIGURAR
+                                </Button>
+                             </div>
+                             
+                             <div className="flex items-center gap-6 pt-2 border-t border-white/5">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]" />
+                                    <span className="text-[9px] font-black opacity-40 uppercase tracking-widest">Active Core</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <TrendingDown className="h-3 w-3 text-white/20" />
+                                    <span className="text-[9px] font-black opacity-40 uppercase tracking-widest">System Integrated</span>
                                 </div>
                              </div>
                         </Card>
                     ))}
                 </div>
-             )}
-          </TabsContent>
-        </Tabs>
-      </div>
+              )}
+           </TabsContent>
+         </Tabs>
+       </div>
+
+       {/* Center Config Panel (Dialog) */}
+       <Dialog open={!!configCluber} onOpenChange={(open) => !open && setConfigCluber(null)}>
+        <DialogContent size="2xl" className="bg-background/90 backdrop-blur-2xl border-white/10 rounded-[3rem] p-0 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.4)] selection:bg-[#cb465a]/30">
+          <div className="px-12 py-10 space-y-4 border-b border-white/5 bg-background/50 backdrop-blur-xl relative z-20">
+             <div className="flex items-center gap-6">
+                 <div className="h-16 w-16 rounded-2xl bg-[#cb465a]/10 flex items-center justify-center border border-[#cb465a]/20 shadow-[0_0_20px_rgba(203,70,90,0.1)]">
+                     <Settings2 className="h-8 w-8 text-[#cb465a]" />
+                 </div>
+                 <div className="text-left">
+                    <p className="text-[10px] font-black text-[#cb465a] uppercase tracking-[0.4em] mb-1">Operaciones Centralizadas</p>
+                    <DialogTitle className="text-4xl font-black italic tracking-tighter uppercase font-montserrat leading-none">
+                        Configurar
+                    </DialogTitle>
+                    <DialogDescription className="text-xs font-bold opacity-40 uppercase tracking-[0.1em] mt-1">
+                        {configCluber?.name} — ID: {configCluber?.id}
+                    </DialogDescription>
+                 </div>
+             </div>
+          </div>
+
+          <ScrollArea className="max-h-[70vh]">
+            <div className="px-12 py-10 pb-24 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+               <div className="space-y-4 md:col-span-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#cb465a] ml-2 mb-2">Visibilidad & Operaciones</p>
+               </div>
+                  
+               {configCluber && (
+                 <>
+                  <SideToggle 
+                      icon={<Globe className="h-4 w-4" />}
+                      label="Visibilidad Pública"
+                      description="El comercio será visible para todos."
+                      value={!!configCluber.isVisible}
+                      onChange={(v) => handleToggleCluberField(configCluber.id, 'isVisible', v)}
+                  />
+                  <SideToggle 
+                      icon={<Star className="h-4 w-4" />}
+                      label="Comercio Destacado"
+                      description="Prioridad en el inicio y listas."
+                      value={!!configCluber.isFeatured}
+                      onChange={(v) => handleToggleCluberField(configCluber.id, 'isFeatured', v)}
+                  />
+                  <SideToggle 
+                      icon={<Truck className="h-4 w-4" />}
+                      label="Servicio de Delivery"
+                      description="Logística de Riders para pedidos."
+                      value={!!configCluber.deliveryEnabled}
+                      onChange={(v) => handleToggleCluberField(configCluber.id, 'deliveryEnabled', v)}
+                  />
+                  <SideToggle 
+                      icon={<Megaphone className="h-4 w-4" />}
+                      label="Modulo de Anuncios"
+                      description="Avisos y promociones en el feed."
+                      value={!!configCluber.announcementsEnabled}
+                      onChange={(v) => handleToggleCluberField(configCluber.id, 'announcementsEnabled', v)}
+                  />
+
+                  <div className="pt-8 md:col-span-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#cb465a] ml-2 mb-6">Marketing & Períodos</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <SideToggle 
+                          icon={<Gift className="h-4 w-4" />}
+                          label="Verificación de Beneficios"
+                          description="Permitir canje de cupones."
+                          value={!!configCluber.permitsBenefits}
+                          onChange={(v) => handleToggleCluberField(configCluber.id, 'permitsBenefits', v)}
+                      />
+                      <SideToggle 
+                          icon={<CalendarClock className="h-4 w-4" />}
+                          label="Sistema de Turneros"
+                          description="Gestión automatizada de citas."
+                          value={!!configCluber.permitsShifts}
+                          onChange={(v) => handleToggleCluberField(configCluber.id, 'permitsShifts', v)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-8 md:col-span-2">
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 ml-2 mb-6">Programas Especiales</p>
+                     <CincoDosSideToggle 
+                        value={!!configCluber.isCincoDos}
+                        onChange={(v) => handleToggleCluberField(configCluber.id, 'isCincoDos', v)}
+                     />
+                  </div>
+                 </>
+               )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function ControlToggle({ icon, label, value, onChange }: { icon: any, label: string, value: boolean, onChange: (v: boolean) => void }) {
+function SideToggle({ icon, label, description, value, onChange }: { icon: any, label: string, description: string, value: boolean, onChange: (v: boolean) => void }) {
     return (
-        <div className={cn(
-            "flex items-center justify-between p-5 rounded-[1.5rem] transition-all border",
-            value ? "bg-[#cb465a]/10 border-[#cb465a]/20" : "bg-white/5 border-white/5 opacity-60"
-        )}>
-            <div className="flex items-center gap-3 text-white/80">
-                <div className={cn("p-2.5 rounded-xl transition-colors", value ? "bg-[#cb465a]/20 text-[#cb465a]" : "bg-white/5 text-white/40")}>
-                    {icon}
-                </div>
-                <Label className="text-[10px] font-black uppercase tracking-widest cursor-pointer leading-none">{label}</Label>
+      <div className={cn(
+        "flex items-center justify-between p-5 rounded-2xl border transition-all duration-500 group/item",
+        value 
+          ? "bg-[#cb465a]/5 border-[#cb465a]/20 shadow-[0_4px_20px_rgba(203,70,90,0.08)]" 
+          : "bg-muted/30 border-transparent hover:bg-muted/50"
+      )}>
+         <div className="flex items-center gap-4 min-w-0">
+            <div className={cn(
+              "h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-inner shrink-0",
+              value ? "bg-[#cb465a] text-white scale-110" : "bg-background text-foreground/20"
+            )}>
+              {icon}
             </div>
-            <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-[#cb465a]" />
-        </div>
+            <div className="space-y-0.5 min-w-0">
+               <p className={cn("text-[11px] font-black uppercase tracking-widest leading-none transition-colors", value ? "text-[#cb465a]" : "text-foreground/60")}>{label}</p>
+               <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-tighter truncate">{description}</p>
+            </div>
+         </div>
+         <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-[#cb465a]" />
+      </div>
     );
 }
 
-function CincoDosToggle({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) {
+function CincoDosSideToggle({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) {
     return (
-        <div className={cn(
-            "flex items-center justify-between p-5 rounded-[1.5rem] transition-all duration-500 border",
-            value 
-                ? "bg-gradient-to-br from-amber-400/20 to-[#cb465a]/20 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.1)]" 
-                : "bg-white/5 border-white/5 opacity-40 grayscale"
-        )}>
-            <div className="flex items-center gap-3">
-                <div className={cn(
-                    "h-10 w-10 rounded-xl flex items-center justify-center transition-all",
-                    value ? "bg-amber-400 shadow-[0_0_15px_#fbbf24] rotate-6" : "bg-white/5"
-                )}>
-                    <Utensils className={cn("h-5 w-5", value ? "text-black" : "text-white/20")} />
-                </div>
-                <div>
-                     <Label className={cn(
-                        "text-[10px] font-black uppercase tracking-[0.2em] leading-none block",
-                        value ? "text-amber-400" : "text-white/40"
-                    )}>Cinco Dos</Label>
-                    <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">Proyecto Social</span>
-                </div>
-            </div>
-            <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-amber-400" />
+      <div className={cn(
+        "flex items-center justify-between p-6 rounded-[2.5rem] border transition-all duration-700 group/cincodos",
+        value 
+          ? "bg-amber-500/10 border-amber-500/30 shadow-[0_8px_30px_rgba(245,158,11,0.12)]" 
+          : "bg-muted/40 border-transparent hover:bg-muted/60"
+      )}>
+        <div className="flex items-center gap-4">
+          <div className={cn(
+            "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500",
+            value ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] rotate-6 scale-110" : "bg-background text-foreground/20"
+          )}>
+            <Utensils className="h-6 w-6" />
+          </div>
+          <div className="flex flex-col">
+            <span className={cn(
+              "text-xs font-black uppercase tracking-[0.2em] leading-none transition-colors",
+              value ? "text-amber-600" : "text-foreground/50"
+            )}>Cinco Dos</span>
+            <span className="text-[9px] font-bold text-foreground/30 uppercase tracking-tighter mt-1">Proyecto Social Estuclub</span>
+          </div>
         </div>
+        <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-amber-500" />
+      </div>
     );
 }
-
-

@@ -1,11 +1,11 @@
 'use client';
 
 import Link from "next/link";
-import type { Product, Banner, SupplierProfile, Announcement, CluberCategory, SerializableBenefit } from "@/types/data";
+import type { Product, Announcement, SupplierProfile, Announcement, CluberCategory, SerializableBenefit } from "@/types/data";
 import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card } from "../ui/card";
-import PerkCard from '../perks/perk-card';
+import BenefitCard from '../benefits/benefit-card';
 import AnnouncementCard from '../announcements/announcement-card';
 import { Building, Briefcase, Heart, ShoppingBag, Wrench, Users, Package } from 'lucide-react';
 import { ProductCard } from "../delivery/product-card";
@@ -65,7 +65,7 @@ const createGrid = <T extends {id: string}>(
     }
 }
 
-export const PerksGrid = createGrid<SerializableBenefit & { id: string }>(PerkCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4");
+export const BenefitsGrid = createGrid<SerializableBenefit & { id: string }>(BenefitCard, 'benefit', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4");
 export const SuppliersGrid = createGrid<SupplierProfile>(SupplierGridCard, 'supplier', "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5");
 export const AnnouncementsGrid = createGrid<Announcement>(AnnouncementCard, 'announcement', "grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3");
 export const ProductsGrid = createGrid<Product>(ProductCard, 'product', "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6");

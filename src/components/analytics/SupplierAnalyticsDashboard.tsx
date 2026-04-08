@@ -72,13 +72,13 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
     });
 
     const benefitsQuery = useMemo(() => 
-        query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplierId)),
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), where('ownerId', '==', supplierId)),
         [firestore, supplierId]
     );
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(benefitsQuery);
 
     const redemptionsQuery = useMemo(() =>
-        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), where('supplierId', '==', supplierId), orderBy('redeemedAt', 'desc')),
+        query(collection(firestore, 'redemptions').withConverter(createConverter<BenefitRedemption>()), where('supplierId', '==', supplierId), orderBy('redeemedAt', 'desc')),
         [firestore, supplierId]
     );
     const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
@@ -456,7 +456,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                                         </CardContent>
                                     </Card>
 
-                                    <Card className="lg:col-span-3 border-black/10 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer" onClick={() => openDetail('perks')}>
+                                    <Card className="lg:col-span-3 border-black/10 dark:border-white/20 bg-white/40 dark:bg-white/5 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-xl cursor-pointer" onClick={() => openDetail('benefits')}>
                                         <CardHeader className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 py-6">
                                             <CardTitle className="flex items-center gap-3 text-xl font-black italic text-foreground dark:text-white">
                                                 <Award className="h-5 w-5 text-primary" />

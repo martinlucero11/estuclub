@@ -12,7 +12,7 @@ export default function Footer() {
                      src="/logo-white.svg" 
                      alt="Estuclub" 
                      fill
-                     className="object-contain brightness-100 invert-0"
+                     className="object-contain brightness-100 dark:invert-0 invert transition-all"
                    />
                </div>
                <p className="text-[10px] font-bold text-foreground uppercase tracking-widest max-w-[200px] leading-loose opacity-40">Potenciando el beneficio estudiantil en todo el país.</p>
@@ -36,7 +36,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="pt-10 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row items-center justify-between gap-6">
            <p className="text-[10px] font-black text-foreground uppercase tracking-widest opacity-40">
               © {new Date().getFullYear()} ESTUCLUB | TODOS LOS DERECHOS RESERVADOS.
            </p>

@@ -72,9 +72,11 @@ export const getCategoryColumns = (
     header: 'Tipo',
     cell: ({ row }) => {
         const type = row.original.type;
-        const variants = {
+        const variants: Record<string, string> = {
             delivery: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+            benefits: "bg-primary/10 text-primary border-primary/20",
             discount: "bg-primary/10 text-primary border-primary/20",
+            turns: "bg-orange-500/10 text-orange-400 border-orange-500/20",
             global: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
         };
         return <Badge variant="outline" className={variants[type] || ""}>{type}</Badge>;

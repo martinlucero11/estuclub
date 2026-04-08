@@ -277,7 +277,7 @@ export default function AdminToolsPanelPage() {
                                 Nuevo Bloque
                             </Button>
                         </div>
-                        <CardDescription className="font-bold italic">Edita los bloques, banners y carruseles del mundo Delivery.</CardDescription>
+                        <CardDescription className="font-bold italic">Edita los bloques, announcements y carruseles del mundo Delivery.</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {loadingSections ? (

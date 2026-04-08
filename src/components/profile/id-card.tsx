@@ -67,7 +67,7 @@ export function IDCard({ userProfile, qrCodeUrl, isLoading, onClose }: IDCardPro
       {/* Card Body */}
       <div className="relative min-h-[540px] w-full rounded-[2.5rem] bg-[#000000] border border-white/10 flex flex-col shadow-2xl transition-all duration-500 hover:scale-[1.02] hover:shadow-primary/20">
         
-        {/* Header/Banner with Pattern */}
+        {/* Header/Announcement with Pattern */}
         <div className={cn("h-36 w-full relative overflow-hidden", roleColor)}>
           <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_30%_20%,_rgba(255,255,255,0.8),_transparent_70%)]" />
           <div className="absolute inset-0 bg-black/5" />

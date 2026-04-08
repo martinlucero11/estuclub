@@ -8,28 +8,28 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { BannerForm } from './banner-form';
-import type { SerializableBanner } from '@/types/data';
+import { AnnouncementForm } from './banner-form';
+import type { SerializableAnnouncement } from '@/types/data';
 
-interface BannerDialogProps {
+interface AnnouncementDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    banner?: SerializableBanner | null;
+    banner?: SerializableAnnouncement | null;
 }
 
-export function BannerDialog({ isOpen, onOpenChange, banner }: BannerDialogProps) {
+export function AnnouncementDialog({ isOpen, onOpenChange, banner }: AnnouncementDialogProps) {
     const isEditMode = !!banner;
     
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
-                    <DialogTitle>{isEditMode ? 'Editar Banner' : 'Crear Nuevo Banner'}</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Editar Announcement' : 'Crear Nuevo Announcement'}</DialogTitle>
                     <DialogDescription>
                         {isEditMode ? 'Modifica los detalles de tu banner.' : 'Completa el formulario para añadir un nuevo banner.'}
                     </DialogDescription>
                 </DialogHeader>
-                <BannerForm 
+                <AnnouncementForm 
                     banner={banner} 
                     onSuccess={() => onOpenChange(false)}
                 />

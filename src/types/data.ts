@@ -76,6 +76,7 @@ export interface UserProfile {
     avgRating?: number;
     reviewCount?: number;
     addresses?: UserAddress[];
+    activeAddressId?: string; // Currently selected address for home services
     // Real-time Logistics
     isOnline?: boolean;
     lastStatusChange?: Timestamp;
@@ -117,6 +118,10 @@ export type DeliveryCategory = typeof deliveryCategories[number];
 
 export const benefitCategories = ['Gastronomía', 'Entretenimiento', 'Deportes', 'Educación', 'Indumentaria', 'Otros'] as const;
 export type BenefitCategory = typeof benefitCategories[number];
+
+
+export const turnCategories = ['Barbería', 'Estética', 'Salud', 'Educación', 'Deportes', 'Otros'] as const;
+export type TurnCategory = typeof turnCategories[number];
 
 
 /**
@@ -213,7 +218,8 @@ export interface Category {
     id: string;
     name: string;
     icon: string;
-    type: 'delivery' | 'discount' | 'global';
+    emoji?: string;
+    type: 'delivery' | 'benefits' | 'discount' | 'turns' | 'global';
     order: number;
     isActive: boolean;
 }
@@ -302,13 +308,16 @@ export interface Benefit {
     isStudentOnly?: boolean;
     isCincoDosOnly?: boolean;
     minLevel?: number;
+    discountValue?: string; // e.g. '30% OFF', '$1500 de Regalo'
+    status?: 'active' | 'inactive' | 'pending';
+    validUntil?: Timestamp;
     createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
 
 export interface BenefitRedemption {
     id: string;
-    perkId: string;
+    benefitId: string;
     benefitTitle: string;
     userId: string;
     userName: string;
@@ -342,22 +351,25 @@ export interface Announcement {
     isCincoDosOnly?: boolean;
     minLevel?: number;
     submittedAt: Timestamp;
+    approvedAt?: Timestamp;
     updatedAt?: Timestamp;
     createdAt?: Timestamp; // safety alias
 }
 
+/**
+ * Represents a static image ad stored in the /banners collection.
+ */
 export interface Banner {
     id: string;
-    title: string;
-    description: string;
+    title?: string;
     imageUrl: string;
-    link?: string;
+    linkUrl?: string;
     isActive: boolean;
-    colorScheme?: 'pink' | 'yellow' | 'blue';
-    order?: number;
+    isDemo?: boolean;
     createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
+
 
 export interface Service {
     id: string;
@@ -377,11 +389,15 @@ export interface HomeSection {
   id: string;
   title?: string;
   isActive: boolean;
-  targetBoard: 'perks' | 'delivery' | 'turns';
+  targetBoard: 'benefits' | 'delivery' | 'turns';
   block: HomeSectionBlock;
   order: number;
   createdAt: Timestamp;
 }
+
+export type SerializableHomeSection = Omit<HomeSection, 'createdAt'> & {
+    createdAt: string;
+};
 
 export type HomeSectionBlock = 
   | { kind: 'banner'; bannerId: string }
@@ -389,7 +405,7 @@ export type HomeSectionBlock =
   | { kind: 'message'; message: { title?: string; body: string; imageUrl?: string; alignment?: 'left' | 'center' } }
   | { 
       kind: 'carousel' | 'grid'; 
-      contentType: "perks" | "suppliers" | "announcements" | "banners" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo" | "benefits_nearby" | "suppliers_nearby" | "services" | "products" | "professionals";
+      contentType: "benefits" | "suppliers" | "announcements" | "banner" | "banners" | "delivery_suppliers" | "delivery_products" | "delivery_promos" | "productexmplsupplier" | "minisuppliers" | "supplierpromo" | "benefits_nearby" | "suppliers_nearby" | "services" | "products" | "professionals";
       mode: 'auto' | 'manual';
       query?: {
         filters?: WhereFilter[];
@@ -401,13 +417,31 @@ export type HomeSectionBlock =
     };
 
 // Serializable versions for Next.js SSR/Client boundary if needed
-export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'updatedAt'> & {
-    createdAt: { seconds: number; nanoseconds: number };
-    updatedAt?: { seconds: number; nanoseconds: number };
+export type SerializableBenefit = Omit<Benefit, 'createdAt' | 'updatedAt' | 'validUntil'> & {
+    createdAt: string;
+    updatedAt?: string;
+    validUntil?: string;
 };
 
-export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'updatedAt' | 'createdAt'> & {
-    submittedAt: { seconds: number; nanoseconds: number };
-    updatedAt?: { seconds: number; nanoseconds: number };
-    createdAt?: { seconds: number; nanoseconds: number };
+export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'updatedAt' | 'createdAt' | 'approvedAt'> & {
+    submittedAt: string;
+    approvedAt?: string;
+    updatedAt?: string;
+    createdAt?: string;
 };
+
+export interface Coupon {
+    id: string;
+    code: string; // Uppercase code (e.g. 'ALEM3D')
+    type: 'fixed' | 'percentage';
+    value: number;
+    startDate: Timestamp;
+    endDate: Timestamp;
+    usageLimit: number;
+    usageCount: number;
+    usedBy: string[]; // List of user UIDs to enforce "One use per user"
+    isActive: boolean;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+}
+

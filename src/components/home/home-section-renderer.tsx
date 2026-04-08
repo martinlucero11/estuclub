@@ -12,11 +12,12 @@ import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { useSearchParams } from 'next/navigation';
 import { isStoreOpen } from '@/lib/utils';
 
-import { PerksGrid, SuppliersGrid, AnnouncementsGrid, ProductsGrid } from '@/components/home/grids';
+import { BenefitsGrid, SuppliersGrid, AnnouncementsGrid, ProductsGrid } from '@/components/home/grids';
 import { CategoryGrid } from '@/components/home/category-grid';
-import { SingleBanner } from '@/components/home/single-banner';
-import { PerksCarousel, SuppliersCarousel, MiniSuppliersCarousel, AnnouncementsCarousel, BannersCarousel, ProductsCarousel, ProductsWithSupplierCarousel, SupplierPromoCarousel, ServicesCarousel } from '@/components/home/carousels';
-import { NearbyPerksCarousel, NearbySuppliersCarousel } from '@/components/home/nearby-carousels';
+import { SingleAnnouncement } from '@/components/home/single-banner';
+import { BenefitsCarousel, SuppliersCarousel, MiniSuppliersCarousel, AnnouncementsCarousel, ProductsCarousel, ProductsWithSupplierCarousel, SupplierPromoCarousel, ServicesCarousel, BannersCarousel } from '@/components/home/carousels';
+import { NearbyBenefitsCarousel, NearbySuppliersCarousel } from '@/components/home/nearby-carousels';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 
 const SectionSkeleton = () => <Skeleton className="h-48 w-full" />;
 
@@ -26,7 +27,7 @@ function useDocumentsByIds<T extends { id: string }>(collectionName: string, ids
         if (!firestore || ids.length === 0) return null;
         // Handling services or products requires knowing their parent supplier paths if using manual IDs, 
         // but HomeSection manual mode usually refers to root collections. 
-        // For services/products we'd need more logic, but user likely wants 'perks' or 'suppliers' here.
+        // For services/products we'd need more logic, but user likely wants 'benefits' or 'suppliers' here.
         return query(
             collection(firestore, collectionName).withConverter(createConverter<T>()),
             where('__name__', 'in', ids.slice(0, 30))
@@ -59,13 +60,13 @@ function HomeMessage({ title, body, imageUrl, alignment = 'left' }: { title?: st
             </div>
             {imageUrl && (
                 <div className="relative w-full md:w-1/3 aspect-video md:aspect-square rounded-[2rem] overflow-hidden glass shadow-premium border border-white/10 group">
-                    <img 
+                    <OptimizedImage 
                         src={imageUrl} 
                         alt="Message Image" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        fill
                         className="transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
                 </div>
             )}
         </div>
@@ -89,7 +90,7 @@ function SectionContent({ section }: { section: HomeSection }) {
             if (!firestore) return null;
             return query(
                 collection(firestore, 'categories').withConverter(createConverter<Category>()),
-                where('type', '==', section.targetBoard || 'perks')
+                where('type', '==', section.targetBoard || 'benefits')
             );
         }, [firestore, section.targetBoard]);
         const { data: categories, isLoading } = useCollectionOnce(categoriesQuery);
@@ -105,34 +106,51 @@ function SectionContent({ section }: { section: HomeSection }) {
 
     if (block.kind === 'banner') {
         const bannerRef = useMemo(() => {
-            if (!firestore) return null;
+            if (!firestore || !block.bannerId) return null;
             return doc(firestore, 'banners', block.bannerId).withConverter(createConverter<Banner>());
         }, [firestore, block.bannerId]);
-        const { data: banner, isLoading } = useDocOnce(bannerRef);
+        
+        const { data: banner, isLoading, error } = useDocOnce(bannerRef);
 
         if (isLoading) return <SectionSkeleton />;
-        return <SingleBanner banner={banner} />;
+        if (!block.bannerId) return null; // Gracefully handle unconfigured banners
+
+        if (error || !banner) {
+             return (
+                 <div className="py-4 px-1 animate-pulse">
+                     <p className="text-foreground italic text-[10px] opacity-30 uppercase tracking-widest">
+                         [Banner no disponible]
+                     </p>
+                 </div>
+             );
+        }
+        return <SingleAnnouncement banner={banner as any} />;
     }
 
-    if ('contentType' in block) {
-        if (block.contentType === 'benefits_nearby') return <NearbyPerksCarousel />;
-        if (block.contentType === 'suppliers_nearby') return <NearbySuppliersCarousel />;
-    }
+    if (!('contentType' in block)) return null;
+
+    if (block.contentType === 'benefits_nearby') return <NearbyBenefitsCarousel />;
+    if (block.contentType === 'suppliers_nearby') return <NearbySuppliersCarousel />;
 
     // Dynamic content (carousel/grid)
-    const collectionName = (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers' || block.contentType === 'minisuppliers' || block.contentType === 'supplierpromo' || block.contentType === 'professionals') 
+    const isDynamic = block.kind === 'carousel' || block.kind === 'grid';
+    const contentType = isDynamic ? (block as any).contentType : null;
+
+    const collectionName = (contentType === 'suppliers' || contentType === 'delivery_suppliers' || contentType === 'minisuppliers' || contentType === 'supplierpromo' || contentType === 'professionals') 
         ? 'roles_supplier' 
-        : (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos' || block.contentType === 'productexmplsupplier' || block.contentType === 'products')
+        : (contentType === 'delivery_products' || contentType === 'delivery_promos' || contentType === 'productexmplsupplier' || contentType === 'products')
             ? 'products'
-            : block.contentType;
+            : (contentType === 'banner' || contentType === 'banners')
+                ? 'banners'
+                : contentType;
     
     const converter = useMemo(() => {
         if (collectionName === 'roles_supplier') return createConverter<SupplierProfile>();
         if (collectionName === 'products') return createConverter<Product>();
-        if (collectionName === 'perks') return createConverter<Benefit>();
+        if (collectionName === 'benefits') return createConverter<Benefit>();
         if (collectionName === 'announcements') return createConverter<Announcement>();
-        if (collectionName === 'banners') return createConverter<Banner>();
         if (collectionName === 'services') return createConverter<Service>();
+        if (collectionName === 'banners') return createConverter<Banner>();
         return null;
     }, [collectionName]);
 
@@ -196,11 +214,14 @@ function SectionContent({ section }: { section: HomeSection }) {
                     q = query(q, where('category', '==', currentCategory));
                 }
             }
-
             if (block.query?.sort?.field) {
                 q = query(q, orderBy(block.query.sort.field, block.query.sort.direction || 'desc'));
-            } else if (['perks', 'announcements', 'banners', 'services', 'products'].includes(block.contentType)) {
-                q = query(q, orderBy('createdAt', 'desc'));
+            } else if (contentType && ['benefits', 'announcements', 'services', 'products', 'banners', 'banner'].includes(contentType)) {
+                // Only order by createdAt if we are NOT in banners mode or if we know banners have it
+                // For now, let's make it optional or only for specific types we are sure of
+                if (contentType !== 'banner' && contentType !== 'banners') {
+                    q = query(q, orderBy('createdAt', 'desc'));
+                }
             }
 
             if (block.query?.limit) {
@@ -218,10 +239,18 @@ function SectionContent({ section }: { section: HomeSection }) {
     
     // IF NO ITEMS, SHOW A MESSAGE INSTEAD OF HIDING (HELPS DEBUGGING)
     if (!items || items.length === 0) {
+        const itemType = block.contentType.includes('product') 
+            ? 'productos' 
+            : block.contentType === 'services' 
+                ? 'servicios' 
+                : (block.contentType === 'banner' || block.contentType === 'banners') 
+                    ? 'banners' 
+                    : 'locales';
+
         return (
             <div className="py-8 px-1">
                 <p className="text-foreground italic text-sm opacity-50">
-                    No se encontraron {block.contentType.includes('product') ? 'productos' : block.contentType === 'services' ? 'servicios' : 'locales'} en esta sección.
+                    No se encontraron {itemType} en esta sección.
                 </p>
             </div>
         );
@@ -231,7 +260,7 @@ function SectionContent({ section }: { section: HomeSection }) {
     const props: any = { items: [] };
 
     if (block.kind === 'carousel') {
-        if (block.contentType === 'perks') {
+        if (block.contentType === 'benefits') {
              // FILTER OUT SERVICES AND RESTRICTED AUDIENCES
              const safeItems = (items as Benefit[]).filter(b => {
                  const isService = !!b.isService;
@@ -240,7 +269,7 @@ function SectionContent({ section }: { section: HomeSection }) {
                  return !isService && !restrictedCincoDos;
              });
              props.items = safeItems.map(makeBenefitSerializable);
-             Component = PerksCarousel;
+             Component = BenefitsCarousel;
         } else if (block.contentType === 'services') {
              props.items = items;
              Component = ServicesCarousel;
@@ -254,14 +283,14 @@ function SectionContent({ section }: { section: HomeSection }) {
              if (block.contentType === 'suppliers' || block.contentType === 'delivery_suppliers' || block.contentType === 'professionals') Component = SuppliersCarousel;
              if (block.contentType === 'minisuppliers') Component = MiniSuppliersCarousel;
              if (block.contentType === 'announcements') Component = AnnouncementsCarousel;
-             if (block.contentType === 'banners') Component = BannersCarousel;
+             if (block.contentType === 'banner' || block.contentType === 'banners') Component = BannersCarousel;
              if (block.contentType === 'delivery_products' || block.contentType === 'delivery_promos' || block.contentType === 'products') Component = ProductsCarousel;
              if (block.contentType === 'productexmplsupplier') Component = ProductsWithSupplierCarousel;
              if (block.contentType === 'supplierpromo') Component = SupplierPromoCarousel;
         }
     } else if (block.kind === 'grid') {
-        if (block.contentType === 'perks') {
-            Component = PerksGrid;
+        if (block.contentType === 'benefits') {
+            Component = BenefitsGrid;
             // FILTER OUT SERVICES AND RESTRICTED AUDIENCES
             const safeItems = (items as Benefit[]).filter(b => {
                 const isService = !!b.isService;

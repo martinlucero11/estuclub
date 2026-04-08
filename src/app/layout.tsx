@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, Montserrat, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, Montserrat, Inter, Lobster } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { FirebaseProvider } from "@/firebase/provider";
@@ -36,6 +36,12 @@ const fontInter = Inter({
   weight: ["700", "800"],
 });
 
+const fontLobster = Lobster({
+  subsets: ["latin"],
+  variable: "--font-lobster",
+  weight: ["400"],
+});
+
 export const viewport: Viewport = {
   themeColor: "#ffffff",
   width: 'device-width',
@@ -45,7 +51,15 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-// ... (Metadatos se mantienen igual)
+export const metadata: Metadata = {
+  title: "Estuclub - Beneficios y Delivery para Estudiantes",
+  description: "La plataforma exclusiva para que los estudiantes encuentren los mejores beneficios y delivery en su ciudad.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
+  manifest: "/manifest.json",
+};
 
 export default function RootLayout({
   children,
@@ -54,7 +68,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={cn("min-h-screen flex flex-col bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable)}>
+      <body className={cn("min-h-screen flex flex-col bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable, fontLobster.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -81,8 +95,8 @@ export default function RootLayout({
           </FirebaseProvider>
         </ThemeProvider>
         <Script 
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"}&libraries=places,geometry`} 
-          strategy="lazyOnload"
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"}&libraries=places,geometry,marker&v=weekly&loading=async`} 
+          strategy="afterInteractive"
         />
       </body>
     </html>

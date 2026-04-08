@@ -48,6 +48,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         handleFCM();
     }, [user, firestore]);
 
+    const isDashboard = pathname.startsWith('/panel-cluber') || pathname.startsWith('/admin');
+
     if (!isMounted) return null;
 
     return (
@@ -65,7 +67,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                         duration: 0.4, 
                         ease: [0.22, 1, 0.36, 1],
                     }}
-                    className="flex-1 w-full z-0 px-0 pt-20 pb-20 md:pt-24 md:pb-24"
+                    className={cn(
+                        "flex-1 w-full z-0 px-0",
+                        isDashboard ? "pt-0 pb-20" : "pt-20 pb-20 md:pt-24 md:pb-24"
+                    )}
                 >
                     <div className="w-full max-w-7xl mx-auto px-4 md:px-0">
                         {children}
@@ -89,4 +94,3 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         </div>
     );
 }
-

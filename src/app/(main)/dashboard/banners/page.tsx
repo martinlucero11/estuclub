@@ -5,7 +5,7 @@ import { useAdmin } from '@/firebase/auth/use-admin';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShieldAlert } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BannerTable } from './components/banner-table';
+import { AnnouncementTable } from './components/banner-table';
 import BackButton from '@/components/layout/back-button';
 
 function AdminAccessDenied() {
@@ -42,7 +42,7 @@ function LoadingSkeleton() {
     );
 }
 
-export default function BannersPage() {
+export default function AnnouncementsPage() {
     const { isAdmin, isLoading } = useAdmin();
 
     if (isLoading) {
@@ -57,12 +57,12 @@ export default function BannersPage() {
         <div className="space-y-4">
             <BackButton />
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold">Gestión de Banners</h1>
+                <h1 className="text-3xl font-bold">Gestión de Announcements</h1>
             </div>
             <p className="text-foreground">
-                Crea, edita y activa los banners promocionales que aparecen en la página de inicio.
+                Crea, edita y activa los announcements promocionales que aparecen en la página de inicio.
             </p>
-            <BannerTable />
+            <AnnouncementTable />
         </div>
     );
 }

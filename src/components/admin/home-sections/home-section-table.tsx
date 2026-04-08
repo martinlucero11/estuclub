@@ -15,7 +15,7 @@ import { HomeSectionDialog } from '@/components/admin/home-builder/home-section-
 import { createConverter } from '@/lib/firestore-converter';
 
 interface HomeSectionTableProps {
-    targetBoard: 'perks' | 'delivery' | 'turns';
+    targetBoard: 'benefits' | 'delivery' | 'turns';
 }
 
 export function HomeSectionTable({ targetBoard }: HomeSectionTableProps) {
@@ -36,7 +36,7 @@ export function HomeSectionTable({ targetBoard }: HomeSectionTableProps) {
 
     const sections = useMemo(() => {
         if (!allSections) return [];
-        return allSections.filter(s => (s.targetBoard || 'perks') === targetBoard);
+        return allSections.filter(s => (s.targetBoard || 'benefits') === targetBoard);
     }, [allSections, targetBoard]);
 
     const handleToggleActive = async (sectionId: string, isActive: boolean) => {

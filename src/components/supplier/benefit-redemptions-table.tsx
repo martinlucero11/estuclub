@@ -20,13 +20,13 @@ import { createConverter } from '@/lib/firestore-converter';
 import type { BenefitRedemption } from '@/types/data';
 import { cn } from '@/lib/utils';
 
-export function BenefitRedemptionsTable({ supplierId }: { supplierId: string }) {
+export function RedemptionsTable({ supplierId }: { supplierId: string }) {
     const firestore = useFirestore();
 
     const redemptionsQuery = useMemo(() => {
         if (!firestore || !supplierId) return null;
         return query(
-            collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'redemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', supplierId),
             orderBy('redeemedAt', 'desc'),
             limit(20)

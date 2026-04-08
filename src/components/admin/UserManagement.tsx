@@ -31,6 +31,8 @@ import { cn } from '@/lib/utils';
 import { useAdmin } from '@/context/admin-context';
 import { UserProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
+import { syncUserRole } from '@/lib/actions/role-actions';
+import { OptimizedImage } from '@/components/common/OptimizedImage';
 
 export default function UserManagement() {
   const firestore = useFirestore();
@@ -43,7 +45,6 @@ export default function UserManagement() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'users').withConverter(createConverter<UserProfile>()),
-      orderBy('username', 'asc'), // Or any other field that exists
       limit(50)
     );
   }, [firestore]);
@@ -107,9 +108,9 @@ export default function UserManagement() {
           >
             {/* User Info */}
             <div className="col-span-4 flex items-center gap-4">
-               <div className="h-12 w-12 rounded-2xl bg-background border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-inner group-hover:border-primary/40 transition-colors">
+               <div className="h-12 w-12 rounded-2xl bg-background border border-white/10 flex items-center justify-center shrink-0 overflow-hidden shadow-inner group-hover:border-primary/40 transition-colors relative">
                   {user.photoURL ? (
-                    <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                    <OptimizedImage src={user.photoURL} alt="" fill />
                   ) : (
                     <Users className="h-5 w-5 text-foreground" />
                   )}
@@ -156,17 +157,22 @@ export default function UserManagement() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 bg-card border-white/10 z-[100] rounded-2xl p-2 shadow-2xl">
                     <DropdownMenuItem 
-                      onClick={() => {
+                      onClick={async () => {
                         const newRole = prompt('Nuevo Rol (estudiante, rider, admin, cluber):', user.role || 'estudiante');
-                        if (newRole && firestore) {
-                          updateDoc(doc(firestore, 'users', user.uid), { role: newRole })
-                            .then(() => toast({ title: 'Usuario Actualizado', description: `Nuevo rol: ${newRole}` }))
-                            .catch(e => toast({ variant: 'destructive', title: 'Error', description: e.message }));
+                        if (newRole) {
+                          try {
+                            const result = await syncUserRole(user.uid, newRole);
+                            if (result.success) {
+                              toast({ title: 'Sincronización Atómica Exitosa', description: `Nuevo rol: ${newRole} (Reflejado en Auth & DB)` });
+                            }
+                          } catch (e: any) {
+                             toast({ variant: 'destructive', title: 'Fallo de Seguridad en Servidor', description: e.message });
+                          }
                         }
                       }}
                       className="rounded-xl font-black uppercase text-[10px] tracking-widest gap-3 py-3 cursor-pointer"
                     >
-                      <Edit className="h-4 w-4" /> Editar Rol
+                      <Edit className="h-4 w-4" /> Editar Rol Seguro
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/5" />
                     <DropdownMenuItem 

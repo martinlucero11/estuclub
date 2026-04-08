@@ -1,17 +1,32 @@
 import { google } from 'googleapis';
 import { Readable } from 'stream';
-import path from 'path';
 
-// Initialize Auth with Service Account for better reliability
-const auth = new google.auth.GoogleAuth({
-    keyFile: path.join(process.cwd(), 'service-account.json'),
-    scopes: ['https://www.googleapis.com/auth/drive.file'],
-});
+/**
+ * Robust authentication client for Google Drive API.
+ * Uses OAuth2 Refresh Token to bypass clock-skew issues on local dev.
+ */
+export async function getDriveClient() {
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-const drive = google.drive({
-    version: 'v3',
-    auth,
-});
+    if (!clientId || !clientSecret || !refreshToken) {
+        throw new Error('CONFIGURACIÓN FALTANTE: GOOGLE_CLIENT_ID, SECRET or REFRESH_TOKEN');
+    }
+
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+    oauth2Client.setCredentials({ refresh_token: refreshToken });
+
+    // Validate token immediately
+    try {
+        await oauth2Client.getAccessToken();
+    } catch (e: any) {
+        console.error('GOOGLE_DRIVE_AUTH_CENTRAL_ERROR:', e.message);
+        throw new Error(`Error de autenticación: ${e.message}`);
+    }
+
+    return google.drive({ version: 'v3', auth: oauth2Client });
+}
 
 /**
  * Uploads a file to Google Drive and sets public permissions
@@ -23,7 +38,9 @@ export async function uploadFileToDrive(
     parentFolderId: string
 ) {
     try {
-        console.log(`[DRIVE] Starting upload for ${filename} to folder ${parentFolderId}`);
+        console.log(`[DRIVE] Starting centralized upload for ${filename}`);
+
+        const drive = await getDriveClient();
 
         // Create Readable Stream from Buffer
         const bufferStream = new Readable();
@@ -45,8 +62,6 @@ export async function uploadFileToDrive(
         const fileId = response.data.id;
         if (!fileId) throw new Error('Drive API did not return a file ID');
 
-        console.log(`[DRIVE] File created with ID: ${fileId}. Setting public permissions...`);
-
         // MANDATORY: Set permissions to anyone with link can view
         await drive.permissions.create({
             fileId: fileId,
@@ -56,7 +71,7 @@ export async function uploadFileToDrive(
             },
         });
 
-        // Re-fetch to get links after permission change (sometimes needed for fresh links)
+        // Re-fetch to get links after permission change
         const fileMetadata = await drive.files.get({
             fileId: fileId,
             fields: 'id, webViewLink, webContentLink',
@@ -68,15 +83,9 @@ export async function uploadFileToDrive(
             contentLink: fileMetadata.data.webContentLink
         };
     } catch (error: any) {
-        console.error('CRITICAL DRIVE UPLOAD ERROR:', {
-            message: error.message,
-            code: error.code,
-            errors: error.errors
-        });
-        if (error.response?.data) {
-            console.error('GOOGLE DRIVE API ERROR DATA:', JSON.stringify(error.response.data, null, 2));
-        }
+        console.error('CENTRAL DRIVE UPLOAD ERROR:', error.message);
         throw error;
     }
 }
+
 

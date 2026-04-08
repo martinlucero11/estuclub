@@ -6,7 +6,7 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { BenefitRedemption, UserRole } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { columns as baseColumns } from './redemption-columns';
-import { makeBenefitRedemptionSerializable } from '@/lib/data';
+import { makeRedemptionSerializable } from '@/lib/data';
 import { createConverter } from '@/lib/firestore-converter';
 
 interface User {
@@ -25,7 +25,7 @@ export default function RedemptionList({ user }: RedemptionListProps) {
 
   const redemptionsQuery = useMemo(() => {
     if (!firestore) return null;
-    const baseQuery = query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), orderBy('redeemedAt', 'desc'));
+    const baseQuery = query(collection(firestore, 'redemptions').withConverter(createConverter<BenefitRedemption>()), orderBy('redeemedAt', 'desc'));
     if (isAdmin) {
       return baseQuery;
     } else {
@@ -60,7 +60,7 @@ export default function RedemptionList({ user }: RedemptionListProps) {
   // We need to enrich the data with supplierName and userName for the admin view
   const processedData = useMemo(() => {
     if (!redemptions) return [];
-    return redemptions.map(r => makeBenefitRedemptionSerializable(r));
+    return redemptions.map(r => makeRedemptionSerializable(r));
   }, [redemptions]);
 
   return (

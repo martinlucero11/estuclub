@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card } from '@/components/ui/card';
 import { History, Tag, Calendar, CheckCircle, MapPin, Building, Ticket } from 'lucide-react';
 import type { BenefitRedemption, SerializableBenefitRedemption } from '@/types/data';
-import { makeBenefitRedemptionSerializable } from '@/lib/data';
+import { makeRedemptionSerializable } from '@/lib/data';
 import { useMemo, useState, useEffect } from 'react';
 import { Badge } from '../ui/badge';
 import {
@@ -92,7 +92,7 @@ export default function MyRedemptionsList() {
     const redemptionsQuery = useMemo(() => {
         if (!user) return null;
         return query(
-            collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'users', user.uid, 'redemptions').withConverter(createConverter<BenefitRedemption>()),
             orderBy('redeemedAt', 'desc')
         );
     }, [user, firestore]);
@@ -101,7 +101,7 @@ export default function MyRedemptionsList() {
     
     const serializableRedemptions: SerializableBenefitRedemption[] = useMemo(() => {
         if (!redemptions) return [];
-        return redemptions.map(makeBenefitRedemptionSerializable);
+        return redemptions.map(makeRedemptionSerializable);
     }, [redemptions]);
 
 

@@ -57,7 +57,28 @@ export function AnnouncementTable({ className, search }: AnnouncementTableProps)
         const announcementRef = doc(firestore, 'announcements', announcementId);
         try {
             await updateDoc(announcementRef, { status: 'approved', isVisible: true });
-            toast({ title: 'Anuncio Aprobado', description: 'La publicación ya es visible para los usuarios.' });
+            
+            // Trigger Real-Time Push Notification
+            const announcement = allAnnouncements?.find(a => a.id === announcementId);
+            if (announcement) {
+                try {
+                    await fetch('/api/notifications/notify-announcement', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            title: announcement.title,
+                            content: announcement.content,
+                            announcementId: announcement.id,
+                            imageUrl: announcement.imageUrl,
+                            supplierName: announcement.supplierId // We could fetch actual name, but ID works or we assume Global
+                        })
+                    });
+                } catch (notiError) {
+                    console.error('Push error:', notiError);
+                }
+            }
+            
+            toast({ title: 'Anuncio Aprobado', description: 'La publicación ya es visible para los usuarios y se ha notificado a la comunidad.' });
         } catch (error) {
             console.error('Error approving:', error);
             toast({ variant: 'destructive', title: 'Error', description: 'No se pudo aprobar.' });

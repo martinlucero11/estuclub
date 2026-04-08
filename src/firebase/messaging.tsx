@@ -1,12 +1,17 @@
 'use client';
 
-import { createContext, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode, useRef, useState } from 'react';
 import { isSupported } from 'firebase/messaging';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { onMessageListener } from '@/lib/fcm';
+import { onMessageListener, requestNotificationPermission } from '@/lib/fcm';
+import { doc, setDoc, arrayUnion, serverTimestamp } from 'firebase/firestore';
 
-const MessagingContext = createContext<undefined>(undefined);
+export interface MessagingContextType {
+    fcmToken: string | null;
+}
+
+const MessagingContext = createContext<MessagingContextType | undefined>(undefined);
 
 export const useMessaging = () => {
     const context = useContext(MessagingContext);
@@ -17,20 +22,37 @@ export const useMessaging = () => {
 };
 
 export const MessagingProvider = ({ children }: { children: ReactNode }) => {
-    const { firebaseApp } = useFirebase();
+    const { firebaseApp, firestore } = useFirebase();
+    const { user } = useUser();
     const { toast } = useToast();
+    const [fcmToken, setFcmToken] = useState<string | null>(null);
+    const hasRegisteredRef = useRef(false);
 
     useEffect(() => {
         const setupMessaging = async () => {
             try {
-                if (typeof window !== 'undefined' && firebaseApp) {
+                if (typeof window !== 'undefined' && firebaseApp && user && !hasRegisteredRef.current) {
                     const supported = await isSupported();
                     if (!supported) return;
 
-                    // Unified listener for both Web and Native
-                    const unsubscribe = await onMessageListener((payload) => {
-                        // Message received in foreground.
+                    // 1. Request Permission & Get Token
+                    const token = await requestNotificationPermission();
+                    
+                    if (token) {
+                        setFcmToken(token);
+                        // 2. Save Token to Firestore (associated with user)
+                        const tokenRef = doc(firestore, 'userTokens', user.uid);
+                        await setDoc(tokenRef, {
+                            tokens: arrayUnion(token),
+                            lastUpdated: serverTimestamp(),
+                            platform: 'web'
+                        }, { merge: true });
                         
+                        hasRegisteredRef.current = true;
+                    }
+
+                    // 3. Unified listener for both Web and Native
+                    const unsubscribe = await onMessageListener((payload) => {
                         const title = payload.notification?.title || payload.title;
                         const body = payload.notification?.body || payload.body;
 
@@ -56,12 +78,13 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
                 }
             });
         };
-    }, [firebaseApp, toast]);
+    }, [firebaseApp, firestore, user, toast]);
 
     return (
-        <MessagingContext.Provider value={undefined}>
+        <MessagingContext.Provider value={{ fcmToken }}>
             {children}
         </MessagingContext.Provider>
     );
 };
+
 

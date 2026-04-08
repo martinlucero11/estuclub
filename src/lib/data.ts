@@ -4,7 +4,6 @@ import type {
   Benefit,
   BenefitRedemption,
   SerializableBenefit,
-  Banner,
   HomeSection,
   SerializableHomeSection,
   SerializableAnnouncement,
@@ -19,36 +18,33 @@ export function makeAnnouncementSerializable(
 ): SerializableAnnouncement {
   return {
     ...announcement,
-    createdAt: announcement.createdAt
+    createdAt: (announcement.createdAt instanceof Timestamp)
       ? announcement.createdAt.toDate().toISOString()
-      : new Date().toISOString(), // Fallback for safety
-    submittedAt: announcement.submittedAt
+      : (announcement.createdAt || new Date().toISOString()),
+    submittedAt: (announcement.submittedAt instanceof Timestamp)
       ? announcement.submittedAt.toDate().toISOString()
-      : '',
-    approvedAt: announcement.approvedAt
+      : (announcement.submittedAt || ''),
+    approvedAt: (announcement.approvedAt instanceof Timestamp)
       ? announcement.approvedAt.toDate().toISOString()
-      : undefined,
+      : (announcement.approvedAt || undefined),
+    updatedAt: (announcement.updatedAt instanceof Timestamp)
+      ? announcement.updatedAt.toDate().toISOString()
+      : (announcement.updatedAt || undefined),
   };
 }
 
-// Placeholder banner serializer
-export function makeBannerSerializable(banner: Banner) {
-  return {
-    ...banner,
-    createdAt: banner.createdAt instanceof Timestamp
-      ? banner.createdAt.toDate().toISOString()
-      : banner.createdAt,
-  };
-}
-
-// Benefit redemption serializer
-export function makeBenefitRedemptionSerializable(
+// Redemption serializer
+export function makeRedemptionSerializable(
   redemption: BenefitRedemption
 ): SerializableBenefitRedemption {
   return {
     ...redemption,
-    redeemedAt: redemption.redeemedAt.toDate().toISOString(),
-    usedAt: redemption.usedAt?.toDate().toISOString(),
+    redeemedAt: (redemption.redeemedAt instanceof Timestamp) 
+      ? redemption.redeemedAt.toDate().toISOString() 
+      : redemption.redeemedAt,
+    usedAt: (redemption.usedAt instanceof Timestamp)
+      ? redemption.usedAt.toDate().toISOString()
+      : redemption.usedAt,
   };
 }
 
@@ -56,8 +52,15 @@ export function makeBenefitRedemptionSerializable(
 export function makeBenefitSerializable(benefit: Benefit): SerializableBenefit {
   return {
     ...benefit,
-    createdAt: benefit.createdAt?.toDate().toISOString() || new Date().toISOString(),
-    validUntil: benefit.validUntil?.toDate().toISOString(),
+    createdAt: (benefit.createdAt instanceof Timestamp)
+      ? benefit.createdAt.toDate().toISOString()
+      : (benefit.createdAt || new Date().toISOString()),
+    validUntil: (benefit.validUntil instanceof Timestamp)
+      ? benefit.validUntil.toDate().toISOString()
+      : benefit.validUntil,
+    updatedAt: (benefit.updatedAt instanceof Timestamp)
+      ? benefit.updatedAt.toDate().toISOString()
+      : (benefit.updatedAt || undefined),
   };
 }
 

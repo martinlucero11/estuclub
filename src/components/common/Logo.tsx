@@ -1,13 +1,34 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 interface LogoProps {
   className?: string;
   variant?: 'white' | 'rosa' | 'black' | 'default' | 'rosa-glow';
+  brand?: 'default' | 'rider';
 }
 
-const Logo = React.forwardRef<SVGSVGElement, LogoProps>(
-  ({ className, variant = 'default', ...props }, ref) => {
+const Logo = React.forwardRef<any, LogoProps>(
+  ({ className, variant = 'default', brand = 'default', ...props }, ref) => {
+    if (brand === 'rider') {
+        const logoSrc = variant === 'white' ? "/EstuRider Blanco.svg" : "/EstuRider Rosa.svg";
+        return (
+            <div className={cn("relative flex items-center justify-center", className)}>
+                <Image
+                    src={logoSrc}
+                    alt="EstuRider Logo"
+                    width={500}
+                    height={500}
+                    className={cn(
+                        "w-full h-full",
+                        variant === 'rosa-glow' && "drop-shadow-[0_0_12px_rgba(203,70,90,0.8)]"
+                    )}
+                    priority
+                />
+            </div>
+        );
+    }
+
     const fillColor = {
       white: '#FFFFFF',
       rosa: '#cb465a',

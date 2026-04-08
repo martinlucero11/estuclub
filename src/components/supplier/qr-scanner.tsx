@@ -218,7 +218,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
             let finalValidationData: ValidationData;
 
             if (type === 'redemption') {
-                const redemptionRef = doc(firestore, "benefitRedemptions", id);
+                const redemptionRef = doc(firestore, "redemptions", id);
                 const redemptionSnap = await getDoc(redemptionRef);
                 if (!redemptionSnap.exists()) throw new Error("Canje no encontrado.");
 
@@ -237,7 +237,7 @@ export default function QrScanner({ userIsAdmin = false }: { userIsAdmin?: boole
                     const updateData = { status: 'used' as const, usedAt: serverTimestamp() };
                     batch.set(redemptionRef, updateData, { merge: true });
                     
-                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redeemed_benefits', id);
+                    const userRedemptionRef = doc(firestore, 'users', redemptionData.userId, 'redemptions', id);
                     batch.set(userRedemptionRef, updateData, { merge: true });
 
                     if (redemptionData.pointsGranted && redemptionData.pointsGranted > 0) {

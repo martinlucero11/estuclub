@@ -148,21 +148,40 @@ export function BenefitDialog({ isOpen, onOpenChange, benefit, forceSupplierId, 
       }
 
       if (isEditing && benefit) {
-        const benefitRef = doc(firestore, 'perks', benefit.id);
+        const benefitRef = doc(firestore, 'benefits', benefit.id);
         await updateDoc(benefitRef, dataToSave);
         toast({ title: 'Beneficio actualizado', description: 'Los cambios han sido guardados.' });
       } else {
-        const perksRef = collection(firestore, 'perks');
+        const perksRef = collection(firestore, 'benefits');
         const supplierName = forceSupplierName || suppliers?.find(s => s.id === values.ownerId)?.name || 'Proveedor Estuclub';
         
-        await addDoc(perksRef, {
+        const benefitDocRef = await addDoc(perksRef, {
           ...dataToSave,
           supplierId: forceSupplierId || values.ownerId,
           supplierName: supplierName,
           createdAt: serverTimestamp(),
           redemptionCount: 0,
         });
-        toast({ title: 'Beneficio lanzado', description: 'El beneficio ya está disponible en Estuclub.' });
+
+        // Trigger Real-Time Push Notification
+        if (benefitDocRef) {
+            try {
+                await fetch('/api/notifications/notify-benefit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        benefitTitle: values.title,
+                        supplierName: supplierName,
+                        benefitId: benefitDocRef.id,
+                        imageUrl: values.imageUrl
+                    })
+                });
+            } catch (notiError) {
+                console.error('Push error:', notiError);
+            }
+        }
+
+        toast({ title: 'Beneficio lanzado', description: 'El beneficio ya está disponible en Estuclub y la comunidad ha sido notificada.' });
       }
       onOpenChange(false);
     } catch (error) {

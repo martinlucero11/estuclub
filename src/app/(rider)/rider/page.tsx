@@ -1,81 +1,44 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useUser, useFirestore, useCollection, useAuthService } from '@/firebase';
-import { collection, query, where, doc, updateDoc, Timestamp, onSnapshot } from 'firebase/firestore';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { collection, query, where, doc, updateDoc, Timestamp, onSnapshot, serverTimestamp, writeBatch, limit } from 'firebase/firestore';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
 import { Order } from '@/types/data';
 import { motion, AnimatePresence } from 'framer-motion';
 import Logo from '@/components/common/Logo';
 import {
-    ShoppingBag, CreditCard, Navigation, AlertCircle, ExternalLink,
-    CheckCircle2, Wallet, Clock, MapPin, ArrowRight, Map as MapIcon,
+    ShoppingBag, CreditCard, Navigation, AlertCircle, Menu,
+    CheckCircle2, Wallet, Clock, MapPin, ArrowRight,
     Bike, Mail, KeyRound, Loader2, User, Fingerprint, Phone, Car,
-    Camera, ShieldCheck, AlertTriangle, LogIn, Trophy, Zap
+    Camera, AlertTriangle, LogIn, Zap, Info, LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { haptic } from '@/lib/haptics';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { setDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
 import { createConverter } from '@/lib/firestore-converter';
-import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
+import { useMessaging } from '@/firebase/messaging';
+
 import { StarRating } from '@/components/reviews/star-rating';
+import { acceptDeliveryOrder } from '@/lib/actions/order-actions';
 
-// ─── MAP COMPONENT ──────────────────────────────────────────
-function RiderMap({ orders, onOrderSelect }: { orders: Order[], onOrderSelect: (order: Order) => void }) {
-    return (
-        <div className="w-full h-[40vh] bg-[#000000] rounded-[2.5rem] border border-[#cb465a]/20 shadow-[0_0_50px_rgba(203, 70, 90,0.05)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#cb465a]/10 via-transparent to-transparent opacity-50 z-10 pointer-events-none" />
-            <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <MapIcon className="h-12 w-12 text-[#cb465a]/40 mx-auto animate-pulse" />
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#cb465a]/60">Visualizando {orders.length} pedidos cercanos</p>
-                </div>
-            </div>
-            {orders.map((order, i) => (
-                <motion.button
-                    key={order.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    whileHover={{ scale: 1.2 }}
-                    onClick={() => onOrderSelect(order)}
-                    style={{
-                        position: 'absolute',
-                        top: `${30 + (i * 15) % 40}%`,
-                        left: `${20 + (i * 20) % 60}%`
-                    }}
-                    className="z-20 h-8 w-8 rounded-full bg-[#cb465a] flex items-center justify-center shadow-[0_0_20px_rgba(203, 70, 90,0.6)] border-2 border-black"
-                >
-                    <ShoppingBag className="h-4 w-4 text-black" />
-                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black/80 backdrop-blur-md border border-[#cb465a]/20 text-[8px] px-2 py-0.5 rounded-full font-black text-[#cb465a] uppercase tracking-widest">
-                        ${order.deliveryCost}
-                    </span>
-                </motion.button>
-            ))}
-        </div>
-    );
-}
-
-function AverageRating({ rating, count }: { rating?: number; count?: number }) {
-    if (!count || count === 0) return null;
-    
-    return (
-        <div className="flex items-center gap-1.5 bg-[#cb465a]/10 text-[#cb465a] px-3 py-1 rounded-full border border-[#cb465a]/20 shadow-sm animate-in fade-in duration-500">
-            <StarRating rating={rating || 0} readonly size="sm" />
-            <span className="text-xs font-black">{(rating || 0).toFixed(1)}</span>
-            <span className="text-[10px] opacity-60 font-bold">({count})</span>
-        </div>
-    );
-}
+// --- NEW COMPONENTS ---
+import { RiderSidebar } from '@/components/rider/rider-sidebar';
+import { RiderMap } from '@/components/rider/rider-map';
+import { RiderEarnings } from '@/components/rider/rider-earnings';
+import { RiderHistory } from '@/components/rider/rider-history';
+import { RiderProfile } from '@/components/rider/rider-profile';
+import { RiderPinEntry } from '@/components/rider/rider-pin-entry';
+import { RiderBottomNav } from '@/components/rider/rider-bottom-nav';
 
 // ─── LOGIN FORM ──────────────────────────────────────────
 function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
@@ -100,37 +63,37 @@ function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
         }
     };
 
-    const ic = "h-12 pl-12 rounded-xl bg-[#cb465a]/5 border-[#cb465a]/10 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 transition-all font-medium text-foreground placeholder:text-foreground";
+    const ic = "h-12 pl-12 rounded-xl bg-[#cb465a]/5 border-[#cb465a]/10 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 transition-all font-medium text-foreground placeholder:text-foreground/40";
 
     return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
-            <Card className="rounded-[2rem] glass-dark border-primary/10">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto relative z-20">
+            <Card className="rounded-[2.5rem] bg-black/40 backdrop-blur-3xl border-[#cb465a]/20 shadow-2xl">
                 <form onSubmit={handleLogin}>
-                    <CardContent className="space-y-4 pt-8 px-6">
+                    <CardContent className="space-y-4 pt-8 px-8">
                         <div className="space-y-1.5">
                             <Label className="font-black uppercase tracking-widest text-[10px] text-[#cb465a]/60 ml-1">Email</Label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
-                                <Input type="email" placeholder="rider@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} />
+                                <Mail className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#cb465a]/60" />
+                                <Input type="email" placeholder="rider@estuclub.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} />
                             </div>
                         </div>
                         <div className="space-y-1.5">
                             <Label className="font-black uppercase tracking-widest text-[10px] text-[#cb465a]/60 ml-1">Contraseña</Label>
                             <div className="relative">
-                                <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
+                                <KeyRound className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#cb465a]/60" />
                                 <Input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className={ic} />
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="px-6 pb-6 pt-2 flex flex-col gap-3">
-                        <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#cb465a]/90 shadow-[0_0_30px_rgba(203, 70, 90,0.3)] disabled:opacity-30">
+                    <CardFooter className="px-8 pb-8 pt-4">
+                        <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#cb465a]/90 shadow-[0_15px_30px_rgba(203,70,90,0.3)] disabled:opacity-30">
                             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><LogIn className="mr-2 h-5 w-5" />Ingresar</>}
                         </Button>
                     </CardFooter>
                 </form>
             </Card>
-            <button onClick={onSwitchToSignup} className="mt-6 block mx-auto text-xs font-bold text-foreground hover:text-[#cb465a] transition-colors">
-                ¿No tenés cuenta? <span className="font-black text-[#cb465a] uppercase tracking-widest text-[10px] ml-1">Registrate como Rider</span>
+            <button onClick={onSwitchToSignup} className="mt-8 block mx-auto text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-[#cb465a] transition-all">
+                ¿No tenés cuenta? <span className="text-[#cb465a]">Registrate</span>
             </button>
         </motion.div>
     );
@@ -154,8 +117,9 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
     const [fotoVehiculo, setFotoVehiculo] = useState<File | null>(null);
     const [acceptDDJJ, setAcceptDDJJ] = useState(false);
     const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+    const [isMpLinked, setIsMpLinked] = useState(false);
 
-    const isValid = firstName && lastName && email && password.length >= 8 && dni && phone && patente && fotoRostro && fotoVehiculo && acceptDDJJ && acceptPrivacy;
+    const isValid = firstName && lastName && email && password.length >= 8 && dni && phone && patente && fotoRostro && fotoVehiculo && acceptDDJJ && acceptPrivacy && isMpLinked;
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -166,38 +130,27 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             const user = cred.user;
             await updateProfile(user, { displayName: `${firstName} ${lastName}` });
 
-            let fotoRostroUrl = '';
-            let fotoVehiculoUrl = '';
-            try {
-                const fd = new FormData();
-                fd.append('fotoRostro', fotoRostro!);
-                fd.append('fotoVehiculo', fotoVehiculo!);
-                fd.append('userId', user.uid);
-                fd.append('firstName', firstName);
-                fd.append('lastName', lastName);
-                fd.append('dni', dni);
-                const res = await fetch('/api/upload-rider-docs', { method: 'POST', body: fd });
-                if (res.ok) {
-                    const data = await res.json();
-                    fotoRostroUrl = data.fotoRostroLink || '';
-                    fotoVehiculoUrl = data.fotoVehiculoLink || '';
-                }
-            } catch (e) { console.error('Drive upload error:', e); }
-
             await new Promise(r => setTimeout(r, 800));
             const batch = writeBatch(firestore);
+            
+            // Set trial for 7 days
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 7);
+
             batch.set(doc(firestore, 'users', user.uid), {
                 id: user.uid, uid: user.uid, email, firstName, lastName, dni, phone,
                 role: 'rider_pending', patente: patente.toUpperCase(), photoURL: '', points: 0,
                 isEmailVerified: false, createdAt: serverTimestamp(),
+                mp_linked: true, trialEndsAt: Timestamp.fromDate(trialEndsAt)
             });
+            
             batch.set(doc(firestore, 'rider_applications', user.uid), {
                 userId: user.uid, userName: `${firstName} ${lastName}`, email, dni, phone,
-                patente: patente.toUpperCase(), fotoRostroUrl, fotoVehiculoUrl,
+                patente: patente.toUpperCase(),
                 ddjjAntecedentes: true, status: 'pending', createdAt: serverTimestamp(),
             });
+            
             await batch.commit();
-            try { await sendEmailVerification(user, { url: `${window.location.origin}/rider` }); } catch (e) { }
             haptic.vibrateSuccess();
             toast({ title: '✅ Solicitud enviada', description: 'Te notificaremos cuando seas aprobado.' });
         } catch (error: any) {
@@ -209,115 +162,184 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
         }
     }
 
-    const ic = "h-11 pl-11 rounded-xl bg-[#cb465a]/5 border-[#cb465a]/10 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 transition-all font-medium text-foreground placeholder:text-foreground text-sm";
+    const ic = "h-11 pl-11 rounded-xl bg-white/5 border-white/10 focus:border-[#cb465a]/30 focus:ring-[#cb465a]/10 transition-all font-medium text-foreground placeholder:text-foreground/20 text-sm";
     const lc = "font-black uppercase tracking-widest text-[9px] ml-1 text-[#cb465a]/60";
 
     return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto">
-            <Card className="rounded-[2rem] bg-background/80 border-[#cb465a]/10 backdrop-blur-xl">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md mx-auto relative z-20">
+            <Card className="rounded-[2.5rem] bg-black/40 backdrop-blur-3xl border-[#cb465a]/20">
                 <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-3.5 pt-6 px-5">
+                    <CardContent className="space-y-3.5 pt-8 px-6">
                         <div className="grid grid-cols-2 gap-2.5">
                             <div className="space-y-1">
                                 <Label className={lc}>Nombre</Label>
-                                <div className="relative"><User className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input placeholder="Juan" value={firstName} onChange={e => setFirstName(e.target.value)} className={ic} /></div>
+                                <div className="relative"><User className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#cb465a]/40" /><Input placeholder="Juan" value={firstName} onChange={e => setFirstName(e.target.value)} className={ic} /></div>
                             </div>
                             <div className="space-y-1">
                                 <Label className={lc}>Apellido</Label>
-                                <div className="relative"><User className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input placeholder="Pérez" value={lastName} onChange={e => setLastName(e.target.value)} className={ic} /></div>
+                                <div className="relative"><User className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#cb465a]/40" /><Input placeholder="Pérez" value={lastName} onChange={e => setLastName(e.target.value)} className={ic} /></div>
                             </div>
                         </div>
                         <div className="space-y-1">
                             <Label className={lc}>Email</Label>
-                            <div className="relative"><Mail className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input type="email" placeholder="rider@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} /></div>
+                            <div className="relative"><Mail className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#cb465a]/40" /><Input type="email" placeholder="rider@email.com" value={email} onChange={e => setEmail(e.target.value)} className={ic} /></div>
                         </div>
                         <div className="space-y-1">
                             <Label className={lc}>Contraseña</Label>
-                            <div className="relative"><KeyRound className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input type="password" placeholder="Min. 8 caracteres" value={password} onChange={e => setPassword(e.target.value)} className={ic} /></div>
+                            <div className="relative"><KeyRound className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#cb465a]/40" /><Input type="password" placeholder="Min. 8 caracteres" value={password} onChange={e => setPassword(e.target.value)} className={ic} /></div>
                         </div>
-                        <div className="grid grid-cols-3 gap-2.5">
+                        <div className="grid grid-cols-2 gap-2.5">
                             <div className="space-y-1">
                                 <Label className={lc}>DNI</Label>
-                                <div className="relative"><Fingerprint className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input placeholder="12345678" value={dni} onChange={e => setDni(e.target.value)} className={ic} /></div>
-                            </div>
-                            <div className="space-y-1">
-                                <Label className={lc}>Teléfono</Label>
-                                <div className="relative"><Phone className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input placeholder="1122334455" value={phone} onChange={e => setPhone(e.target.value)} className={ic} /></div>
+                                <Input placeholder="12345678" value={dni} onChange={e => setDni(e.target.value)} className={ic} />
                             </div>
                             <div className="space-y-1">
                                 <Label className={lc}>Patente</Label>
-                                <div className="relative"><Car className="absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-foreground" /><Input placeholder="AB123CD" value={patente} onChange={e => setPatente(e.target.value.toUpperCase())} className={`${ic} uppercase`} /></div>
+                                <Input placeholder="AB123CD" value={patente} onChange={e => setPatente(e.target.value.toUpperCase())} className={`${ic} uppercase`} />
                             </div>
                         </div>
+
                         <div className="grid grid-cols-2 gap-2.5">
-                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#cb465a]/20 rounded-xl bg-[#cb465a]/5 cursor-pointer hover:bg-[#cb465a]/10 transition-all">
+                            <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-[#cb465a]/20 rounded-xl bg-[#cb465a]/5 cursor-pointer hover:bg-[#cb465a]/10 transition-all">
                                 <input type="file" accept="image/*" capture="user" className="hidden" onChange={e => setFotoRostro(e.target.files?.[0] || null)} />
                                 <Camera className="h-5 w-5 text-[#cb465a] mb-1" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[#cb465a]/60">{fotoRostro ? '✅ Rostro' : 'Foto Rostro'}</span>
+                                <span className="text-[8px] font-black uppercase text-[#cb465a]/60">{fotoRostro ? '✅ LISTO' : 'ROSTRO'}</span>
                             </label>
-                            <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-[#cb465a]/20 rounded-xl bg-[#cb465a]/5 cursor-pointer hover:bg-[#cb465a]/10 transition-all">
+                            <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-[#cb465a]/20 rounded-xl bg-[#cb465a]/5 cursor-pointer hover:bg-[#cb465a]/10 transition-all">
                                 <input type="file" accept="image/*" capture="environment" className="hidden" onChange={e => setFotoVehiculo(e.target.files?.[0] || null)} />
                                 <Car className="h-5 w-5 text-[#cb465a] mb-1" />
-                                <span className="text-[8px] font-black uppercase tracking-widest text-[#cb465a]/60">{fotoVehiculo ? '✅ Vehículo' : 'Foto Vehículo'}</span>
+                                <span className="text-[8px] font-black uppercase text-[#cb465a]/60">{fotoVehiculo ? '✅ LISTO' : 'VEHÍCULO'}</span>
                             </label>
                         </div>
-                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                            <Checkbox checked={acceptDDJJ} onCheckedChange={(v) => setAcceptDDJJ(!!v)} className="mt-0.5 border-amber-500/40 data-[state=checked]:bg-amber-500" />
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-amber-500 flex items-center gap-1"><AlertTriangle className="h-2.5 w-2.5" /> DDJJ Antecedentes</p>
-                                <p className="text-[8px] text-amber-500/70 font-medium leading-relaxed">Declaro bajo juramento no poseer antecedentes penales.</p>
+
+                        {/* Mercado Pago Linking Mock */}
+                        <div className={cn(
+                            "p-4 rounded-xl border flex items-center justify-between transition-all",
+                            isMpLinked ? "bg-emerald-500/10 border-emerald-500/30" : "bg-[#cb465a]/5 border-[#cb465a]/30"
+                        )}>
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center">
+                                    <CreditCard className={cn("h-4 w-4", isMpLinked ? "text-emerald-400" : "text-[#cb465a]")} />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-white">Mercado Pago</p>
+                                    <p className="text-[8px] font-bold text-foreground/40">{isMpLinked ? 'CUENTA VINCULADA' : 'REQUERIDO PARA PAGOS'}</p>
+                                </div>
                             </div>
+                            <Button 
+                                type="button"
+                                size="sm" 
+                                onClick={() => {
+                                    haptic.vibrateSuccess();
+                                    setIsMpLinked(true);
+                                }}
+                                className={cn(
+                                    "h-8 px-4 rounded-lg font-black text-[8px] uppercase tracking-widest",
+                                    isMpLinked ? "bg-emerald-500 text-white" : "bg-white/10 text-white hover:bg-white/20"
+                                )}
+                            >
+                                {isMpLinked ? 'OK' : 'VINCULAR'}
+                            </Button>
                         </div>
-                        <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#cb465a]/5 border border-[#cb465a]/10">
-                            <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} className="border-[#cb465a]/30 data-[state=checked]:bg-[#cb465a]" />
-                            <p className="text-[9px] font-bold text-foreground">Acepto la <Link href="/politica-de-privacidad" className="text-[#cb465a] font-black uppercase tracking-widest text-[8px]" target="_blank">Privacidad</Link></p>
+
+                        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <Checkbox checked={acceptDDJJ} onCheckedChange={(v) => setAcceptDDJJ(!!v)} className="mt-0.5 border-orange-500/40" />
+                            <p className="text-[8px] text-orange-400/70 font-bold leading-relaxed uppercase tracking-tight">Declaro bajo juramento no poseer antecedentes penales.</p>
+                        </div>
+                        <div className="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 border border-white/10">
+                            <Checkbox checked={acceptPrivacy} onCheckedChange={(v) => setAcceptPrivacy(!!v)} className="border-[#cb465a]/30" />
+                            <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest">Acepto la Privacidad</p>
                         </div>
                     </CardContent>
-                    <CardFooter className="pb-6 pt-2 px-5">
-                        <Button type="submit" disabled={!isValid || isSubmitting} className="w-full h-14 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#cb465a]/90 shadow-[0_0_30px_rgba(203, 70, 90,0.3)] disabled:opacity-30">
+                    <CardFooter className="pb-8 pt-4 px-6">
+                        <Button type="submit" disabled={!isValid || isSubmitting} className="w-full h-14 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] text-sm hover:bg-[#cb465a]/90 shadow-[0_15px_30px_rgba(203,70,90,0.3)] disabled:opacity-30">
                             {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Bike className="mr-2 h-5 w-5" />Enviar Solicitud</>}
                         </Button>
                     </CardFooter>
                 </form>
             </Card>
-            <button onClick={onSwitchToLogin} className="mt-4 block mx-auto text-xs font-bold text-foreground hover:text-[#cb465a] transition-colors">
-                ¿Ya tenés cuenta? <span className="font-black text-[#cb465a] uppercase tracking-widest text-[10px] ml-1">Ingresar</span>
+            <button onClick={onSwitchToLogin} className="mt-6 block mx-auto text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 hover:text-[#cb465a] transition-all">
+                ¿Ya tenés cuenta? <span className="text-[#cb465a]">Ingresar</span>
             </button>
         </motion.div>
-    );
-}
-
-// ─── PENDING SCREEN ──────────────────────────────────────
-function RiderPending() {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <div className="h-20 w-20 rounded-[2rem] bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-                <Clock className="h-10 w-10 text-amber-400 animate-pulse" />
-            </div>
-            <div className="space-y-2">
-                <h1 className="text-2xl font-black tracking-tighter uppercase italic text-amber-400">En Revisión</h1>
-                <p className="text-sm text-foreground font-medium max-w-xs mx-auto leading-relaxed">
-                    Tu solicitud está siendo revisada. Te notificaremos cuando seas aprobado para recibir pedidos.
-                </p>
-            </div>
-            <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 font-black text-[9px] uppercase tracking-widest px-4 py-2 rounded-full">
-                Pendiente de Aprobación
-            </Badge>
-        </div>
     );
 }
 
 // ─── MAIN PAGE ───────────────────────────────────────────
 export default function RiderPage() {
     const { userData, user, roles, isUserLoading } = useUser();
+    const { fcmToken } = useMessaging();
     const { toast } = useToast();
+
     const firestore = useFirestore();
     const [view, setView] = useState<'login' | 'signup'>('login');
+    const [currentTab, setCurrentTab] = useState<'map' | 'earnings' | 'profile' | 'history'>('map');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [isPinEntryOpen, setIsPinEntryOpen] = useState(false);
     const [isAccepting, setIsAccepting] = useState(false);
     const [isOnline, setIsOnline] = useState(userData?.isOnline === true);
+    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; heading: number | null } | undefined>(undefined);
 
-    // Sync isOnline state with Firestore effectively
+    // Throttling References for Location Updates
+    const lastUpdateAttempt = useRef<number>(0);
+    const lastLocationSent = useRef<{ lat: number; lng: number } | null>(null);
+    
+    // ── AUDITORY FEEDBACK ──
+    const radarAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+            radarAudioRef.current = audio;
+        }
+    }, []);
+
+
+    // Watch Geolocation
+    useEffect(() => {
+        if (!navigator.geolocation) return;
+
+        const watcher = navigator.geolocation.watchPosition(
+            (pos) => {
+                const newLoc = { 
+                    lat: pos.coords.latitude, 
+                    lng: pos.coords.longitude,
+                    heading: pos.coords.heading
+                };
+                setUserLocation(newLoc);
+
+                // PERFORMANCE OPTIMIZATION: Throttled Firestore Updates
+                if (isOnline && user?.uid) {
+                    const now = Date.now();
+                    const timeElapsed = now - lastUpdateAttempt.current;
+                    
+                    // Update every 20 seconds OR if moved more than ~50 meters (roughly 0.0005 deg)
+                    const distanceMoved = lastLocationSent.current 
+                        ? Math.sqrt(Math.pow(newLoc.lat - lastLocationSent.current.lat, 2) + Math.pow(newLoc.lng - lastLocationSent.current.lng, 2))
+                        : 999;
+
+                    if (timeElapsed > 20000 || distanceMoved > 0.0005) {
+                        lastUpdateAttempt.current = now;
+                        lastLocationSent.current = { lat: newLoc.lat, lng: newLoc.lng };
+                        
+                        updateDoc(doc(firestore, 'users', user.uid), {
+                            location: { latitude: newLoc.lat, longitude: newLoc.lng },
+                            heading: newLoc.heading,
+                            lastUpdated: serverTimestamp()
+                        }).catch(e => console.error("Throttled update failed", e));
+                    }
+                }
+            },
+            (err) => console.warn('Geo Error:', err),
+            { enableHighAccuracy: true }
+        );
+
+        return () => navigator.geolocation.clearWatch(watcher);
+    }, [isOnline, user?.uid, firestore]);
+
+    // Sync isOnline state
     useEffect(() => {
         if (userData?.isOnline !== undefined) {
             setIsOnline(userData.isOnline);
@@ -327,12 +349,7 @@ export default function RiderPage() {
     const handleToggleOnline = async () => {
         if (!user?.uid) return;
         if (!hasActiveAccess) {
-            toast({ 
-                variant: 'destructive',
-                title: "Membresía Requerida", 
-                description: "Tu acceso gratuito de 48hs expiró. Regularizá tu membresía para seguir operando." 
-            });
-            haptic.vibrateError();
+            toast({ variant: 'destructive', title: "Suscripción Requerida", description: "Tu periodo de prueba finalizó." });
             return;
         }
 
@@ -341,425 +358,374 @@ export default function RiderPage() {
         haptic.vibrateMedium();
 
         try {
-            const userRef = doc(firestore, 'users', user.uid);
-            await updateDoc(userRef, { 
-                isOnline: newStatus,
-                lastStatusChange: serverTimestamp()
-            });
+            await updateDoc(doc(firestore, 'users', user.uid), { isOnline: newStatus, lastStatusChange: serverTimestamp() });
+            
+            // Sync with FCM Topics if token is available
+            if (fcmToken) {
+                try {
+                    await fetch('/api/notifications/subscribe', {
+                        method: 'POST',
+                        body: JSON.stringify({ 
+                            token: fcmToken, 
+                            topic: newStatus ? 'active_riders' : 'inactive_riders' // Logic could be improved but this covers basic broadcast
+                        }),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } catch (subError) {
+                    console.error("Topic sync failed", subError);
+                }
+            }
         } catch (error) {
-            // Rollback on error
             setIsOnline(!newStatus);
-            toast({ variant: 'destructive', title: 'Error de Red', description: 'No se pudo sincronizar tu estado.' });
+            toast({ variant: 'destructive', title: 'Error de Red' });
         }
     };
 
+
     // ── REAL-TIME ORDER SYNC ──
     const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
-    const [ordersLoading, setOrdersLoading] = useState(true);
-
     useEffect(() => {
         if (!firestore || !user?.uid || !isOnline) {
             setAvailableOrders([]);
-            setOrdersLoading(false);
             return;
         }
-
         const q = query(
             collection(firestore, 'orders').withConverter(createConverter<Order>()), 
-            where('status', '==', 'pending')
+            where('status', 'in', ['pending', 'searching_rider']),
+            limit(15)
         );
-
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const orders = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
             setAvailableOrders(orders);
-            setOrdersLoading(false);
             
+            // Sensor and Audio Trigger for new matches
             if (!snapshot.metadata.hasPendingWrites && snapshot.docChanges().some(c => c.type === 'added')) {
                 haptic.vibrateSuccess();
+                if (radarAudioRef.current) {
+                    radarAudioRef.current.play().catch(e => console.error("Radar sound error", e));
+                }
             }
-        }, (error) => {
-            console.error('Order stream error:', error);
-            setOrdersLoading(false);
         });
-
         return () => unsubscribe();
     }, [firestore, user?.uid, isOnline]);
 
-    // ── ADMIN OVERLORD BYPASS ──
-    const isAdmin = roles.includes('admin');
-    const isApprovedRider = userData?.role === 'rider' || isAdmin;
-    const isPendingRider = userData?.role === 'rider_pending' && !isAdmin;
 
+    // ── ACTIVE ORDERS SYNC ──
     const myOrdersQuery = useMemo(() => {
         if (!firestore || !user?.uid) return null;
-        return query(
-            collection(firestore, 'orders').withConverter(createConverter<Order>()),
-            where('riderId', '==', user.uid),
-            where('status', 'in', ['assigned', 'at_store', 'on_the_way', 'delivered', 'completed'])
-        );
+        return query(collection(firestore, 'orders').withConverter(createConverter<Order>()), where('riderId', '==', user.uid), where('status', 'in', ['assigned', 'at_store', 'on_the_way', 'delivered', 'completed']));
     }, [firestore, user]);
-
-    const { data: myOrders, isLoading: myOrdersLoading } = useCollection(myOrdersQuery);
+    const { data: myOrders } = useCollection(myOrdersQuery);
 
     const activeOrders = useMemo(() => myOrders?.filter(o => ['assigned', 'at_store', 'on_the_way'].includes(o.status)) || [], [myOrders]);
-    const historyOrders = useMemo(() => myOrders?.filter(o => ['delivered', 'completed'].includes(o.status)) || [], [myOrders]);
-    const totalEarnings = useMemo(() => historyOrders.reduce((sum, o) => sum + (o.deliveryCost || 0), 0), [historyOrders]);
+    const completedOrders = useMemo(() => myOrders?.filter(o => ['delivered', 'completed'].includes(o.status)) || [], [myOrders]);
 
+    // ── MEMBERSHIP LOGIC ──
+    const isAdmin = roles.includes('admin');
+    const trialEndsAt = userData?.trialEndsAt?.seconds ? userData.trialEndsAt.seconds * 1000 : 0;
+    const membershipPaidUntil = userData?.membershipPaidUntil?.seconds ? userData.membershipPaidUntil.seconds * 1000 : 0;
+    const hasActiveAccess = (Date.now() < trialEndsAt) || (Date.now() < membershipPaidUntil) || userData?.isMembershipWaived === true || isAdmin;
 
     if (isUserLoading) return null;
 
-    // ── STATE 1: Not logged in → Login / Signup ──
+    // ── AUTH STATE ──
     if (!user) {
         return (
-            <div className="relative flex min-h-screen flex-col items-center justify-center bg-[#000000] p-6 overflow-hidden py-16">
-                <div className="absolute top-[-5%] right-[-10%] w-[50%] h-[50%] bg-[#cb465a]/5 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-5%] left-[-10%] w-[50%] h-[50%] bg-[#cb465a]/5 blur-[120px] rounded-full" />
-
-                <header className="mb-10 text-center space-y-4 z-10 flex flex-col items-center">
-                    <div className="relative mb-2">
-                        <div className="absolute inset-x-0 -bottom-2 h-1 bg-[#cb465a]/30 blur-md rounded-full" />
-                        <Logo 
-                            variant="rosa-glow"
-                            className="h-16 w-auto filter drop-shadow-[0_2px_15px_rgba(255,0,127,0.4)]"
-                        />
-                    </div>
-                    <h1 className="text-3xl font-black tracking-tighter text-white uppercase italic font-montserrat">
-                        MODO <span className="text-[#cb465a]">RIDER</span>
-                    </h1>
-                    <p className="text-[10px] font-black text-foreground uppercase tracking-[0.4em]">Estuclub Logística</p>
+            <div className="relative flex min-h-screen flex-col items-center justify-center bg-black p-6 overflow-hidden">
+                <div className="absolute top-[-5%] left-[-10%] w-[50%] h-[50%] bg-[#cb465a]/10 blur-[120px] rounded-full" />
+                <div className="absolute bottom-[-5%] right-[-10%] w-[50%] h-[50%] bg-[#cb465a]/10 blur-[120px] rounded-full" />
+                <header className="mb-12 text-center space-y-4 z-10 flex flex-col items-center">
+                    <h2 className="text-5xl font-medium italic tracking-tighter text-white font-montserrat leading-none flex items-baseline">
+                        Estu<span className="text-[#cb465a] font-lobster text-6xl ml-2 tracking-normal italic-none">Rider</span>
+                    </h2>
+                    <p className="text-[10px] font-black text-foreground/40 uppercase tracking-[0.4em]">Arquitectura Logística • v3.0.0</p>
                 </header>
-
-                <div className="z-10 w-full max-w-md">
-                    <AnimatePresence mode="wait">
-                        {view === 'login' ? (
-                            <RiderLogin key="login" onSwitchToSignup={() => setView('signup')} />
-                        ) : (
-                            <RiderSignup key="signup" onSwitchToLogin={() => setView('login')} />
-                        )}
-                    </AnimatePresence>
-                </div>
-
-                <Link href="/" className="mt-8 text-[9px] font-black text-foreground uppercase tracking-[0.3em] hover:text-[#cb465a] transition-colors z-10">
-                    ← Volver a EstuClub
-                </Link>
+                <AnimatePresence mode="wait">
+                    {view === 'login' ? (
+                        <RiderLogin key="login" onSwitchToSignup={() => setView('signup')} />
+                    ) : (
+                        <RiderSignup key="signup" onSwitchToLogin={() => setView('login')} />
+                    )}
+                </AnimatePresence>
             </div>
         );
     }
-    if (isPendingRider) {
-        return <RiderPending />;
-    }
 
-    // ── STATE 3: Logged in but not a rider ──
-    if (!isApprovedRider) {
+    if (userData?.role === 'rider_pending' && !isAdmin) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-8 px-6">
-                <div className="h-24 w-24 rounded-[3rem] bg-[#cb465a]/10 border border-[#cb465a]/20 flex items-center justify-center shadow-[0_0_40px_rgba(203, 70, 90,0.1)]">
-                    <AlertCircle className="h-12 w-12 text-[#cb465a]" />
+            <div className="flex flex-col items-center justify-center min-h-screen bg-black text-center p-8 space-y-8">
+                <div className="h-24 w-24 rounded-[3rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                    <Clock className="h-12 w-12 text-orange-400 animate-pulse" />
                 </div>
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-black tracking-tighter uppercase italic text-white font-montserrat">Sin Permisos</h2>
-                    <p className="text-sm text-foreground font-bold max-w-xs mx-auto leading-relaxed">
-                        Tu cuenta no tiene el rol de Rider habilitado. Contactá con soporte si crees que es un error.
-                    </p>
+                <div className="space-y-4">
+                    <h2 className="text-4xl font-black italic tracking-tighter uppercase text-orange-400 font-montserrat">En Revisión</h2>
+                    <p className="text-sm text-foreground/60 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tu perfil está siendo auditado por el equipo central.</p>
                 </div>
-                <Button asChild className="h-14 px-10 rounded-2xl bg-[#cb465a] text-white font-black uppercase tracking-widest hover:bg-[#cb465a]/90 shadow-[0_0_30px_rgba(203, 70, 90,0.3)] transition-all">
-                    <Link href="/">Volver al inicio</Link>
-                </Button>
             </div>
         );
     }
 
-    // ── STATE 4: Active Rider Dashboard ──
-    // ── MEMBERSHIP LOGIC ──
-    const trialEndsAt = userData?.trialEndsAt?.seconds ? userData.trialEndsAt.seconds * 1000 : 0;
-    const membershipPaidUntil = userData?.membershipPaidUntil?.seconds ? userData.membershipPaidUntil.seconds * 1000 : 0;
-    const isTrialActive = Date.now() < trialEndsAt;
-    const isMembershipActive = Date.now() < membershipPaidUntil;
-    const isMembershipWaived = userData?.isMembershipWaived === true;
-    
-    const hasActiveAccess = isTrialActive || isMembershipActive || isMembershipWaived || isAdmin;
-    const isMpLinked = userData?.mp_linked === true || isAdmin;
-
-    // NO LONGER BLOCKING ACCESS - Protocolo Demo 4 AM
-    /* 
-    if (!isSubscribed || !isMpLinked) {
-        ...
-    }
-    */
-
-    // ── FULL DASHBOARD ──
-    const handleAcceptOrder = async () => {
+    // ── FINAL DELIVERY LOGIC ──
+    const handleCompleteDelivery = async () => {
         if (!selectedOrder || !user?.uid) return;
-        setIsAccepting(true);
-        haptic.vibrateMedium();
+        haptic.vibrateSuccess();
         try {
-            const orderRef = doc(firestore, 'orders', selectedOrder.id);
-            await updateDoc(orderRef, { riderId: user.uid, status: 'assigned', updatedAt: Timestamp.now() });
+            await updateDoc(doc(firestore, 'orders', selectedOrder.id), { 
+                status: 'completed', 
+                deliveryPinValidated: true,
+                completedAt: serverTimestamp() 
+            });
+            setIsPinEntryOpen(false);
             setSelectedOrder(null);
+            toast({ title: '✅ Entrega Finalizada', description: 'El pago ha sido validado.' });
         } catch (error) {
-            console.error('Error accepting order:', error);
-        } finally {
-            setIsAccepting(false);
+            toast({ variant: 'destructive', title: 'Error al finalizar' });
         }
     };
 
     return (
-        <div className="space-y-12 animate-in fade-in duration-700">
-            <MPRestrictionOverlay />
-            {/* KPI Section */}
-            <header className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
-                    <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Billetera</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl font-black tracking-tighter text-white font-inter">${totalEarnings.toLocaleString()}</span>
-                            <Wallet className="h-3.5 w-3.5 text-[#cb465a]/40" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className={cn(
-                    "rounded-[2rem] overflow-hidden backdrop-blur-md border-b-4",
-                    hasActiveAccess ? "bg-white/[0.03] border-[#cb465a]/20 border-b-emerald-500/50" : "bg-red-500/5 border-red-500/20 border-b-red-500"
-                )}>
-                    <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Suscripción</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-5 text-center flex flex-col items-center justify-center gap-2">
-                        {hasActiveAccess ? (
-                             <Badge className="bg-emerald-500 text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-emerald-500/30">ACTIVA</Badge>
-                        ) : (
-                            <>
-                                <Badge className="bg-red-500 text-white font-black text-[9px] uppercase tracking-widest px-4 py-1.5 rounded-full border-0 shadow-lg shadow-red-500/30">VENCIDA</Badge>
-                                <Button size="sm" className="h-7 px-3 bg-white/10 hover:bg-white/20 text-white text-[8px] font-black uppercase rounded-lg">Renovar</Button>
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-                <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
-                    <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Entregas</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl font-black tracking-tighter text-white font-inter">{historyOrders.length}</span>
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500/40" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="bg-white/[0.03] border-[#cb465a]/20 rounded-[2rem] overflow-hidden backdrop-blur-md">
-                    <CardHeader className="p-4 bg-[#cb465a]/5 border-b border-[#cb465a]/10">
-                        <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] text-[#cb465a]">Reputación</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-5 flex flex-col items-center justify-center">
-                        <AverageRating rating={userData?.avgRating} count={userData?.reviewCount} />
-                        {!userData?.reviewCount && <span className="text-[10px] font-black opacity-20 italic">SIN RESEÑAS</span>}
-                    </CardContent>
-                </Card>
-            </header>
-
-            {!hasActiveAccess && (
-                <motion.div 
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="p-6 rounded-[2.5rem] bg-gradient-to-br from-red-500/20 to-black border border-red-500/30 shadow-[0_0_50px_rgba(239,68,68,0.1)] relative overflow-hidden"
-                >
-                    <div className="absolute top-0 right-0 p-4 opacity-10"><AlertTriangle className="h-12 w-12 text-red-500" /></div>
-                    <div className="relative z-10 space-y-2">
-                        <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.2em]">Acceso Restringido</p>
-                        <h3 className="text-lg font-black text-white uppercase italic leading-none">Tu acceso de 48hs ha expirado</h3>
-                        <p className="text-xs font-bold text-foreground/60 leading-relaxed max-w-sm">
-                            Tu período de prueba ha finalizado. Regularizá tu membresía mensual para seguir recibiendo pedidos en tiempo real.
-                        </p>
-                        <div className="pt-2">
-                            <Button className="h-10 px-8 rounded-xl bg-red-500 hover:bg-red-600 text-white font-black uppercase tracking-widest text-[9px] shadow-lg shadow-red-500/20">Regularizar Ahora</Button>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-
-            <div className="flex items-center justify-center px-4">
-                <Button 
-                    onClick={() => {
-                        if (!hasActiveAccess) {
-                            toast({ 
-                                variant: 'destructive',
-                                title: "Membresía Requerida", 
-                                description: "Tu acceso gratuito de 48hs expiró. Regularizá tu membresía para seguir operando." 
-                            });
-                            haptic.vibrateError();
-                            return;
-                        }
-                        handleToggleOnline();
-                    }}
-                    className={cn(
-                        "w-full max-w-xs h-20 rounded-[2.5rem] font-black uppercase italic tracking-[0.2em] text-lg transition-all duration-500 shadow-2xl overflow-hidden relative group",
-                        isOnline && hasActiveAccess 
-                            ? "bg-emerald-500 text-white shadow-emerald-500/20 hover:bg-emerald-600" 
-                            : "bg-white/5 border border-white/10 text-foreground/40 hover:bg-white/10"
-                    )}
-                >
-                    {isOnline && hasActiveAccess && (
-                        <motion.div 
-                            initial={{ x: '-100%' }}
-                            animate={{ x: '200%' }}
-                            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-                        />
-                    )}
-                    <div className="flex items-center gap-4 relative z-10">
-                        {isOnline && hasActiveAccess ? (
-                            <><Zap className="h-6 w-6 animate-pulse fill-white" /> RECIBIENDO PEDIDOS</>
-                        ) : (
-                            <><Bike className="h-6 w-6 opacity-40" /> RECIBIR PEDIDOS</>
-                        )}
-                    </div>
-                </Button>
+        <div className="relative h-screen w-full bg-black overflow-hidden selection:bg-[#cb465a]/30">
+            {/* BACKGROUND MAP (MAP-CENTRIC) */}
+            <div className={cn(
+                "fixed inset-0 transition-all duration-700",
+                currentTab !== 'map' && "blur-xl scale-110 opacity-30 pointer-events-none"
+            )}>
+                <RiderMap 
+                    orders={availableOrders} 
+                    userLocation={userLocation}
+                    isOnline={isOnline}
+                    onOrderSelect={(o) => {
+                        haptic.vibrateMedium();
+                        setSelectedOrder(o);
+                    }} 
+                />
             </div>
 
-            {/* Active Orders Section */}
-            {activeOrders.length > 0 && (
-                <section className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-[#cb465a] flex items-center gap-2 font-montserrat">
-                            <Bike className="h-4 w-4 animate-bounce" /> En Curso ({activeOrders.length})
-                        </h2>
+            {/* FLOATING TOP BAR (PRESTIGE STYLE) */}
+            <header className="fixed top-6 left-4 right-4 z-40 flex justify-between items-center bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-4 px-6 shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
+                <div className="flex items-center gap-6">
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="h-14 w-14 rounded-2xl border border-white/5 bg-white/5 active:scale-95 transition-all text-white hover:text-[#cb465a] hover:bg-white/10"
+                    >
+                        <Menu className="h-7 w-7" />
+                    </Button>
+                    
+                    <div className="flex flex-col">
+                        <div className="flex items-center">
+                             <Logo brand="rider" variant="white" className="h-[70px] w-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]" />
+                        </div>
                     </div>
-                    <div className="grid gap-4">
-                        {activeOrders.map(order => (
-                            <Card key={order.id} className="bg-white/[0.03] border-[#cb465a]/30 rounded-[2rem] overflow-hidden">
-                                <CardContent className="p-6 flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <Badge className="bg-white/10 text-white font-black text-[8px] uppercase tracking-tighter">{order.status.replace('_', ' ')}</Badge>
-                                            <p className="text-sm font-black text-white uppercase italic">{order.supplierName}</p>
-                                        </div>
-                                        <p className="text-[10px] font-bold text-foreground">{order.deliveryAddress}</p>
-                                    </div>
-                                    <Button asChild size="sm" className="bg-[#cb465a] hover:bg-[#cb465a]/90 rounded-xl font-black text-[10px] uppercase tracking-widest px-6 shadow-xl shadow-[#cb465a]/20">
-                                        <Link href={`/rider/trip/${order.id}`}>Ver Ruta</Link>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            <section className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                    <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 font-montserrat">
-                        <Navigation className="h-4 w-4 text-[#cb465a]" /> Mapa de Demanda
-                    </h2>
-                    <Badge variant="outline" className="border-[#cb465a]/20 text-[#cb465a] font-black text-[9px]">DIRECCIÓN SUR</Badge>
                 </div>
-                <RiderMap orders={availableOrders || []} onOrderSelect={setSelectedOrder} />
-            </section>
 
-            {/* History Section */}
-            {historyOrders.length > 0 && (
-                <section className="space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <h2 className="text-sm font-black uppercase tracking-[0.2em] text-foreground font-montserrat">
-                            Historial Reciente
-                        </h2>
-                        <Button 
-                            variant="link" 
-                            className="text-[10px] font-black uppercase tracking-widest text-[#cb465a]"
-                            onClick={() => toast({ 
-                                title: "🚀 Función en desarrollo", 
-                                description: "¡Próximamente podrás ver tu historial completo!" 
-                            })}
-                        >
-                            Ver Todo
-                        </Button>
+                <div className="flex items-center gap-3">
+                    <div className={cn(
+                        "relative h-14 py-1 pl-5 pr-1.5 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-4",
+                        isOnline 
+                            ? "bg-emerald-500/10 border-emerald-500/40 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]" 
+                            : "bg-white/5 border-white/15"
+                    )}>
+                        <div className="flex flex-col items-end">
+                            <span className={cn(
+                                "text-xs font-black uppercase tracking-[0.1em] leading-none transition-colors",
+                                isOnline ? "text-emerald-300" : "text-white/30"
+                            )}>
+                                {isOnline ? 'ONLINE' : 'OFFLINE'}
+                            </span>
+                            <span className="text-[7px] font-black text-white/20 uppercase tracking-tighter mt-1.5">CONEXIÓN ACTIVA</span>
+                        </div>
+                        <div className={cn(
+                            "p-2 rounded-full transition-all duration-500",
+                            isOnline ? "bg-emerald-400/20" : "bg-white/5"
+                        )}>
+                            <Switch 
+                                checked={isOnline} 
+                                onCheckedChange={handleToggleOnline}
+                                className="data-[state=checked]:bg-emerald-400 data-[state=unchecked]:bg-white/10"
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-3">
-                        {historyOrders.slice(0, 5).map(order => (
-                            <div key={order.id} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                                        <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-black text-white uppercase italic">{order.supplierName}</p>
-                                        <p className="text-[10px] text-foreground font-bold">
-                                            {order.createdAt instanceof Timestamp ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'Reciente'}
-                                        </p>
-                                    </div>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-black text-[#cb465a] font-inter">+${order.deliveryCost}</p>
-                                    <p className="text-[8px] font-black uppercase tracking-widest text-foreground">Completado</p>
-                                </div>
+                </div>
+            </header>
+
+            {/* MAIN CONTENT AREA (FLOATING) */}
+            <main className="relative z-30 h-full pt-32 pb-40 px-6 overflow-y-auto pointer-events-none">
+                <div className="pointer-events-auto max-w-xl mx-auto space-y-6">
+                    <AnimatePresence mode='wait'>
+                        {currentTab === 'earnings' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <RiderEarnings orders={completedOrders} />
+                            </motion.div>
+                        )}
+
+                        {currentTab === 'history' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <RiderHistory orders={completedOrders} />
+                            </motion.div>
+                        )}
+
+                        {currentTab === 'profile' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <RiderProfile />
+                            </motion.div>
+                        )}
+                        
+                        {currentTab === 'map' && activeOrders.length > 0 && (
+                            <div className="space-y-4 pt-4">
+                                <p className="text-[10px] font-black uppercase tracking-[.4em] text-[#cb465a] ml-4">Viajes en curso</p>
+                                {activeOrders.map(order => (
+                                    <Card key={order.id} className="bg-black/60 backdrop-blur-3xl border-[#cb465a]/30 rounded-[2.5rem] overflow-hidden group">
+                                        <CardContent className="p-6 flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-14 w-14 rounded-2xl bg-[#cb465a]/10 flex items-center justify-center">
+                                                    <Navigation className="h-6 w-6 text-[#cb465a] animate-pulse" />
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <p className="text-lg font-black italic uppercase tracking-tighter text-white">{order.supplierName}</p>
+                                                    <p className="text-[10px] font-bold text-foreground/60 uppercase">{order.deliveryAddress}</p>
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                onClick={() => {
+                                                    haptic.vibrateMedium();
+                                                    setSelectedOrder(order);
+                                                }}
+                                                className="bg-[#cb465a] hover:bg-[#cb465a]/90 h-14 w-14 rounded-2xl shadow-lg shadow-[#cb465a]/20"
+                                            >
+                                                <ArrowRight className="h-5 w-5" />
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                        ))}
-                    </div>
-                </section>
-            )}
+                        )}
+                    </AnimatePresence>
+                </div>
+            </main>
 
+            {/* SELECTION OVERLAY (BOTTOM SHEET STYLE) */}
             <AnimatePresence>
                 {selectedOrder && (
                     <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]" />
-                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-[#000000] border-t border-[#cb465a]/30 rounded-t-[3rem] p-8 pb-12 shadow-[0_-20px_50px_rgba(203, 70, 90,0.1)]">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]" />
+                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-[#0a0a0a] border-t border-[#cb465a]/30 rounded-t-[3rem] p-8 pb-12">
                             <div className="w-12 h-1.5 bg-[#cb465a]/20 rounded-full mx-auto mb-8" />
-                            <div className="space-y-6">
-                                <div className="flex items-start justify-between">
+                            
+                            <div className="space-y-8">
+                                <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <h3 className="text-2xl font-black tracking-tighter uppercase italic text-[#cb465a] font-montserrat">Detalles del Envío</h3>
-                                        <p className="text-xs font-bold text-foreground uppercase tracking-widest">ID: {selectedOrder.id.slice(0, 8)}</p>
+                                        <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-0 text-[8px] font-black tracking-widest uppercase px-3 py-1">Entrega Activa</Badge>
+                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white font-montserrat">{selectedOrder.supplierName}</h3>
+                                        <p className="text-xs font-bold text-foreground/40">{selectedOrder.deliveryAddress}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-foreground mb-1">Tu ganancia</p>
-                                        <p className="text-4xl font-black tracking-tighter text-[#cb465a] font-inter">${selectedOrder.deliveryFee || selectedOrder.deliveryCost}</p>
+                                        <p className="text-[10px] font-black uppercase text-[#cb465a]/60">COBRAR</p>
+                                        <p className="text-3xl font-black tracking-tighter text-[#cb465a] font-inter">${(selectedOrder.total || 0).toLocaleString()}</p>
                                     </div>
                                 </div>
 
-                                {/* GIANT DOOR PAYMENT BANNER FOR RIDER */}
-                                {selectedOrder.deliveryPaymentStatus === 'pending' && (
-                                    <motion.div
-                                        initial={{ scale: 0.95 }}
-                                        animate={{ scale: [0.95, 1.05, 1] }}
-                                        transition={{ duration: 0.5 }}
-                                        className="bg-[#cb465a] rounded-[2rem] p-6 border-4 border-black shadow-[0_0_40px_rgba(203, 70, 90,0.4)] text-center relative overflow-hidden group"
-                                    >
-                                        <div className="absolute top-0 right-0 p-4 opacity-20"><CreditCard className="h-12 w-12 text-black" /></div>
-                                        <div className="space-y-1 relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white">💰 MONTO A COBRAR EN PUERTA</p>
-                                            <h2 className="text-4xl font-black italic tracking-tighter text-black">
-                                                $ {(selectedOrder.deliveryFee || selectedOrder.deliveryCost).toLocaleString()}
-                                            </h2>
-                                            <p className="text-[8px] font-bold text-black/60 uppercase tracking-widest">Cobrar en efectivo al entregar</p>
-                                        </div>
-                                    </motion.div>
-                                )}
-                                <div className="space-y-4 pt-4 border-t border-white/5">
-                                    <div className="flex items-center gap-2 text-foreground">
-                                        <MapPin className="h-4 w-4 text-[#cb465a]" />
-                                        <span className="text-xs font-bold uppercase tracking-tight truncate flex-1">{selectedOrder.supplierName}</span>
-                                        <ArrowRight className="h-3 w-3 opacity-30" />
-                                        <span className="text-xs font-bold uppercase tracking-tight truncate flex-1">{selectedOrder.deliveryAddress}</span>
+                                {/* DOOR PAYMENT BANNER */}
+                                <div className="bg-[#cb465a] rounded-3xl p-6 border-4 border-black shadow-2xl flex items-center justify-between overflow-hidden relative">
+                                    <div className="absolute right-0 top-0 p-4 opacity-10"><Info className="h-12 w-12 text-black" /></div>
+                                    <div className="space-y-0.5 relative z-10">
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-black/60">PAGO EN PUERTA</p>
+                                        <p className="text-lg font-black italic text-black uppercase">Cobrar al Cliente</p>
+                                    </div>
+                                    <div className="text-right relative z-10">
+                                        <p className="text-sm font-black text-black">Efectivo / Alias</p>
                                     </div>
                                 </div>
-                                <Button 
-                                    onClick={handleAcceptOrder} 
-                                    disabled={isAccepting || !hasActiveAccess || !isOnline} 
-                                    className={cn(
-                                        "w-full h-16 text-white font-black text-lg uppercase tracking-[0.2em] rounded-[2rem] mt-6 transition-all active:scale-95",
-                                        (!hasActiveAccess || !isOnline) ? "bg-white/5 text-white/20" : "bg-[#cb465a] hover:bg-[#cb465a]/90 shadow-[0_0_30px_rgba(203, 70, 90,0.3)]"
-                                    )}
-                                >
-                                    {isAccepting ? "Procesando..." : (!hasActiveAccess ? "MEMBRESÍA REQUERIDA" : !isOnline ? "PONERSE ONLINE" : "ACEPTAR ENVÍO")}
-                                </Button>
+
+                                <div className="pt-4 border-t border-white/5 space-y-4">
+                                    <div className="flex items-center gap-3 text-foreground/60">
+                                        <MapPin className="h-4 w-4 text-[#cb465a]" />
+                                        <span className="text-xs font-bold uppercase truncate">{selectedOrder.deliveryAddress}</span>
+                                    </div>
+                                </div>
+
+                                {activeOrders.some(o => o.id === selectedOrder.id) ? (
+                                    <Button 
+                                        onClick={() => setIsPinEntryOpen(true)}
+                                        className="w-full h-20 rounded-[2.5rem] bg-[#cb465a] text-white font-black text-lg uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all"
+                                    >
+                                        FINALIZAR ENTREGA
+                                    </Button>
+                                ) : (
+                                    <Button 
+                                        disabled={isAccepting || !hasActiveAccess || !isOnline}
+                                        onClick={async () => {
+                                            if (!hasActiveAccess || !isOnline) return;
+                                            setIsAccepting(true);
+                                            haptic.vibrateMedium();
+                                            try {
+                                                const res = await acceptDeliveryOrder(selectedOrder.id, user.uid);
+                                                if (res.success) {
+                                                    setSelectedOrder(null);
+                                                    toast({ title: '✅ Pedido Aceptado', description: 'Dirigite al comercio para retirar el pedido.' });
+                                                    haptic.vibrateSuccess();
+                                                } else {
+                                                    throw new Error((res as any).error);
+                                                }
+                                            } catch (e: any) { 
+                                                haptic.vibrateError();
+                                                toast({ variant: 'destructive', title: 'Error de Concurrencia', description: e.message || 'No se pudo aceptar el pedido.' }); 
+                                            }
+                                            finally { setIsAccepting(false); }
+                                        }}
+                                        className="w-full h-20 rounded-[2.5rem] bg-[#cb465a] text-white font-black text-lg uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all disabled:opacity-30"
+                                    >
+                                        {isAccepting ? <Loader2 className="animate-spin" /> : 'ACEPTAR VIAJE SEGURO'}
+                                    </Button>
+                                )}
                             </div>
                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
+
+            {/* PIN ENTRY MODAL */}
+            <RiderPinEntry 
+                isOpen={isPinEntryOpen} 
+                onClose={() => setIsPinEntryOpen(false)} 
+                correctPin={selectedOrder?.deliveryPin || '1234'} // Fallback for legacy
+                onSuccess={handleCompleteDelivery} 
+            />
+
+            {/* NAVIGATION (BOTTOM) */}
+            <RiderBottomNav 
+                currentTab={currentTab}
+                onTabChange={setCurrentTab}
+            />
+
+            {/* SIDEBAR */}
+            <RiderSidebar 
+                isOpen={isSidebarOpen} 
+                onClose={() => setIsSidebarOpen(false)} 
+                currentView={currentTab} 
+                onViewChange={setCurrentTab} 
+                isOnline={isOnline} 
+                onToggleOnline={handleToggleOnline}
+                userName={userData?.firstName}
+            />
+
+            {/* MEMBERSHIP BLOCKER */}
+            {!hasActiveAccess && (
+                <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in fade-in duration-500">
+                    <div className="h-32 w-32 rounded-[4rem] bg-[#cb465a]/10 border-4 border-[#cb465a]/20 flex items-center justify-center shadow-[0_0_60px_rgba(203,70,90,0.3)]">
+                        <AlertTriangle className="h-16 w-16 text-[#cb465a]" />
+                    </div>
+                    <div className="space-y-4">
+                        <h2 className="text-4xl font-black italic tracking-tighter uppercase text-white font-montserrat">Prueba Finalizada</h2>
+                        <p className="text-sm text-foreground/60 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tus 7 días de acceso gratuito han expirado. Regularizá tu membresía para continuar operando en Estuclub.</p>
+                    </div>
+                    <Button className="h-16 px-12 rounded-[2rem] bg-[#cb465a] text-white font-black uppercase tracking-widest shadow-2xl shadow-[#cb465a]/40 hover:scale-105 transition-transform">
+                        Pagar Membresía
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
-
 

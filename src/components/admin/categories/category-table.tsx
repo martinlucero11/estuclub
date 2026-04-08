@@ -3,10 +3,10 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, doc, deleteDoc, updateDoc, writeBatch, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, doc, deleteDoc, updateDoc, writeBatch, addDoc, serverTimestamp, where } from 'firebase/firestore';
 import { getCategoryColumns } from './category-columns';
 import type { Category } from '@/types/data';
-import { deliveryCategories, benefitCategories } from '@/types/data';
+import { deliveryCategories, benefitCategories, turnCategories } from '@/types/data';
 import { DataTable } from '@/components/ui/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search, RefreshCcw, Database } from 'lucide-react';
@@ -19,9 +19,10 @@ import { cn } from '@/lib/utils';
 interface CategoryTableProps {
     className?: string;
     search?: string;
+    type?: 'delivery' | 'benefits' | 'turns' | 'global';
 }
 
-export function CategoryTable({ className, search }: CategoryTableProps) {
+export function CategoryTable({ className, search, type }: CategoryTableProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -31,19 +32,40 @@ export function CategoryTable({ className, search }: CategoryTableProps) {
     const [categoryIdToDelete, setCategoryIdToDelete] = useState<string | null>(null);
     const [isMigrating, setIsMigrating] = useState(false);
 
-    const categoriesQuery = useMemo(() => 
-        query(
-            collection(firestore, 'categories').withConverter(createConverter<Category>()), 
-            orderBy('order', 'asc')
-        ), [firestore]);
+    const categoriesQuery = useMemo(() => {
+        return query(collection(firestore, 'categories').withConverter(createConverter<Category>()));
+    }, [firestore]);
     
     const { data: allCategories, isLoading } = useCollection(categoriesQuery);
 
     const categories = useMemo(() => {
         if (!allCategories) return [];
-        if (!search) return allCategories;
-        return allCategories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
-    }, [allCategories, search]);
+        
+        let processed = allCategories.map(c => ({
+            ...c,
+            name: c.name || c.id, // Fallback to ID if name is missing
+            type: c.type || 'global', // Fallback to global
+            order: c.order ?? 999, // Fallback for sorting
+            isActive: c.isActive ?? true,
+            icon: c.icon || '📁'
+        }));
+
+        // BOARD FILTER
+        if (type) {
+            processed = processed.filter(c => {
+                if (type === 'benefits') return c.type === 'benefits' || c.type === 'discount';
+                return c.type === type;
+            });
+        }
+
+        // SEARCH FILTER
+        if (search) {
+            processed = processed.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+        }
+
+        // CLIENT-SIDE SORTING
+        return processed.sort((a, b) => (a.order || 0) - (b.order || 0));
+    }, [allCategories, search, type]);
 
     const handleToggleActive = async (categoryId: string, isActive: boolean) => {
         const categoryRef = doc(firestore, 'categories', categoryId);
@@ -143,7 +165,19 @@ export function CategoryTable({ className, search }: CategoryTableProps) {
                 batch.set(newDocRef, {
                     name,
                     icon: '🎁',
-                    type: 'discount',
+                    type: 'benefits',
+                    isActive: true,
+                    order: currentOrder++,
+                    createdAt: serverTimestamp()
+                });
+            });
+
+            turnCategories.forEach((name) => {
+                const newDocRef = doc(categoriesRef);
+                batch.set(newDocRef, {
+                    name,
+                    icon: '✂️',
+                    type: 'turns',
                     isActive: true,
                     order: currentOrder++,
                     createdAt: serverTimestamp()
@@ -203,6 +237,7 @@ export function CategoryTable({ className, search }: CategoryTableProps) {
                 isOpen={isCreateDialogOpen}
                 onOpenChange={setIsCreateDialogOpen}
                 nextOrder={categories?.length || 0}
+                defaultType={type}
             />
 
             <CategoryDialog 

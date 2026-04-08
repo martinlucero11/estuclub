@@ -21,13 +21,13 @@ export function PendingReviews({ supplierId }: PendingReviewsProps) {
   const pendingQuery = useMemo(() => {
     if (!user) return null;
     let q = query(
-      collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
+      collection(firestore, 'users', user.uid, 'redemptions').withConverter(createConverter<BenefitRedemption>()),
       orderBy('usedAt', 'desc')
     );
     
     if (supplierId) {
         q = query(
-            collection(firestore, 'users', user.uid, 'redeemed_benefits').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'users', user.uid, 'redemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', supplierId),
             orderBy('usedAt', 'desc')
         );

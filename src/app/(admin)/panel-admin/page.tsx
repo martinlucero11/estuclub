@@ -78,10 +78,10 @@ export default function AdminControlCentralPage() {
 
                     <AdminModule 
                         title="Marketing" 
-                        desc="Gestión de Banners, Categorías y envío de Push Notifications."
+                        desc="Gestión de Announcements, Categorías y envío de Push Notifications."
                         icon={Megaphone}
                         href="/admin/cms"
-                        items={["Banner Home", "Categorías Globales", "Push Directo"]}
+                        items={["Announcement Home", "Categorías Globales", "Push Directo"]}
                         accent="orange"
                     />
 

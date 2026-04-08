@@ -80,6 +80,13 @@ export const navConfig: NavConfig = {
       category: "Mi Actividad",
     },
     {
+        title: "Mis Pedidos",
+        href: "/orders",
+        icon: ShoppingBag,
+        role: ["user", "admin", "supplier"],
+        category: "Mi Actividad",
+    },
+    {
       title: "Favoritos",
       href: "/favorites",
       icon: HeartIcon,

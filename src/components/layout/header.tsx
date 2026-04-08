@@ -117,97 +117,110 @@ function UserMenu() {
         </DropdownMenu>
     </div>
   );
-}
-
-function AppSidebar() {
-    const { roles, supplierData } = useUser();
+}function AppSidebar() {
+    const { roles } = useUser();
     const allRoles = ['user', ...roles];
     const pathname = usePathname();
-    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({});
+    
+    // Default certain heavy sections to collapsed
+    const [collapsedGroups, setCollapsedGroups] = React.useState<Record<string, boolean>>({
+        'Panel Cluber': true,
+        '👑 CONTROL CENTRAL': true,
+        'Opciones': true
+    });
 
     const toggleGroup = (group: string) => {
         haptic.vibrateSubtle();
         setCollapsedGroups(prev => ({ ...prev, [group]: !prev[group] }));
     };
 
+    const NavButton = ({ item, isCurrent }: { item: any; isCurrent: boolean }) => {
+        const Icon = item.icon;
+        return (
+            <SheetClose asChild>
+                <Link href={item.href}>
+                    <Button 
+                        variant="ghost" 
+                        className={cn(
+                            "w-full justify-start text-[10px] sm:text-[11px] font-black uppercase tracking-widest h-12 rounded-xl transition-all mb-1",
+                            isCurrent ? "bg-primary text-white" : "text-foreground/60 hover:bg-primary/5 hover:text-primary"
+                        )}
+                    >
+                        <div className={cn(
+                            "mr-3 p-1.5 rounded-lg transition-all",
+                            isCurrent ? "bg-white text-primary" : "bg-primary/10 text-primary border border-primary/20"
+                        )}>
+                            {Icon && <Icon className="h-3.5 w-3.5" />}
+                        </div>
+                        {item.title}
+                    </Button>
+                </Link>
+            </SheetClose>
+        );
+    };
+
     return (
         <Sheet>
             <MagneticButton>
                 <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="group hover:bg-white/10" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
+                    <Button variant="ghost" size="icon" className="group hover:bg-black/10 dark:hover:bg-white/10" onClick={() => haptic.vibrateSubtle()} aria-label="Open menu">
                         <LayoutGrid className="h-6 w-6 text-white transition-colors" />
                     </Button>
                 </SheetTrigger>
             </MagneticButton>
             <SheetContent side="left" className="flex flex-col p-0 w-[300px] bg-background border-r border-border overflow-hidden">
-                <SheetHeader className="p-10 border-b border-black/5 relative bg-primary flex items-center justify-center">
+                <SheetHeader className="p-8 border-b border-black/5 relative bg-primary flex items-center justify-center shrink-0">
                     <Logo 
                         variant="white"
-                        className="h-10 w-auto"
+                        brand={pathname?.startsWith('/rider') ? 'rider' : 'default'}
+                        className="h-9 w-auto"
                     />
                 </SheetHeader>
                 
-                <div className="flex-1 overflow-y-auto py-8 px-4 scrollbar-premium bg-background">
-                    <nav className="flex flex-col gap-6">
-                        {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => (
-                            <div key={section.title} className="space-y-4 mb-2">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] font-montserrat text-black/40 px-5 italic">
-                                    {section.title}
-                                </h3>
-                                <div className="grid gap-1.5 px-1">
-                                    {section.items?.map(item => {
-                                        const Icon = item.icon;
-                                        const isCurrent = pathname === item.href;
-                                        return (
-                                            <SheetClose asChild key={item.href}>
-                                                <Link href={item.href}>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        className={cn(
-                                                            "w-full justify-start text-[11px] font-black uppercase tracking-widest h-14 rounded-2xl transition-all",
-                                                            isCurrent ? "bg-primary text-white" : "text-black/60 hover:bg-primary/10 hover:text-primary"
-                                                        )}
-                                                    >
-                                                        <div className={cn(
-                                                            "mr-4 p-2 rounded-xl transition-all",
-                                                            isCurrent ? "bg-white text-primary" : "bg-primary/10 text-primary border-2 border-primary"
-                                                        )}>
-                                                            {Icon && <Icon className="h-3.5 w-3.5" />}
-                                                        </div>
-                                                        {item.title}
-                                                    </Button>
-                                                </Link>
-                                            </SheetClose>
-                                        )
-                                    })}
+                <div className="flex-1 overflow-y-auto py-6 px-4 scrollbar-premium bg-background">
+                    <nav className="flex flex-col gap-4">
+                        {/* 1. COMPACT SIDEBAR NAV (Admin/Cluber) - Now Collapsible */}
+                        {navConfig.sidebarNav.filter(section => hasRequiredRole(allRoles, section.role)).map(section => {
+                            const isCollapsed = collapsedGroups[section.title];
+                            return (
+                                <div key={section.title} className="space-y-2">
+                                    <button 
+                                        onClick={() => toggleGroup(section.title)} 
+                                        className="w-full flex items-center justify-between px-4 font-montserrat uppercase font-black text-[9px] text-foreground/40 mb-1"
+                                    >
+                                        <span className="tracking-[0.2em]">{section.title}</span>
+                                        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                    </button>
+                                    {!isCollapsed && (
+                                        <div className="grid gap-1 px-1 slide-in-from-top-1 transition-all">
+                                            {section.items?.map(item => (
+                                                <NavButton key={item.href} item={item} isCurrent={pathname === item.href} />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
-                        {Array.from(new Set(navConfig.mainNav.map(i => i.category || 'Otros'))).map((category) => {
-                            const visibleItems = navConfig.mainNav.filter(i => (i.category || 'Otros') === category && hasRequiredRole(allRoles, i.role));
+                        {/* 2. MAIN NAV (Student/Explorar) */}
+                        {Array.from(new Set(navConfig.mainNav.map(i => i.category || 'Opciones'))).map((category) => {
+                            const visibleItems = navConfig.mainNav.filter(i => (i.category || 'Opciones') === category && hasRequiredRole(allRoles, i.role));
                             if (visibleItems.length === 0) return null;
                             const isCollapsed = collapsedGroups[category];
 
                             return (
-                                <div key={category} className="space-y-3">
-                                    <button onClick={() => toggleGroup(category)} className="w-full flex items-center justify-between px-5 font-montserrat uppercase font-black text-[9px] text-black/40">
-                                        {category}
-                                        {isCollapsed ? <ChevronRight className="h-3 w-3 text-black/40" /> : <ChevronDown className="h-3 w-3 text-black/40" />}
+                                <div key={category} className="space-y-2">
+                                    <button 
+                                        onClick={() => toggleGroup(category)} 
+                                        className="w-full flex items-center justify-between px-4 font-montserrat uppercase font-black text-[9px] text-foreground/40 mb-1"
+                                    >
+                                        <span className="tracking-[0.2em]">{category}</span>
+                                        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                     </button>
                                     {!isCollapsed && (
-                                        <div className="grid gap-1.5">
+                                        <div className="grid gap-1 px-1">
                                             {visibleItems.map((item) => (
-                                                <SheetClose asChild key={item.href}>
-                                                    <Link href={item.href}>
-                                                        <Button variant="ghost" className={cn("w-full justify-start text-[12px] h-14 rounded-2xl font-black uppercase tracking-widest", pathname === item.href ? "bg-primary text-white" : "text-black/60 hover:bg-primary/5 hover:text-primary")}>
-                                                            <div className={cn("mr-4 p-2.5 rounded-xl border-2", pathname === item.href ? "bg-background text-primary border-background" : "bg-background text-primary border-primary")}>
-                                                                {item.icon && <item.icon className="h-4 w-4" />}
-                                                            </div>
-                                                            {item.title}
-                                                        </Button>
-                                                    </Link>
-                                                </SheetClose>
+                                                <NavButton key={item.href} item={item} isCurrent={pathname === item.href} />
                                             ))}
                                         </div>
                                     )}
@@ -224,6 +237,7 @@ function AppSidebar() {
 export default function Header() {
   const { user, isUserLoading } = useUser();
   const { isMobile } = usePlatform();
+  const pathname = usePathname();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full h-[70px] pt-safe flex items-center transition-all duration-500 bg-[#cb465a]/95 backdrop-blur-xl border-b border-white/10 shadow-lg">
@@ -238,6 +252,7 @@ export default function Header() {
         <Link href="/" className="absolute left-1/2 -translate-x-1/2">
             <Logo 
                 variant="white"
+                brand={pathname?.startsWith('/rider') ? 'rider' : 'default'}
                 className="h-8 w-auto transition-transform hover:scale-105 active:scale-95"
             />
         </Link>

@@ -187,8 +187,8 @@ export default function ProfilePage() {
                 avatarSeed: values.avatarSeed || '',
             };
 
-            const newUsername = values.username.toLowerCase();
-            const oldUsername = userProfile.username.toLowerCase();
+            const newUsername = (values.username || '').toLowerCase();
+            const oldUsername = (userProfile.username || '').toLowerCase();
 
             // --- 1. Username Validation ---
             if (newUsername !== oldUsername) {
@@ -269,7 +269,7 @@ export default function ProfilePage() {
     
     return (
         <MainLayout>
-            <div className="flex-1 space-y-12 p-4 md:p-12 mb-12 max-w-5xl mx-auto animate-fade-in">
+            <div className="flex-1 space-y-12 p-4 md:p-12 mb-28 max-w-5xl mx-auto animate-fade-in pb-12">
                 <header className="space-y-4">
                     <div className="flex items-center justify-between">
                          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">

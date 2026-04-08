@@ -100,7 +100,7 @@ export const getHomeSectionColumns = (
                 services: 'Servicios',
                 products: 'Productos',
                 announcements: 'Anuncios',
-                banners: 'Banners',
+                banners: 'Announcements',
                 benefits_nearby: 'Beneficios GPS',
                 suppliers_nearby: 'Clubers GPS'
             };

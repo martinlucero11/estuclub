@@ -192,7 +192,7 @@ export function BenefitsSeed() {
 
     try {
       suppliers.forEach(s => batch.set(doc(firestore, 'roles_supplier', s.id), s, { merge: true }));
-      perks.forEach(p => batch.set(doc(firestore, 'perks', p.id), { ...p, createdAt: serverTimestamp() }, { merge: true }));
+      perks.forEach(p => batch.set(doc(firestore, 'benefits', p.id), { ...p, createdAt: serverTimestamp() }, { merge: true }));
       announcements.forEach(a => batch.set(doc(firestore, 'announcements', a.id), a, { merge: true }));
 
       await batch.commit();

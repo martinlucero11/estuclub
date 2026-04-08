@@ -53,7 +53,7 @@ export default function SupplierScanHistory() {
         if (!user) return null;
 
         return query(
-            collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()),
+            collection(firestore, 'redemptions').withConverter(createConverter<BenefitRedemption>()),
             where('supplierId', '==', user.uid),
             orderBy('redeemedAt', 'desc')
         );

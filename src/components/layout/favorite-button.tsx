@@ -65,7 +65,7 @@ export function FavoriteButton({ id, type, className }: FavoriteButtonProps) {
       });
       
       // Update target counter
-      const targetRef = doc(firestore, type === 'benefit' ? 'perks' : 'roles_supplier', id);
+      const targetRef = doc(firestore, type === 'benefit' ? 'benefits' : 'roles_supplier', id);
       await updateDoc(targetRef, {
         favoritesCount: increment(nextValue ? 1 : -1)
       });

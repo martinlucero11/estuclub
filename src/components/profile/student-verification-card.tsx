@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import { haptic } from '@/lib/haptics';
 
 interface StudentVerificationCardProps {
     userProfile: {
@@ -54,6 +55,7 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
         if (!file || !firestore) return;
 
         setIsUploading(true);
+        haptic.vibrateImpact();
         try {
             const formData = new FormData();
             formData.append('file', file);
@@ -67,12 +69,16 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
                 body: formData,
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Error al subir el archivo');
+                // Determine if it was an auth error from our log in the API
+                if (response.status === 401 || data.error?.includes('auth')) {
+                    throw new Error('El servidor de archivos está temporalmente inaccesible. Intenta más tarde.');
+                }
+                throw new Error(data.error || 'Error al procesar el archivo');
             }
 
-            const data = await response.json();
             const certificateUrl = data.webViewLink || data.fileId;
 
             // Update Firestore
@@ -83,25 +89,31 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
             });
 
             toast({
-                title: '¡Certificado enviado!',
-                description: 'Tu certificado está siendo procesado por el equipo de EstuClub.',
+                title: '¡CERTIFICADO ENVIADO!',
+                description: 'Lo revisaremos en las próximas 24-48hs hábiles.',
+                variant: 'default',
             });
 
             setFile(null);
             if (onUploadSuccess) onUploadSuccess();
-            window.location.reload();
+            
+            // Wait a sec before reload to show success
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
 
         } catch (error: any) {
-            console.error('Upload error:', error);
+            console.error('Upload process failed:', error);
             toast({
                 variant: 'destructive',
-                title: 'Error al subir',
-                description: error.message || 'Inténtalo de nuevo más tarde.',
+                title: 'ERROR EN EL ENVÍO',
+                description: error.message || 'Ocurrió un error inesperado al conectar con el servidor.',
             });
         } finally {
             setIsUploading(false);
         }
     };
+
 
     // Calculate remaining time (crude version)
     const deadline = userProfile.certificateDeadline?.toDate?.() || new Date(userProfile.certificateDeadline);
@@ -166,8 +178,8 @@ export function StudentVerificationCard({ userProfile, onUploadSuccess }: Studen
                             )}>
                                 <FileUp className="h-8 w-8" />
                             </div>
-                            <div>
-                                <p className="font-black uppercase tracking-widest text-xs">
+                            <div className="max-w-[200px] w-full px-2">
+                                <p className="font-black uppercase tracking-widest text-xs truncate text-center">
                                     {file ? file.name : "Seleccionar Archivo"}
                                 </p>
                                 <p className="text-[10px] font-bold text-foreground/60 mt-1 uppercase tracking-tighter">PDF o Imagen (Máx 5MB)</p>

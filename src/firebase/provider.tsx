@@ -91,22 +91,33 @@ export const FirebaseProvider: React.FC<{ children: ReactNode }> = ({ children }
       });
 
       try {
-        // One-time fetch for static roles (Admin/Rider)
-        const [adminResult, riderResult, tokenResult] = await Promise.allSettled([
+        // One-time fetch for roles and profile to determine access
+        const [adminResult, riderResult, profileResult, tokenResult] = await Promise.allSettled([
           getDoc(doc(services.firestore, 'roles_admin', uid)),
           getDoc(doc(services.firestore, 'roles_rider', uid)),
+          getDoc(doc(services.firestore, 'users', uid)),
           firebaseUser.getIdTokenResult(),
         ]);
 
         const resolvedRoles: string[] = ['user'];
         const adminDoc = adminResult.status === 'fulfilled' ? adminResult.value : null;
         const riderDoc = riderResult.status === 'fulfilled' ? riderResult.value : null;
+        const profileDoc = profileResult.status === 'fulfilled' ? profileResult.value : null;
         const token = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
 
+        // 1. Check dedicated role collections and claims
         if (adminDoc?.exists() || token?.claims?.admin) resolvedRoles.push('admin');
         if (riderDoc?.exists() || token?.claims?.rider) resolvedRoles.push('rider');
         
-        // We can check supplier role once here; onSnapshot handles Data reactivity
+        // 2. Check primary profile role field (most common case for manual admin setup)
+        if (profileDoc?.exists()) {
+            const profileData = profileDoc.data() as UserProfile;
+            if (profileData.role === 'admin') resolvedRoles.push('admin');
+            if (profileData.role === 'rider') resolvedRoles.push('rider');
+            if (profileData.role === 'supplier') resolvedRoles.push('supplier');
+        }
+
+        // 3. Check supplier role
         const supplierDocRef = doc(services.firestore, 'roles_supplier', uid);
         const supplierRes = await getDoc(supplierDocRef);
         if (supplierRes.exists()) resolvedRoles.push('supplier');

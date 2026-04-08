@@ -20,7 +20,7 @@ import dynamic from 'next/dynamic';
 const PendingReviews = dynamic(() => import('@/components/reviews/pending-reviews').then(m => m.PendingReviews), { ssr: false });
 const WelcomeMessage = dynamic(() => import('@/components/home/welcome-message'), { ssr: false });
 const AvatarOnboarding = dynamic(() => import('@/components/profile/avatar-onboarding').then(m => m.AvatarOnboarding), { ssr: false });
-const OrderTracker = dynamic(() => import('@/components/delivery/order-tracker').then(m => m.OrderTracker), { ssr: false });
+const ActiveOrderBanner = dynamic(() => import('@/components/home/active-order-banner').then(m => m.ActiveOrderBanner), { ssr: false });
 
 function HomeSectionsSkeleton() {
     return (
@@ -36,9 +36,10 @@ function HomeSectionsSkeleton() {
 }
 
 const HomeBoardSelector = dynamic(() => import('@/components/home/home-board-selector'), { ssr: false });
+const HomeSubHeader = dynamic(() => import('@/components/home/home-sub-header').then(m => m.HomeSubHeader), { ssr: false });
 const TurnsBoard = dynamic(() => import('@/components/home/turns-board'), { ssr: false });
 
-function HomeContent({ activeBoard }: { activeBoard: 'perks' | 'delivery' | 'turns' }) {
+function HomeContent({ activeBoard }: { activeBoard: 'benefits' | 'delivery' | 'turns' }) {
     const firestore = useFirestore();
     const { userData } = useUser();
     
@@ -60,15 +61,14 @@ function HomeContent({ activeBoard }: { activeBoard: 'perks' | 'delivery' | 'tur
         return allSections.filter(s => s.isActive && s.targetBoard === activeBoard);
     }, [allSections, activeBoard]);
 
-    if (activeBoard === 'turns') {
-        return <TurnsBoard />;
-    }
-
     if (isLoading) {
         return <HomeSectionsSkeleton />;
     }
 
     if (!sections || sections.length === 0) {
+        if (activeBoard === 'turns') {
+            return <TurnsBoard />;
+        }
         return (
             <div>
                 <EmptyState icon={LayoutTemplate} title="Página en construcción" description="El administrador todavía no ha añadido contenido a la página de inicio." />
@@ -85,14 +85,14 @@ function HomeContent({ activeBoard }: { activeBoard: 'perks' | 'delivery' | 'tur
                             <h2 className="text-lg font-extrabold tracking-tight text-foreground uppercase text-[12px] sm:text-sm text-foreground/80 tracking-[0.2em]">
                                 {section.title}
                             </h2>
-                            {section.block && 'contentType' in section.block && section.block.contentType && section.block.contentType !== 'banners' && (
+                            {section.block && 'contentType' in section.block && section.block.contentType && section.block.contentType !== 'announcements' && (
                                 <Button variant="ghost" asChild className="h-auto p-0 text-sm font-bold text-primary hover:bg-transparent hover:text-primary/70 transition-colors">
                                     <Link href={
                                         ['suppliers', 'minisuppliers', 'supplierpromo', 'suppliers_nearby'].includes(section.block.contentType as any)
                                             ? '/proveedores' 
                                             : ['delivery_suppliers', 'delivery_products', 'delivery_promos', 'productexmplsupplier'].includes(section.block.contentType as any)
                                                 ? '/delivery'
-                                                : ['benefits_nearby', 'perks'].includes(section.block.contentType as any)
+                                                : ['benefits_nearby', 'benefits'].includes(section.block.contentType as any)
                                                     ? '/benefits'
                                                     : `/${section.block.contentType}`
                                     }>
@@ -121,14 +121,14 @@ export default function HomePage() {
     const isAdmin = roles.includes('admin');
     const canSwitch = isStudent || isAdmin || true; // Everyone can switch except for perks (handled in selector)
 
-    const [activeBoard, setActiveBoard] = useState<'perks' | 'delivery' | 'turns'>('delivery');
+    const [activeBoard, setActiveBoard] = useState<'benefits' | 'delivery' | 'turns'>('delivery');
 
     // Effect to set initial board based on user type
     useEffect(() => {
         if (isUserLoading) return;
         // Logic: Students default to perks, Normal users default to delivery
         if (isStudent) {
-            setActiveBoard('perks');
+            setActiveBoard('benefits');
         } else {
             setActiveBoard('delivery');
         }
@@ -153,19 +153,16 @@ export default function HomePage() {
 
     return (
         <MainLayout>
-            <div className="mx-auto w-full px-4 pt-4">
+            <div className="mx-auto w-full px-4 pt-28 sm:pt-24">
                 {canSwitch && (
-                    <div className="mb-8">
-                        <HomeBoardSelector 
-                            activeBoard={activeBoard} 
-                            onChange={setActiveBoard} 
-                            isStudent={isStudent}
-                        />
-                    </div>
+                    <HomeSubHeader 
+                        activeBoard={activeBoard} 
+                        onChange={setActiveBoard} 
+                        isStudent={isStudent}
+                    />
                 )}
 
-                {/* MISSION 3: Real-time Order Tracking Widget */}
-                {activeBoard !== 'turns' && <OrderTracker />}
+                {activeBoard !== 'turns' && <ActiveOrderBanner />}
 
                 <div className="flex justify-between items-start mb-6">
                     <WelcomeMessage />

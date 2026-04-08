@@ -48,7 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import { Benefit, Announcement, Banner, Service, Product } from '@/types/data';
+import { Benefit, Announcement, Service, Product, Banner } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { cn } from '@/lib/utils';
 import { 
@@ -71,7 +71,7 @@ export default function ContentCommandCenterPage() {
 
     // ── DATA FETCHING ─────────────────────────────────────
     const benefitsQuery = useMemo(() => 
-        query(collection(firestore, 'perks').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc')), 
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>()), orderBy('createdAt', 'desc')), 
     [firestore]);
     
     const announcementsQuery = useMemo(() => 
@@ -109,10 +109,10 @@ export default function ContentCommandCenterPage() {
             let ref;
             let updateField = 'isVisible';
             
-            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            if (type === 'perk') ref = doc(firestore, 'benefits', item.id);
             else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
             else if (type === 'banner') {
-                ref = doc(firestore, 'banners', item.id);
+                ref = doc(firestore, 'announcements', item.id);
                 updateField = 'isActive';
             }
             else if (type === 'service') {
@@ -139,9 +139,9 @@ export default function ContentCommandCenterPage() {
         if (!confirm("¿Estás seguro de eliminar este contenido permanentemente?")) return;
         try {
             let ref;
-            if (type === 'perk') ref = doc(firestore, 'perks', item.id);
+            if (type === 'perk') ref = doc(firestore, 'benefits', item.id);
             else if (type === 'announcement') ref = doc(firestore, 'announcements', item.id);
-            else if (type === 'banner') ref = doc(firestore, 'banners', item.id);
+            else if (type === 'banner') ref = doc(firestore, 'announcements', item.id);
             else if (type === 'service') ref = doc(firestore, 'roles_supplier', item.supplierId, 'services', item.id);
             else if (type === 'product') ref = doc(firestore, 'roles_supplier', item.supplierId, 'products', item.id);
 
@@ -166,7 +166,7 @@ export default function ContentCommandCenterPage() {
         let pathParts: string[] = [];
 
         if (activeTab === 'benefits') {
-            type = 'perks';
+            type = 'benefits';
             data.title = formData.get('title');
             data.description = formData.get('description');
             data.category = formData.get('category');
@@ -179,8 +179,8 @@ export default function ContentCommandCenterPage() {
             data.content = formData.get('content');
             data.imageUrl = formData.get('imageUrl');
             data.linkUrl = formData.get('linkUrl');
-        } else if (activeTab === 'banners') {
-            type = 'banners';
+        } else if (activeTab === 'announcements') {
+            type = 'announcements';
             data.title = formData.get('title');
             data.description = formData.get('description');
             data.imageUrl = formData.get('imageUrl');
@@ -388,17 +388,17 @@ export default function ContentCommandCenterPage() {
                                 {banners?.filter(b => b.title.toLowerCase().includes(search.toLowerCase())).map(banner => (
                                     <ContentCard 
                                         key={banner.id}
-                                        title={banner.title}
-                                        subtitle={banner.description}
+                                        title={banner.title || 'Sin título'}
+                                        subtitle={banner.linkUrl || 'Sin link de destino'}
                                         image={banner.imageUrl}
                                         isVisible={!!banner.isActive}
-                                        stats={banner.link || 'Sin link'}
+                                        stats={banner.createdAt ? new Date(banner.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}
                                         type="banner"
                                         onToggle={() => handleToggleActive(banner, 'banner')}
                                         onDelete={() => handleDelete(banner, 'banner')}
                                         onEdit={() => { setEditingItem(banner); setIsEditorOpen(true); }}
                                         owner="Marketing"
-                                        badge={banner.colorScheme?.toUpperCase()}
+                                        badge={banner.isDemo ? 'DEMO' : undefined}
                                     />
                                 ))}
                             </div>

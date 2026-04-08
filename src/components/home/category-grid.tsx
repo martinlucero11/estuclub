@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/carousel';
 import type { Category } from '@/types/data';
 
+import { getCategoryEmoji } from '@/lib/category-utils';
+
 export function CategoryGrid({ categories }: { categories: Category[] }) {
     if (!categories || categories.length === 0) {
         return <p className="text-foreground italic">No hay categorías disponibles.</p>;
@@ -39,7 +41,7 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
                                 )}
                             >
                                 <span className="text-6xl sm:text-7xl transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 drop-shadow-xl">
-                                    {category.emoji}
+                                    {category.emoji || getCategoryEmoji(category.name)}
                                 </span>
                             </div>
                             <p className="mt-3 text-[11px] sm:text-[13px] font-black uppercase tracking-wider text-foreground group-hover:text-primary transition-colors text-center px-1 leading-tight line-clamp-2">

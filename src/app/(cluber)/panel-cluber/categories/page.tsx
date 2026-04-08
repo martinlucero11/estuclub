@@ -47,7 +47,7 @@ import { useState } from 'react';
 
 export default function CategoriesPage() {
     const { isAdmin, isLoading } = useAdmin();
-    const [activeTab, setActiveTab] = useState<'perks' | 'delivery'>('perks');
+    const [activeTab, setActiveTab] = useState<'benefits' | 'delivery'>('benefits');
 
     if (isLoading) {
         return <LoadingSkeleton />;
@@ -68,11 +68,11 @@ export default function CategoriesPage() {
                 </p>
             </div>
 
-            <Tabs defaultValue="perks" onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+            <Tabs defaultValue="benefits" onValueChange={(v) => setActiveTab(v as any)} className="w-full">
                 <div className="flex items-center justify-between mb-6">
                     <TabsList className="bg-background/60 backdrop-blur-md border border-white/10 p-1 h-12 rounded-2xl shadow-inner">
                         <TabsTrigger 
-                            value="perks" 
+                            value="benefits" 
                             className="rounded-xl px-8 font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-300"
                         >
                             Beneficios
@@ -86,8 +86,8 @@ export default function CategoriesPage() {
                     </TabsList>
                 </div>
 
-                <TabsContent value="perks" className="mt-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <CategoryTable type="perks" />
+                <TabsContent value="benefits" className="mt-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <CategoryTable type="benefits" />
                 </TabsContent>
                 
                 <TabsContent value="delivery" className="mt-0 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">

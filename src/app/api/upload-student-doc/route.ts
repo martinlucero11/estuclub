@@ -1,10 +1,10 @@
 import { google } from 'googleapis';
 import { NextRequest, NextResponse } from 'next/server';
 import { Readable } from 'stream';
-import path from 'path';
+import { getDriveClient } from '@/lib/google-drive';
 
 /**
- * API Route to upload a student certificate to Google Drive using a Service Account.
+ * API Route to upload a student certificate to Google Drive using Centralized Auth.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -22,32 +22,25 @@ export async function POST(req: NextRequest) {
 
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     if (!folderId) {
-      return NextResponse.json({ error: 'Server configuration error: Missing Folder ID' }, { status: 500 });
+      return NextResponse.json({ error: 'Configuración faltante: Folder ID' }, { status: 500 });
     }
 
-    // Initialize Auth with Service Account
-    const auth = new google.auth.GoogleAuth({
-      keyFile: path.join(process.cwd(), 'service-account.json'),
-      scopes: ['https://www.googleapis.com/auth/drive.file'],
-    });
+    // Use Centralized Auth
+    const drive = await getDriveClient();
 
-    const drive = google.drive({ version: 'v3', auth });
-
-    // Convert File to Buffer/Stream
+    // Convert File to Stream
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const stream = new Readable();
     stream.push(buffer);
     stream.push(null);
 
-    // Dynamic Renaming based on type or generic
+    // Dynamic Renaming
     const extension = file.name.split('.').pop();
-    const fileName = type 
-        ? `${type.toUpperCase()}_${firstName}_${lastName}_${dni}.${extension}`
-        : `DOC_${firstName}_${lastName}_${dni}.${extension}`;
+    const cleanFileName = `${type?.toUpperCase() || 'CERTIFICADO'}_${firstName}_${lastName}_${dni}.${extension}`;
 
-    const fileMetadata = {
-      name: fileName,
+    const metadata = {
+      name: cleanFileName,
       parents: [folderId],
     };
 
@@ -57,35 +50,37 @@ export async function POST(req: NextRequest) {
     };
 
     const response = await drive.files.create({
-      requestBody: fileMetadata,
+      requestBody: metadata,
       media: media,
       fields: 'id, webViewLink, webContentLink',
     });
 
     const fileId = response.data.id!;
 
-    // MANDATORY: Set permissions to anyone with link can view
+    // Mandatory: Set view permissions
     await drive.permissions.create({
       fileId,
       requestBody: { role: 'reader', type: 'anyone' },
     });
 
-    // Get fresh link
-    const meta = await drive.files.get({ fileId, fields: 'webViewLink, webContentLink' });
+    const fileMeta = await drive.files.get({ fileId, fields: 'webViewLink, webContentLink' });
 
     return NextResponse.json({
       fileId: fileId,
-      webViewLink: meta.data.webViewLink,
-      webContentLink: meta.data.webContentLink
+      webViewLink: fileMeta.data.webViewLink,
+      webContentLink: fileMeta.data.webContentLink
     });
 
   } catch (error: any) {
-    console.error('CRITICAL STUDENT UPLOAD ERROR:', {
-      message: error.message,
-      code: error.code,
-      errors: error.errors
-    });
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    console.error('STUDENT_UPLOAD_FAILED:', error.message);
+    return NextResponse.json({ 
+        error: error.message || 'Error en el servicio de Drive',
+        code: error.code || 'UNKNOWN'
+    }, { status: 500 });
   }
 }
+
+
+
+
 

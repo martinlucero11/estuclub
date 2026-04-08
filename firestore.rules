@@ -2,65 +2,103 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- HELPER FUNCTIONS ---
+    /* ================= HELPERS (SSoT + Robustez) ================= */
 
-    function signedIn() {
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isMe(userId) {
-      return signedIn() && request.auth.uid == userId;
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
     }
 
+    function getUserDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function getUserData() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) ? getUserDoc().data : null;
+    }
+
+    // isAdmin: Detecta rol en perfiles Y opcionalmente en la colección de auditoría roles_admin
     function isAdmin() {
-      return signedIn() && 
-        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      let data = getUserData();
+      return isAuthenticated() && (
+        (data != null && data.role == 'admin') || 
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))
+      );
     }
 
     function isSupplier() {
-      return signedIn() && 
-        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid));
-    }
-    
-    function isRider() {
-      return signedIn() && 
-        exists(/databases/$(database)/documents/roles_rider/$(request.auth.uid));
+      let data = getUserData();
+      return isAuthenticated() && (
+        (data != null && (data.role == 'cluber' || data.role == 'supplier')) ||
+        exists(/databases/$(database)/documents/roles_supplier/$(request.auth.uid))
+      );
     }
 
-    /* ================= USERS ================= */
+    function isRider() {
+      let data = getUserData();
+      return isAuthenticated() && (
+        (data != null && data.role == 'rider') ||
+        exists(/databases/$(database)/documents/roles_rider/$(request.auth.uid))
+      );
+    }
+
+    /* ================= USUARIOS & TOKENS ================= */
 
     match /users/{userId} {
-      allow read: if true;
-      allow create: if isMe(userId);
-      allow update: if isAdmin() || isMe(userId);
+      allow read: if true; // El perfil es público o semi-público para identificación
+      allow create: if isAuthenticated() && request.auth.uid == userId; 
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
-
+      
       match /redeemed_benefits/{id} {
-        allow read, write: if isMe(userId) || isAdmin();
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
 
-    /* ================= ROLES ================= */
-
-    match /roles_admin/{uid} {
-      allow get: if signedIn() && request.auth.uid == uid;
-      allow list, write: if isAdmin();
+    match /userTokens/{userId} {
+      // Necesario para que las notificaciones push se registrren correctamente
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
-    match /roles_supplier/{uid} {
-      allow get: if signedIn() && request.auth.uid == uid;
-      allow list: if true;
-      allow write: if isAdmin();
-    }
-    
-    match /roles_rider/{uid} {
-      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
-      allow list, write: if isAdmin();
+    /* ================= LOGÍSTICA & TURNOS (ROOT) ================= */
+
+    match /roles_supplier/{supplierId} {
+      allow read: if true;
+      allow write: if isAdmin() || isOwner(supplierId);
+
+      match /availability/{docId} { allow read: if true; allow write: if isOwner(supplierId) || isAdmin(); }
+      match /services/{serviceId} { allow read: if true; allow write: if isOwner(supplierId) || isAdmin(); }
+      match /appointments/{appointmentId} { allow read, write: if isOwner(supplierId) || isAdmin(); }
     }
 
-    /* ================= PUBLIC CONTENT ================= */
+    /* ================= PEDIDOS (CORE) ================= */
 
-    match /perks/{id} {
+    match /orders/{orderId} {
+      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && (
+        resource.data.customerId == request.auth.uid || 
+        resource.data.supplierId == request.auth.uid || 
+        resource.data.riderId == request.auth.uid || 
+        isAdmin()
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.supplierId == request.auth.uid || 
+        resource.data.riderId == request.auth.uid || 
+        isAdmin()
+      );
+    }
+
+    /* ================= PRODUCTOS, BENEFICIOS & ANUNCIOS ================= */
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin() || (isSupplier() && request.resource.data.supplierId == request.auth.uid);
+    }
+
+    match /benefits/{id} {
       allow read: if true;
       allow write: if isAdmin() || isSupplier();
     }
@@ -70,70 +108,43 @@ service cloud.firestore {
       allow write: if isAdmin() || isSupplier();
     }
 
-    match /banners/{id} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /categories/{id} {
-      allow get, list: if true;
-      allow write: if isAdmin();
-    }
-
-    match /home_sections/{id} {
-      allow get, list: if true;
-      allow write: if isAdmin();
-    }
-
-    /* ================= PRODUCTS & ORDERS ================= */
-
-    match /products/{id} {
-      allow read: if true;
-      allow write: if isAdmin() || isSupplier();
-    }
-
-    match /orders/{id} {
-      allow list: if signedIn();
-      allow get, update: if isAdmin() || isRider() || (signedIn() && (
+    match /benefitRedemptions/{id} {
+      allow list: if isAuthenticated();
+      allow get, write: if isAdmin() || (isAuthenticated() && (
         resource.data.userId == request.auth.uid ||
         resource.data.supplierId == request.auth.uid
       ));
-      allow create: if signedIn();
     }
 
-    /* ================= APPLICATIONS ================= */
+    /* ================= SOLICITUDES & FEEDBACK ================= */
 
     match /supplier_requests/{id} {
-      allow create: if signedIn();
-      allow read, update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
-    
+
     match /rider_applications/{id} {
-      allow create: if signedIn();
-      allow read, update, delete: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
     }
 
-    /* ================= LOGISTICS ================= */
-
-    match /benefitRedemptions/{id} {
-      allow list: if signedIn();
-      allow get, write: if isAdmin() || (signedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.supplierId == request.auth.uid
-      ));
-    }
-
-    match /reviews/{id} {
+    match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if signedIn();
+      allow create: if isAuthenticated();
       allow update, delete: if isAdmin();
     }
+
+    /* ================= UI & CMS ================= */
+
+    match /banners/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /categories/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /home_sections/{id} { allow read: if true; allow write: if isAdmin(); }
 
     /* ================= GLOBAL ACCESS ================= */
 
     match /{document=**} {
-      allow read, write: if isAdmin();
       allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

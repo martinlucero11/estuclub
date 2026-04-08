@@ -12,14 +12,18 @@ import SplashScreen from '@/components/layout/splash-screen';
 import MainLayout from '@/components/layout/main-layout';
 
 export default function LoginPage() {
-  const { user, isUserLoading } = useUser();
+  const { user, roles, isUserLoading } = useUser();
   const router = useRouter();
 
   useEffect(() => {
     if (!isUserLoading && user) {
-      router.push('/');
+      if (roles && roles.includes('admin')) {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, roles, isUserLoading, router]);
 
   if (isUserLoading || user) {
     return <SplashScreen />;
@@ -35,7 +39,7 @@ export default function LoginPage() {
         <header className="mb-10 flex flex-col items-center text-center">
             <Link href="/" className="mb-6 transition-transform hover:scale-110 duration-300">
             <Logo 
-                variant="rosa-glow"
+                variant="rosa"
                 className="h-16 w-auto"
             />
             </Link>

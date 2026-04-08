@@ -55,7 +55,7 @@ function RedemptionValidationContent() {
     const firestore = useFirestore();
 
     const redemptionRef = useMemo(
-        () => (redemptionId ? doc(firestore, 'benefitRedemptions', redemptionId) : null),
+        () => (redemptionId ? doc(firestore, 'redemptions', redemptionId) : null),
         [firestore, redemptionId]
     );
 

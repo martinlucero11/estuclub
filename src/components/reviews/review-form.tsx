@@ -65,14 +65,14 @@ export function ReviewForm({ benefitId, supplierId, redemptionId, benefitTitle, 
 
       // 3. Mark redemption as reviewed (non-critical, fire-and-forget)
       try {
-        const redemptionRef = doc(firestore, 'benefitRedemptions', redemptionId);
+        const redemptionRef = doc(firestore, 'redemptions', redemptionId);
         await updateDoc(redemptionRef, { hasReview: true });
       } catch (e) {
         console.warn('Could not mark benefitRedemption as reviewed:', e);
       }
 
       try {
-        const userRedemptionRef = doc(firestore, 'users', user.uid, 'redeemed_benefits', redemptionId);
+        const userRedemptionRef = doc(firestore, 'users', user.uid, 'redemptions', redemptionId);
         await setDoc(userRedemptionRef, { hasReview: true }, { merge: true });
       } catch (e) {
         console.warn('Could not mark user redemption as reviewed:', e);

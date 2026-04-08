@@ -22,7 +22,7 @@ import { useFirestore } from '@/firebase';
 import { collection, serverTimestamp, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { Save, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
-import type { SerializableBanner } from '@/types/data';
+import type { SerializableAnnouncement } from '@/types/data';
 
 const formSchema = z.object({
   title: z.string().optional(),
@@ -34,12 +34,12 @@ const formSchema = z.object({
   }),
 });
 
-interface BannerFormProps {
-    banner?: SerializableBanner | null;
+interface AnnouncementFormProps {
+    banner?: SerializableAnnouncement | null;
     onSuccess: () => void;
 }
 
-export function BannerForm({ banner, onSuccess }: BannerFormProps) {
+export function AnnouncementForm({ banner, onSuccess }: AnnouncementFormProps) {
     const { toast } = useToast();
     const firestore = useFirestore();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,16 +60,16 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
         setIsSubmitting(true);
         try {
             if (isEditMode) {
-                const bannerRef = doc(firestore, 'banners', banner.id);
+                const bannerRef = doc(firestore, 'announcements', banner.id);
                 await updateDoc(bannerRef, values);
-                toast({ title: 'Banner actualizado', description: 'Los cambios han sido guardados.' });
+                toast({ title: 'Announcement actualizado', description: 'Los cambios han sido guardados.' });
             } else {
-                await addDoc(collection(firestore, 'banners'), {
+                await addDoc(collection(firestore, 'announcements'), {
                     ...values,
-                    isActive: true, // Banners are active by default on creation
+                    isActive: true, // Announcements are active by default on creation
                     createdAt: serverTimestamp(),
                 });
-                toast({ title: 'Banner creado', description: 'El nuevo banner ha sido añadido.' });
+                toast({ title: 'Announcement creado', description: 'El nuevo banner ha sido añadido.' });
             }
             setIsSubmitting(false);
             onSuccess();
@@ -145,7 +145,7 @@ export function BannerForm({ banner, onSuccess }: BannerFormProps) {
                 <div className="flex justify-end pt-4">
                     <Button type="submit" disabled={isSubmitting}>
                         <Save className="mr-2 h-4 w-4" />
-                        {isSubmitting ? 'Guardando...' : 'Guardar Banner'}
+                        {isSubmitting ? 'Guardando...' : 'Guardar Announcement'}
                     </Button>
                 </div>
             </form>

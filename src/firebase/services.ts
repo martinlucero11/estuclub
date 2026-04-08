@@ -4,7 +4,7 @@ import {
   getFirestore, 
   initializeFirestore, 
   persistentLocalCache, 
-  persistentMultipleTabManager 
+  persistentSingleTabManager 
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { firebaseConfig } from './config';
@@ -40,15 +40,16 @@ export const getFirebaseServices = () => {
   
   let firestore;
   try {
-    // Attempt to initialize with persistence
+    // Attempt to initialize with SINGLE tab persistence for maximum stability
+    // Multi-tab manager is known to cause ID: ca9 assertion failures in v11.x
     firestore = initializeFirestore(app, { 
       localCache: persistentLocalCache({
-        tabManager: persistentMultipleTabManager(),
-        cacheSizeBytes: 100 * 1024 * 1024
-      }) 
+        tabManager: persistentSingleTabManager({})
+      }),
+      // Automatically fallback to long-polling if WebChannel/gRPC fails (common in mobile)
+      experimentalAutoDetectLongPolling: true,
     });
   } catch (err) {
-    console.warn('Firestore persistence already active or failed, using existing instance');
     firestore = getFirestore(app);
   }
 

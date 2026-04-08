@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { 
   Building, 
   Search, 
@@ -21,7 +21,8 @@ import {
   Hash,
   MapPin,
   TrendingDown,
-  Zap
+  Zap,
+  CalendarClock
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -37,6 +38,7 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { SupplierProfile } from '@/types/data';
@@ -49,6 +51,7 @@ export default function CluberManagement() {
   const { setImpersonatedUserId } = useAdmin();
   const [searchQuery, setSearchQuery] = useState('');
   const [editingCluber, setEditingCluber] = useState<SupplierProfile | null>(null);
+  const [configCluber, setConfigCluber] = useState<SupplierProfile | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Fetch all clubers sorted by name
@@ -77,11 +80,12 @@ export default function CluberManagement() {
       const docRef = doc(firestore, 'roles_supplier', cluberId);
       await updateDoc(docRef, { [field]: value });
       
-      // If updating CincoDos, sync with user document as well
-      if (field === 'isCincoDos') {
-        const userRef = doc(firestore, 'users', cluberId);
-        await updateDoc(userRef, { isCincoDos: value });
-      }
+      const userRef = doc(firestore, 'users', cluberId);
+      
+      if (field === 'isCincoDos') await updateDoc(userRef, { isCincoDos: value });
+      if (field === 'deliveryEnabled') await updateDoc(userRef, { permitsDelivery: value });
+      if (field === 'canCreateBenefits') await updateDoc(userRef, { permitsBenefits: value });
+      if (field === 'appointmentsEnabled') await updateDoc(userRef, { permitsShifts: value });
 
       toast({ 
         title: 'Sincronizado', 
@@ -152,7 +156,7 @@ export default function CluberManagement() {
       </div>
 
       {/* Cluber Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-24">
         {filteredClubers.map((cluber) => (
           <Card key={cluber.id} className="bg-card/30 border-white/5 rounded-[3rem] overflow-hidden group hover:bg-card/50 transition-all duration-500 relative shadow-premium border-none ring-1 ring-white/5">
             <Building className="absolute -right-8 -bottom-8 h-48 w-48 text-primary/[0.03] -rotate-12 transition-colors" />
@@ -204,84 +208,31 @@ export default function CluberManagement() {
                     >
                       <Edit3 className="h-5 w-5" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 hover:bg-blue-500/10 hover:text-blue-400 transition-all opacity-40 hover:opacity-100 shrink-0"
-                      asChild
-                    >
-                      <a href={`/delivery/commerce/${cluber.id}`} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-5 w-5" />
-                      </a>
-                    </Button>
                 </div>
               </div>
 
-              {/* Toggles Command Center */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <ManagementToggle 
-                    icon={<Globe className="h-4 w-4" />}
-                    label="Visible"
-                    value={!!cluber.isVisible}
-                    onChange={(v) => handleToggleField(cluber.id, 'isVisible', v)}
-                />
-                <ManagementToggle 
-                    icon={<Star className="h-4 w-4" />}
-                    label="Destacado"
-                    value={!!cluber.isFeatured}
-                    onChange={(v) => handleToggleField(cluber.id, 'isFeatured', v)}
-                />
-                <ManagementToggle 
-                    icon={<Truck className="h-4 w-4" />}
-                    label="Delivery"
-                    value={!!cluber.deliveryEnabled}
-                    onChange={(v) => handleToggleField(cluber.id, 'deliveryEnabled', v)}
-                />
-                <ManagementToggle 
-                    icon={<Gift className="h-4 w-4" />}
-                    label="Beneficios"
-                    value={!!cluber.canCreateBenefits}
-                    onChange={(v) => handleToggleField(cluber.id, 'canCreateBenefits', v)}
-                />
-                <ManagementToggle 
-                    icon={<Megaphone className="h-4 w-4" />}
-                    label="Anuncios"
-                    value={!!cluber.announcementsEnabled}
-                    onChange={(v) => handleToggleField(cluber.id, 'announcementsEnabled', v)}
-                />
-                
-                {/* Special CincoDos Toggle */}
-                <div className={cn(
-                  "flex items-center justify-between p-4 rounded-2xl border transition-all duration-500",
-                  cluber.isCincoDos 
-                    ? "bg-amber-400/10 border-amber-400/20 shadow-[0_0_20px_rgba(251,191,36,0.05)]" 
-                    : "bg-white/5 border-white/5 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0"
-                )}>
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "h-9 w-9 rounded-xl flex items-center justify-center transition-all",
-                      cluber.isCincoDos ? "bg-amber-400 text-black shadow-[0_0_15px_#fbbf24] rotate-6" : "bg-white/10 text-white/20"
-                    )}>
-                      <Utensils className="h-5 w-5" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className={cn(
-                        "text-[9px] font-black uppercase tracking-[0.2em] leading-none",
-                        cluber.isCincoDos ? "text-amber-400" : "text-white/40"
-                      )}>Cinco Dos</span>
-                      <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">Proyecto Social</span>
-                    </div>
+               {/* New Config Access Area */}
+               <div className="flex items-center justify-between p-6 rounded-[2rem] bg-black/10 border border-white/5 group-hover:border-primary/20 transition-all">
+                  <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center">
+                          <Settings2 className="h-6 w-6 text-foreground/40 group-hover:text-primary transition-colors" />
+                      </div>
+                      <div className="space-y-0.5">
+                          <p className="text-xs font-black uppercase tracking-widest">Controles de Operación</p>
+                          <p className="text-[9px] font-bold text-foreground/30 uppercase tracking-[0.2em]">Configura permisos, visibilidad y delivery</p>
+                      </div>
                   </div>
-                  <Switch 
-                    checked={!!cluber.isCincoDos} 
-                    onCheckedChange={(v) => handleToggleField(cluber.id, 'isCincoDos', v)}
-                    className="data-[state=checked]:bg-amber-400"
-                  />
-                </div>
-              </div>
+                  <Button 
+                    variant="ghost" 
+                    className="h-12 px-8 rounded-xl bg-white/5 border border-white/5 hover:bg-primary hover:text-white font-black uppercase text-[10px] tracking-widest transition-all"
+                    onClick={() => setConfigCluber(cluber)}
+                  >
+                    CONFIGURAR
+                  </Button>
+               </div>
               
               {/* Quick Status Bar */}
-              <div className="flex items-center gap-6 pt-6 border-t border-white/5">
+              <div className="flex items-center gap-6 pt-2">
                 <div className="flex items-center gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#34d399]" />
                     <span className="text-[9px] font-black opacity-40 uppercase tracking-widest">Active Core</span>
@@ -310,19 +261,110 @@ export default function CluberManagement() {
         </div>
       )}
 
+      {/* Center Config Panel (Dialog) */}
+      <Dialog open={!!configCluber} onOpenChange={(open) => !open && setConfigCluber(null)}>
+        <DialogContent className="bg-background/90 backdrop-blur-2xl border-white/10 rounded-[3rem] p-0 overflow-hidden shadow-[0_0_80px_rgba(0,0,0,0.4)] selection:bg-primary/30 max-w-3xl">
+          <div className="px-12 py-10 space-y-4 border-b border-white/5 bg-background/50 backdrop-blur-xl relative z-20">
+             <div className="flex items-center gap-6">
+                 <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-[0_0_20px_rgba(203,70,90,0.1)]">
+                     <Settings2 className="h-8 w-8 text-primary" />
+                 </div>
+                 <div className="text-left">
+                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-1">Operaciones Centralizadas</p>
+                    <DialogTitle className="text-4xl font-black italic tracking-tighter uppercase font-montserrat leading-none">
+                        Configurar
+                    </DialogTitle>
+                    <DialogDescription className="text-xs font-bold opacity-40 uppercase tracking-[0.1em] mt-1">
+                        {configCluber?.name} — ID: {configCluber?.id}
+                    </DialogDescription>
+                 </div>
+             </div>
+          </div>
+
+          <ScrollArea className="max-h-[70vh]">
+            <div className="px-12 py-10 pb-24 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
+               <div className="space-y-4 md:col-span-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary ml-2 mb-2">Visibilidad & Operaciones</p>
+               </div>
+                  
+               {configCluber && (
+                 <>
+                  <SideToggle 
+                      icon={<Globe className="h-4 w-4" />}
+                      label="Visibilidad Pública"
+                      description="El comercio será visible para todos."
+                      value={!!configCluber.isVisible}
+                      onChange={(v) => handleToggleField(configCluber.id, 'isVisible', v)}
+                  />
+                  <SideToggle 
+                      icon={<Star className="h-4 w-4" />}
+                      label="Comercio Destacado"
+                      description="Prioridad en el inicio y listas."
+                      value={!!configCluber.isFeatured}
+                      onChange={(v) => handleToggleField(configCluber.id, 'isFeatured', v)}
+                  />
+                  <SideToggle 
+                      icon={<Truck className="h-4 w-4" />}
+                      label="Servicio de Delivery"
+                      description="Logística de Riders para pedidos."
+                      value={!!configCluber.deliveryEnabled}
+                      onChange={(v) => handleToggleField(configCluber.id, 'deliveryEnabled', v)}
+                  />
+                  <SideToggle 
+                      icon={<Megaphone className="h-4 w-4" />}
+                      label="Modulo de Anuncios"
+                      description="Avisos y promociones en el feed."
+                      value={!!configCluber.announcementsEnabled}
+                      onChange={(v) => handleToggleField(configCluber.id, 'announcementsEnabled', v)}
+                  />
+
+                  <div className="pt-8 md:col-span-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary ml-2 mb-6">Marketing & Períodos</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <SideToggle 
+                          icon={<Gift className="h-4 w-4" />}
+                          label="Verificación de Beneficios"
+                          description="Permitir canje de cupones."
+                          value={!!configCluber.canCreateBenefits}
+                          onChange={(v) => handleToggleField(configCluber.id, 'canCreateBenefits', v)}
+                      />
+                      <SideToggle 
+                          icon={<CalendarClock className="h-4 w-4" />}
+                          label="Sistema de Turneros"
+                          description="Gestión automatizada de citas."
+                          value={!!configCluber.appointmentsEnabled}
+                          onChange={(v) => handleToggleField(configCluber.id, 'appointmentsEnabled', v)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-8 md:col-span-2">
+                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 ml-2 mb-6">Programas Especiales</p>
+                     <CincoDosSideToggle 
+                        value={!!configCluber.isCincoDos}
+                        onChange={(v) => handleToggleField(configCluber.id, 'isCincoDos', v)}
+                     />
+                  </div>
+                 </>
+               )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Profile Dialog */}
       <Dialog open={!!editingCluber} onOpenChange={(open) => !open && setEditingCluber(null)}>
         <DialogContent className="bg-card border-none rounded-[3rem] p-12 max-w-xl shadow-2xl selection:bg-primary/30 ring-1 ring-white/10">
           <DialogHeader className="space-y-4 mb-8">
              <div className="h-16 w-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Settings2 className="h-7 w-7 text-primary" />
+                <Edit3 className="h-7 w-7 text-primary" />
              </div>
              <div>
                 <DialogTitle className="text-4xl font-black italic tracking-tighter uppercase font-montserrat">
                     Editar Perfil
                 </DialogTitle>
                 <DialogDescription className="text-xs font-bold opacity-30 uppercase tracking-[0.3em] font-inter">
-                    Ajustando parámetros de <span className="text-primary">{editingCluber?.name}</span>
+                    Ajustando datos básicos de <span className="text-primary">{editingCluber?.name}</span>
                 </DialogDescription>
              </div>
           </DialogHeader>
@@ -390,30 +432,55 @@ export default function CluberManagement() {
   );
 }
 
-function ManagementToggle({ icon, label, value, onChange }: { icon: any, label: string, value: boolean, onChange: (v: boolean) => void }) {
-    return (
-        <div className={cn(
-            "flex items-center justify-between p-4 rounded-2xl transition-all duration-300 border",
-            value ? "bg-primary/10 border-primary/20" : "bg-white/5 border-white/5 opacity-40 grayscale group-hover:opacity-100 group-hover:grayscale-0"
-        )}>
-            <div className="flex items-center gap-3 font-inter">
-                <div className={cn(
-                    "h-9 w-9 rounded-xl flex items-center justify-center transition-colors shadow-sm",
-                    value ? "bg-primary text-white" : "bg-white/10 text-white/20"
-                )}>
-                    {icon}
-                </div>
-                <Label className={cn(
-                    "text-[10px] font-black uppercase tracking-widest leading-none cursor-pointer",
-                    value ? "" : "opacity-40"
-                )}>{label}</Label>
-            </div>
-            <Switch 
-                checked={value} 
-                onCheckedChange={onChange} 
-                className="data-[state=checked]:bg-primary"
-            />
-        </div>
-    );
+function SideToggle({ icon, label, description, value, onChange }: { icon: any, label: string, description: string, value: boolean, onChange: (v: boolean) => void }) {
+  return (
+    <div className={cn(
+      "flex items-center justify-between p-5 rounded-2xl border transition-all duration-500 group/item",
+      value 
+        ? "bg-primary/5 border-primary/20 shadow-[0_4px_20px_rgba(203,70,90,0.08)]" 
+        : "bg-muted/30 border-transparent hover:bg-muted/50"
+    )}>
+       <div className="flex items-center gap-4 min-w-0">
+          <div className={cn(
+            "h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-500 shadow-inner shrink-0",
+            value ? "bg-primary text-white scale-110" : "bg-background text-foreground/20"
+          )}>
+            {icon}
+          </div>
+          <div className="space-y-0.5 min-w-0">
+             <p className={cn("text-[11px] font-black uppercase tracking-widest leading-none transition-colors", value ? "text-primary" : "text-foreground/60")}>{label}</p>
+             <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-tighter truncate">{description}</p>
+          </div>
+       </div>
+       <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-primary" />
+    </div>
+  );
 }
 
+function CincoDosSideToggle({ value, onChange }: { value: boolean, onChange: (v: boolean) => void }) {
+  return (
+    <div className={cn(
+      "flex items-center justify-between p-6 rounded-[2.5rem] border transition-all duration-700 group/cincodos",
+      value 
+        ? "bg-amber-500/10 border-amber-500/30 shadow-[0_8px_30px_rgba(245,158,11,0.12)]" 
+        : "bg-muted/40 border-transparent hover:bg-muted/60"
+    )}>
+      <div className="flex items-center gap-4">
+        <div className={cn(
+          "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-500",
+          value ? "bg-amber-500 text-black shadow-[0_0_20px_rgba(245,158,11,0.4)] rotate-6 scale-110" : "bg-background text-foreground/20"
+        )}>
+          <Utensils className="h-6 w-6" />
+        </div>
+        <div className="flex flex-col">
+          <span className={cn(
+            "text-xs font-black uppercase tracking-[0.2em] leading-none transition-colors",
+            value ? "text-amber-600" : "text-foreground/50"
+          )}>Cinco Dos</span>
+          <span className="text-[9px] font-bold text-foreground/30 uppercase tracking-tighter mt-1">Proyecto Social Estuclub</span>
+        </div>
+      </div>
+      <Switch checked={value} onCheckedChange={onChange} className="data-[state=checked]:bg-amber-500" />
+    </div>
+  );
+}

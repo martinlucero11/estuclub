@@ -2,11 +2,11 @@ import React, { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Category } from '@/types/data';
-import { motion } from 'framer-motion';
 import { haptic } from '@/lib/haptics';
 import { useFirestore, useCollectionOnce } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
+import { getCategoryEmoji } from '@/lib/category-utils';
 
 export function CategoryBar() {
     const pathname = usePathname();
@@ -15,7 +15,7 @@ export function CategoryBar() {
     const firestore = useFirestore();
     
     const isDelivery = pathname.startsWith('/delivery') || pathname.startsWith('/proveedores');
-    const type = isDelivery ? 'delivery' : 'perks';
+    const type = isDelivery ? 'delivery' : 'benefits';
     const currentCategory = searchParams.get('category');
 
     // Fetch categories dynamically
@@ -31,7 +31,7 @@ export function CategoryBar() {
     
     const categories = useMemo(() => {
         if (!dbCategories) return [];
-        return dbCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(c => c.name);
+        return dbCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }, [dbCategories]);
 
     const handleCategoryClick = (category: string | null) => {
@@ -51,37 +51,40 @@ export function CategoryBar() {
     };
 
     const showBar = pathname === '/benefits' || pathname === '/delivery' || pathname === '/search' || (pathname === '/' && !pathname.startsWith('/panel'));
-    if (!showBar || categories.length === 0) return null;
+    if (!showBar || (isLoading && !dbCategories)) return null;
 
     return (
-        <div className="w-full bg-black/5 dark:bg-white/5 py-3 overflow-hidden border-t border-white/10">
+        <div className="w-full bg-black/5 dark:bg-white/5 py-3 overflow-hidden border-t border-white/10 relative">
             <div className="container px-4">
                 <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none no-scrollbar snap-x snap-mandatory">
-                    <button
+                        <button
+                        key="all"
                         onClick={() => handleCategoryClick(null)}
                         className={cn(
-                            "whitespace-nowrap px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border-2 snap-start",
+                            "whitespace-nowrap px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border-2 snap-start flex items-center gap-2",
                             !currentCategory 
-                                ? "bg-white text-primary border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105" 
-                                : "bg-white/10 border-white/5 text-white/70 hover:bg-white/20 hover:text-white"
+                                ? "bg-primary text-white border-primary shadow-[0_0_20px_rgba(203,70,90,0.3)] scale-105" 
+                                : "bg-card border-black/5 dark:border-white/5 text-foreground/60 hover:border-primary/30 hover:text-primary"
                         )}
                     >
-                        Todos
+                        <span>🏠</span>
+                        <span>Todos</span>
                     </button>
                     {categories.map((cat) => {
-                        const isActive = currentCategory === cat;
+                        const isActive = currentCategory === cat.name;
                         return (
                             <button
-                                key={cat}
-                                onClick={() => handleCategoryClick(cat)}
+                                key={cat.id}
+                                onClick={() => handleCategoryClick(cat.name)}
                                 className={cn(
-                                    "whitespace-nowrap px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border-2 snap-start",
+                                    "whitespace-nowrap px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 border-2 snap-start flex items-center gap-2",
                                     isActive 
-                                        ? "bg-white text-primary border-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-105" 
-                                        : "bg-white/10 border-white/5 text-white/70 hover:bg-white/20 hover:text-white"
+                                        ? "bg-primary text-white border-primary shadow-[0_0_20px_rgba(203,70,90,0.3)] scale-105" 
+                                        : "bg-card border-black/5 dark:border-white/5 text-foreground/60 hover:border-primary/30 hover:text-primary"
                                 )}
                             >
-                                {cat}
+                                <span>{cat.emoji || getCategoryEmoji(cat.name)}</span>
+                                <span>{cat.name}</span>
                             </button>
                         );
                     })}

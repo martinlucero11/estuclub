@@ -86,13 +86,13 @@ export default function AdminAnalyticsDashboard() {
     const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce<SupplierProfile>(suppliersQuery);
 
     const benefitsQuery = useMemo(() =>
-        query(collection(firestore, 'perks').withConverter(createConverter<Benefit>())),
+        query(collection(firestore, 'benefits').withConverter(createConverter<Benefit>())),
         [firestore]
     );
     const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce<Benefit>(benefitsQuery);
     
     const redemptionsQuery = useMemo(() =>
-        query(collection(firestore, 'benefitRedemptions').withConverter(createConverter<BenefitRedemption>()), orderBy('redeemedAt', 'desc')),
+        query(collection(firestore, 'redemptions').withConverter(createConverter<BenefitRedemption>()), orderBy('redeemedAt', 'desc')),
         [firestore]
     );
     const { data: redemptions, isLoading: redemptionsLoading } = useCollectionOnce<BenefitRedemption>(redemptionsQuery);
@@ -377,7 +377,7 @@ export default function AdminAnalyticsDashboard() {
         { accessorKey: 'reviewCount', header: 'Reseñas' }
     ];
 
-    const openDetail = (type: 'users' | 'redemptions' | 'perks' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
+    const openDetail = (type: 'users' | 'redemptions' | 'benefits' | 'suppliers' | 'loyalty' | 'reviews' | 'demographics') => {
         if (!stats) return;
         const config = {
             users: {
@@ -601,7 +601,7 @@ export default function AdminAnalyticsDashboard() {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    {/* Modo Admin Inteligencia Banner */}
+                    {/* Modo Admin Inteligencia Announcement */}
                     <AnimatePresence mode="wait">
                         {selectedSupplierId !== 'all' && (
                             <motion.div

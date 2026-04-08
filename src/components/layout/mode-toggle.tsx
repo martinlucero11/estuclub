@@ -28,9 +28,9 @@ export function ModeToggle() {
         return null;
     }
 
-    const handleToggle = (mode: 'perks' | 'delivery') => {
+    const handleToggle = (mode: 'benefits' | 'delivery') => {
         haptic.vibrateSubtle();
-        if (mode === 'perks') {
+        if (mode === 'benefits') {
             router.push('/');
         } else {
             router.push('/delivery');
@@ -45,7 +45,7 @@ export function ModeToggle() {
                 
                 <div className="flex items-center gap-1 relative z-10">
                     <button
-                        onClick={() => handleToggle('perks')}
+                        onClick={() => handleToggle('benefits')}
                         className={cn(
                             "relative flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-black uppercase tracking-widest transition-all duration-500",
                             isBenefits ? "text-primary-foreground" : "text-foreground hover:text-foreground"
