@@ -7,9 +7,9 @@ let initializationError: any = null;
 
 /**
  * Robust Firebase Admin Initialization
+ * FIX: Strong PEM formatting to handle environment variables newlines/quotes.
  */
 function initializeAdmin() {
-  // 1. Prevent duplicate initialization (common in Next.js HMR)
   if (admin.apps.length > 0) return admin.app();
 
   const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -23,18 +23,29 @@ function initializeAdmin() {
   try {
     const serviceAccount = JSON.parse(serviceAccountVar);
     
+    // 1. Bulletproof PEM Formatter
+    let rawPrivateKey = serviceAccount.private_key;
+
+    if (rawPrivateKey) {
+      // Remove accidental wrapping quotes (sometimes added by env managers)
+      rawPrivateKey = rawPrivateKey.replace(/^["']|["']$/g, '');
+      // Convert literal escaped \n into real newlines
+      rawPrivateKey = rawPrivateKey.replace(/\\n/g, '\n');
+    }
+
+    // 2. Initialize using explicit mapping
     const app = admin.initializeApp({
       credential: admin.credential.cert({
         projectId: serviceAccount.project_id,
         clientEmail: serviceAccount.client_email,
-        privateKey: serviceAccount.private_key?.replace(/\\n/g, '\n'),
+        privateKey: rawPrivateKey,
       }),
     });
 
     console.log(`[FIREBASE-ADMIN] Initialized successfully for project: ${serviceAccount.project_id}`);
+    initializationError = null; // Clear success
     return app;
   } catch (error: any) {
-    // CAPTURE THE RAW ERROR FOR THE FRONTEND
     initializationError = { 
         code: error.code || 'initialization-failed', 
         message: error.message,
