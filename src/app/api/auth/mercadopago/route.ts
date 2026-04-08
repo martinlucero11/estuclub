@@ -5,7 +5,7 @@ import * as admin from 'firebase-admin';
 // Mercado Pago OAuth Credentials
 const CLIENT_ID = process.env.MP_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.MP_CLIENT_SECRET || '';
-const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/mercadopago`;
+const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}/api/mp/callback`;
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);

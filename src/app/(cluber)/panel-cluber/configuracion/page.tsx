@@ -103,7 +103,7 @@ export default function CluberConfiguracionPage() {
                 : 'https://estuclub.com.ar/api/mp/callback';
 
             // 3. Redirect to MP Auth using requested format
-            const appId = process.env.NEXT_PUBLIC_MP_APP_ID;
+            const appId = process.env.NEXT_PUBLIC_MP_CLIENT_ID || process.env.NEXT_PUBLIC_MP_APP_ID;
             const authUrl = `https://auth.mercadopago.com.ar/authorization?client_id=${appId}&response_type=code&platform_id=mp&state=${data.stateId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
             
             window.location.href = authUrl;

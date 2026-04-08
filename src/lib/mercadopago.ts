@@ -14,10 +14,11 @@ export const MP_APP_ID = process.env.MP_APP_ID || "";
 export const MP_CLIENT_SECRET = process.env.MP_CLIENT_SECRET || "";
 
 export const MP_REDIRECT_URI = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:3000/api/auth/mercadopago/callback'
-    : 'https://estuclub.com.ar/api/auth/mercadopago/callback';
+    ? 'http://localhost:3000/api/mp/callback'
+    : 'https://estuclub.com.ar/api/mp/callback';
 
 export const getMPOAuthUrl = (state: string) => {
-    return `https://auth.mercadopago.com/authorization?client_id=${MP_APP_ID}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${encodeURIComponent(MP_REDIRECT_URI)}`;
+    const clientId = process.env.NEXT_PUBLIC_MP_CLIENT_ID || process.env.NEXT_PUBLIC_MP_APP_ID || "";
+    return `https://auth.mercadopago.com.ar/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${encodeURIComponent(MP_REDIRECT_URI)}`;
 };
 
