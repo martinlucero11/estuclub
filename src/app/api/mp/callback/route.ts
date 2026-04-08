@@ -3,72 +3,83 @@ import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase-admin';
 
 /**
+ * Standardized Redirect URI Logic
+ */
+const getRedirectUri = () => {
+  return process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000/api/mp/callback'
+    : 'https://estuclub.com.ar/api/mp/callback';
+};
+
+/**
  * Mercado Pago OAuth Callback Handler
- * 
- * 1. Validates the state (nonce) against Firestore.
- * 2. Exchanges the authorization code for access/refresh tokens.
- * 3. Stores credentials in both Users and Roles_Supplier collections.
+ * Optimized for diagnostic visibility and environmental parity.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
 
+  console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}`);
+
   // 1. Initial Validation
   if (!code || !state) {
-    console.error('MP OAuth Callback: Missing code or state');
-    return NextResponse.json({ 
-      error: 'Invalid request: missing authorization code or state' 
-    }, { status: 400 });
+    console.error('[MP-ERROR] Missing code or state in callback params');
+    return NextResponse.json({ error: 'Invalid OAuth response' }, { status: 400 });
   }
 
   try {
-    // 2. State Validation (Anti-CSRF)
+    // 2. State Validation
     const stateRef = adminDb.collection('mp_oauth_states').doc(state);
     const stateDoc = await stateRef.get();
 
     if (!stateDoc.exists) {
-        return NextResponse.json({ error: 'OAuth state not found or expired' }, { status: 403 });
+        console.error(`[MP-ERROR] State ${state} not found in Firestore`);
+        return NextResponse.json({ error: 'OAuth state not found' }, { status: 403 });
     }
 
     const stateData = stateDoc.data();
     if (stateData?.used) {
+        console.error(`[MP-ERROR] State ${state} already used at ${stateData.usedAt}`);
         return NextResponse.json({ error: 'OAuth code already used' }, { status: 403 });
     }
 
     const userId = stateData?.userId;
-    if (!userId) {
-        return NextResponse.json({ error: 'User context not found in state' }, { status: 403 });
-    }
+    const redirectUri = getRedirectUri();
 
-    // 3. Prevent state reuse
-    await stateRef.update({ 
-        used: true, 
-        usedAt: new Date() 
-    });
+    // 3. Mark state as used BEFORE calling MP to prevent race conditions
+    await stateRef.update({ used: true, usedAt: new Date() });
+
+    console.log(`[MP-DEBUG] Exchanging code for user ${userId}. Using Redirect URI: ${redirectUri}`);
 
     // 4. Token Exchange Request
     const tokenResponse = await fetch('https://api.mercadopago.com/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` // Recommended by MP
       },
       body: JSON.stringify({
         client_secret: process.env.MP_CLIENT_SECRET,
         client_id: process.env.MP_CLIENT_ID,
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL}/api/mp/callback`,
+        redirect_uri: redirectUri,
       }),
     });
 
     if (!tokenResponse.ok) {
-      const errorDetails = await tokenResponse.json();
-      console.error('MP Token Exchange Failed:', errorDetails);
+      const errorBody = await tokenResponse.json();
+      
+      // CRITICAL LOG: This will show in the Firebase/Terminal console
+      console.error('--- MERCADO PAGO EXCHANGE REJECTED ---');
+      console.error('Status:', tokenResponse.status);
+      console.dir(errorBody, { depth: null });
+      console.error('--------------------------------------');
+
       return NextResponse.json({ 
-        error: 'Failed to exchange token with Mercado Pago', 
-        details: errorDetails 
+        error: 'Mercado Pago rejected the token exchange', 
+        details: errorBody,
+        status: tokenResponse.status
       }, { status: tokenResponse.status });
     }
 
@@ -83,18 +94,16 @@ export async function GET(request: NextRequest) {
         linkedAt: new Date().toISOString(),
     };
 
-    // 5. Atomic Update: User + Supplier Profile
+    // 5. Atomic Update
     const batch = adminDb.batch();
-
-    // Update User Metadata
     const userRef = adminDb.collection('users').doc(userId);
+    const supplierRef = adminDb.collection('roles_supplier').doc(userId);
+
     batch.update(userRef, {
         mp_credentials: credentialData,
         mercadopago_linked: true
     });
 
-    // Update Supplier Credentials (Primary storage for logistics)
-    const supplierRef = adminDb.collection('roles_supplier').doc(userId);
     batch.set(supplierRef, {
         mp_credentials: credentialData,
         mp_linked: true,
@@ -103,16 +112,17 @@ export async function GET(request: NextRequest) {
 
     await batch.commit();
 
-    // 6. Final Redirect to Dashboard
-    const redirectUrl = new URL('/panel-cluber/configuracion', process.env.NEXT_PUBLIC_BASE_URL || 'https://estuclub.com.ar');
-    redirectUrl.searchParams.set('success', 'mp_linked');
+    console.log(`[MP-SUCCESS] Account ${mp_user_id} linked successfully for user ${userId}`);
+
+    const dashboardUrl = new URL('/panel-cluber/configuracion', redirectUri);
+    dashboardUrl.searchParams.set('success', 'mp_linked');
     
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(dashboardUrl);
 
   } catch (err: any) {
-    console.error('CATASTROPHIC: MP OAuth Error:', err);
+    console.error('[MP-FATAL] Unhandled error in callback:', err);
     return NextResponse.json({ 
-        error: 'Internal logistics failure connecting to Mercado Pago',
+        error: 'Internal Callback Failure',
         message: err.message
     }, { status: 500 });
   }

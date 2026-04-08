@@ -97,12 +97,14 @@ export default function CluberConfiguracionPage() {
             const data = await stateRes.json();
             if (!data.stateId) throw new Error('Failed to generate OAuth state');
 
-            // 2. Redirect to MP Auth
+            // 2. Standardized Redirect URI (Matching MP Dashboard Rules)
+            const redirectUri = process.env.NODE_ENV === 'development'
+                ? 'http://localhost:3000/api/mp/callback'
+                : 'https://estuclub.com.ar/api/mp/callback';
+
+            // 3. Redirect to MP Auth using requested format
             const appId = process.env.NEXT_PUBLIC_MP_APP_ID;
-            const redirectUri = encodeURIComponent(`${window.location.origin}/api/mp/callback`);
-            
-            // Authorization URL
-            const authUrl = `https://auth.mercadopago.com.ar/authorization?client_id=${appId}&response_type=code&platform_id=mp&state=${data.stateId}&redirect_uri=${redirectUri}`;
+            const authUrl = `https://auth.mercadopago.com.ar/authorization?client_id=${appId}&response_type=code&platform_id=mp&state=${data.stateId}&redirect_uri=${encodeURIComponent(redirectUri)}`;
             
             window.location.href = authUrl;
 
