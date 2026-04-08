@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, getInitError } from '@/lib/firebase-admin';
 
 /**
  * Standardized Redirect URI Logic
@@ -24,10 +24,11 @@ export async function GET(request: NextRequest) {
 
   // 0. Database Availability Check
   if (!adminDb) {
-    console.error('[MP-ERROR] Firebase Admin SDK failed to initialize. adminDb is null.');
+    const initError = getInitError();
+    console.error('[MP-ERROR] Firebase Admin SDK failed to initialize.', initError);
     return NextResponse.json({ 
-      error: 'Infrastructure Error', 
-      message: 'Database connection not available. Check server logs for FIREBASE-ADMIN errors.' 
+      error: 'Firebase Infrastructure Failure', 
+      nativeError: initError || 'Unknown Error (Check Logs)'
     }, { status: 500 });
   }
 
