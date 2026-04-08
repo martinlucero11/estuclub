@@ -184,7 +184,9 @@ export default function VerifyPage() {
           userId: app.userId,
           email: app.email,
           userName: app.userName,
-          phone: app.phone
+          phone: app.phone,
+          patente: app.patente,
+          vehicleType: (app as any).vehicleType 
         });
         
         if (result.success) {

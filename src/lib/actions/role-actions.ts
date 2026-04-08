@@ -59,6 +59,9 @@ export async function approveRiderOperation(requestId: string, appData: any) {
         const { userId, email, userName, phone } = validatedData;
         
         if (!userId || !email || !userName) throw new Error("Datos de Rider incompletos para aprobación.");
+        
+        const patente = validatedData.patente;
+        const vehicleType = validatedData.vehicleType;
 
         return await adminDb.runTransaction(async (transaction) => {
             const userRef = adminDb!.collection('users').doc(userId);
@@ -76,6 +79,8 @@ export async function approveRiderOperation(requestId: string, appData: any) {
                 isVerified: true,
                 approvedAt: new Date().toISOString(),
                 isOnline: false,
+                patente,
+                vehicleType
             }, { merge: true });
 
             // 2. Create Rider Role
@@ -84,6 +89,8 @@ export async function approveRiderOperation(requestId: string, appData: any) {
                 userId,
                 userName,
                 email,
+                patente,
+                vehicleType,
                 assignedAt: new Date().toISOString(),
             }, { merge: true });
 

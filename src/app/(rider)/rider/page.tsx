@@ -484,7 +484,10 @@ export default function RiderPage() {
     };
 
     return (
-        <div className="relative h-screen w-full bg-black overflow-hidden selection:bg-[#cb465a]/30">
+        <div className="relative min-h-screen w-full bg-[#0a0a0a] overflow-hidden selection:bg-[#cb465a]/30">
+            {/* SOLID BACKDROP (To kill the white box) */}
+            <div className="fixed inset-0 bg-[#0a0a0a] z-0" />
+
             {/* BACKGROUND MAP (MAP-CENTRIC) */}
             <div className={cn(
                 "fixed inset-0 transition-all duration-700",

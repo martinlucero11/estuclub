@@ -18,7 +18,10 @@ import {
     ChevronLeft,
     ShieldCheck,
     Search,
-    Bike
+    Bike,
+    Car,
+    Star,
+    User as UserIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -115,70 +118,95 @@ export default function OrderTrackingPage() {
                     {isLogisticsActive && destinationCoords ? (
                         <motion.div 
                             key="map-view"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative h-[450px] w-full"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 20 }}
+                            className="relative h-[550px] w-full -mt-4"
                         >
-                            <OrderTrackingMap 
-                                orderId={id as string} 
-                                destination={destinationCoords} 
-                            />
+                            <div className="absolute inset-0 rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+                                <OrderTrackingMap 
+                                    orderId={id as string} 
+                                    destination={destinationCoords} 
+                                />
+                            </div>
                             
-                            {/* Rider Info Overlay */}
-                            <div className="absolute inset-x-4 bottom-4 z-30">
-                                <Card className="bg-black/60 backdrop-blur-2xl border-white/10 rounded-[2rem] p-5 shadow-2xl">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 overflow-hidden">
-                                                {rider?.photoURL ? (
-                                                    <img src={rider.photoURL} alt="Rider" className="h-full w-full object-cover" />
-                                                ) : (
-                                                    <Bike className="h-6 w-6 text-primary" />
-                                                )}
-                                            </div>
-                                            <div className="space-y-0.5">
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-primary italic">Repartidor Oficial</h4>
-                                                <p className="text-lg font-black tracking-tighter text-white">
-                                                    {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando...' : 'Asignando...')}
-                                                </p>
-                                            </div>
-                                        </div>
+                            {/* Uber-style Rider Info Overlay */}
+                            <div className="absolute inset-x-3 bottom-3 z-30">
+                                <Card className="bg-black/40 backdrop-blur-3xl border-white/10 rounded-[2.5rem] p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                                     {/* Background Decor */}
+                                     <div className="absolute -right-8 -bottom-8 opacity-5">
+                                        {rider?.vehicleType === 'auto' ? <Car className="h-32 w-32 rotate-12" /> : <Bike className="h-32 w-32 rotate-12" />}
+                                     </div>
 
-                                        {rider?.phone && (
-                                            <div className="flex items-center gap-2">
+                                    <div className="relative z-10 space-y-5">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative">
+                                                    <div className="h-16 w-16 rounded-full bg-primary/20 p-1 border-2 border-primary/30 overflow-hidden shadow-2xl">
+                                                        {rider?.photoURL ? (
+                                                            <img src={rider.photoURL} alt="Rider" className="h-full w-full object-cover rounded-full" />
+                                                        ) : (
+                                                            <div className="h-full w-full flex items-center justify-center bg-black/40 rounded-full">
+                                                                <UserIcon className="h-6 w-6 text-primary" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* Rating Badge */}
+                                                    <div className="absolute -bottom-1 -right-1 bg-white text-black text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-xl border border-black/10">
+                                                        {rider?.avgRating ? rider.avgRating.toFixed(1) : '5.0'} <Star className="h-2 w-2 fill-black" />
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Rider Asignado</h4>
+                                                    <p className="text-xl font-black tracking-tighter text-white">
+                                                        {rider ? `${rider.firstName} ${rider.lastName}` : (order.status === 'searching_rider' ? 'Buscando...' : 'Conectando...')}
+                                                    </p>
+                                                    {rider?.reviewCount && (
+                                                        <p className="text-[8px] font-black text-white/40 uppercase tracking-widest">{rider.reviewCount} Viajes Finalizados</p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="flex gap-2">
                                                 <Button 
                                                     size="icon" 
                                                     variant="secondary" 
-                                                    className="h-12 w-12 rounded-xl bg-white/5 hover:bg-white/10"
+                                                    className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5"
                                                     asChild
                                                 >
-                                                    <a href={`tel:${rider.phone}`}><Phone className="h-5 w-5 text-white" /></a>
+                                                    <a href={`tel:${rider?.phone || order.riderPhone}`}><Phone className="h-5 w-5" /></a>
                                                 </Button>
                                                 <Button 
                                                     size="icon" 
-                                                    className="h-12 w-12 rounded-xl bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]"
+                                                    className="h-12 w-12 rounded-2xl bg-emerald-500 hover:bg-emerald-600 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
                                                     asChild
                                                 >
-                                                    <a href={`https://wa.me/${rider.phone}`} target="_blank" rel="noreferrer">
-                                                        <MessageCircle className="h-5 w-5 text-white" />
+                                                    <a href={`https://wa.me/${rider?.phone || order.riderPhone}`} target="_blank" rel="noreferrer">
+                                                        <MessageCircle className="h-5 w-5" />
                                                     </a>
                                                 </Button>
                                             </div>
-                                        )}
-                                    </div>
-                                    
-                                    {/* Logistics Status Pill (Compact) */}
-                                    <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                             <p className="text-[10px] font-black uppercase tracking-widest text-foreground/60">{currentStatus.label}</p>
-                                          </div>
-                                          {order.riderLocation ? (
-                                              <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] italic">GPS Activo • {Math.round(Math.random() * 5 + 3)} min</p>
-                                          ) : (
-                                              <p className="text-[8px] font-black text-foreground/20 uppercase tracking-[0.2em]">Sincronizando señal...</p>
-                                          )}
+                                        </div>
+
+                                        {/* Vehicle & Status Row */}
+                                        <div className="grid grid-cols-2 gap-3 pt-2">
+                                            <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    {rider?.vehicleType === 'auto' ? <Car className="h-4 w-4 text-primary" /> : <Bike className="h-4 w-4 text-primary" />}
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Vehículo</span>
+                                                </div>
+                                                <p className="text-sm font-black italic tracking-tighter uppercase">
+                                                    {rider?.vehicleType || 'Moto'} • <span className="text-primary">{rider?.patente || 'S/N'}</span>
+                                                </p>
+                                            </div>
+                                            <div className="bg-white/5 rounded-2xl p-4 border border-white/5 flex flex-col justify-center">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">Estado</span>
+                                                </div>
+                                                <p className="text-xs font-black uppercase tracking-widest text-white/80">{currentStatus.label}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </Card>
                             </div>

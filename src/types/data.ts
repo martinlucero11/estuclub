@@ -75,6 +75,8 @@ export interface UserProfile {
     isMembershipWaived?: boolean;
     avgRating?: number;
     reviewCount?: number;
+    patente?: string;
+    vehicleType?: 'bici' | 'moto' | 'auto';
     addresses?: UserAddress[];
     activeAddressId?: string; // Currently selected address for home services
     // Real-time Logistics

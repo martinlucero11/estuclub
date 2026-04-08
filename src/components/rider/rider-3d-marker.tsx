@@ -6,8 +6,6 @@ import { useGLTF, Environment, ContactShadows, Float, Trail } from '@react-three
 import * as THREE from 'three';
 
 interface Rider3DMarkerProps {
-    lat: number;
-    lng: number;
     heading: number | null;
     zoom: number;
     isDark?: boolean;
@@ -78,7 +76,7 @@ function ScooterModel({ heading, isDark, zoom }: { heading: number | null; isDar
     );
 }
 
-export function Rider3DMarker({ lat, lng, heading, zoom, isDark }: Rider3DMarkerProps) {
+export function Rider3DMarker({ heading, zoom, isDark }: Rider3DMarkerProps) {
     return (
         <div className="w-[200px] h-[200px] relative pointer-events-none flex items-center justify-center">
             <Suspense fallback={

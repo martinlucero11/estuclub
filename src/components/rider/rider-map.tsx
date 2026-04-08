@@ -36,32 +36,43 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
     const defaultCenter = { lat: -27.4877, lng: -55.3218 };
     
     // Performance: Smooth Location Interpolation
-    const [smoothLocation, setSmoothLocation] = useState(userLocation || defaultCenter);
+    // No state here to avoid 60fps re-renders of the whole component
     const animationRef = useRef<any>(null);
 
     // Sync Smooth Location with Throttled Input
     useEffect(() => {
-        if (!userLocation) return;
+        if (!userLocation || isNaN(userLocation.lat) || isNaN(userLocation.lng)) return;
         
         if (animationRef.current) animationRef.current.stop();
         
+        // Use a simple object to track previous interpolated values
+        const lastPos = advancedUserMarkerRef.current?.position || defaultCenter;
+
         animationRef.current = animate(
-            { lat: smoothLocation.lat, lng: smoothLocation.lng },
+            { lat: lastPos.lat, lng: lastPos.lng },
             { lat: userLocation.lat, lng: userLocation.lng },
             {
                 type: "spring",
                 bounce: 0,
-                duration: 2.5, // Long duration to bridge the 20s gap smoothly
+                duration: 2.5,
                 onUpdate: (latest) => {
-                    setSmoothLocation({ lat: latest.lat, lng: latest.lng });
+                    // DEFENSIVE: Block invalid updates to prevented Google Maps library crash
+                    if (isNaN(latest.lat) || isNaN(latest.lng)) return;
+                    
                     if (advancedUserMarkerRef.current) {
-                        advancedUserMarkerRef.current.position = { lat: latest.lat, lng: latest.lng };
+                        try {
+                            advancedUserMarkerRef.current.position = { lat: latest.lat, lng: latest.lng };
+                        } catch (err) {
+                            console.warn('[RiderMap] Failed to update marker position:', err);
+                        }
                     }
                     if (pulseCircleRef.current) {
                         pulseCircleRef.current.setCenter({ lat: latest.lat, lng: latest.lng });
                     }
                     if (radarCirclesRef.current.length > 0) {
-                        radarCirclesRef.current.forEach(c => c.setCenter({ lat: latest.lat, lng: latest.lng }));
+                        radarCirclesRef.current.forEach(c => {
+                            try { c.setCenter({ lat: latest.lat, lng: latest.lng }); } catch (e) {}
+                        });
                     }
                 }
             }
@@ -171,8 +182,6 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
             if (userMarkerRootRef.current) {
                 userMarkerRootRef.current.render(
                     <Rider3DMarker 
-                        lat={smoothLocation.lat}
-                        lng={smoothLocation.lng}
                         heading={userLocation.heading}
                         zoom={zoom}
                         isDark={true}

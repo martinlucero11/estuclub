@@ -33,7 +33,6 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
     
     // Smooth Interpolation State
     const [riderLocation, setRiderLocation] = useState<{ lat: number; lng: number; heading: number | null } | null>(null);
-    const [smoothLocation, setSmoothLocation] = useState<{ lat: number; lng: number } | null>(null);
     
     // Markers and Roots
     const advancedRiderMarkerRef = useRef<any>(null);
@@ -104,28 +103,30 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
 
     // ── INTERPOLATION ENGINE (LERP) ──
     useEffect(() => {
-        if (!riderLocation) return;
+        if (!riderLocation || isNaN(riderLocation.lat) || isNaN(riderLocation.lng)) return;
         
-        // If it's the first location, set it immediately
-        if (!smoothLocation) {
-            setSmoothLocation({ lat: riderLocation.lat, lng: riderLocation.lng });
-            return;
-        }
-
         if (animationRef.current) animationRef.current.stop();
         
-        // Smoothly glide for 8 seconds to bridge the 20s update gap
+        // Use current marker position as starting point for smoothness
+        const lastPos = advancedRiderMarkerRef.current?.position || riderLocation;
+
         animationRef.current = animate(
-            { lat: smoothLocation.lat, lng: smoothLocation.lng },
+            { lat: lastPos.lat, lng: lastPos.lng },
             { lat: riderLocation.lat, lng: riderLocation.lng },
             {
                 type: "spring",
                 bounce: 0,
                 duration: 8,
                 onUpdate: (latest) => {
-                    setSmoothLocation({ lat: latest.lat, lng: latest.lng });
+                    // DEFENSIVE: Block invalid updates to prevented Google Maps library crash
+                    if (isNaN(latest.lat) || isNaN(latest.lng)) return;
+
                     if (advancedRiderMarkerRef.current) {
-                        advancedRiderMarkerRef.current.position = { lat: latest.lat, lng: latest.lng };
+                        try {
+                            advancedRiderMarkerRef.current.position = { lat: latest.lat, lng: latest.lng };
+                        } catch (err) {
+                            console.warn('[OrderTrackingMap] Failed to update marker position:', err);
+                        }
                     }
                 }
             }
@@ -212,7 +213,7 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
 
     // ── RIDER MARKER (3D) ──
     useEffect(() => {
-        if (!mapInstance || !smoothLocation) return;
+        if (!mapInstance || !riderLocation) return;
         let isCancelled = false;
 
         const updateRiderMarker = async () => {
@@ -229,7 +230,7 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
                 container.style.transform = 'translateY(50%)';
 
                 advancedRiderMarkerRef.current = new AdvancedMarkerElement({
-                    position: smoothLocation,
+                    position: riderLocation,
                     map: mapInstance,
                     content: container,
                     title: "Rider está llegando",
@@ -243,8 +244,6 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
             if (riderMarkerRootRef.current) {
                 riderMarkerRootRef.current.render(
                     <Rider3DMarker 
-                        lat={smoothLocation.lat}
-                        lng={smoothLocation.lng}
                         heading={riderLocation?.heading || 0}
                         zoom={zoom}
                         isDark={true}
@@ -255,7 +254,7 @@ export function OrderTrackingMap({ orderId, destination, onStatusChange }: Order
 
         updateRiderMarker();
         return () => { isCancelled = true; };
-    }, [mapInstance, smoothLocation, zoom, riderLocation?.heading]);
+    }, [mapInstance, riderLocation, zoom]);
 
     // ── DESTINATION MARKER ──
     useEffect(() => {

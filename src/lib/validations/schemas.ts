@@ -10,6 +10,7 @@ export const RiderApplicationSchema = z.object({
   phone: z.string().min(8, "Phone number is too short"),
   dni: z.string().min(7, "DNI is too short"),
   patente: z.string().min(6, "Patente is too short"),
+  vehicleType: z.enum(['bici', 'moto', 'auto']).optional(),
   fotoRostroUrl: z.string().url().optional(),
   fotoVehiculoUrl: z.string().url().optional(),
   status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
