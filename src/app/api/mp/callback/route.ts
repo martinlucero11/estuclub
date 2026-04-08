@@ -22,6 +22,15 @@ export async function GET(request: NextRequest) {
 
   console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}`);
 
+  // 0. Database Availability Check
+  if (!adminDb) {
+    console.error('[MP-ERROR] Firebase Admin SDK failed to initialize. adminDb is null.');
+    return NextResponse.json({ 
+      error: 'Infrastructure Error', 
+      message: 'Database connection not available. Check server logs for FIREBASE-ADMIN errors.' 
+    }, { status: 500 });
+  }
+
   // 1. Initial Validation
   if (!code || !state) {
     console.error('[MP-ERROR] Missing code or state in callback params');
