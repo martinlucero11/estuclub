@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin';
 /**
  * Robust Firebase Admin Initialization
  * Ensures the SDK is initialized correctly with environmental awareness.
+ * FIX: Specific mapping for private_key with escaped newlines for production/Vercel compatibility.
  */
 function initializeAdmin() {
   if (admin.apps.length > 0) return admin.app();
@@ -17,16 +18,12 @@ function initializeAdmin() {
   try {
     const serviceAccount = JSON.parse(serviceAccountVar);
     
-    // Validate project_id to catch malformed JSON early
-    if (!serviceAccount.project_id) {
-      console.error('[FIREBASE-ADMIN] Malformed Service Account: Missing project_id');
-      return null;
-    }
-
+    // Explicit mapping to handle snake_case to camelCase and the private_key newline fix
     const app = admin.initializeApp({
       credential: admin.credential.cert({
-        ...serviceAccount,
-        privateKey: serviceAccount.privateKey?.replace(/\\n/g, '\n'),
+        projectId: serviceAccount.project_id,
+        clientEmail: serviceAccount.client_email,
+        privateKey: serviceAccount.private_key?.replace(/\\n/g, '\n'),
       }),
     });
 
@@ -46,5 +43,4 @@ export const adminDb = admin.apps.length > 0 ? admin.firestore() : null;
 export const adminAuth = admin.apps.length > 0 ? admin.auth() : null;
 export const adminMessaging = admin.apps.length > 0 ? admin.messaging() : null;
 
-// Re-export common types if needed
 export { admin };
