@@ -22,7 +22,9 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state');
   
   // Read the cookie set during state creation
-  const storedState = cookies().get('mp_oauth_state')?.value;
+  // IMPORTANT: Renamed to '__session' to avoid being stripped by Firebase Hosting CDN
+  const storedState = cookies().get('__session')?.value;
+
 
   console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}, Cookie: ${storedState || 'Missing'}`);
 

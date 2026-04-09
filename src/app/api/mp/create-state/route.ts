@@ -27,14 +27,15 @@ export async function POST(request: NextRequest) {
         const response = NextResponse.json({ stateId });
 
         // Set secure cookie for cross-origin redirect survival
-        // httpOnly: true, secure: true, sameSite: 'none' is critical for cross-domain redirects
-        response.cookies.set('mp_oauth_state', stateId, {
+        // CRITICAL FOR FIREBASE HOSTING: Must be named '__session' to pass through the CDN
+        response.cookies.set('__session', stateId, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
             path: '/',
-            maxAge: 600 // 10 minutes (matching Firestore expiry)
+            maxAge: 600 // 10 minutes
         });
+
 
         return response;
 
