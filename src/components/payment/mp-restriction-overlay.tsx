@@ -13,11 +13,12 @@ import { getMPOAuthUrl } from '@/lib/mercadopago';
  * Blocks access to the dashboard if the grace period for Mercado Pago vinculation has expired.
  */
 export default function MPRestrictionOverlay() {
-    const { user, userData, isUserLoading } = useUser();
+    const { user, userData, supplierData, isUserLoading } = useUser();
 
     if (isUserLoading || !userData) return null;
 
-    const isLinked = userData.mp_linked || false;
+    const isLinked = supplierData?.mp_linked || userData?.mercadopago_linked || false;
+
     const gracePeriodEnd = userData.mp_grace_period_end?.toDate() || null;
     const now = new Date();
 

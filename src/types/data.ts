@@ -65,7 +65,8 @@ export interface UserProfile {
     educationLevel: string;
     career: string;
     studentCertificateUrl: string;
-    mp_linked?: boolean; // Mercado Pago account linked status for riders
+    mercadopago_linked?: boolean; // Centralized status
+    mp_linked?: boolean; // Mercado Pago account linked status for riders (legacy alias)
     mp_grace_period_end?: Timestamp; // Deadline to link MP before access is restricted
     // Rider & Subscription Info
     subscriptionStatus?: 'none' | 'pending' | 'active' | 'expired';

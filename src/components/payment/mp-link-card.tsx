@@ -13,10 +13,11 @@ import { getMPOAuthUrl } from '@/lib/mercadopago';
  * UI for linking Mercado Pago accounts (Marketplace flow).
  */
 export default function MPLinkCard() {
-    const { user, userData, isUserLoading } = useUser();
+    const { user, userData, supplierData, isUserLoading } = useUser();
     const [isRedirecting, setIsRedirecting] = React.useState(false);
 
-    const isLinked = userData?.mp_linked || false;
+    const isLinked = supplierData?.mp_linked || userData?.mercadopago_linked || false;
+
 
     const handleLink = () => {
         if (!user) return;
