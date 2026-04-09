@@ -3,7 +3,8 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useAdmin } from '@/context/admin-context';
-import { collection, query, where, orderBy, limit, doc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, doc, updateDoc, serverTimestamp, Timestamp, onSnapshot } from 'firebase/firestore';
+import { NewOrderModal } from './new-order-modal';
 import { 
     Clock, 
     CheckCircle2, 
@@ -67,6 +68,10 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<string>('orders');
 
+    // Notification State
+    const [activeAlertOrder, setActiveAlertOrder] = useState<Order | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     // Context Resolution
     const supplierId = propSupplierId || user?.uid;
     const supplierData = propSupplierId && propSupplierId !== user?.uid ? impersonatedSupplierData : ownSupplierData;
@@ -121,29 +126,47 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
         }
     }, [orders, isAudioEnabled]);
     
-    // Notification system for new orders while the dashboard is open
-    const [lastKnownOrderCount, setLastKnownOrderCount] = useState(0);
-
+    // Notification system for new orders while the dashboard is open - HIGH PRIORITY
     useEffect(() => {
-        const pendingOrders = orders?.filter(o => o.status === 'pending') || [];
-        const currentCount = pendingOrders.length;
-        
-        if (currentCount > lastKnownOrderCount) {
-            haptic.vibrateSuccess();
-            toast({
-                title: "¡NUEVO PEDIDO!",
-                description: `Acabas de recibir un pedido de ${pendingOrders[0]?.customerName || 'un cliente'}.`,
-                variant: 'default',
-                className: 'bg-emerald-500 text-white font-black border-none animate-bounce rounded-2xl shadow-2xl'
+        if (!firestore || !supplierId) return;
+
+        // Surgical listener for NEW pending orders only
+        const q = query(
+            collection(firestore, 'orders').withConverter(createConverter<Order>()),
+            where('supplierId', '==', supplierId),
+            where('status', '==', 'pending'),
+            orderBy('createdAt', 'desc'),
+            limit(1)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                // EXTREMELY IMPORTANT: change.type === 'added' captures exactly when a NEW order lands
+                if (change.type === 'added') {
+                    const newOrder = change.doc.data();
+                    
+                    // Prevent triggering on initial load of historical orders (optional but safer)
+                    const now = new Date().getTime();
+                    const orderTime = newOrder.createdAt instanceof Timestamp ? newOrder.createdAt.toMillis() : now;
+                    
+                    if (now - orderTime < 60000) { // Only alarm if created in the last 60 seconds
+                        haptic.vibrateSuccess();
+                        setActiveAlertOrder(newOrder);
+                        setIsModalOpen(true);
+                        
+                        // Force audio loop if enabled
+                        if (isAudioEnabled && audioRef.current) {
+                            audioRef.current.play().catch(e => {
+                                console.warn("Browser blocked auto-play alarm. User engagement required.", e);
+                            });
+                        }
+                    }
+                }
             });
-            
-            // If sound is enabled but not playing, ensure it plays
-            if (isAudioEnabled && audioRef.current && audioRef.current.paused) {
-                audioRef.current.play().catch(e => console.error("Audio trigger failed:", e));
-            }
-        }
-        setLastKnownOrderCount(currentCount);
-    }, [orders, lastKnownOrderCount, isAudioEnabled]);
+        });
+
+        return () => unsubscribe();
+    }, [firestore, supplierId, isAudioEnabled]);
 
     const handleToggleAudio = () => {
         haptic.vibrateSubtle();
@@ -490,6 +513,19 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                     )}
                 </TabsContent>
             </Tabs>
+            <NewOrderModal 
+                order={activeAlertOrder}
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onAccept={(order) => {
+                    handleUpdateStatus(order, 'accepted');
+                    setIsModalOpen(false);
+                }}
+                onReject={(order) => {
+                    handleUpdateStatus(order, 'cancelled');
+                    setIsModalOpen(false);
+                }}
+            />
         </div>
     );
 }
