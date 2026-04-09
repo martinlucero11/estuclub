@@ -48,26 +48,35 @@ export async function POST(req: Request) {
 
         const { items } = orderData as { items: any[] };
 
-        // 4. Recalcular totalSubtotal desde la base de datos
+        // 4. Configuración y Validaciones de Entorno
+        const accessToken = process.env.MP_ACCESS_TOKEN;
+        if (!accessToken) {
+            console.error('CRITICAL: MP_ACCESS_TOKEN is not defined in environment variables');
+            return NextResponse.json({ error: 'Configuración de pagos incompleta (Token)' }, { status: 500 });
+        }
+
+        const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL;
+        // Fallback robusto para producción si falta la variable de entorno
+        const baseUrl = (rawBaseUrl || 'https://estuclub.com.ar').replace(/\/$/, '');
+
+        // Recalcular totalSubtotal desde la base de datos
         const recalculatedSubtotal = items.reduce((acc: number, item: any) => {
-            return acc + (Number(item.price) * (Number(item.quantity) || 1));
+            return acc + (Math.max(0, Number(item.price)) * Math.max(1, Number(item.quantity || 1)));
         }, 0);
 
-        const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
-
         // Calculate 5% service fee based on DB data
-        const serviceFee = Math.max(1, Math.round(recalculatedSubtotal * 0.05)); // Ensure at least $1
+        const serviceFee = Math.max(1, Math.round(recalculatedSubtotal * 0.05));
 
         const preference = new Preference(mpClient);
 
-        const response = await preference.create({
+        const preferenceData = {
             body: {
                 items: [
                     ...items.map((item: any) => ({
-                        id: item.productId || item.id || 'product',
-                        title: item.name || 'Producto EstuClub',
-                        quantity: Number(item.quantity) || 1,
-                        unit_price: Math.max(1, Number(item.price)), // Ensure valid price
+                        id: String(item.productId || item.id || 'product'),
+                        title: String(item.name || 'Producto EstuClub').slice(0, 250),
+                        quantity: Math.max(1, Number(item.quantity) || 1),
+                        unit_price: Math.max(1, Number(item.price)), 
                         currency_id: 'ARS'
                     })),
                     {
@@ -92,7 +101,9 @@ export async function POST(req: Request) {
                     type: 'delivery_order'
                 }
             }
-        });
+        };
+
+        const response = await preference.create(preferenceData);
 
         return NextResponse.json({ 
             id: response.id, 

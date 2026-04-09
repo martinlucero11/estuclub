@@ -267,13 +267,15 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
             console.error("Payment initiation failed:", error);
             if (orderRef) {
                 try {
-                    // Instead of deleting, we mark it as failed to preserve logs and avoid permission errors
+                    // Update locally to 'failed_api_init' to keep track of the attempt
+                    // If permissions fail here, it's safe to ignore as it's secondary to the 500 error
                     await updateDoc(orderRef, {
                         status: 'failed_api_init',
                         updatedAt: serverTimestamp()
                     });
-                } catch (updateError) {
-                    console.error("Failed to mark orphaned order as failed:", updateError);
+                } catch (updateError: any) {
+                    // Silent warning: rules might not allow owner to update status once created
+                    console.warn("Could not mark order as failed (Permissions):", updateError.message);
                 }
             }
             toast({ 
