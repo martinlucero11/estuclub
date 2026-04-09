@@ -226,7 +226,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             const orderDate = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date();
             if (orderDate >= today && order.status !== 'cancelled') {
                 acc.today++;
-                acc.totalSales += (order.total || 0);
+                acc.totalSales += (order.total || order.totalAmount || 0);
             }
             return acc;
         }, { pending: 0, today: 0, totalSales: 0 });
@@ -377,7 +377,11 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                                 {config.label}
                                                             </Badge>
                                                             <span className="text-[10px] font-bold text-foreground">
-                                                                #{order.id.slice(-6).toUpperCase()} • {order.createdAt ? format(order.createdAt.toDate(), "HH:mm", { locale: es }) : 'Ahora'}
+                                                                #{order.id.slice(-6).toUpperCase()} • {
+                                                                    (order.createdAt && typeof order.createdAt.toDate === 'function') 
+                                                                        ? format(order.createdAt.toDate(), "HH:mm", { locale: es }) 
+                                                                        : 'Ahora'
+                                                                }
                                                             </span>
                                                         </div>
 
@@ -396,11 +400,11 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             <div className="bg-black/5 rounded-xl p-2 px-3 flex items-center justify-between border border-black/5">
                                                                 <div className="flex flex-col">
                                                                     <p className="text-[8px] font-black uppercase text-black/40">Monto</p>
-                                                                    <p className="text-[12px] font-black text-primary">${order.total.toLocaleString()}</p>
+                                                                    <p className="text-[12px] font-black text-primary">${(order.total || order.totalAmount || 0).toLocaleString()}</p>
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <p className="text-[8px] font-black uppercase text-black/40">Items</p>
-                                                                    <p className="text-[10px] font-bold truncate max-w-[120px] text-black">{order.items.length} productos</p>
+                                                                    <p className="text-[10px] font-bold truncate max-w-[120px] text-black">{order.items?.length || 0} productos</p>
                                                                 </div>
                                                             </div>
                                                         </div>

@@ -231,6 +231,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                 subtotal: Math.round(subtotal), // legacy support
                 deliveryCost: Math.round(deliveryCost), // legacy support
                 totalAmount: Math.round(totalPaidOnline + deliveryCost), // legacy support
+                total: Math.round(totalPaidOnline + deliveryCost), // primary field
                 
                 status: 'pending_payment',
                 type,
@@ -266,10 +267,13 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
             console.error("Payment initiation failed:", error);
             if (orderRef) {
                 try {
-                    await deleteDoc(orderRef);
-                    // Orphaned order deleted: orderRef.id
-                } catch (delError) {
-                    console.error("Failed to delete orphaned order:", delError);
+                    // Instead of deleting, we mark it as failed to preserve logs and avoid permission errors
+                    await updateDoc(orderRef, {
+                        status: 'failed_api_init',
+                        updatedAt: serverTimestamp()
+                    });
+                } catch (updateError) {
+                    console.error("Failed to mark orphaned order as failed:", updateError);
                 }
             }
             toast({ 

@@ -56,7 +56,7 @@ export async function POST(req: Request) {
         const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || '').replace(/\/$/, '');
 
         // Calculate 5% service fee based on DB data
-        const serviceFee = Math.round(recalculatedSubtotal * 0.05);
+        const serviceFee = Math.max(1, Math.round(recalculatedSubtotal * 0.05)); // Ensure at least $1
 
         const preference = new Preference(mpClient);
 
@@ -64,10 +64,10 @@ export async function POST(req: Request) {
             body: {
                 items: [
                     ...items.map((item: any) => ({
-                        id: item.id || 'product',
+                        id: item.productId || item.id || 'product',
                         title: item.name || 'Producto EstuClub',
                         quantity: Number(item.quantity) || 1,
-                        unit_price: Number(item.price),
+                        unit_price: Math.max(1, Number(item.price)), // Ensure valid price
                         currency_id: 'ARS'
                     })),
                     {
@@ -102,6 +102,12 @@ export async function POST(req: Request) {
 
     } catch (error: any) {
         console.error('Checkout Secure Error:', error);
+        
+        // Log deep details if available
+        if (error.response) {
+            console.error('Mercado Pago API Detail:', JSON.stringify(error.response, null, 2));
+        }
+
         return NextResponse.json({ 
             error: 'Error procesando el pago',
             detail: process.env.NODE_ENV === 'development' ? error.message : undefined

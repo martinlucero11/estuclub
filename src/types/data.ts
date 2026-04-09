@@ -243,6 +243,8 @@ export interface Order {
     deliveryFee: number;
     deliveryCost?: number; // alias
     total: number;
+    totalAmount?: number; // legacy/fallback
+    totalPaidOnline?: number; // detailed breakdown
     status: OrderStatus;
     paymentMethod: 'cash_at_door' | 'mp_link' | 'mp_qr';
     paymentStatus: 'pending' | 'paid' | 'failed';
