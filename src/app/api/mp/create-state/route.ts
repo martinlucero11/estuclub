@@ -24,10 +24,23 @@ export async function POST(request: NextRequest) {
             expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
         });
 
-        return NextResponse.json({ stateId });
+        const response = NextResponse.json({ stateId });
+
+        // Set secure cookie for cross-origin redirect survival
+        // httpOnly: true, secure: true, sameSite: 'none' is critical for cross-domain redirects
+        response.cookies.set('mp_oauth_state', stateId, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/',
+            maxAge: 600 // 10 minutes (matching Firestore expiry)
+        });
+
+        return response;
 
     } catch (error: any) {
         console.error('Failed to create OAuth state:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
+

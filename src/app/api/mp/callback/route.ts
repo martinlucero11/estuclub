@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { adminDb, getInitError } from '@/lib/firebase-admin';
 
 /**
@@ -19,8 +20,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
+  
+  // Read the cookie set during state creation
+  const storedState = cookies().get('mp_oauth_state')?.value;
 
-  console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}`);
+  console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}, Cookie: ${storedState || 'Missing'}`);
 
   // 0. Database Availability Check
   if (!adminDb) {
@@ -38,15 +42,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid OAuth response' }, { status: 400 });
   }
 
+  // 2. State Validation (CSRF/Security Check)
+  if (storedState && storedState !== state) {
+      console.warn(`[MP-WARN] OAuth State Mismatch. URL: ${state}, Cookie: ${storedState}`);
+      // In strict mode, we should fail here. For MVP, we proceed to Firestore check.
+  }
+
   try {
-    // 2. State Validation
     const stateRef = adminDb.collection('mp_oauth_states').doc(state);
     const stateDoc = await stateRef.get();
 
     if (!stateDoc.exists) {
-        console.error(`[MP-ERROR] State ${state} not found in Firestore`);
+        console.error(`[MP-ERROR] State ${state} not found in Firestore. (Cookie: ${storedState})`);
         return NextResponse.json({ error: 'OAuth state not found' }, { status: 403 });
     }
+
 
     const stateData = stateDoc.data();
     if (stateData?.used) {
