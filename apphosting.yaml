@@ -22,9 +22,9 @@ env:
   - variable: NEXT_PUBLIC_BASE_URL
     value: "https://estuclub.com.ar"
 
-  # --- SECRETOS (Referencia a la "Caja Fuerte") ---
-  - variable: FIREBASE_SERVICE_ACCOUNT
-    secret: FIREBASE_SERVICE_ACCOUNT_PROD
+# --- SECRETOS (Referencia a la "Caja Fuerte") ---
+  - variable: FIREBASE_SERVICE_ACCOUNT_BASE64
+    secret: FIREBASE_SERVICE_ACCOUNT_BASE64
   - variable: MP_ACCESS_TOKEN
     secret: MP_ACCESS_TOKEN_PROD
   - variable: GOOGLE_REFRESH_TOKEN
