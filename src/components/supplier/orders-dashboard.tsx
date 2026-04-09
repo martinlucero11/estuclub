@@ -120,6 +120,30 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             audioRef.current.currentTime = 0;
         }
     }, [orders, isAudioEnabled]);
+    
+    // Notification system for new orders while the dashboard is open
+    const [lastKnownOrderCount, setLastKnownOrderCount] = useState(0);
+
+    useEffect(() => {
+        const pendingOrders = orders?.filter(o => o.status === 'pending') || [];
+        const currentCount = pendingOrders.length;
+        
+        if (currentCount > lastKnownOrderCount) {
+            haptic.vibrateSuccess();
+            toast({
+                title: "¡NUEVO PEDIDO!",
+                description: `Acabas de recibir un pedido de ${pendingOrders[0]?.customerName || 'un cliente'}.`,
+                variant: 'default',
+                className: 'bg-emerald-500 text-white font-black border-none animate-bounce rounded-2xl shadow-2xl'
+            });
+            
+            // If sound is enabled but not playing, ensure it plays
+            if (isAudioEnabled && audioRef.current && audioRef.current.paused) {
+                audioRef.current.play().catch(e => console.error("Audio trigger failed:", e));
+            }
+        }
+        setLastKnownOrderCount(currentCount);
+    }, [orders, lastKnownOrderCount, isAudioEnabled]);
 
     const handleToggleAudio = () => {
         haptic.vibrateSubtle();
@@ -226,7 +250,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             const orderDate = order.createdAt instanceof Timestamp ? order.createdAt.toDate() : new Date();
             if (orderDate >= today && order.status !== 'cancelled') {
                 acc.today++;
-                acc.totalSales += (order.total || order.totalAmount || 0);
+                acc.totalSales += (order.subtotal || order.itemsTotal || 0);
             }
             return acc;
         }, { pending: 0, today: 0, totalSales: 0 });
@@ -399,8 +423,8 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                                                             
                                                             <div className="bg-black/5 rounded-xl p-2 px-3 flex items-center justify-between border border-black/5">
                                                                 <div className="flex flex-col">
-                                                                    <p className="text-[8px] font-black uppercase text-black/40">Monto</p>
-                                                                    <p className="text-[12px] font-black text-primary">${(order.total || order.totalAmount || 0).toLocaleString()}</p>
+                                                                    <p className="text-[8px] font-black uppercase text-black/40">Venta Local</p>
+                                                                    <p className="text-[12px] font-black text-primary">${(order.subtotal || order.itemsTotal || 0).toLocaleString()}</p>
                                                                 </div>
                                                                 <div className="text-right">
                                                                     <p className="text-[8px] font-black uppercase text-black/40">Items</p>

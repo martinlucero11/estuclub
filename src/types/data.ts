@@ -245,6 +245,7 @@ export interface Order {
     total: number;
     totalAmount?: number; // legacy/fallback
     totalPaidOnline?: number; // detailed breakdown
+    itemsTotal?: number; // product total alone
     status: OrderStatus;
     paymentMethod: 'cash_at_door' | 'mp_link' | 'mp_qr';
     paymentStatus: 'pending' | 'paid' | 'failed';

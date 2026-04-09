@@ -121,7 +121,8 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ 
             error: 'Error procesando el pago',
-            detail: process.env.NODE_ENV === 'development' ? error.message : undefined
+            message: error.message,
+            detail: error.response?.data || error.message
         }, { status: 500 });
     }
 }

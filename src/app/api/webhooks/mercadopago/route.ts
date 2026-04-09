@@ -127,7 +127,7 @@ async function handleApprovedPayment(orderId: string, paymentId: string, metadat
 
     // 1. Update Order Status
     batch.update(orderRef, {
-        status: 'searching_rider',
+        status: 'pending',
         payment_id: paymentId,
         paid_at: FieldValue.serverTimestamp(),
         logistics_split: {
