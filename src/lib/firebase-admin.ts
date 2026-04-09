@@ -31,8 +31,8 @@ if (!admin.apps.length) {
     initializationError = null;
   } catch (error: any) {
     console.error("Error inicializando Firebase Admin:", error);
-    initializationError = { 
-      code: error.code || 'initialization-failed', 
+    initializationError = {
+      code: error.code || 'initialization-failed',
       message: error.message,
       stack: error.stack
     };

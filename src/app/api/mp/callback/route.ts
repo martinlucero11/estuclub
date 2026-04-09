@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
-  
+
   // Read the cookie (diagnostic only for MVP bypass)
   const storedState = cookies().get('__session')?.value;
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   if (!adminDb) {
     const initError = getInitError();
     console.error('[MP-ERROR] Firebase Admin SDK failed to initialize.', initError);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Firebase Infrastructure Failure'
     }, { status: 500 });
   }
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     if (state) {
       const stateRef = adminDb.collection('mp_oauth_states').doc(state);
       const stateDoc = await stateRef.get();
-      
+
       if (stateDoc.exists) {
         userId = stateDoc.data()?.userId;
         // Mark as used if found
@@ -86,15 +86,15 @@ export async function GET(request: NextRequest) {
 
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.json();
-      
+
       // CRITICAL LOG: This will show in the Firebase/Terminal console
       console.error('--- MERCADO PAGO EXCHANGE REJECTED ---');
       console.error('Status:', tokenResponse.status);
       console.dir(errorBody, { depth: null });
       console.error('--------------------------------------');
 
-      return NextResponse.json({ 
-        error: 'Mercado Pago rejected the token exchange', 
+      return NextResponse.json({
+        error: 'Mercado Pago rejected the token exchange',
         details: errorBody,
         status: tokenResponse.status
       }, { status: tokenResponse.status });
@@ -104,11 +104,11 @@ export async function GET(request: NextRequest) {
     const { access_token, public_key, refresh_token, user_id: mp_user_id } = credentials;
 
     const credentialData = {
-        access_token,
-        public_key,
-        refresh_token,
-        mp_user_id,
-        linkedAt: new Date().toISOString(),
+      access_token,
+      public_key,
+      refresh_token,
+      mp_user_id,
+      linkedAt: new Date().toISOString(),
     };
 
     // 5. Atomic Update
@@ -117,14 +117,14 @@ export async function GET(request: NextRequest) {
     const supplierRef = adminDb.collection('roles_supplier').doc(userId);
 
     batch.update(userRef, {
-        mp_credentials: credentialData,
-        mercadopago_linked: true
+      mp_credentials: credentialData,
+      mercadopago_linked: true
     });
 
     batch.set(supplierRef, {
-        mp_credentials: credentialData,
-        mp_linked: true,
-        updatedAt: new Date()
+      mp_credentials: credentialData,
+      mp_linked: true,
+      updatedAt: new Date()
     }, { merge: true });
 
     await batch.commit();
@@ -133,14 +133,14 @@ export async function GET(request: NextRequest) {
 
     const dashboardUrl = new URL('/panel-cluber/configuracion', redirectUri);
     dashboardUrl.searchParams.set('success', 'mp_linked');
-    
+
     return NextResponse.redirect(dashboardUrl);
 
   } catch (err: any) {
     console.error('[MP-FATAL] Unhandled error in callback:', err);
-    return NextResponse.json({ 
-        error: 'Internal Callback Failure',
-        message: err.message
+    return NextResponse.json({
+      error: 'Internal Callback Failure',
+      message: err.message
     }, { status: 500 });
   }
 }
