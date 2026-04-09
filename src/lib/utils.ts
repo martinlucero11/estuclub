@@ -133,3 +133,18 @@ export function getAvatarUrl(avatarSeed: string | null | undefined): string | nu
   return `${MICAH_BASE_URL}?baseColor=${config.skin}&hair=${config.hair}&hairColor=${config.hcolor}&facialHair=${config.beard === 'none' ? '' : config.beard}&facialHairProbability=${config.beard === 'none' ? 0 : 100}&facialHairColor=${config.bcolor}&mouth=${config.mouth}&backgroundColor=${config.bg === 'transparent' ? '' : config.bg}&hatProbability=0`;
 }
 
+/**
+ * Creates a URL-friendly slug from a string.
+ */
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+}
+

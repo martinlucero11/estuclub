@@ -11,9 +11,12 @@ import type { Benefit, SupplierProfile, SerializableBenefit } from '@/types/data
 import { createConverter } from '@/lib/firestore-converter';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search, Building, Ticket } from 'lucide-react';
-import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import Link from 'next/link';
+import type { Product } from '@/types/data';
+import { ProductCard } from '@/components/delivery/product-card';
+import { ShoppingBag } from 'lucide-react';
 
 function SearchResults() {
   const searchParams = useSearchParams();
@@ -29,9 +32,14 @@ function SearchResults() {
     query(collection(firestore, 'roles_supplier').withConverter(createConverter<SupplierProfile>()), limit(50)),
     [firestore]
   );
-
+  const productsQuery = useMemo(() => 
+    query(collection(firestore, 'products').withConverter(createConverter<Product>()), where('isActive', '==', true), limit(80)),
+    [firestore]
+  );
+  
   const { data: benefits, isLoading: benefitsLoading } = useCollectionOnce(benefitsQuery);
   const { data: suppliers, isLoading: suppliersLoading } = useCollectionOnce(suppliersQuery);
+  const { data: products, isLoading: productsLoading } = useCollectionOnce(productsQuery);
 
   const filteredBenefits = useMemo(() => {
     if (!benefits || !q) return [];
@@ -52,8 +60,18 @@ function SearchResults() {
       s.type?.toLowerCase().includes(q)
     );
   }, [suppliers, q]);
-
-  const isNoResults = !benefitsLoading && !suppliersLoading && filteredBenefits.length === 0 && filteredSuppliers.length === 0;
+  
+  const filteredProducts = useMemo(() => {
+    if (!products || !q) return [];
+    return products.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.description?.toLowerCase().includes(q) || 
+      p.category?.toLowerCase().includes(q)
+    );
+  }, [products, q]);
+  
+  const isNoResults = !benefitsLoading && !suppliersLoading && !productsLoading && 
+                      filteredBenefits.length === 0 && filteredSuppliers.length === 0 && filteredProducts.length === 0;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -118,6 +136,24 @@ function SearchResults() {
                         </p>
                     </div>
                   </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Products Results */}
+          {filteredProducts.length > 0 && (
+            <section>
+              <div className="mb-6 flex items-center gap-2 text-foreground border-b pb-2">
+                <ShoppingBag className="h-5 w-5" />
+                <h2 className="text-lg font-semibold text-foreground">Productos ({filteredProducts.length})</h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredProducts.map(product => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                  />
                 ))}
               </div>
             </section>

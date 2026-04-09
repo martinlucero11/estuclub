@@ -1,16 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useFirestore, useUser } from '@/firebase';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useFirestore, useUser, useCollectionOnce } from '@/firebase';
+import { doc, updateDoc, serverTimestamp, collection, query, where } from 'firebase/firestore';
+import { createConverter } from '@/lib/firestore-converter';
+import type { SupplierProfile, Category } from '@/types/data';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Clock, Plus, Trash2, Save, Timer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import type { SupplierProfile } from '@/types/data';
 
 export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
     const firestore = useFirestore();
@@ -27,6 +30,22 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
     // Form state
     const [schedule, setSchedule] = useState<any>(supplier.deliverySchedule || {});
     const [prepTime, setPrepTime] = useState<number>(supplier.avgPrepTime || 30);
+    const [deliveryCategory, setDeliveryCategory] = useState<string>(supplier.deliveryCategory || '');
+
+    // Fetch categories from Firestore to match the home carrusel
+    const categoriesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'categories').withConverter(createConverter<Category>()),
+            where('type', '==', 'delivery')
+        );
+    }, [firestore]);
+    const { data: dbCategories } = useCollectionOnce(categoriesQuery);
+    
+    const deliveryCategories = useMemo(() => {
+        if (!dbCategories) return [];
+        return dbCategories.sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map(c => c.name);
+    }, [dbCategories]);
 
     // Initialize schedule if empty
     useEffect(() => {
@@ -82,6 +101,7 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
             await updateDoc(doc(firestore, 'roles_supplier', supplier.id), {
                 deliverySchedule: schedule,
                 avgPrepTime: prepTime,
+                deliveryCategory: deliveryCategory,
                 updatedAt: serverTimestamp()
             });
             toast({ title: "Ajustes Guardados", description: "La configuración de entrega ha sido actualizada." });
@@ -143,6 +163,36 @@ export function DeliverySettings({ supplier }: { supplier: SupplierProfile }) {
                             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                                 <p className="text-[10px] font-medium leading-relaxed italic text-foreground">
                                     Este tiempo se mostrará al estudiante antes de confirmar su pedido. Sé realista para evitar reclamos.
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="rounded-[2.5rem] border-white/5 bg-card/50 backdrop-blur-sm overflow-hidden border-2 border-dashed">
+                        <CardHeader className="p-8">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-3">
+                                <Plus className="h-5 w-5 text-primary" />
+                                Clasificación
+                            </CardTitle>
+                            <CardDescription className="text-[10px] font-bold text-foreground uppercase opacity-60">Categoría principal del local.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-8 pt-0 space-y-6">
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Categoría de Entrega</Label>
+                                <Select value={deliveryCategory} onValueChange={setDeliveryCategory}>
+                                    <SelectTrigger className="h-14 rounded-2xl bg-background/50 border-white/10 font-bold">
+                                        <SelectValue placeholder="Seleccionar categoría..." />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-white/10 glass glass-dark">
+                                        {deliveryCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat} className="rounded-xl font-bold py-3">{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                                <p className="text-[10px] font-medium leading-relaxed italic text-foreground">
+                                    Esto determina en qué sección de la App aparecerá tu tienda para los estudiantes.
                                 </p>
                             </div>
                         </CardContent>

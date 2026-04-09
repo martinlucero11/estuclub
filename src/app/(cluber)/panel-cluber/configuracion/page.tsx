@@ -13,12 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { 
     Settings, Moon, Sun, Bell, Building, Phone, 
     MapPin, Save, LogOut, CreditCard, ExternalLink, 
-    ShieldCheck 
+    ShieldCheck, 
+    Hash
 } from 'lucide-react';
 import { haptic } from '@/lib/haptics';
 import { signOut } from 'firebase/auth';
 import SplashScreen from '@/components/layout/splash-screen';
-import { cn } from '@/lib/utils';
+import { cn, slugify } from '@/lib/utils';
 
 export default function CluberConfiguracionPage() {
     const { user, userData, supplierData, isUserLoading } = useUser();
@@ -68,6 +69,7 @@ export default function CluberConfiguracionPage() {
                     storeName: storeName,
                     phone: storePhone,
                     address: storeAddress,
+                    slug: supplierData.slug || slugify(storeName),
                     updatedAt: serverTimestamp()
                 });
             }
@@ -285,6 +287,19 @@ export default function CluberConfiguracionPage() {
                                         />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Slug del Perfil (URL)</Label>
+                                <div className="relative">
+                                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 opacity-40" />
+                                    <Input 
+                                        value={supplierData?.slug || ''} 
+                                        disabled
+                                        className="h-12 pl-11 rounded-xl bg-black/5 border-white/5 opacity-50 font-mono text-xs"
+                                    />
+                                </div>
+                                <p className="text-[9px] font-bold text-foreground/30 uppercase tracking-widest ml-1">Tu perfil es público en: estuclub.com.ar/proveedores/{supplierData?.slug}</p>
                             </div>
                         </div>
                     </CardContent>

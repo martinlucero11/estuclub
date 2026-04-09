@@ -10,7 +10,6 @@ function formatZodError(error: z.ZodError) {
 
 /**
  * Atomics Role Synchronization.
- * Updates both the user document and the dedicated roles collection.
  * This bypasses Client-Side Firestore Rules and ensures SSoT.
  */
 export async function syncUserRole(uid: string, newRole: string) {
@@ -136,6 +135,7 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
                 verified: true,
                 verifiedAt: new Date().toISOString(),
                 isVisible: true,
+                slug: supplierName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, '-').replace(/[^\w-]+/g, '').replace(/--+/g, '-'),
                 createdAt: new Date().toISOString(),
                 storeName: supplierName,
             }, { merge: true });

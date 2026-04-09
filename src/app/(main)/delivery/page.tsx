@@ -109,7 +109,7 @@ function DeliveryList() {
                 {!isLoading && !error && (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
                         {sortedSuppliers.map((supplier) => (
-                            <Link href={`/proveedores/${supplier.slug}`} key={supplier.id}>
+                            <Link href={`/proveedores/view?slug=${supplier.slug}${supplier.deliveryEnabled ? '&tab=catalog' : ''}`} key={supplier.id}>
                                 <Card className="group relative overflow-hidden rounded-[2.5rem] border-foreground/50 bg-card hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 h-full border-white/10">
                                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60 z-10" />
                                     
@@ -191,6 +191,7 @@ const PendingReviews = dynamic(() => import('@/components/reviews/pending-review
 
 import { ChevronLeft } from 'lucide-react';
 import { StoreMap } from '@/components/delivery/store-map';
+import { ProductSearchBar } from '@/components/delivery/product-search-bar';
 
 function DeliveryPageContent() {
     const searchParams = useSearchParams();
@@ -237,8 +238,9 @@ function DeliveryPageContent() {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-8">
+                  <div className="space-y-8 mb-12">
                     <WelcomeMessage />
+                    <ProductSearchBar className="animate-in fade-in zoom-in duration-1000 delay-300" />
                   </div>
                 )}
                 
