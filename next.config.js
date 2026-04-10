@@ -45,6 +45,15 @@ const nextConfig = {
   },
   transpilePackages: ['react-leaflet', 'leaflet'],
   trailingSlash: true,
+  async redirects() {
+    return [
+      {
+        source: '/delivery/',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
 };
 
 module.exports = withPWA(nextConfig);

@@ -2,24 +2,21 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import Link from 'next/link';
 import { useUser, useFirestore, useCollectionOnce, useCollection } from '@/firebase';
 import { doc, updateDoc, collection, query, where, limit, Timestamp, orderBy } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/context/admin-context';
+import { useSearchParams } from 'next/navigation';
 import {
     Store, Package, QrCode, BarChart3, Settings,
-    Users, Bell, LayoutDashboard, UtensilsCrossed,
+    Users, LayoutDashboard, UtensilsCrossed,
     Clock, AlertCircle, CheckCircle2, ChevronRight,
     ShieldCheck, Plus, Megaphone, Receipt, Truck,
     Calendar, Info, Sparkles, TrendingUp
 } from 'lucide-react';
 import { ProductManager } from '@/components/delivery/product-manager';
-import SupplierSelect from '@/components/admin/SupplierSelect';
 import { cn } from '@/lib/utils';
 import MPRestrictionOverlay from '@/components/payment/mp-restriction-overlay';
 import MPLinkCard from '@/components/payment/mp-link-card';
@@ -28,60 +25,25 @@ import { RedemptionsTable } from '@/components/supplier/benefit-redemptions-tabl
 import { TurneroManager } from '../../../components/supplier/turnero-manager';
 import { seedBenefits } from '@/lib/seed-benefits';
 
-// ─── PENDING SCREEN ──────────────────────────────────────
-function CluberPending() {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-8 px-6 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <div className="h-24 w-24 rounded-[3rem] bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-[0_0_40px_rgba(99,102,241,0.1)]">
-                <Store className="h-12 w-12 text-indigo-500 animate-pulse" />
-            </div>
-            <div className="space-y-3">
-                <h1 className="text-3xl font-black tracking-tighter uppercase italic text-primary font-montserrat leading-none">Verificando tu <br /> Cluber</h1>
-                <p className="text-sm text-foreground font-bold max-w-xs mx-auto leading-relaxed italic uppercase tracking-widest opacity-60">
-                    Nuestro equipo de expansión está revisando tu postulación de Cluber.
-                </p>
-            </div>
-            <div className="p-6 rounded-[2rem] bg-indigo-500/5 border border-indigo-500/10 max-w-xs">
-                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
-                    <ShieldCheck className="h-4 w-4" /> Estatus: Pendiente
-                </p>
-                <p className="text-9px font-bold text-foreground leading-relaxed italic">
-                    Recibirás una notificación y un email en cuanto tu Club esté habilitado para operar.
-                </p>
-            </div>
-            <Button asChild variant="ghost" className="text-foreground font-black text-[10px] uppercase tracking-[0.3em]">
-                <Link href="/">← Volver al inicio</Link>
-            </Button>
-        </div>
-    );
-}
-
 export default function PanelCluberPage() {
     const { userData, roles, supplierData, isUserLoading } = useUser();
     const { isAdmin, impersonatedSupplierId, impersonatedSupplierData } = useAdmin();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
 
     const [isUpdating, setIsUpdating] = useState(false);
-    const [activeTab, setActiveTab] = useState<'benefits' | 'delivery' | 'turnero'>('benefits');
+    
+    // Mission: URL-driven navigation
+    const currentSection = searchParams.get('section') || 'dashboard';
 
     const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
     const shopId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : userData?.uid;
-    const isOpen = effectiveSupplierData?.isOpen ?? false;
 
-    // Dynamic Permissions
-    // MISSION 1: CENTRALIZACIÓN DE PERMISOS EN COLECCIÓN USERS (SSoT)
+    // Permissions logic remains but we use it to restrict access if needed
     const canBenefits = userData?.permitsBenefits || effectiveSupplierData?.canCreateBenefits || false;
     const canDelivery = userData?.permitsDelivery || effectiveSupplierData?.deliveryEnabled || false;
     const canTurnero = userData?.permitsShifts || effectiveSupplierData?.appointmentsEnabled || false;
-
-    // Set initial tab based on permissions
-    useEffect(() => {
-        if (!canBenefits) {
-            if (canDelivery) setActiveTab('delivery');
-            else if (canTurnero) setActiveTab('turnero');
-        }
-    }, [canBenefits, canDelivery, canTurnero]);
 
     // --- REAL-TIME STATS QUERIES ---
     const startOfDay = useMemo(() => {
@@ -114,45 +76,9 @@ export default function PanelCluberPage() {
     }, [firestore, shopId, startOfDay]);
     const { data: todayRedemptions } = useCollection(redemptionsQuery);
 
-
-    // 3. Appointments Today
-    const appointmentsQuery = useMemo(() => {
-        if (!firestore || !shopId) return null;
-        return query(
-            collection(firestore, 'appointments'),
-            where('supplierId', '==', shopId),
-            where('startTime', '>=', startOfDay)
-        );
-    }, [firestore, shopId, startOfDay]);
-    const { data: todayAppointments } = useCollection(appointmentsQuery);
-
     const statsCounts = {
         orders: activeOrders?.length ?? 0,
         redemptions: todayRedemptions?.length ?? 0,
-        appointments: todayAppointments?.length ?? 0
-    };
-
-    const toggleStoreStatus = async () => {
-        if (!shopId || !firestore) return;
-        setIsUpdating(true);
-        try {
-            const docRef = doc(firestore, 'roles_supplier', shopId);
-            await updateDoc(docRef, { isOpen: !isOpen });
-            toast({
-                title: isOpen ? "Cluber Cerrado" : "Cluber Abierto",
-                description: isOpen ? "Ya no recibirás actividad por ahora." : "¡Listo para operar!",
-                variant: isOpen ? "destructive" : "default"
-            });
-        } catch (error) {
-            console.error("Error toggling status:", error);
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "No se pudo actualizar el estado de tu Club."
-            });
-        } finally {
-            setIsUpdating(false);
-        }
     };
 
     const handleSeedData = async () => {
@@ -178,316 +104,213 @@ export default function PanelCluberPage() {
     };
 
     if (isUserLoading) return null;
-    if (userData?.role === 'cluber_pending' && !isAdmin) return <CluberPending />;
-    if (!roles.includes('supplier') && !roles.includes('cluber') && !isAdmin) {
-        return (
-            <div className="min-h-screen bg-primary flex items-center justify-center p-6">
-                <Card className="w-full max-w-md rounded-[3rem] border-none shadow-2xl bg-background text-foreground animate-in fade-in zoom-in duration-700">
-                    <CardContent className="pt-16 pb-12 text-center space-y-8">
-                        <div className="h-20 w-20 rounded-[2.5rem] bg-primary/10 flex items-center justify-center mx-auto border border-primary/20">
-                            <AlertCircle className="h-10 w-10 text-primary" />
+
+    // RENDER LOGIC BASED ON SECTION
+    const renderContent = () => {
+        switch (currentSection) {
+            case 'dashboard':
+                return (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        {/* KPI Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <StatCard 
+                                label="Pedidos Activos" 
+                                value={statsCounts.orders} 
+                                icon={Truck} 
+                                description="Pedidos en curso hoy"
+                            />
+                            <StatCard 
+                                label="Canjes de Hoy" 
+                                value={statsCounts.redemptions} 
+                                icon={QrCode} 
+                                description="Beneficios validados"
+                            />
+                            <StatCard 
+                                label="Estado del Club" 
+                                value={effectiveSupplierData?.isOpen ? "Abierto" : "Cerrado"} 
+                                icon={Store} 
+                                description="Visibilidad en App"
+                                variant={effectiveSupplierData?.isOpen ? "success" : "danger"}
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <h1 className="text-3xl font-black uppercase tracking-tighter font-montserrat">ACCESO DENEGADO</h1>
-                            <p className="text-xs font-bold opacity-60 uppercase tracking-widest leading-relaxed">
-                                Esta área está reservada para <br /> <span className="font-black">Clubers Aliados</span>
-                            </p>
+
+                        {/* Order management as primary focus */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 px-2">
+                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">Monitor de Pedidos en Vivo</h2>
+                            </div>
+                            <OrdersDashboard supplierId={shopId || ''} />
                         </div>
-                        <Button asChild className="h-14 px-10 rounded-2xl bg-primary text-white font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(203, 70, 90,0.3)]">
-                            <Link href="/">Volver al inicio</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+                    </div>
+                );
+            
+            case 'menu':
+                return (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                            <div className="md:col-span-5 h-full">
+                                <MPLinkCard />
+                            </div>
+                            <div className="md:col-span-7 bg-white border border-zinc-100 rounded-[2.5rem] p-8 flex flex-col justify-center gap-4 shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                                        <Info className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <h3 className="text-sm font-black uppercase tracking-tight italic">Configuración de Pagos</h3>
+                                </div>
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed">
+                                    Es obligatorio vincular tu cuenta de Mercado Pago para procesar pedidos de delivery. Esto nos permite acreditar tus ventas y gestionar comisiones automáticamente.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between px-2">
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">Catálogo de Productos</h2>
+                            </div>
+                            <Card className="rounded-[3rem] border-zinc-100 bg-white overflow-hidden min-h-[500px] shadow-sm relative">
+                                <ProductManager supplierId={shopId || ''} />
+                            </Card>
+                        </div>
+                    </div>
+                );
+
+            case 'turnero':
+                return (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                         <TurneroManager supplierId={shopId || ''} />
+                    </div>
+                );
+
+            case 'benefits':
+                return (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="bg-primary/5 border border-primary/10 rounded-[2.5rem] p-8 flex flex-col items-center text-center gap-4 shadow-sm">
+                             <div className="h-12 w-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                 <Plus className="h-6 w-6" />
+                             </div>
+                             <div className="space-y-1">
+                                <h3 className="text-xl font-black uppercase tracking-tighter italic">Crea un Nuevo Beneficio</h3>
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Atraé a más estudiantes con ofertas exclusivas</p>
+                             </div>
+                             <Button className="rounded-xl px-10 font-black uppercase tracking-widest text-[10px] h-12 shadow-lg shadow-primary/20">Configurar Beneficio</Button>
+                        </div>
+                        <div className="space-y-4">
+                            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 px-2">Mis Beneficios Activos</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {/* Placeholder or list map here */}
+                                <div className="p-12 text-center bg-zinc-50 rounded-[3rem] border border-zinc-100 border-dashed opacity-50 flex flex-col items-center gap-4">
+                                    <Receipt className="h-10 w-10 text-zinc-300" />
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">No hay beneficios registrados aún</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'vouchers':
+                return (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <div className="flex items-center justify-between px-2">
+                            <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-primary animate-pulse" />
+                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900">Historial de Canjes QR</h2>
+                            </div>
+                        </div>
+                        <Card className="rounded-[3rem] border-zinc-100 bg-white overflow-hidden min-h-[400px] shadow-sm">
+                            <RedemptionsTable supplierId={shopId || ''} />
+                        </Card>
+                    </div>
+                );
+
+            case 'settings':
+                return (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                         <div className="grid md:grid-cols-2 gap-6">
+                             <Card className="rounded-[2.5rem] p-8 border-zinc-100 bg-white shadow-sm flex flex-col gap-6">
+                                 <div className="h-12 w-12 rounded-xl bg-zinc-50 flex items-center justify-center border border-zinc-100">
+                                     <Settings className="h-5 w-5 text-zinc-400" />
+                                 </div>
+                                 <div className="space-y-1">
+                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Ajustes Generales</h3>
+                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Información de contacto y perfil</p>
+                                 </div>
+                                 <Button variant="outline" className="rounded-xl h-12 uppercase font-black text-[9px] tracking-widest w-fit px-8">Editar Perfil</Button>
+                             </Card>
+                             
+                             <Card className="rounded-[2.5rem] p-8 border-zinc-100 bg-white shadow-sm flex flex-col gap-6">
+                                 <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center border border-primary/10">
+                                     <Sparkles className="h-5 w-5 text-primary" />
+                                 </div>
+                                 <div className="space-y-1">
+                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Carga Rápida (Demo)</h3>
+                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Insertar datos de prueba para testing</p>
+                                 </div>
+                                 <Button 
+                                    onClick={handleSeedData}
+                                    disabled={isUpdating}
+                                    className="rounded-xl h-12 uppercase font-black text-[9px] tracking-widest w-fit px-8"
+                                >
+                                    {isUpdating ? 'Sembrando...' : 'Sembrar Beneficios'}
+                                 </Button>
+                             </Card>
+                         </div>
+                    </div>
+                );
+
+            default:
+                return (
+                    <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-50">
+                        <AlertCircle className="h-12 w-12" />
+                        <p className="font-black uppercase tracking-widest text-xs">Sección en desarrollo</p>
+                    </div>
+                );
+        }
+    };
 
     return (
-        <div className="animate-fade-in relative">
+        <div className="animate-fade-in relative pb-10">
             <MPRestrictionOverlay />
-            
-            <div className="max-w-7xl mx-auto space-y-10">
-
-                {/* Superior Header */}
-                <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 p-8 rounded-[3rem] bg-white border border-black/5 shadow-2xl relative overflow-hidden group">
-                    <div className="flex items-center gap-5 relative z-10">
-                        <div className="h-16 w-16 rounded-[1.5rem] bg-primary/5 flex items-center justify-center border border-primary/10 shadow-inner group-hover:scale-105 transition-transform duration-500">
-                            <Store className="h-7 w-7 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-black uppercase tracking-tighter italic text-black leading-none mb-1">
-                                {effectiveSupplierData?.name || 'Cluber Panel'}
-                            </h1>
-                            <div className="flex items-center gap-2">
-                                <div className={cn("h-2 w-2 rounded-full animate-pulse", isOpen ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]")} />
-                                <span className={cn("text-[10px] font-black uppercase tracking-widest italic", isOpen ? "text-emerald-600" : "text-black/40")}>
-                                    {isOpen ? "Operando en Vivo" : "Servicio Pausado"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 w-full md:w-auto relative z-10">
-                        {isAdmin && <div className="hidden lg:block scale-90"><SupplierSelect /></div>}
-
-                        <div className={cn(
-                            "rounded-[1.5rem] border border-black/5 transition-all h-14 flex items-center px-6 gap-6 bg-white shadow-xl",
-                            isOpen ? "shadow-[0_0_30px_rgba(16,185,129,0.1)] border-emerald-100" : "shadow-[0_0_30px_rgba(239,68,68,0.1)] border-red-100"
-                        )}>
-                            <div className="flex flex-col">
-                                <span className={cn("text-[8px] font-black uppercase tracking-[0.2em]", isOpen ? "text-emerald-500" : "text-red-500")}>
-                                    Switch Maestro
-                                </span>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-black">
-                                    {isOpen ? "Abierto" : "Cerrado"}
-                                </span>
-                            </div>
-                            <Switch
-                                id="master-switch"
-                                checked={isOpen}
-                                onCheckedChange={toggleStoreStatus}
-                                disabled={isUpdating}
-                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-red-500 scale-110 shadow-lg"
-                            />
-                        </div>
-                    </div>
-                </header>
-
-                {/* --- STATS HEADER (KPIs) --- */}
-                <CluberStatsHeader stats={statsCounts} activeTab={activeTab} />
-
-                <div className="flex justify-center">
-                    <div className="bg-white p-1.5 rounded-[1.8rem] border border-black/5 flex items-center gap-1 shadow-xl">
-                        {canBenefits && (
-                            <TabButton
-                                active={activeTab === 'benefits'}
-                                onClick={() => setActiveTab('benefits')}
-                                icon={Receipt}
-                                label="Beneficios"
-                            />
-                        )}
-                        {canDelivery && (
-                            <TabButton
-                                active={activeTab === 'delivery'}
-                                onClick={() => setActiveTab('delivery')}
-                                icon={Truck}
-                                label="Delivery"
-                            />
-                        )}
-                        {canTurnero && (
-                            <TabButton
-                                active={activeTab === 'turnero'}
-                                onClick={() => setActiveTab('turnero')}
-                                icon={Calendar}
-                                label="Turnero"
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {/* --- CONTENT BY MODE --- */}
-                <div className="min-h-[60vh]">
-                    {activeTab === 'benefits' && <BenefitsModule shopId={shopId || ''} />}
-                    {activeTab === 'delivery' && <DeliveryModule shopId={shopId || ''} />}
-                    {activeTab === 'turnero' && <TurneroModule shopId={shopId || ''} />}
-                </div>
-
-                {/* --- FOOTER TOOLS --- */}
-                <div className="flex flex-wrap justify-center gap-6 pt-16 pb-8">
-                    <Link href="/panel-cluber/configuracion">
-                        <Button variant="ghost" className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-black/5 hover:scale-105 transition-all group shadow-xl">
-                            <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center">
-                                <Settings className="h-4 w-4 text-primary group-hover:rotate-90 transition-all duration-700" />
-                            </div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-primary">Ajustes</span>
-                        </Button>
-                    </Link>
-                    <Link href="/panel-cluber/equipo">
-                        <Button variant="ghost" className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-black/5 hover:scale-105 transition-all group shadow-xl">
-                            <div className="h-8 w-8 rounded-xl bg-blue-500/5 flex items-center justify-center">
-                                <Users className="h-4 w-4 text-blue-500" />
-                            </div>
-                            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-blue-500">Mi Equipo</span>
-                        </Button>
-                    </Link>
-                    <Button 
-                        variant="ghost" 
-                        onClick={handleSeedData}
-                        disabled={isUpdating}
-                        className="rounded-2xl h-16 px-10 gap-4 bg-white border border-black/5 hover:bg-primary/5 hover:scale-105 transition-all group shadow-xl"
-                    >
-                        <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center">
-                            <Sparkles className={cn("h-4 w-4 text-primary", isUpdating && "animate-spin")} />
-                        </div>
-                        <span className="text-[11px] font-black uppercase tracking-[0.2em] text-black/60 group-hover:text-primary">
-                            {isUpdating ? 'Sembrando...' : 'Sembrar Datos'}
-                        </span>
-                    </Button>
-                </div>
-
-                {isAdmin && (
-                    <div className="fixed bottom-24 right-6 p-4 rounded-3xl bg-white border border-black/5 text-primary z-50 shadow-[0_15px_50px_rgba(0,0,0,0.1)] animate-in slide-in-from-right-6 duration-700">
-                        <p className="text-[9px] font-black uppercase tracking-widest flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4 text-primary" /> Admin View: {shopId?.slice(0, 8)}
-                        </p>
-                    </div>
-                )}
-
-            </div>
+            {renderContent()}
         </div>
     );
 }
 
 // ─── HELPER COMPONENTS ────────────────────────────────────
 
-function TabButton({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) {
+function StatCard({ label, value, icon: Icon, description, variant = 'default' }: { 
+    label: string, 
+    value: string | number, 
+    icon: any, 
+    description?: string,
+    variant?: 'default' | 'success' | 'danger'
+}) {
     return (
-        <Button
-            variant="ghost"
-            onClick={onClick}
-            className={cn(
-                "rounded-[1.3rem] font-black text-[9px] uppercase tracking-[0.2em] px-8 h-12 transition-all duration-500",
-                active
-                    ? "bg-primary text-white shadow-[0_0_20px_rgba(203,70,90,0.4)] scale-105 z-10"
-                    : "text-black/40 hover:bg-black/5 hover:text-primary"
-            )}
-        >
-            <Icon className={cn("mr-2 h-4 w-4 transition-transform", active && "scale-110")} />
-            {label}
-        </Button>
-    )
-}
-
-function CluberStatsHeader({ stats, activeTab }: { stats: any, activeTab: string }) {
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <StatCard
-                label={activeTab === 'turnero' ? "Turnos del Día" : activeTab === 'delivery' ? "Pedidos Activos" : "Canjes de Hoy"}
-                value={activeTab === 'turnero' ? stats.appointments : activeTab === 'delivery' ? stats.orders : stats.redemptions}
-                trend="+100%"
-                icon={TrendingUp}
-            />
-            <StatCard
-                label="Estado de Red"
-                value="Saludable"
-                icon={ShieldCheck}
-            />
-        </div>
-    )
-}
-
-function StatCard({ label, value, trend, icon: Icon }: { label: string, value: string | number, trend?: string, icon: any }) {
-    return (
-        <Card className="rounded-[2.5rem] border border-black/5 p-6 relative overflow-hidden transition-all hover:scale-[1.02] duration-500 bg-white shadow-xl group">
-            <div className="flex justify-between items-start">
+        <Card className="rounded-[2.5rem] border-zinc-100 p-8 relative overflow-hidden transition-all hover:scale-[1.02] duration-500 bg-white shadow-sm group">
+            <div className="flex justify-between items-start mb-4">
                 <div className="space-y-1">
-                    <p className="text-[9px] font-black text-black/40 uppercase tracking-[0.2em]">{label}</p>
-                    <h3 className="text-3xl font-black tracking-tighter italic text-black flex items-center gap-2">
+                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-[0.2em]">{label}</p>
+                    <h3 className={cn(
+                        "text-4xl font-black tracking-tighter italic leading-none",
+                        variant === 'success' ? "text-emerald-500" : variant === 'danger' ? "text-red-500" : "text-zinc-900"
+                    )}>
                         {value}
-                        {label === "Estado de Red" && <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />}
                     </h3>
                 </div>
-                <div className="p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-lg bg-black/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                <div className={cn(
+                    "p-4 rounded-2xl group-hover:scale-110 transition-transform shadow-inner border border-zinc-50",
+                    variant === 'success' ? "bg-emerald-50 text-emerald-500" : variant === 'danger' ? "bg-red-50 text-red-500" : "bg-zinc-50 text-zinc-400"
+                )}>
+                    <Icon className="h-6 w-6" />
                 </div>
             </div>
-            {trend && (
-                <p className="text-[8px] font-black text-emerald-400 uppercase tracking-widest mt-2 flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" /> {trend} vs ayer
+            {description && (
+                <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">
+                    {description}
                 </p>
             )}
         </Card>
-    )
-}
-
-function BenefitsModule({ shopId }: { shopId: string }) {
-    const { toast } = useToast();
-    return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                    { label: "Canjear QR", icon: QrCode, href: "/panel-cluber/scanner", color: "text-blue-400 bg-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.3)]" },
-                    { 
-                        label: "Nuevo Beneficio", 
-                        icon: Plus, 
-                        href: "/panel-cluber/benefits", 
-                        color: "text-white bg-primary shadow-[0_0_20px_rgba(203,70,90,0.5)] animate-pulse-slow" 
-                    },
-                    { 
-                        label: "Anunciar", 
-                        icon: Megaphone, 
-                        href: "/panel-cluber/announcements", 
-                        color: "text-orange-400 bg-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.3)]" 
-                    },
-                    { label: "Métricas", icon: BarChart3, href: "/panel-cluber/analytics", color: "text-emerald-400 bg-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.3)]" },
-                ].map((btn) => (
-                    <Link key={btn.label} href={btn.href}>
-                        <Card className="rounded-[2.5rem] border border-black/5 bg-white hover:bg-black/[0.02] transition-all duration-500 group h-36 flex flex-col items-center justify-center text-center gap-3 shadow-xl overflow-hidden relative">
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className={cn("p-4 rounded-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 z-10", btn.color)}>
-                                <btn.icon className="h-7 w-7" />
-                            </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-black/40 group-hover:text-primary z-10">{btn.label}</span>
-                        </Card>
-                    </Link>
-                ))}
-            </div>
-            <div className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                    <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-primary animate-pulse" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-black/60">Flujo de Canjes</h2>
-                    </div>
-                </div>
-                <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[400px] shadow-2xl relative">
-                    <RedemptionsTable supplierId={shopId} />
-                </Card>
-            </div>
-        </div>
-    )
-}
-
-function DeliveryModule({ shopId }: { shopId: string }) {
-    return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* CONEXIÓN MERCADO PAGO */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                <div className="md:col-span-5">
-                    <MPLinkCard />
-                </div>
-                <div className="md:col-span-7 bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 flex flex-col justify-center gap-4 h-full min-h-[180px]">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                            <Info className="h-5 w-5 text-primary" />
-                        </div>
-                        <h3 className="text-sm font-black uppercase tracking-tight italic">Configuración de Pagos</h3>
-                    </div>
-                    <p className="text-[10px] font-bold text-black/60 uppercase tracking-widest leading-relaxed">
-                        Es obligatorio vincular tu cuenta de Mercado Pago para procesar pedidos de delivery. Esto nos permite acreditar tus ventas y gestionar comisiones automáticamente.
-                    </p>
-                </div>
-            </div>
-
-            <OrdersDashboard supplierId={shopId} />
-            <div className="space-y-4">
-                <div className="flex items-center gap-2 px-2">
-                    <Package className="h-4 w-4 text-primary" />
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Catálogo de Productos</h2>
-                </div>
-                <Card className="rounded-[3rem] border border-black/5 bg-white overflow-hidden min-h-[500px] shadow-2xl relative">
-                    <ProductManager supplierId={shopId} />
-                </Card>
-            </div>
-        </div>
-    )
-}
-
-function TurneroModule({ shopId }: { shopId: string }) {
-    return (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <TurneroManager supplierId={shopId} />
-        </div>
-    )
+    );
 }
 
 

@@ -256,8 +256,10 @@ function SectionContent({ section }: { section: HomeSection }) {
         );
     }
 
+    const activeTab = section.targetBoard === 'delivery' ? 'catalog' : section.targetBoard === 'turns' ? 'services' : 'benefits';
+
     let Component;
-    const props: any = { items: [] };
+    const props: any = { items: [], activeTab };
 
     if (block.kind === 'carousel') {
         if (block.contentType === 'benefits') {

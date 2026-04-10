@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
                 <div className="container max-w-xl mx-auto p-4 py-12 text-center text-foreground">
                     <ShoppingBag className="mx-auto h-12 w-12 opacity-20 mb-4" />
                     <p>Producto no encontrado.</p>
-                    <Button variant="ghost" className="mt-4" onClick={() => router.push('/delivery')}>
+                    <Button variant="ghost" className="mt-4" onClick={() => router.push('/')}>
                         Volver al inicio
                     </Button>
                 </div>
@@ -183,7 +183,7 @@ export default function ProductDetailPage() {
                     </Card>
 
                     <div className="fixed bottom-20 left-4 right-4 md:static md:mt-8 md:px-0 z-40 max-w-xl mx-auto">
-                        <Button 
+                        <_Button 
                             className="w-full h-16 rounded-[1.5rem] bg-orange-500 hover:bg-orange-600 text-white font-black text-sm uppercase tracking-widest shadow-2xl shadow-orange-500/30 transition-all active:scale-95 border-none" 
                             onClick={handleAddToCart}
                             disabled={!product.stockAvailable}
@@ -195,7 +195,7 @@ export default function ProductDetailPage() {
                                     Agregar al Pedido <ShoppingBag className="h-5 w-5" />
                                 </span>
                             )}
-                        </Button>
+                        </_Button>
                     </div>
 
                 </motion.div>

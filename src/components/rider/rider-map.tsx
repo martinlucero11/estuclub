@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { haptic } from '@/lib/haptics';
 import { createRoot } from 'react-dom/client';
 import dynamic from 'next/dynamic';
-import { animate } from 'framer-motion';
+import { animate, motion, AnimatePresence } from 'framer-motion';
 
 const Rider3DMarker = dynamic(() => import('./rider-3d-marker').then(mod => mod.Rider3DMarker), { 
     ssr: false,
@@ -19,13 +19,24 @@ interface RiderMapProps {
     onOrderSelect: (order: Order) => void;
     userLocation?: { lat: number; lng: number; heading: number | null };
     isOnline?: boolean;
+    activeTripOrder?: Order | null;
 }
 
-export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: RiderMapProps) {
+export function RiderMap({ orders, onOrderSelect, userLocation, isOnline, activeTripOrder }: RiderMapProps) {
     const mapRef = useRef<HTMLDivElement>(null);
     const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [zoom, setZoom] = useState(14);
+    
+    // Directions Service & Renderer
+    const directionsServiceRef = useRef<google.maps.DirectionsService | null>(null);
+    const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+    const [navigationInfo, setNavigationInfo] = useState<{
+        distance: string;
+        duration: string;
+        instruction: string;
+    } | null>(null);
+
     const markersRef = useRef<google.maps.Marker[]>([]);
     const advancedUserMarkerRef = useRef<any>(null);
     const userMarkerRootRef = useRef<any>(null);
@@ -117,6 +128,19 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
                 }
 
                 setMapInstance(map);
+                
+                // Initialize Directions
+                directionsServiceRef.current = new google.maps.DirectionsService();
+                directionsRendererRef.current = new google.maps.DirectionsRenderer({
+                    map: map,
+                    suppressMarkers: true,
+                    polylineOptions: {
+                        strokeColor: '#cb465a',
+                        strokeWeight: 6,
+                        strokeOpacity: 0.8
+                    }
+                });
+
                 setIsLoaded(true);
 
                 map.addListener('zoom_changed', () => {
@@ -305,6 +329,50 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
         });
     }, [mapInstance, orders]);
 
+    // Calculate Trip Directions
+    useEffect(() => {
+        if (!mapInstance || !activeTripOrder || !userLocation || !directionsServiceRef.current || !directionsRendererRef.current) {
+            if (directionsRendererRef.current) directionsRendererRef.current.setDirections({ routes: [] } as any);
+            setNavigationInfo(null);
+            return;
+        }
+
+        const isGoingToStore = ['assigned', 'searching_rider'].includes(activeTripOrder.status);
+        const dest = isGoingToStore 
+            ? activeTripOrder.supplierCoords 
+            : activeTripOrder.deliveryCoords;
+
+        if (!dest || !dest.latitude || !dest.longitude) return;
+
+        const request = {
+            origin: { lat: userLocation.lat, lng: userLocation.lng },
+            destination: { lat: dest.latitude, lng: dest.longitude },
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+
+        directionsServiceRef.current.route(request, (result, status) => {
+            if (status === 'OK' && result) {
+                directionsRendererRef.current?.setDirections(result);
+                
+                const leg = result.routes[0].legs[0];
+                setNavigationInfo({
+                    distance: leg.distance?.text || '',
+                    duration: leg.duration?.text || '',
+                    instruction: leg.steps[0]?.instructions.replace(/<[^>]*>?/gm, '') || ''
+                });
+            }
+        });
+    }, [mapInstance, activeTripOrder?.status, userLocation?.lat, userLocation?.lng]);
+
+    // Format Google Maps External Link
+    const openInGoogleMaps = () => {
+        if (!activeTripOrder || !userLocation) return;
+        const isGoingToStore = ['assigned', 'searching_rider'].includes(activeTripOrder.status);
+        const dest = isGoingToStore ? activeTripOrder.supplierCoords : activeTripOrder.deliveryCoords;
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${dest.latitude},${dest.longitude}&travelmode=driving`;
+        window.open(url, '_blank');
+    };
+
     return (
         <div className="relative w-full h-full">
             {!isLoaded && (
@@ -316,6 +384,41 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
                 </div>
             )}
             <div ref={mapRef} className="w-full h-full" />
+
+            {/* NAVIGATION INSTRUCTIONS OVERLAY */}
+            <AnimatePresence>
+                {navigationInfo && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="absolute top-24 left-6 right-6 z-20 pointer-events-none"
+                    >
+                        <div className="bg-black/80 backdrop-blur-2xl border border-[#cb465a]/30 rounded-[2rem] p-5 shadow-2xl flex items-center justify-between pointer-events-auto">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-[#cb465a]/20 flex items-center justify-center">
+                                    <Navigation className="h-6 w-6 text-[#cb465a]" />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#cb465a]">Siguiente paso</p>
+                                    <p className="text-sm font-bold text-white line-clamp-1">{navigationInfo.instruction}</p>
+                                    <div className="flex gap-3 mt-1">
+                                        <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{navigationInfo.distance}</span>
+                                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{navigationInfo.duration}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <Button 
+                                size="sm"
+                                onClick={openInGoogleMaps}
+                                className="h-10 px-4 rounded-xl bg-[#cb465a] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#cb465a]/90 transition-all shadow-lg shadow-[#cb465a]/20"
+                            >
+                                GPS
+                            </Button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <style jsx global>{`
                 .gm-style-cc, .gmnoprint, a[href^="https://maps.google.com/maps"] {
@@ -330,10 +433,10 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
             <div className="absolute left-6 bottom-32 flex flex-col gap-3">
                 <Button 
                     onClick={handleCenterUser}
-                    className="w-12 h-12 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 hover:bg-black/60 shadow-2xl group transition-all active:scale-95"
+                    className="w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-xl border border-zinc-200 hover:bg-zinc-50 shadow-lg group transition-all active:scale-95"
                     size="icon"
                 >
-                    <Navigation className="h-5 w-5 text-[#cb465a] group-hover:scale-110 transition-transform" />
+                    <Navigation className="h-5 w-5 text-zinc-600 group-hover:scale-110 transition-transform" />
                 </Button>
             </div>
 
@@ -342,3 +445,4 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline }: Ride
         </div>
     );
 }
+

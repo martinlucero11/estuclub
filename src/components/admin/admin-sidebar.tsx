@@ -17,7 +17,8 @@ import {
   Zap,
   Sparkles,
   BarChart3,
-  Ticket
+  Ticket,
+  ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import { useAdmin } from '@/context/admin-context';
 import Logo from '@/components/common/Logo';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/firebase/config';
+import { haptic } from '@/lib/haptics';
 
 const navItems = [
   { label: 'Consola', icon: LayoutDashboard, href: '/admin' },
@@ -40,7 +42,7 @@ const navItems = [
   { label: 'Ajustes', icon: Settings, href: '#', isGhost: true },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { impersonatedUserId, setImpersonatedUserId } = useAdmin();
@@ -48,53 +50,38 @@ export function AdminSidebar() {
   return (
     <div 
       className={cn(
-        "flex flex-col bg-card border-r border-white/5 transition-all duration-300 z-50 sticky top-0 h-screen",
-        isCollapsed ? "w-[70px]" : "w-[240px]"
+        "flex flex-col bg-white border-r border-zinc-100 transition-all duration-300 z-50 sticky top-0 h-screen",
+        isCollapsed ? "w-[80px]" : "w-[260px]",
+        className
       )}
     >
       {/* Brand Header */}
-      <div className="p-4 flex items-center justify-between">
+      <div className="p-6 flex items-center justify-between">
         {!isCollapsed && (
-          <div className="flex items-center gap-3 animate-in fade-in duration-500">
-            <Logo 
-                variant="rosa"
-                className="h-9 w-auto dark:hidden"
-            />
-            <Logo 
-                variant="white"
-                className="h-9 w-auto hidden dark:block"
-            />
-            <div className="flex flex-col min-w-0">
-                <span className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40">ADMIN</span>
-                <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary leading-none">v2.2</span>
+          <div className="flex flex-col gap-1 animate-in fade-in duration-500">
+            <Logo variant="rosa" className="h-8 w-auto" />
+            <div className="flex items-center gap-1.5 px-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900">Admin Central</span>
             </div>
           </div>
         )}
         {isCollapsed && (
-            <Logo 
-                variant="rosa"
-                className="h-7 w-auto mx-auto dark:hidden"
-            />
-        )}
-        {isCollapsed && (
-            <Logo 
-                variant="white"
-                className="h-7 w-auto mx-auto hidden dark:block"
-            />
+             <Logo variant="rosa" className="h-7 w-auto mx-auto" />
         )}
       </div>
 
       <Button 
         variant="ghost" 
         size="icon" 
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-4 top-20 h-8 w-8 rounded-full bg-background border border-white/10 shadow-xl z-50 hover:bg-white/5"
+        onClick={() => { haptic.vibrateSubtle(); setIsCollapsed(!isCollapsed); }}
+        className="absolute -right-4 top-20 h-8 w-8 rounded-full bg-white border border-zinc-100 shadow-lg z-50 hover:bg-zinc-50 transition-transform active:scale-90"
       >
         {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </Button>
 
       {/* Nav Items */}
-      <nav className="flex-1 px-4 py-8 space-y-2 overflow-y-auto overflow-x-hidden">
+      <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/admin' && item.href !== '#' && pathname.startsWith(item.href));
           
@@ -102,7 +89,7 @@ export function AdminSidebar() {
             if (item.href === '#') {
               return (
                 <button 
-                  onClick={() => alert('🚀 Función en desarrollo: ¡Próximamente podrás configurar el sistema!')}
+                  onClick={() => alert('🚀 Función en desarrollo')}
                   className="w-full text-left"
                 >
                   {children}
@@ -116,15 +103,15 @@ export function AdminSidebar() {
             <NavWrapper key={item.label}>
               <div 
                 className={cn(
-                  "flex items-center gap-4 px-4 h-12 rounded-2xl transition-all duration-200 group relative",
+                  "flex items-center gap-4 px-4 h-12 rounded-2xl transition-all duration-300 group relative",
                   isActive 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-foreground hover:bg-white/5 hover:text-foreground"
+                    ? "bg-zinc-900 text-white shadow-xl shadow-zinc-200" 
+                    : "text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
                 )}
               >
-                <item.icon className={cn("h-5 w-5 shrink-0", isActive && "drop-shadow-[0_0_8px_rgba(203, 70, 90,0.5)]")} />
+                <item.icon className={cn("h-5 w-5 shrink-0", isActive && "text-primary")} />
                 {!isCollapsed && (
-                  <span className="font-black text-[10px] uppercase tracking-widest animate-in fade-in slide-in-from-left-2 duration-300">
+                  <span className="font-black text-[10px] uppercase tracking-widest">
                     {item.label}
                   </span>
                 )}
@@ -137,12 +124,15 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Impersonation Stop Alert */}
-      {impersonatedUserId && (
-          <div className="p-4 mx-4 mb-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
-              {!isCollapsed && (
-                  <div className="space-y-3">
-                      <p className="text-[10px] font-black uppercase text-orange-500">SIMULACIÓN ACTIVA</p>
+      {/* Footer Area */}
+      <div className="p-4 border-t border-zinc-50 mt-auto space-y-2">
+          {impersonatedUserId && (
+              <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                       <ShieldCheck className="h-4 w-4 text-orange-500" />
+                       <span className="text-[9px] font-black uppercase text-orange-500 tracking-tighter">Simulación</span>
+                  </div>
+                  {!isCollapsed && (
                       <Button 
                         size="sm" 
                         variant="destructive" 
@@ -152,50 +142,28 @@ export function AdminSidebar() {
                             window.location.href = '/admin';
                         }}
                       >
-                        DETENER
+                        Desactivar
                       </Button>
-                  </div>
-              )}
-              {isCollapsed && (
-                  <Button variant="destructive" size="icon" className="w-full h-10 rounded-xl" onClick={() => { setImpersonatedUserId(null); window.location.href = '/admin'; }}>
-                      <LogOut className="h-4 w-4" />
-                  </Button>
-              )}
-          </div>
-      )}
+                  )}
+              </div>
+          )}
 
-      {/* Footer Info */}
-      <div className="p-3 border-t border-white/5 shrink-0">
-        <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
-           <div className="h-8 w-8 rounded-full bg-background flex items-center justify-center">
-             <ShieldCheck className="h-4 w-4 text-emerald-500" />
-           </div>
-           {!isCollapsed && (
-             <div className="overflow-hidden">
-               <p className="font-black text-[10px] uppercase truncate">Master Admin</p>
-               <p className="text-[8px] text-foreground uppercase tracking-tighter">Acceso Total</p>
-             </div>
-           )}
-        </div>
-      </div>
-
-      {/* Logout Button */}
-      <div className="p-3 mt-auto shrink-0">
           <Button 
             variant="ghost" 
             onClick={async () => {
+                haptic.vibrateSubtle();
                 await signOut(auth);
                 window.location.href = '/login';
             }}
             className={cn(
-                "w-full rounded-2xl transition-all duration-200 flex items-center text-red-500 hover:bg-red-500/10 hover:text-red-600",
+                "w-full rounded-2xl transition-all duration-200 flex items-center text-zinc-400 hover:bg-red-50 hover:text-red-500",
                 isCollapsed ? "justify-center px-0 h-10" : "justify-start gap-4 px-4 h-10"
             )}
           >
             <LogOut className="h-4 w-4 shrink-0" />
             {!isCollapsed && (
                 <span className="font-black text-[9px] uppercase tracking-widest">
-                    Cerrar Sesión
+                    Salir del Panel
                 </span>
             )}
           </Button>

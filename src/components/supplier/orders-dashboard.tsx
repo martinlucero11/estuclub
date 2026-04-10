@@ -119,7 +119,12 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
         const pendingOrdersCount = orders?.filter(o => o.status === 'pending').length || 0;
         
         if (pendingOrdersCount > 0) {
-            audioRef.current.play().catch(e => console.error("Audio playback error:", e));
+            // Play loop if enabled and pending orders exist
+            audioRef.current.play().catch(e => {
+                // If playback fails, it's usually because of browser policy
+                // The "Activar Sonido" button exists to fix this
+                console.warn("Sound blocked by browser policy. User click needed.");
+            });
         } else {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -127,6 +132,8 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
     }, [orders, isAudioEnabled]);
     
     // Notification system for new orders while the dashboard is open - HIGH PRIORITY
+    const alertedOrderIds = useRef<Set<string>>(new Set());
+
     useEffect(() => {
         if (!firestore || !supplierId) return;
 
@@ -136,29 +143,31 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             where('supplierId', '==', supplierId),
             where('status', '==', 'pending'),
             orderBy('createdAt', 'desc'),
-            limit(1)
+            limit(10) // Small batch for responsiveness
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
-                // EXTREMELY IMPORTANT: change.type === 'added' captures exactly when a NEW order lands
-                if (change.type === 'added') {
-                    const newOrder = change.doc.data();
-                    
-                    // Prevent triggering on initial load of historical orders (optional but safer)
+                // Important: Trigger on 'added' OR 'modified' if newly matches 'pending'
+                const docData = change.doc.data();
+                const orderId = change.doc.id;
+
+                if (!alertedOrderIds.current.has(orderId)) {
+                    // Check if it's truly new or just moved to pending
                     const now = new Date().getTime();
-                    const orderTime = newOrder.createdAt instanceof Timestamp ? newOrder.createdAt.toMillis() : now;
+                    const orderTime = docData.createdAt instanceof Timestamp ? docData.createdAt.toMillis() : now;
                     
-                    if (now - orderTime < 60000) { // Only alarm if created in the last 60 seconds
+                    // Relaxed window: Trigger if order was created recently (last 10 mins) 
+                    // AND it hasn't been alerted in this browser session
+                    if (now - orderTime < 600000) { 
                         haptic.vibrateSuccess();
-                        setActiveAlertOrder(newOrder);
+                        setActiveAlertOrder(docData);
                         setIsModalOpen(true);
+                        alertedOrderIds.current.add(orderId);
                         
                         // Force audio loop if enabled
-                        if (isAudioEnabled && audioRef.current) {
-                            audioRef.current.play().catch(e => {
-                                console.warn("Browser blocked auto-play alarm. User engagement required.", e);
-                            });
+                        if (isAudioEnabled && audioRef.current && audioRef.current.paused) {
+                            audioRef.current.play().catch(() => {});
                         }
                     }
                 }

@@ -108,6 +108,7 @@ function BenefitsList() {
             return {
                 ...makeBenefitSerializable(b),
                 supplierName: supplier?.name,
+                supplierSlug: supplier?.slug,
                 supplierLocation: supplier?.location,
                 distance
             };
@@ -195,7 +196,7 @@ function BenefitsList() {
 
                         {!combinedIsLoading && !error && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                                <BenefitsGrid benefits={processedBenefits as any[]} />
+                                <BenefitsGrid benefits={processedBenefits as any[]} activeTab="benefits" />
                             </div>
                         )}
                     </div>

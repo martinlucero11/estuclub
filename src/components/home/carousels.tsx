@@ -28,7 +28,7 @@ import { useCart } from "@/context/cart-context";
 import { Button } from "../ui/button";
 
 // --- SUPPLIER CARD ---
-const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: SupplierProfile, priority?: boolean }) => {
+const SupplierCard = React.memo(({ supplier, priority = false, activeTab }: { supplier: SupplierProfile, priority?: boolean, activeTab?: string }) => {
     const { userLocation } = useUser();
     
     const distance = useMemo(() => {
@@ -43,7 +43,7 @@ const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: Sup
 
     return (
         <Link 
-            href={`/proveedores/view?slug=${supplier.slug}`} 
+            href={`/proveedores/view?slug=${supplier.slug}${activeTab ? `&tab=${activeTab}` : ''}`} 
             onClick={() => haptic.vibrateSubtle()}
             className="block w-full group text-center active:scale-95 transition-all duration-500"
         >
@@ -100,10 +100,10 @@ const SupplierCard = React.memo(({ supplier, priority = false }: { supplier: Sup
 SupplierCard.displayName = 'SupplierCard';
 
 // --- MINI SUPPLIER CARD (CIRCULAR LOGOS) ---
-const MiniSupplierCard = ({ supplier }: { supplier: SupplierProfile }) => {
+const MiniSupplierCard = ({ supplier, activeTab }: { supplier: SupplierProfile, activeTab?: string }) => {
     return (
         <Link 
-            href={`/proveedores/view?slug=${supplier.slug}`} 
+            href={`/proveedores/view?slug=${supplier.slug}${activeTab ? `&tab=${activeTab}` : ''}`} 
             onClick={() => haptic.vibrateSubtle()}
             className="block w-full group text-center active:scale-95 transition-all duration-200"
         >
@@ -207,7 +207,7 @@ const BannerCarouselCard = ({ banner, priority = false }: { banner: Banner, prio
 };
 
 // --- SERVICE CAROUSEL CARD (PREMIUM) ---
-const ServiceCarouselCard = ({ service }: { service: Service }) => {
+const ServiceCarouselCard = ({ service, activeTab }: { service: Service, activeTab?: string }) => {
     const firestore = useFirestore();
     const { data: supplier } = useDoc<SupplierProfile>(
         service.supplierId ? doc(firestore, 'roles_supplier', service.supplierId) : null
@@ -215,7 +215,7 @@ const ServiceCarouselCard = ({ service }: { service: Service }) => {
 
     return (
         <Link 
-            href={`/proveedores/view?slug=${supplier?.slug || ''}`}
+            href={`/proveedores/view?slug=${supplier?.slug || ''}${activeTab ? `&tab=${activeTab}` : ''}`}
             onClick={() => haptic.vibrateSubtle()}
             className="group block h-full"
         >
@@ -258,7 +258,7 @@ const ServiceCarouselCard = ({ service }: { service: Service }) => {
 
 const carouselArrowClasses = "absolute top-1/2 -translate-y-1/2 hidden sm:flex items-center justify-center glass glass-dark text-foreground rounded-full shadow-2xl border border-white/10 transition-all duration-300 hover:scale-110 active:scale-90 disabled:opacity-0 w-12 h-12 z-20 backdrop-blur-xl hover:bg-primary/10 hover:border-primary/30";
 
-export function BenefitsCarousel({ items: benefits }: { items: SerializableBenefit[] }) {
+export function BenefitsCarousel({ items: benefits, activeTab }: { items: SerializableBenefit[], activeTab?: string }) {
     if (!benefits || benefits.length === 0) return <p className="text-foreground italic text-sm">No hay beneficios para mostrar.</p>;
 
     return (
@@ -266,7 +266,7 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
             <CarouselContent className="py-10 -my-10">
                 {benefits.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
-                        <BenefitCard benefit={item} variant="carousel" priority={index < 2} />
+                        <BenefitCard benefit={item} variant="carousel" priority={index < 2} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -276,7 +276,7 @@ export function BenefitsCarousel({ items: benefits }: { items: SerializableBenef
     )
 }
 
-export function ServicesCarousel({ items: services }: { items: Service[] }) {
+export function ServicesCarousel({ items: services, activeTab }: { items: Service[], activeTab?: string }) {
     if (!services || services.length === 0) return <p className="text-foreground italic text-sm">No hay servicios disponibles.</p>;
 
     return (
@@ -284,7 +284,7 @@ export function ServicesCarousel({ items: services }: { items: Service[] }) {
             <CarouselContent className="py-10 -my-10">
                 {services.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
-                        <ServiceCarouselCard service={item} />
+                        <ServiceCarouselCard service={item} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -294,7 +294,7 @@ export function ServicesCarousel({ items: services }: { items: Service[] }) {
     );
 }
 
-export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
+export function SuppliersCarousel({ items: suppliers, activeTab }: { items: any[], activeTab?: string }) {
     if (!suppliers || suppliers.length === 0) return <p className="text-foreground italic text-sm">No hay proveedores para mostrar.</p>;
 
     return (
@@ -302,7 +302,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselContent className="-ml-4 py-10 -my-10">
                 {suppliers.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-1/3 sm:basis-1/4 md:basis-1/5 lg:basis-1/6 pl-4">
-                        <SupplierCard supplier={item as SupplierProfile} priority={index < 4} />
+                        <SupplierCard supplier={item as SupplierProfile} priority={index < 4} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -312,7 +312,7 @@ export function SuppliersCarousel({ items: suppliers }: { items: any[] }) {
     )
 }
 
-export function MiniSuppliersCarousel({ items: suppliers }: { items: any[] }) {
+export function MiniSuppliersCarousel({ items: suppliers, activeTab }: { items: any[], activeTab?: string }) {
     if (!suppliers || suppliers.length === 0) return null;
 
     return (
@@ -320,7 +320,7 @@ export function MiniSuppliersCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselContent className="-ml-2">
                 {suppliers.map((item) => (
                     <CarouselItem key={item.id} className="basis-[18%] sm:basis-[12%] md:basis-[10%] lg:basis-[8%] pl-2">
-                        <MiniSupplierCard supplier={item as SupplierProfile} />
+                        <MiniSupplierCard supplier={item as SupplierProfile} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -395,10 +395,10 @@ export function HighlightAnnouncementsCarousel({ items: announcements }: { items
 }
 
 // --- SUPPLIER PROMO CARD (BENEFIT STYLE) ---
-export function SupplierPromoCard({ supplier }: { supplier: SupplierProfile }) {
+export function SupplierPromoCard({ supplier, activeTab }: { supplier: SupplierProfile, activeTab?: string }) {
     return (
         <Link 
-            href={`/proveedores/view?slug=${supplier.slug}`}
+            href={`/proveedores/view?slug=${supplier.slug}${activeTab ? `&tab=${activeTab}` : ''}`}
             onClick={() => haptic.vibrateSubtle()}
             className="group relative flex w-full flex-col justify-end overflow-hidden rounded-[2.5rem] text-white transition-all duration-700 shadow-premium border border-white/5 aspect-[2.2/1] h-40 sm:h-48 hover:shadow-2xl active:scale-[0.98] hover:border-primary/30 hover:shadow-primary/10"
         >
@@ -443,7 +443,7 @@ export function SupplierPromoCard({ supplier }: { supplier: SupplierProfile }) {
     );
 }
 
-export function SupplierPromoCarousel({ items: suppliers }: { items: any[] }) {
+export function SupplierPromoCarousel({ items: suppliers, activeTab }: { items: any[], activeTab?: string }) {
     if (!suppliers || suppliers.length === 0) return null;
 
     return (
@@ -451,7 +451,7 @@ export function SupplierPromoCarousel({ items: suppliers }: { items: any[] }) {
             <CarouselContent className="py-10 -my-10">
                 {suppliers.map((item) => (
                     <CarouselItem key={item.id} className="basis-[78%] sm:basis-1/2 md:basis-[40%] lg:basis-1/3 pl-4">
-                        <SupplierPromoCard supplier={item as SupplierProfile} />
+                        <SupplierPromoCard supplier={item as SupplierProfile} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>
@@ -479,7 +479,7 @@ export function ProductsCarousel({ items: products }: { items: any[] }) {
 }
 
 // --- PRODUCT WITH SUPPLIER CARD (PREMIUM DESIGN) ---
-const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier }: { product: Product, supplier?: SupplierProfile }) => {
+const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier, activeTab }: { product: Product, supplier?: SupplierProfile, activeTab?: string }) => {
     const firestore = useFirestore();
     const { data: fetchedSupplier } = useDoc<SupplierProfile>(
         (!initialSupplier && product.supplierId) ? doc(firestore, 'roles_supplier', product.supplierId) : null
@@ -508,7 +508,7 @@ const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier
     
     return (
         <Link 
-            href={`/proveedores/view?slug=${supplier?.slug || ''}&tab=catalogo`}
+            href={`/proveedores/view?slug=${supplier?.slug || ''}&tab=${activeTab || 'catalog'}`}
             onClick={() => haptic.vibrateSubtle()}
             className="group block h-full"
         >
@@ -594,7 +594,7 @@ const ProductWithSupplierCard = React.memo(({ product, supplier: initialSupplier
 });
 ProductWithSupplierCard.displayName = 'ProductWithSupplierCard';
 
-export function ProductsWithSupplierCarousel({ items: products }: { items: any[] }) {
+export function ProductsWithSupplierCarousel({ items: products, activeTab }: { items: any[], activeTab?: string }) {
     if (!products || products.length === 0) return (
         <div className="text-center py-10 opacity-50 italic">No hay productos destacados.</div>
     );
@@ -604,7 +604,7 @@ export function ProductsWithSupplierCarousel({ items: products }: { items: any[]
             <CarouselContent className="py-8 -my-8">
                 {products.map((item, index) => (
                     <CarouselItem key={item.id} className="basis-[75%] sm:basis-[45%] md:basis-[35%] pl-4">
-                        <ProductWithSupplierCard product={item} />
+                        <ProductWithSupplierCard product={item} activeTab={activeTab} />
                     </CarouselItem>
                 ))}
             </CarouselContent>

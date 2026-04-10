@@ -20,12 +20,12 @@ const categoryIcons: Record<CluberCategory, React.ElementType> = {
     Servicios: Wrench,
 };
 
-const SupplierGridCard = ({ supplier }: { supplier: SupplierProfile }) => {
+const SupplierGridCard = ({ supplier, activeTab }: { supplier: SupplierProfile, activeTab?: string }) => {
     const TypeIcon = categoryIcons[supplier.type] || Users;
     const initials = getInitials(supplier.name);
 
     return (
-        <Link key={supplier.id} href={`/proveedores/view?slug=${supplier.slug}`} className="group block h-full active:scale-95 transition-transform duration-200">
+        <Link key={supplier.id} href={`/proveedores/view?slug=${supplier.slug}${activeTab ? `&tab=${activeTab}` : ''}`} className="group block h-full active:scale-95 transition-transform duration-200">
             <Card className="glass rounded-3xl shadow-premium border border-primary/10 p-4 flex flex-col items-center text-center transition-all duration-500 group-hover:shadow-2xl group-hover:border-primary/20 group-hover:-translate-y-1 h-full">
                 <div className="w-16 h-16 rounded-full border-2 border-primary/10 group-hover:border-primary/30 mb-3 overflow-hidden transition-colors duration-500 shadow-inner">
                     <Avatar className="h-full w-full">
@@ -50,7 +50,7 @@ const createGrid = <T extends {id: string}>(
     dataKey: string,
     gridClass: string
 ) => {
-    return function Grid({ items }: { items: T[] }) {
+    return function Grid({ items, activeTab }: { items: T[], activeTab?: string }) {
         if (!items || items.length === 0) {
             return <p className="text-foreground italic text-sm">No hay contenido para mostrar.</p>;
         }
@@ -58,7 +58,7 @@ const createGrid = <T extends {id: string}>(
         return (
              <div className={gridClass}>
                 {
-                    items.map(item => <CardComponent key={item.id} {...{ [dataKey]: item }} />)
+                    items.map(item => <CardComponent key={item.id} {...{ [dataKey]: item, activeTab }} />)
                 }
             </div>
         )

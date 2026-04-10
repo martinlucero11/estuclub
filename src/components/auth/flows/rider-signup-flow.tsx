@@ -143,66 +143,50 @@ export function RiderSignupFlow() {
 
         setIsSubmitting(true);
         try {
+            // 1. Create Account in Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
             const user = userCredential.user;
             await updateProfile(user, { displayName: data.fullName });
 
             const token = await user.getIdToken();
 
-            // Drive Upload
-            const imageUrls: Record<string, string> = { dni: '', selfie: '' };
-            const uploadPromises = Object.entries(files).map(async ([key, file]) => {
-                if (!file) return null;
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('folder', 'rider');
+            // 2. Comprehensive KYC Request (OCR + Upload + Firestore)
+            const formData = new FormData();
+            formData.append('dni', files.dni);
+            formData.append('selfie', files.selfie);
+            formData.append('fullName', data.fullName);
+            formData.append('vehicleType', data.vehicleType);
+            formData.append('patente', data.patente || '');
+            formData.append('address', data.address);
+            formData.append('lat', data.lat.toString());
+            formData.append('lng', data.lng.toString());
+            formData.append('phone', data.phone);
 
-                const res = await fetch('/api/upload-drive', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
-                });
-
-                if (res.ok) {
-                    const resData = await res.json();
-                    imageUrls[key] = resData.url;
-                }
-            });
-            await Promise.all(uploadPromises);
-
-            const batch = writeBatch(firestore);
-            batch.set(doc(firestore, 'users', user.uid), {
-                uid: user.uid,
-                email: data.email,
-                firstName: data.fullName.split(' ')[0],
-                lastName: data.fullName.split(' ').slice(1).join(' ') || '',
-                phone: data.phone,
-                role: 'rider_pending',
-                createdAt: serverTimestamp(),
+            const res = await fetch('/api/rider/onboarding-kyc', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
             });
 
-            const applicationRef = doc(collection(firestore, 'rider_applications'));
-            batch.set(applicationRef, {
-                id: applicationRef.id,
-                userId: user.uid,
-                fullName: data.fullName,
-                vehicleType: data.vehicleType,
-                patente: data.patente || '',
-                address: data.address,
-                lat: data.lat,
-                lng: data.lng,
-                dni: imageUrls.dni,
-                selfie: imageUrls.selfie,
-                status: 'pending',
-                appliedAt: serverTimestamp(),
-            });
+            const resData = await res.json();
 
-            await batch.commit();
+            if (!res.ok) {
+                // If KYC fails (e.g., name mismatch), throw with the specific server message
+                throw new Error(resData.error || 'Error en la verificación de identidad');
+            }
+
+            // 3. Success -> Direct Redirection (No scales)
             haptic.vibrateSuccess();
-            setIsSuccess(true);
+            toast({ title: "¡Verificado!", description: "Tu identidad ha sido confirmada con éxito." });
+            window.location.href = '/rider';
+
         } catch (error: any) {
-            console.error(error);
-            toast({ variant: 'destructive', title: 'Error', description: 'No se pudo procesar tu inscripción.' });
+            console.error('KYC_SUBMISSION_ERROR:', error);
+            toast({ 
+                variant: 'destructive', 
+                title: 'Error de Validación', 
+                description: error.message || 'No se pudo procesar tu inscripción.' 
+            });
             haptic.vibrateError();
         } finally {
             setIsSubmitting(false);

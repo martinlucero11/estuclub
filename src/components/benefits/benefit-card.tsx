@@ -11,6 +11,7 @@ import { useUser } from '@/firebase';
 import { useCincoDosStatus } from '@/firebase/auth/use-cinco-dos';
 import { calculateDistance, formatDistance } from '@/lib/geo-utils';
 import { getLevelInfo } from '@/lib/gamification';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 
 const RedeemBenefitDialog = dynamic(() => import('./redeem-benefit-dialog'), {
@@ -18,15 +19,20 @@ const RedeemBenefitDialog = dynamic(() => import('./redeem-benefit-dialog'), {
 });
 
 interface BenefitCardProps {
-  benefit: SerializableBenefit & { supplierName?: string; supplierLocation?: { lat: number; lng: number } };
+  benefit: SerializableBenefit & { 
+    supplierName?: string; 
+    supplierSlug?: string;
+    supplierLocation?: { lat: number; lng: number } 
+  };
   className?: string;
   variant?: 'grid' | 'carousel';
   priority?: boolean;
+  activeTab?: string;
 }
 
 const DEFAULT_BENEFIT_IMAGE = "https://images.unsplash.com/photo-1607082350899-7e105aa886ae?auto=format&fit=crop&q=80&w=800";
 
-export default function BenefitCard({ benefit, className, variant = 'grid', priority = false }: BenefitCardProps) {
+export default function BenefitCard({ benefit, className, variant = 'grid', priority = false, activeTab }: BenefitCardProps) {
   const { userData, userLocation, roles } = useUser();
   const { isApproved: isCincoDos } = useCincoDosStatus();
   const isAdmin = roles.includes('admin');
@@ -141,10 +147,17 @@ export default function BenefitCard({ benefit, className, variant = 'grid', prio
             </div>
             
             <div className="pt-3 flex items-center justify-between border-t border-white/20 mt-3 transition-colors duration-500 group-hover:border-primary/40">
-                <div className="flex items-center gap-2 text-xs text-white font-black uppercase tracking-[0.15em] drop-shadow-md">
+                <Link 
+                    href={`/proveedores/view?slug=${benefit.supplierSlug || ''}${activeTab ? `&tab=${activeTab}` : ''}`}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        haptic.vibrateSubtle();
+                    }}
+                    className="flex items-center gap-2 text-xs text-white font-black uppercase tracking-[0.15em] drop-shadow-md hover:text-primary transition-colors transition-all duration-300"
+                >
                     <Building className="h-3.5 w-3.5 opacity-90" />
                     <span className="truncate max-w-[150px]">{supplierName}</span>
-                </div>
+                </Link>
             </div>
         </div>
     </div>

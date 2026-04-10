@@ -453,13 +453,13 @@ export default function RiderPage() {
 
     if (userData?.role === 'rider_pending' && !isAdmin) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-black text-center p-8 space-y-8">
-                <div className="h-24 w-24 rounded-[3rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                    <Clock className="h-12 w-12 text-orange-400 animate-pulse" />
+            <div className="flex flex-col items-center justify-center min-h-screen bg-zinc-50 text-center p-8 space-y-8">
+                <div className="h-24 w-24 rounded-[3rem] bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-lg">
+                    <Clock className="h-12 w-12 text-orange-500 animate-pulse" />
                 </div>
                 <div className="space-y-4">
-                    <h2 className="text-4xl font-black italic tracking-tighter uppercase text-orange-400 font-montserrat">En Revisión</h2>
-                    <p className="text-sm text-foreground/60 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tu perfil está siendo auditado por el equipo central.</p>
+                    <h2 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-900 font-montserrat">En Revisión</h2>
+                    <p className="text-sm text-zinc-400 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tu perfil está siendo auditado por el equipo central.</p>
                 </div>
             </div>
         );
@@ -484,9 +484,9 @@ export default function RiderPage() {
     };
 
     return (
-        <div className="relative min-h-screen w-full bg-[#0a0a0a] overflow-hidden selection:bg-[#cb465a]/30">
-            {/* SOLID BACKDROP (To kill the white box) */}
-            <div className="fixed inset-0 bg-[#0a0a0a] z-0" />
+        <div className="relative min-h-screen w-full bg-zinc-50 overflow-hidden selection:bg-[#cb465a]/30 text-zinc-900">
+            {/* SOLID BACKDROP */}
+            <div className="fixed inset-0 bg-zinc-50 z-0" />
 
             {/* BACKGROUND MAP (MAP-CENTRIC) */}
             <div className={cn(
@@ -497,6 +497,7 @@ export default function RiderPage() {
                     orders={availableOrders} 
                     userLocation={userLocation}
                     isOnline={isOnline}
+                    activeTripOrder={activeOrders[0] || null}
                     onOrderSelect={(o) => {
                         haptic.vibrateMedium();
                         setSelectedOrder(o);
@@ -504,54 +505,50 @@ export default function RiderPage() {
                 />
             </div>
 
-            {/* FLOATING TOP BAR (PRESTIGE STYLE) */}
-            <header className="fixed top-6 left-4 right-4 z-40 flex justify-between items-center bg-black/60 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] py-4 px-6 shadow-[0_25px_80px_rgba(0,0,0,0.8)]">
-                <div className="flex items-center gap-6">
+            {/* FLOATING BRANDING & CONTROLS (CLEAN STYLE) */}
+            <div className="fixed top-0 left-0 right-0 z-40 p-6 pointer-events-none flex justify-between items-start">
+                <div className="flex flex-col items-start gap-4 pointer-events-auto">
                     <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => setIsSidebarOpen(true)}
-                        className="h-14 w-14 rounded-2xl border border-white/5 bg-white/5 active:scale-95 transition-all text-white hover:text-[#cb465a] hover:bg-white/10"
+                        className="h-14 w-14 rounded-2xl border border-zinc-200 bg-white/80 backdrop-blur-xl shadow-lg active:scale-95 transition-all text-zinc-900 hover:text-[#cb465a] hover:bg-zinc-50"
                     >
                         <Menu className="h-7 w-7" />
                     </Button>
                     
-                    <div className="flex flex-col">
-                        <div className="flex items-center">
-                             <Logo brand="rider" variant="white" className="h-[70px] w-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.5)]" />
-                        </div>
-                    </div>
+                    <Logo brand="rider" variant="rosa" className="h-[120px] w-auto drop-shadow-[0_10px_30px_rgba(203,70,90,0.2)]" />
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="pointer-events-auto">
                     <div className={cn(
-                        "relative h-14 py-1 pl-5 pr-1.5 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-4",
+                        "relative h-14 py-1 pl-5 pr-1.5 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-4 shadow-lg",
                         isOnline 
-                            ? "bg-emerald-500/10 border-emerald-500/40 shadow-[inset_0_0_20px_rgba(16,185,129,0.1)]" 
-                            : "bg-white/5 border-white/15"
+                            ? "bg-emerald-500/10 border-emerald-500/20" 
+                            : "bg-white/80 backdrop-blur-xl border-zinc-200"
                     )}>
                         <div className="flex flex-col items-end">
                             <span className={cn(
-                                "text-xs font-black uppercase tracking-[0.1em] leading-none transition-colors",
-                                isOnline ? "text-emerald-300" : "text-white/30"
+                                "text-[10px] font-black uppercase tracking-[0.1em] leading-none transition-colors",
+                                isOnline ? "text-emerald-600" : "text-zinc-400"
                             )}>
                                 {isOnline ? 'ONLINE' : 'OFFLINE'}
                             </span>
-                            <span className="text-[7px] font-black text-white/20 uppercase tracking-tighter mt-1.5">CONEXIÓN ACTIVA</span>
+                            <span className="text-[7px] font-black text-zinc-300 uppercase tracking-tighter mt-1.5">RADAR ACTIVO</span>
                         </div>
                         <div className={cn(
                             "p-2 rounded-full transition-all duration-500",
-                            isOnline ? "bg-emerald-400/20" : "bg-white/5"
+                            isOnline ? "bg-emerald-500/20" : "bg-zinc-100"
                         )}>
                             <Switch 
                                 checked={isOnline} 
                                 onCheckedChange={handleToggleOnline}
-                                className="data-[state=checked]:bg-emerald-400 data-[state=unchecked]:bg-white/10"
+                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-zinc-300"
                             />
                         </div>
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* MAIN CONTENT AREA (FLOATING) */}
             <main className="relative z-30 h-full pt-32 pb-40 px-6 overflow-y-auto pointer-events-none">
@@ -579,15 +576,15 @@ export default function RiderPage() {
                             <div className="space-y-4 pt-4">
                                 <p className="text-[10px] font-black uppercase tracking-[.4em] text-[#cb465a] ml-4">Viajes en curso</p>
                                 {activeOrders.map(order => (
-                                    <Card key={order.id} className="bg-black/60 backdrop-blur-3xl border-[#cb465a]/30 rounded-[2.5rem] overflow-hidden group">
+                                    <Card key={order.id} className="bg-white/80 backdrop-blur-3xl border-zinc-200 rounded-[2.5rem] overflow-hidden group shadow-xl">
                                         <CardContent className="p-6 flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-14 w-14 rounded-2xl bg-[#cb465a]/10 flex items-center justify-center">
-                                                    <Navigation className="h-6 w-6 text-[#cb465a] animate-pulse" />
+                                                    <Navigation className="h-6 w-6 text-[#cb465a]" />
                                                 </div>
                                                 <div className="space-y-0.5">
-                                                    <p className="text-lg font-black italic uppercase tracking-tighter text-white">{order.supplierName}</p>
-                                                    <p className="text-[10px] font-bold text-foreground/60 uppercase">{order.deliveryAddress}</p>
+                                                    <p className="text-lg font-black italic uppercase tracking-tighter text-zinc-900">{order.supplierName}</p>
+                                                    <p className="text-[10px] font-bold text-zinc-500 uppercase">{order.deliveryAddress}</p>
                                                 </div>
                                             </div>
                                             <Button 
@@ -612,16 +609,16 @@ export default function RiderPage() {
             <AnimatePresence>
                 {selectedOrder && (
                     <>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]" />
-                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-[#0a0a0a] border-t border-[#cb465a]/30 rounded-t-[3rem] p-8 pb-12">
-                            <div className="w-12 h-1.5 bg-[#cb465a]/20 rounded-full mx-auto mb-8" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]" />
+                        <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[70] bg-white border-t border-zinc-200 rounded-t-[3rem] p-8 pb-12 shadow-2xl">
+                            <div className="w-12 h-1.5 bg-zinc-100 rounded-full mx-auto mb-8" />
                             
                             <div className="space-y-8">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
                                         <Badge className="bg-[#cb465a]/10 text-[#cb465a] border-0 text-[8px] font-black tracking-widest uppercase px-3 py-1">Entrega Activa</Badge>
-                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-white font-montserrat">{selectedOrder.supplierName}</h3>
-                                        <p className="text-xs font-bold text-foreground/40">{selectedOrder.deliveryAddress}</p>
+                                        <h3 className="text-3xl font-black italic uppercase tracking-tighter text-zinc-900 font-montserrat">{selectedOrder.supplierName}</h3>
+                                        <p className="text-xs font-bold text-zinc-400">{selectedOrder.deliveryAddress}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] font-black uppercase text-[#cb465a]/60">COBRAR</p>
@@ -630,19 +627,19 @@ export default function RiderPage() {
                                 </div>
 
                                 {/* DOOR PAYMENT BANNER */}
-                                <div className="bg-[#cb465a] rounded-3xl p-6 border-4 border-black shadow-2xl flex items-center justify-between overflow-hidden relative">
+                                <div className="bg-[#cb465a] rounded-3xl p-6 border-4 border-white shadow-xl flex items-center justify-between overflow-hidden relative">
                                     <div className="absolute right-0 top-0 p-4 opacity-10"><Info className="h-12 w-12 text-black" /></div>
                                     <div className="space-y-0.5 relative z-10">
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-black/60">PAGO EN PUERTA</p>
-                                        <p className="text-lg font-black italic text-black uppercase">Cobrar al Cliente</p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-white/80">PAGO EN PUERTA</p>
+                                        <p className="text-lg font-black italic text-white uppercase">Cobrar al Cliente</p>
                                     </div>
                                     <div className="text-right relative z-10">
-                                        <p className="text-sm font-black text-black">Efectivo / Alias</p>
+                                        <p className="text-sm font-black text-white/90">Efectivo / Alias</p>
                                     </div>
                                 </div>
 
-                                <div className="pt-4 border-t border-white/5 space-y-4">
-                                    <div className="flex items-center gap-3 text-foreground/60">
+                                <div className="pt-4 border-t border-zinc-100 space-y-4">
+                                    <div className="flex items-center gap-3 text-zinc-600">
                                         <MapPin className="h-4 w-4 text-[#cb465a]" />
                                         <span className="text-xs font-bold uppercase truncate">{selectedOrder.deliveryAddress}</span>
                                     </div>
@@ -715,15 +712,15 @@ export default function RiderPage() {
 
             {/* MEMBERSHIP BLOCKER */}
             {!hasActiveAccess && (
-                <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in fade-in duration-500">
-                    <div className="h-32 w-32 rounded-[4rem] bg-[#cb465a]/10 border-4 border-[#cb465a]/20 flex items-center justify-center shadow-[0_0_60px_rgba(203,70,90,0.3)]">
+                <div className="fixed inset-0 z-[200] bg-zinc-50/95 backdrop-blur-2xl flex flex-col items-center justify-center p-8 text-center space-y-8 animate-in fade-in duration-500">
+                    <div className="h-32 w-32 rounded-[4rem] bg-[#cb465a]/10 border-4 border-[#cb465a]/20 flex items-center justify-center shadow-2xl shadow-[#cb465a]/10">
                         <AlertTriangle className="h-16 w-16 text-[#cb465a]" />
                     </div>
                     <div className="space-y-4">
-                        <h2 className="text-4xl font-black italic tracking-tighter uppercase text-white font-montserrat">Prueba Finalizada</h2>
-                        <p className="text-sm text-foreground/60 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tus 7 días de acceso gratuito han expirado. Regularizá tu membresía para continuar operando en Estuclub.</p>
+                        <h2 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-900 font-montserrat">Prueba Finalizada</h2>
+                        <p className="text-sm text-zinc-400 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tus 7 días de acceso gratuito han expirado. Regularizá tu membresía para continuar operando en Estuclub.</p>
                     </div>
-                    <Button className="h-16 px-12 rounded-[2rem] bg-[#cb465a] text-white font-black uppercase tracking-widest shadow-2xl shadow-[#cb465a]/40 hover:scale-105 transition-transform">
+                    <Button className="h-16 px-12 rounded-[2rem] bg-[#cb465a] text-white font-black uppercase tracking-widest shadow-2xl shadow-[#cb465a]/30 hover:scale-105 transition-transform">
                         Pagar Membresía
                     </Button>
                 </div>

@@ -18,19 +18,16 @@ interface RiderBottomNavProps {
 
 export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps) {
     const navItems = [
-        { id: 'map', label: 'Mapa', icon: MapIcon },
-        { id: 'earnings', label: 'Ganancias', icon: BarChart3 },
-        { id: 'history', label: 'Historial', icon: History },
-        { id: 'profile', label: 'Perfil', icon: User },
+        { id: 'map', label: 'Radar', icon: MapIcon },
+        { id: 'earnings', label: 'Efectivo', icon: BarChart3 },
+        { id: 'history', label: 'Recientes', icon: History },
+        { id: 'profile', label: 'Cuenta', icon: User },
     ] as const;
 
     return (
-        <div className="fixed bottom-8 left-8 right-8 z-50 pointer-events-none">
+        <div className="fixed bottom-10 left-8 right-8 z-50 pointer-events-none">
             <div className="max-w-md mx-auto pointer-events-auto">
-                <nav className="flex items-center justify-around bg-black/90 backdrop-blur-3xl border border-white/20 rounded-[2.2rem] p-2 shadow-[0_25px_70px_rgba(0,0,0,0.8)] relative overflow-hidden">
-                    {/* Interior glow for depth */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none" />
-                    
+                <nav className="flex items-center justify-around bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[2.5rem] p-2 shadow-[0_20px_50px_rgba(0,0,0,0.1)] relative overflow-hidden">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentTab === item.id;
@@ -45,8 +42,8 @@ export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps)
                                     }
                                 }}
                                 className={cn(
-                                    "relative flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl transition-all duration-300 group",
-                                    isActive ? "text-white" : "text-white/30 hover:text-white/60"
+                                    "relative flex-1 flex flex-col items-center gap-1.5 py-4 rounded-2xl transition-all duration-300 group",
+                                    isActive ? "text-[#cb465a]" : "text-zinc-400 hover:text-zinc-600"
                                 )}
                             >
                                 <div className={cn(
@@ -55,21 +52,21 @@ export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps)
                                 )}>
                                     <Icon className={cn(
                                         "h-6 w-6 transition-all duration-300",
-                                        isActive ? "text-white stroke-[2.5px] drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]" : "stroke-[1.5px]"
+                                        isActive ? "text-[#cb465a] stroke-[2.5px]" : "stroke-[1.5px]"
                                     )} />
                                 </div>
                                 
                                 <span className={cn(
-                                    "text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300",
-                                    isActive ? "opacity-100 translate-y-0" : "opacity-30 translate-y-0"
+                                    "text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
+                                    isActive ? "opacity-100" : "opacity-60"
                                 )}>
                                     {item.label}
                                 </span>
 
                                 {isActive && (
                                     <motion.div 
-                                        layoutId="bottom-nav-prestige-active"
-                                        className="absolute inset-x-1 inset-y-1 bg-white/10 rounded-2xl -z-0 border border-white/5"
+                                        layoutId="bottom-nav-clean-active"
+                                        className="absolute inset-x-2 inset-y-2 bg-[#cb465a]/5 rounded-2xl -z-0"
                                     />
                                 )}
                             </button>

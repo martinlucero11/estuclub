@@ -56,7 +56,7 @@ export const ProductCard = React.memo(({ product, supplier: initialSupplier, onA
     };
 
     return (
-        <Link href={`/delivery/producto/${product.id}`} className={`block h-full group ${variant === 'carousel' ? 'w-full' : ''}`}>
+        <Link href={`/producto/${product.id}`} className={`block h-full group ${variant === 'carousel' ? 'w-full' : ''}`}>
             <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}

@@ -76,25 +76,25 @@ export function RiderPinEntry({ isOpen, onClose, correctPin, onSuccess }: RiderP
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[150] flex items-end justify-center bg-black/80 backdrop-blur-xl p-6"
+                    className="fixed inset-0 z-[150] flex items-end justify-center bg-black/40 backdrop-blur-sm p-6"
                 >
                     <motion.div
                         initial={{ y: '100%' }}
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
-                        className="w-full max-w-md bg-[#0a0a0a] rounded-[3rem] border border-[#cb465a]/20 p-8 pb-12 shadow-[0_-20px_50px_rgba(203,70,90,0.2)]"
+                        className="w-full max-w-md bg-white rounded-[3rem] border border-zinc-200 p-8 pb-12 shadow-2xl"
                     >
                         {/* Header */}
                         <div className="flex flex-col items-center text-center space-y-4 mb-10">
                             <div className={cn(
                                 "h-16 w-16 rounded-2xl flex items-center justify-center transition-all duration-500",
-                                success ? "bg-emerald-500 shadow-[0_0_30px_rgba(16,185,129,0.5)]" : "bg-[#cb465a]/10 border border-[#cb465a]/20"
+                                success ? "bg-emerald-500 shadow-lg shadow-emerald-500/30" : "bg-[#cb465a]/10 border border-[#cb465a]/20"
                             )}>
                                 {success ? <ShieldCheck className="h-8 w-8 text-white" /> : <Lock className="h-8 w-8 text-[#cb465a]" />}
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-xl font-black uppercase italic tracking-tighter text-white">Validación de Entrega</h3>
-                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40">Pedile el PIN de 4 dígitos al cliente</p>
+                                <h3 className="text-xl font-black uppercase italic tracking-tighter text-zinc-900">Validación de Entrega</h3>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Pedile el PIN de 4 dígitos al cliente</p>
                             </div>
                         </div>
 
@@ -105,13 +105,13 @@ export function RiderPinEntry({ isOpen, onClose, correctPin, onSuccess }: RiderP
                                     key={i}
                                     animate={{ 
                                         scale: pin.length === i ? 1.2 : 1,
-                                        borderColor: pin.length > i ? '#cb465a' : 'rgba(255,255,255,0.1)',
+                                        borderColor: pin.length > i ? '#cb465a' : '#f4f4f5',
                                         x: error ? [0, -10, 10, -10, 10, 0] : 0
                                     }}
                                     className={cn(
                                         "w-12 h-16 rounded-2xl border-2 flex items-center justify-center text-2xl font-black transition-colors",
-                                        pin.length > i ? "bg-[#cb465a]/10 text-[#cb465a]" : "bg-white/5 text-white/20",
-                                        error && "border-red-500 text-red-500 bg-red-500/10"
+                                        pin.length > i ? "bg-[#cb465a]/5 text-[#cb465a]" : "bg-zinc-50 text-zinc-200",
+                                        error && "border-red-500 text-red-600 bg-red-50"
                                     )}
                                 >
                                     {pin[i] ? "•" : ""}
@@ -125,7 +125,7 @@ export function RiderPinEntry({ isOpen, onClose, correctPin, onSuccess }: RiderP
                                 <button
                                     key={num}
                                     onClick={() => handleNumberClick(num)}
-                                    className="h-16 rounded-2xl bg-white/5 border border-white/10 text-xl font-black hover:bg-white/10 active:scale-95 transition-all"
+                                    className="h-16 rounded-2xl bg-zinc-50 border border-zinc-100 text-xl font-black text-zinc-900 hover:bg-zinc-100 active:scale-95 transition-all"
                                 >
                                     {num}
                                 </button>
@@ -133,13 +133,13 @@ export function RiderPinEntry({ isOpen, onClose, correctPin, onSuccess }: RiderP
                             <div />
                             <button
                                 onClick={() => handleNumberClick('0')}
-                                className="h-16 rounded-2xl bg-white/5 border border-white/10 text-xl font-black hover:bg-white/10 active:scale-95 transition-all"
+                                className="h-16 rounded-2xl bg-zinc-50 border border-zinc-100 text-xl font-black text-zinc-900 hover:bg-zinc-100 active:scale-95 transition-all"
                             >
                                 0
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="h-16 rounded-2xl bg-[#cb465a]/10 border border-[#cb465a]/20 text-[#cb465a] flex items-center justify-center hover:bg-[#cb465a]/20 active:scale-95 transition-all"
+                                className="h-16 rounded-2xl bg-[#cb465a]/5 border border-[#cb465a]/10 text-[#cb465a] flex items-center justify-center hover:bg-[#cb465a]/10 active:scale-95 transition-all"
                             >
                                 <Delete className="h-6 w-6" />
                             </button>
@@ -148,7 +148,7 @@ export function RiderPinEntry({ isOpen, onClose, correctPin, onSuccess }: RiderP
                         <Button 
                             variant="ghost" 
                             onClick={onClose}
-                            className="w-full text-[10px] font-black uppercase tracking-widest text-foreground/40 hover:text-white"
+                            className="w-full text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-zinc-600"
                         >
                             Cancelar
                         </Button>
