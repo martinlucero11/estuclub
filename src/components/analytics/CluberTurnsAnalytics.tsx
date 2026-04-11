@@ -1,25 +1,24 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useCollectionOnce, useFirestore, useDocOnce } from '@/firebase';
-import { collection, query, where, doc, orderBy } from 'firebase/firestore';
+import { useCollectionOnce, useFirestore, useUser } from '@/firebase';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
-import { Order, Product, SupplierProfile } from '@/types/data';
+import { Appointment } from '@/types/data';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { subDays, startOfDay, endOfDay, startOfMonth, isAfter, isBefore, format } from 'date-fns';
-import { AlertTriangle, Clock, Download, Ghost, Package, Receipt, Star, TrendingUp } from 'lucide-react';
+import { subDays, startOfDay, isAfter, format } from 'date-fns';
+import { Calendar, CheckCircle2, DollarSign, Download, Percent, Scissors, TrendingUp, XCircle } from 'lucide-react';
 import { generateCSV } from '@/lib/export-utils';
 import { useAdmin } from '@/context/admin-context';
-import { useUser } from '@/firebase';
 
-interface SupplierSalesDashboardProps {
+interface CluberTurnsAnalyticsProps {
     supplierId: string;
 }
 
-export default function SupplierSalesDashboard({ supplierId: initialSupplierId }: SupplierSalesDashboardProps) {
+export default function CluberTurnsAnalytics({ supplierId: initialSupplierId }: CluberTurnsAnalyticsProps) {
     const firestore = useFirestore();
     const { roles } = useUser();
     const { impersonatedSupplierId } = useAdmin();
@@ -27,21 +26,15 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
 
     const supplierId = (roles.includes('admin') && impersonatedSupplierId) ? impersonatedSupplierId : initialSupplierId;
 
-    // Fetch Orders & Products
-    const ordersQuery = useMemo(() => 
-        query(collection(firestore, 'orders').withConverter(createConverter<Order>()), where('supplierId', '==', supplierId), orderBy('createdAt', 'desc')),
+    // Fetch Appointments
+    const appointmentsQuery = useMemo(() => 
+        query(collection(firestore, 'appointments').withConverter(createConverter<Appointment>()), where('supplierId', '==', supplierId), orderBy('startTime', 'desc')),
         [firestore, supplierId]
     );
-    const { data: allOrders, isLoading: ordersLoading } = useCollectionOnce<Order>(ordersQuery);
-
-    const productsQuery = useMemo(() => 
-        query(collection(firestore, 'products').withConverter(createConverter<Product>()), where('supplierId', '==', supplierId)),
-        [firestore, supplierId]
-    );
-    const { data: allProducts, isLoading: productsLoading } = useCollectionOnce<Product>(productsQuery);
+    const { data: allAppointments, isLoading } = useCollectionOnce<Appointment>(appointmentsQuery);
 
     const stats = useMemo(() => {
-        if (!allOrders || !allProducts) return null;
+        if (!allAppointments) return null;
 
         const now = new Date();
         let startDate: Date;
@@ -54,66 +47,59 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
             startDate = subDays(now, 30);
         }
 
-        // Filter Orders by Date
-        const filteredOrders = allOrders.filter(o => o.createdAt && isAfter(o.createdAt.toDate(), startDate));
-        const successfulOrders = filteredOrders.filter(o => ['delivered', 'completed', 'shipped', 'arrived'].includes(o.status));
+        // Filter by Date
+        const filteredAppointments = allAppointments.filter(a => a.startTime && isAfter(a.startTime.toDate(), startDate));
+        
+        // 1. Metrics by status
+        const completed = filteredAppointments.filter(a => a.status === 'attended');
+        const cancelled = filteredAppointments.filter(a => a.status === 'cancelled' || a.status === 'absent');
+        
+        const totalRevenue = completed.reduce((sum, a) => sum + (a.price || 0), 0);
+        const cancellationRate = filteredAppointments.length > 0 ? (cancelled.length / filteredAppointments.length) * 100 : 0;
 
-        // 1. Gross Revenue
-        const grossRevenue = successfulOrders.reduce((sum, o) => sum + (o.total || o.subtotal || 0), 0);
-
-        // 2. Average Ticket
-        const avgTicket = successfulOrders.length > 0 ? (grossRevenue / successfulOrders.length) : 0;
-
-        // 3. Product Performance (Top 3)
-        const productSales = new Map<string, { name: string, count: number, revenue: number }>();
-        successfulOrders.forEach(o => {
-            o.items?.forEach(item => {
-                const current = productSales.get(item.productId) || { name: item.name, count: 0, revenue: 0 };
-                productSales.set(item.productId, {
-                    name: item.name,
-                    count: current.count + item.quantity,
-                    revenue: current.revenue + (item.price * item.quantity)
-                });
-            });
+        // 2. Top Services
+        const serviceStats = new Map<string, { name: string, count: number }>();
+        completed.forEach(a => {
+            const current = serviceStats.get(a.serviceName) || { name: a.serviceName, count: 0 };
+            serviceStats.set(a.serviceName, { name: a.serviceName, count: current.count + 1 });
         });
 
-        const topProducts = Array.from(productSales.values())
+        const topServices = Array.from(serviceStats.values())
             .sort((a,b) => b.count - a.count)
             .slice(0, 3);
 
-        // 4. Daily Trend for Recharts
+        // 3. Daily Trend
         const dailyDataMap = new Map<string, number>();
-        // Fill last 30 days
         for (let i = 29; i >= 0; i--) {
             const date = subDays(now, i);
             dailyDataMap.set(format(date, 'dd/MM'), 0);
         }
 
-        successfulOrders.forEach(o => {
-            const day = format(o.createdAt.toDate(), 'dd/MM');
+        completed.forEach(a => {
+            const day = format(a.startTime.toDate(), 'dd/MM');
             if (dailyDataMap.has(day)) {
-                dailyDataMap.set(day, dailyDataMap.get(day)! + (o.total || o.subtotal || 0));
+                dailyDataMap.set(day, dailyDataMap.get(day)! + 1);
             }
         });
 
-        const chartData = Array.from(dailyDataMap.entries()).map(([date, revenue]) => ({ date, revenue }));
+        const chartData = Array.from(dailyDataMap.entries()).map(([date, count]) => ({ date, count }));
 
         return {
-            grossRevenue,
-            totalOrders: successfulOrders.length,
-            avgTicket,
-            topProducts,
+            totalRevenue,
+            completedCount: completed.length,
+            cancellationRate,
+            topServices,
             chartData,
-            filteredOrders
+            filteredAppointments
         };
-    }, [allOrders, allProducts, dateFilter]);
+    }, [allAppointments, dateFilter]);
 
-    if (ordersLoading || productsLoading) return <Skeleton className="h-96 w-full rounded-[2rem]" />;
+    if (isLoading) return <Skeleton className="h-96 w-full rounded-[2rem]" />;
     if (!stats) return null;
 
     return (
         <div className="space-y-10">
-            {/* Context Filters */}
+            {/* Filters */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="flex bg-black/[0.03] dark:bg-white/5 p-1.5 rounded-2xl glass glass-dark border border-black/5 dark:border-white/10">
                     <button onClick={() => setDateFilter('today')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-xl' : 'text-foreground/40 hover:text-foreground'}`}>Hoy</button>
@@ -121,84 +107,86 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                     <button onClick={() => setDateFilter('month')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-xl' : 'text-foreground/40 hover:text-foreground'}`}>30 Días</button>
                 </div>
                 
-                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredOrders, `Delivery_Report_${dateFilter}`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
+                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredAppointments, `Turns_Report_${dateFilter}`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
                     <Download className="h-4 w-4" /> Exportar Datos
                 </Button>
             </div>
 
-            {/* Principal Métricas */}
+            {/* Metrics */}
             <div className="grid gap-6 md:grid-cols-4">
                 <Card className="glass glass-dark border-primary/10 rounded-[2.5rem] bg-gradient-to-br from-primary/5 to-transparent shadow-xl">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                            <TrendingUp className="h-4 w-4" /> Ingresos Brutos
+                            <DollarSign className="h-4 w-4" /> Ingresos por Turnos
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-foreground tracking-tighter italic">
-                            ${Math.round(stats.grossRevenue).toLocaleString()}
+                            ${stats.totalRevenue.toLocaleString()}
                         </div>
-                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">Ventas totalizadas</p>
+                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">Recaudación estimada</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass glass-dark border-black/5 dark:border-white/10 rounded-[2.5rem] shadow-xl">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 flex items-center gap-2">
-                            <Package className="h-4 w-4" /> Volumen
+                            <CheckCircle2 className="h-4 w-4" /> Completados
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-foreground tracking-tighter italic">
-                            {stats.totalOrders}
+                            {stats.completedCount}
                         </div>
-                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">Pedidos exitosos</p>
+                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">Turnos atendidos</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass glass-dark border-black/5 dark:border-white/10 rounded-[2.5rem] shadow-xl">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40 flex items-center gap-2">
-                            <Receipt className="h-4 w-4" /> Ticket Promedio
+                        <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 flex items-center gap-2">
+                            <Percent className="h-4 w-4" /> Tasa de Cancelación
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="text-4xl font-black text-foreground tracking-tighter italic">
-                            ${Math.round(stats.avgTicket).toLocaleString()}
+                            {stats.cancellationRate.toFixed(1)}%
                         </div>
-                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">Por orden individual</p>
+                        <p className="text-[10px] font-bold text-foreground/40 mt-2 uppercase">No asistió / Canceló</p>
                     </CardContent>
                 </Card>
 
                 <Card className="glass glass-dark border-black/5 dark:border-white/10 rounded-[2.5rem] shadow-xl bg-black dark:bg-white/5 group">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
-                            <Star className="h-4 w-4" /> Top Ventas
+                            <Scissors className="h-4 w-4" /> Top Servicios
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {stats.topProducts.map((p, i) => (
+                        {stats.topServices.length > 0 ? stats.topServices.map((s, i) => (
                             <div key={i} className="flex items-center justify-between group-hover:translate-x-1 transition-transform">
-                                <span className="text-[11px] font-black text-white/80 leading-tight uppercase line-clamp-1">{p.name}</span>
-                                <span className="text-[11px] font-black text-primary ml-2">{p.count}u</span>
+                                <span className="text-[11px] font-black text-white/80 leading-tight uppercase line-clamp-1">{s.name}</span>
+                                <span className="text-[11px] font-black text-primary ml-2">{s.count}</span>
                             </div>
-                        ))}
+                        )) : (
+                            <p className="text-[10px] font-bold text-white/20 uppercase italic">Sin datos</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
 
-            {/* Growth Chart */}
+            {/* Trend Chart */}
             <Card className="glass glass-dark border-black/5 dark:border-white/10 rounded-[3rem] overflow-hidden shadow-2xl">
                 <CardHeader className="p-8 pb-4">
                     <CardTitle className="text-xl font-black italic flex items-center gap-3">
-                        <TrendingUp className="h-5 w-5 text-primary" /> Curva de Ventas (30 Días)
+                        <Calendar className="h-5 w-5 text-primary" /> Volumen de Turnos (30 Días)
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="h-[350px] w-full p-8 pt-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={stats.chartData}>
                             <defs>
-                                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                <linearGradient id="turnsGradient" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1}/>
                                     <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                                 </linearGradient>
@@ -223,14 +211,14 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                                         return (
                                             <div className="glass glass-dark p-4 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl">
                                                 <p className="text-[9px] font-black uppercase tracking-widest text-foreground/40 mb-1">{payload[0].payload.date}</p>
-                                                <p className="text-xl font-black text-primary">${payload[0].value.toLocaleString()}</p>
+                                                <p className="text-xl font-black text-primary">{payload[0].value} Turnos</p>
                                             </div>
                                         );
                                     }
                                     return null;
                                 }}
                             />
-                            <Bar dataKey="revenue" fill="url(#barGradient)" radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="count" fill="url(#turnsGradient)" radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>
@@ -238,4 +226,3 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
         </div>
     );
 }
-

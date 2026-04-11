@@ -84,8 +84,8 @@ export function UserSignupFlow() {
                     <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">¡Bienvenido al Club!</h2>
-                    <p className="text-sm text-foreground font-medium italic">Te enviamos un email de verificación. Revisa tu bandeja de entrada.</p>
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">¡Bienvenido al Club!</h2>
+                    <p className="text-sm text-foreground/60 font-medium italic">Te enviamos un email de verificación. Revisa tu bandeja de entrada.</p>
                 </div>
                 <Button onClick={() => window.location.href = '/login'} className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest rounded-2xl">
                     INICIAR SESIÓN
@@ -103,7 +103,7 @@ export function UserSignupFlow() {
                     <Input 
                         {...register('fullName')}
                         placeholder="Ej: Juan Pérez" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
+                        className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-foreground placeholder:text-foreground/40" 
                     />
                 </div>
                 {errors.fullName && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.fullName.message}</p>}
@@ -117,7 +117,7 @@ export function UserSignupFlow() {
                         {...register('email')}
                         type="email"
                         placeholder="tu@email.com" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
+                        className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-foreground placeholder:text-foreground/40" 
                     />
                 </div>
                 {errors.email && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.email.message}</p>}
@@ -130,7 +130,7 @@ export function UserSignupFlow() {
                     <Input 
                         {...register('phone')}
                         placeholder="Ej: 3755 123456" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
+                        className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-foreground placeholder:text-foreground/40" 
                     />
                 </div>
                 {errors.phone && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.phone.message}</p>}
@@ -144,7 +144,7 @@ export function UserSignupFlow() {
                         {...register('password')}
                         type="password"
                         placeholder="••••••••" 
-                        className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-white placeholder:text-foreground" 
+                        className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl focus:border-primary/50 focus:ring-0 text-foreground placeholder:text-foreground/40" 
                     />
                 </div>
                 {errors.password && <p className="text-[10px] font-bold text-red-500 uppercase ml-1">{errors.password.message}</p>}

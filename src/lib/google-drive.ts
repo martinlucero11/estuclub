@@ -3,27 +3,45 @@ import { Readable } from 'stream';
 
 /**
  * Robust authentication client for Google Drive API.
- * Uses OAuth2 Refresh Token to bypass clock-skew issues on local dev.
+ * Uses Service Account credentials to leverage shared folder permissions.
  */
 export async function getDriveClient() {
+    // 1. Try GOOGLE_VISION_CREDENTIALS first (centralized)
+    const visionCreds = process.env.GOOGLE_VISION_CREDENTIALS;
+    const firebaseAdminCreds = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+
+    let credentials;
+    try {
+        if (visionCreds) {
+            credentials = JSON.parse(visionCreds);
+        } else if (firebaseAdminCreds) {
+            credentials = JSON.parse(Buffer.from(firebaseAdminCreds, 'base64').toString('utf-8'));
+        }
+    } catch (e) {
+        console.error('[DRIVE AUTH] Failed to parse Service Account credentials:', e);
+    }
+
+    if (credentials) {
+        console.log('[DRIVE AUTH] Initializing via Service Account (Shared Email)');
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'],
+        });
+        return google.drive({ version: 'v3', auth });
+    }
+
+    // 2. Fallback to OAuth2 (Legacy/Local Dev)
+    console.warn('[DRIVE AUTH] Falling back to OAuth2 Refresh Token');
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
     const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
     if (!clientId || !clientSecret || !refreshToken) {
-        throw new Error('CONFIGURACIÓN FALTANTE: GOOGLE_CLIENT_ID, SECRET or REFRESH_TOKEN');
+        throw new Error('CONFIGURACIÓN FALTANTE: No hay Service Account ni tokens OAuth2.');
     }
 
     const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
     oauth2Client.setCredentials({ refresh_token: refreshToken });
-
-    // Validate token immediately
-    try {
-        await oauth2Client.getAccessToken();
-    } catch (e: any) {
-        console.error('GOOGLE_DRIVE_AUTH_CENTRAL_ERROR:', e.message);
-        throw new Error(`Error de autenticación: ${e.message}`);
-    }
 
     return google.drive({ version: 'v3', auth: oauth2Client });
 }
@@ -60,7 +78,12 @@ export async function uploadFileToDrive(
         });
 
         const fileId = response.data.id;
-        if (!fileId) throw new Error('Drive API did not return a file ID');
+        if (!fileId) {
+            console.error('[DRIVE LIB] API did not return a file ID');
+            throw new Error('Drive API did not return a file ID');
+        }
+
+        console.log(`[DRIVE LIB] File created successfully. ID: ${fileId}`);
 
         // MANDATORY: Set permissions to anyone with link can view
         await drive.permissions.create({
@@ -71,11 +94,15 @@ export async function uploadFileToDrive(
             },
         });
 
+        console.log('[DRIVE LIB] Permissions set to public:reader');
+
         // Re-fetch to get links after permission change
         const fileMetadata = await drive.files.get({
             fileId: fileId,
             fields: 'id, webViewLink, webContentLink',
         });
+
+        console.log(`[DRIVE LIB] Final URL: ${fileMetadata.data.webViewLink}`);
 
         return {
             id: fileId,

@@ -39,6 +39,7 @@ import { RiderHistory } from '@/components/rider/rider-history';
 import { RiderProfile } from '@/components/rider/rider-profile';
 import { RiderPinEntry } from '@/components/rider/rider-pin-entry';
 import { RiderBottomNav } from '@/components/rider/rider-bottom-nav';
+import { DeliveryPhotoCapture } from '@/components/rider/delivery-photo-capture';
 
 // ─── LOGIN FORM ──────────────────────────────────────────
 function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
@@ -278,6 +279,8 @@ export default function RiderPage() {
     
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isPinEntryOpen, setIsPinEntryOpen] = useState(false);
+    const [isPhotoCaptureOpen, setIsPhotoCaptureOpen] = useState(false);
+    const [deliveryProofUrl, setDeliveryProofUrl] = useState<string | null>(null);
     const [isAccepting, setIsAccepting] = useState(false);
     const [isOnline, setIsOnline] = useState(userData?.isOnline === true);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; heading: number | null } | undefined>(undefined);
@@ -473,11 +476,13 @@ export default function RiderPage() {
             await updateDoc(doc(firestore, 'orders', selectedOrder.id), { 
                 status: 'completed', 
                 deliveryPinValidated: true,
+                proofOfDeliveryUrl: deliveryProofUrl,
                 completedAt: serverTimestamp() 
             });
             setIsPinEntryOpen(false);
             setSelectedOrder(null);
-            toast({ title: '✅ Entrega Finalizada', description: 'El pago ha sido validado.' });
+            setDeliveryProofUrl(null);
+            toast({ title: '✅ Entrega Finalizada', description: 'El pago y la evidencia han sido validados.' });
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error al finalizar' });
         }
@@ -647,7 +652,7 @@ export default function RiderPage() {
 
                                 {activeOrders.some(o => o.id === selectedOrder.id) ? (
                                     <Button 
-                                        onClick={() => setIsPinEntryOpen(true)}
+                                        onClick={() => setIsPhotoCaptureOpen(true)}
                                         className="w-full h-20 rounded-[2.5rem] bg-[#cb465a] text-white font-black text-lg uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all"
                                     >
                                         FINALIZAR ENTREGA
@@ -691,6 +696,17 @@ export default function RiderPage() {
                 onClose={() => setIsPinEntryOpen(false)} 
                 correctPin={selectedOrder?.deliveryPin || '1234'} // Fallback for legacy
                 onSuccess={handleCompleteDelivery} 
+            />
+
+            <DeliveryPhotoCapture
+                isOpen={isPhotoCaptureOpen}
+                onClose={() => setIsPhotoCaptureOpen(false)}
+                orderId={selectedOrder?.id || ''}
+                onSuccess={(url) => {
+                    setDeliveryProofUrl(url);
+                    setIsPhotoCaptureOpen(false);
+                    setIsPinEntryOpen(true);
+                }}
             />
 
             {/* NAVIGATION (BOTTOM) */}

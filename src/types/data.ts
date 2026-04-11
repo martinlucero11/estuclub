@@ -259,6 +259,7 @@ export interface Order {
     riderLocation?: { latitude: number; longitude: number };
     deliveryPin?: string; // 4-digit PIN for secure delivery
     deliveryPinValidated?: boolean;
+    proofOfDeliveryUrl?: string; // Google Drive link for proof of delivery
     type: 'delivery' | 'pickup';
     createdAt: Timestamp;
     updatedAt: Timestamp;
@@ -383,11 +384,28 @@ export interface Service {
     name: string;
     description: string;
     duration: number; // in minutes
-    price?: number;
+    price: number;
     imageUrl?: string;
     isActive: boolean;
     category?: string;
     createdAt?: Timestamp;
+    updatedAt?: Timestamp;
+}
+
+export interface Appointment {
+    id: string;
+    supplierId: string;
+    userId: string;
+    userName: string;
+    userPhone: string;
+    userDni: string;
+    serviceId: string;
+    serviceName: string;
+    price: number;
+    startTime: Timestamp;
+    endTime: Timestamp;
+    status: 'pending' | 'attended' | 'absent' | 'cancelled';
+    createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
 

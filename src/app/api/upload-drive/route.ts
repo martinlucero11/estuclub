@@ -1,12 +1,14 @@
-'use client';
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth } from '@/lib/firebase-admin';
 import { uploadFileToDrive } from '@/lib/google-drive';
 
 export async function POST(req: NextRequest) {
+    console.log('--- [DRIVE UPLOAD API] STARTING REQUEST ---');
+    
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+        console.warn('[DRIVE UPLOAD API] Unauthorized: Missing token');
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -16,6 +18,7 @@ export async function POST(req: NextRequest) {
         // 1. Verify User
         const decodedToken = await adminAuth.verifyIdToken(idToken);
         const { uid } = decodedToken;
+        console.log(`[DRIVE UPLOAD API] Authenticated User: ${uid}`);
 
         // 2. Parse Multipart Data
         const formData = await req.formData();
@@ -23,6 +26,7 @@ export async function POST(req: NextRequest) {
         const targetFolder = formData.get('folder') as string || 'General';
 
         if (!file) {
+            console.error('[DRIVE UPLOAD API] No file provided in formData');
             return NextResponse.json({ error: 'No file provided' }, { status: 400 });
         }
 
@@ -30,15 +34,25 @@ export async function POST(req: NextRequest) {
         const filename = `${uid}_${Date.now()}_${file.name}`;
         const mimeType = file.type;
 
-        // 3. Upload to Drive (Role-Aware Folder Selection)
-        const RIDER_FOLDER = process.env.GOOGLE_DRIVE_RIDER_FOLDER_ID || '1V1PofRvm6GpeloJWYiPzLrVR0nDHILzN';
-        const CLUBER_FOLDER = process.env.GOOGLE_DRIVE_CLUBER_FOLDER_ID || '1eDsUvSCTYXhkTvE2VhVR7LWC1l6eUHHg';
-        const GENERAL_FOLDER = process.env.GOOGLE_DRIVE_FOLDER_ID;
+        // 3. Folder Mapping (Strictly from Environment)
+        const FOLDER_MAP: Record<string, string | undefined> = {
+            'rider': process.env.GOOGLE_DRIVE_RIDER_FOLDER_ID,
+            'cluber': process.env.GOOGLE_DRIVE_CLUBER_FOLDER_ID,
+            'deliveries': process.env.GOOGLE_DRIVE_DELIVERIES_FOLDER_ID,
+            'student': process.env.GOOGLE_DRIVE_FOLDER_ID,
+            'brands': process.env.GOOGLE_DRIVE_FOLDER_ID, // Use general for brands if not specified
+        };
 
-        const parentFolderId = 
-            targetFolder === 'rider' ? RIDER_FOLDER :
-            targetFolder === 'cluber' ? CLUBER_FOLDER :
-            GENERAL_FOLDER!;
+        const parentFolderId = FOLDER_MAP[targetFolder] || process.env.GOOGLE_DRIVE_FOLDER_ID;
+
+        if (!parentFolderId) {
+            console.error(`[DRIVE UPLOAD API] No Folder ID found for category: ${targetFolder}`);
+            return NextResponse.json({ 
+                error: `Configuración faltante para la categoría: ${targetFolder}. Verifica el apphosting.yaml.` 
+            }, { status: 500 });
+        }
+
+        console.log(`[DRIVE UPLOAD API] Uploading to category: ${targetFolder} -> ID: ${parentFolderId}`);
 
         const result = await uploadFileToDrive(buffer, filename, mimeType, parentFolderId);
 

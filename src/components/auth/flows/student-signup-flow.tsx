@@ -156,8 +156,8 @@ export function StudentSignupFlow() {
                     <GraduationCap className="h-10 w-10 text-primary" />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white">¡Perfil Académico Creado!</h2>
-                    <p className="text-sm text-foreground font-medium italic">Verifica tu email para activar tus beneficios exclusivos de Estuclub.</p>
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">¡Perfil Académico Creado!</h2>
+                    <p className="text-sm text-foreground/60 font-medium italic">Verifica tu email para activar tus beneficios exclusivos de Estuclub.</p>
                 </div>
                 <Button onClick={() => window.location.href = '/login'} className="w-full h-14 bg-primary text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20">
                     INICIAR SESIÓN
@@ -172,8 +172,8 @@ export function StudentSignupFlow() {
             <div className="flex items-center justify-between px-2 mb-2">
                 <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">Paso {step} de 2</p>
                 <div className="flex gap-1">
-                    <div className={cn("h-1 w-8 rounded-full transition-colors", step >= 1 ? "bg-primary" : "bg-white/10")} />
-                    <div className={cn("h-1 w-8 rounded-full transition-colors", step >= 2 ? "bg-primary" : "bg-white/10")} />
+                    <div className={cn("h-1 w-8 rounded-full transition-colors", step >= 1 ? "bg-primary" : "bg-black/10")} />
+                    <div className={cn("h-1 w-8 rounded-full transition-colors", step >= 2 ? "bg-primary" : "bg-black/10")} />
                 </div>
             </div>
 
@@ -183,41 +183,41 @@ export function StudentSignupFlow() {
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Datos Personales</Label>
                             <div className="relative group">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary" />
-                                <Input {...form.register('fullName')} placeholder="Juan Pérez" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40 group-focus-within:text-primary" />
+                                <Input {...form.register('fullName')} placeholder="Juan Pérez" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">DNI</Label>
                                 <div className="relative group">
-                                    <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                    <Input {...form.register('dni')} placeholder="12.345.678" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                    <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                                    <Input {...form.register('dni')} placeholder="12.345.678" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">WhatsApp</Label>
                                 <div className="relative group">
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                    <Input {...form.register('phone')} placeholder="3755 000111" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                                    <Input {...form.register('phone')} placeholder="3755 000111" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email Universitario / Personal</Label>
                             <div className="relative group">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                <Input {...form.register('email')} type="email" placeholder="alumno@universidad.edu" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                                <Input {...form.register('email')} type="email" placeholder="alumno@universidad.edu" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Contraseña</Label>
                             <div className="relative group">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                <Input {...form.register('password')} type="password" placeholder="••••••••" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                                <Input {...form.register('password')} type="password" placeholder="••••••••" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
                         </div>
-                        <Button onClick={nextStep} className="w-full h-16 bg-white/5 border border-white/10 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-white/10 transition-all">
+                        <Button onClick={nextStep} className="w-full h-16 bg-primary text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all">
                             SIGUIENTE <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
                     </motion.div>
@@ -226,24 +226,24 @@ export function StudentSignupFlow() {
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Institución Educativa</Label>
                             <div className="relative group">
-                                <University className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground" />
-                                <Input {...form.register('institution')} placeholder="Ej: UNaM / Normal 1" className="h-14 pl-12 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                <University className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                                <Input {...form.register('institution')} placeholder="Ej: UNaM / Normal 1" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Nivel / Carrera</Label>
                             <div className="grid grid-cols-2 gap-4">
                                 <Select onValueChange={(v) => form.setValue('educationLevel', v as any)} defaultValue={form.getValues('educationLevel')}>
-                                    <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl text-white uppercase font-black text-[10px] tracking-widest">
+                                    <SelectTrigger className="h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground uppercase font-black text-[10px] tracking-widest">
                                         <SelectValue placeholder="Nivel" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#000000] border-white/10 text-white">
+                                    <SelectContent className="bg-white border-black/10 text-foreground">
                                         {['Secundario', 'Terciario', 'Universitario', 'Academia'].map(l => (
                                             <SelectItem key={l} value={l} className="uppercase font-black text-[10px] tracking-widest">{l}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
-                                <Input {...form.register('career')} placeholder="Carrera (En curso)" className="h-14 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-foreground" />
+                                <Input {...form.register('career')} placeholder="Carrera (En curso)" className="h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
                         </div>
                         
@@ -253,15 +253,15 @@ export function StudentSignupFlow() {
                                 <AlertCircle className="h-4 w-4 text-primary" />
                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Validación Académica</h4>
                             </div>
-                            <div className="relative h-24 border-2 border-dashed border-white/10 rounded-2xl bg-white/5 flex flex-col items-center justify-center group hover:border-primary/50 transition-all cursor-pointer">
+                            <div className="relative h-24 border-2 border-dashed border-black/10 rounded-2xl bg-black/[0.03] flex flex-col items-center justify-center group hover:border-primary/50 transition-all cursor-pointer">
                                 <input 
                                     type="file" 
                                     accept="image/*,application/pdf"
                                     onChange={(e) => setCertificateFile(e.target.files?.[0] || null)}
                                     className="absolute inset-0 opacity-0 cursor-pointer z-10" 
                                 />
-                                <FileText className={cn("h-6 w-6 mb-2 transition-colors", certificateFile ? "text-primary" : "text-foreground")} />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-white/60">
+                                <FileText className={cn("h-6 w-6 mb-2 transition-colors", certificateFile ? "text-primary" : "text-foreground/40")} />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-foreground/40">
                                     {certificateFile ? certificateFile.name : "Subir Certificado Regular"}
                                 </span>
                             </div>
@@ -269,7 +269,7 @@ export function StudentSignupFlow() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-white/5 rounded-2xl border border-white/10 text-foreground">
+                            <Button variant="ghost" onClick={() => setStep(1)} className="h-16 w-16 bg-black/[0.03] rounded-2xl border border-black/5 text-foreground hover:bg-black/[0.05]">
                                 <ArrowLeft className="h-6 w-6" />
                             </Button>
                             <Button 
