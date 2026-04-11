@@ -282,6 +282,7 @@ export default function RiderPage() {
     const [isPhotoCaptureOpen, setIsPhotoCaptureOpen] = useState(false);
     const [deliveryProofUrl, setDeliveryProofUrl] = useState<string | null>(null);
     const [isAccepting, setIsAccepting] = useState(false);
+    const [isPayingMembership, setIsPayingMembership] = useState(false);
     const [isOnline, setIsOnline] = useState(userData?.isOnline === true);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; heading: number | null } | undefined>(undefined);
 
@@ -469,6 +470,32 @@ export default function RiderPage() {
     }
 
     // ── FINAL DELIVERY LOGIC ──
+    const handlePayMembership = async () => {
+        if (!user) return;
+        setIsPayingMembership(true);
+        haptic.vibrateMedium();
+        
+        try {
+            const token = await user.getIdToken();
+            const res = await fetch('/api/rider/membership-checkout', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            const data = await res.json();
+            if (data.init_point) {
+                window.location.href = data.init_point;
+            } else {
+                throw new Error(data.error || 'No se pudo generar el link de pago');
+            }
+        } catch (error: any) {
+            console.error('Payment Error:', error);
+            toast({ variant: 'destructive', title: 'Error de Pago', description: error.message });
+        } finally {
+            setIsPayingMembership(false);
+        }
+    };
+
     const handleCompleteDelivery = async () => {
         if (!selectedOrder || !user?.uid) return;
         haptic.vibrateSuccess();
@@ -736,8 +763,16 @@ export default function RiderPage() {
                         <h2 className="text-4xl font-black italic tracking-tighter uppercase text-zinc-900 font-montserrat">Prueba Finalizada</h2>
                         <p className="text-sm text-zinc-400 font-medium max-w-xs mx-auto leading-relaxed uppercase tracking-widest">Tus 7 días de acceso gratuito han expirado. Regularizá tu membresía para continuar operando en Estuclub.</p>
                     </div>
-                    <Button className="h-16 px-12 rounded-[2rem] bg-[#cb465a] text-white font-black uppercase tracking-widest shadow-2xl shadow-[#cb465a]/30 hover:scale-105 transition-transform">
-                        Pagar Membresía
+                    <Button 
+                        disabled={isPayingMembership}
+                        onClick={handlePayMembership}
+                        className="h-16 px-12 rounded-[2rem] bg-[#cb465a] text-white font-black uppercase tracking-widest shadow-2xl shadow-[#cb465a]/30 hover:scale-105 transition-transform disabled:opacity-50"
+                    >
+                        {isPayingMembership ? (
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                        ) : (
+                            'Pagar Membresía'
+                        )}
                     </Button>
                 </div>
             )}

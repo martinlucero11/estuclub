@@ -151,12 +151,21 @@ async function handleApprovedPayment(orderId: string, paymentId: string, metadat
     // 3. Rider Subscription Handle
     if (metadata?.type === 'subscription_rider' && metadata?.rider_id) {
         const userRef = adminDb.collection('users').doc(metadata.rider_id);
+        
+        // Calculate new expiration: 30 days from now
+        const nextMonth = new Date();
+        nextMonth.setDate(nextMonth.getDate() + 30);
+
         batch.update(userRef, {
-            role: 'rider',
+            role: 'rider', // Ensure role is rider (not rider_pending anymore if they paid)
             subscriptionStatus: 'active',
+            membershipPaidAt: FieldValue.serverTimestamp(),
+            membershipPaidUntil: Timestamp.fromDate(nextMonth),
             subscriptionPaidAt: FieldValue.serverTimestamp(),
             mp_linked: true
         });
+        
+        console.log(`[SUBSCRIPTION RE-ACTIVATION] User ${metadata.rider_id} paid. Valid until: ${nextMonth.toISOString()}`);
     }
 
     await batch.commit();
