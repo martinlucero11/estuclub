@@ -307,8 +307,6 @@ export default function PanelCluberPage() {
                     </div>
                 );
 
-                     </div>
-                );
             
             case 'marketing':
                 return (
