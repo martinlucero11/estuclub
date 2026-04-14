@@ -40,6 +40,7 @@ import { RiderProfile } from '@/components/rider/rider-profile';
 import { RiderPinEntry } from '@/components/rider/rider-pin-entry';
 import { RiderBottomNav } from '@/components/rider/rider-bottom-nav';
 import { DeliveryPhotoCapture } from '@/components/rider/delivery-photo-capture';
+import { RiderReviews } from '@/components/rider/rider-reviews';
 
 // ─── LOGIN FORM ──────────────────────────────────────────
 function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
@@ -274,7 +275,7 @@ export default function RiderPage() {
 
     const firestore = useFirestore();
     const [view, setView] = useState<'login' | 'signup'>('login');
-    const [currentTab, setCurrentTab] = useState<'map' | 'earnings' | 'profile' | 'history'>('map');
+    const [currentTab, setCurrentTab] = useState<'map' | 'earnings' | 'profile' | 'history' | 'rating'>('map');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -601,6 +602,12 @@ export default function RiderPage() {
                         {currentTab === 'profile' && (
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
                                 <RiderProfile />
+                            </motion.div>
+                        )}
+                        
+                        {currentTab === 'rating' && (
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                                <RiderReviews />
                             </motion.div>
                         )}
                         

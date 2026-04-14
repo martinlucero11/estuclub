@@ -84,9 +84,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addItem = (newItem: OrderItem, supplier: { id: string, name: string, phone: string }) => {
         if (supplierId && supplierId !== supplier.id) {
-            if (!confirm('Tu carrito tiene productos de otro comercio. ¿Deseas vaciarlo e iniciar un nuevo pedido?')) {
-                return;
-            }
+            const confirmed = window.confirm(
+                `Solo puedes realizar pedidos de un comercio a la vez.\n\nTu carrito actual es de "${supplierName}". ¿Deseas vaciarlo para agregar productos de "${supplier.name}"?`
+            );
+            
+            if (!confirmed) return;
             setItems([]);
         }
 

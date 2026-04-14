@@ -17,23 +17,32 @@ interface Review {
   userId: string;
   userName: string;
   userPhoto?: string;
-  rating: number;
+  rating: number;      // Supplier rating or generic
+  riderRating?: number; // Specific rider rating
   comment: string;
   createdAt: any;
-  benefitId: string;
+  type: string;
 }
 
-export function ReviewList({ supplierId }: { supplierId: string }) {
+interface ReviewListProps {
+  entityId: string;
+  type?: 'supplier' | 'rider';
+}
+
+export function ReviewList({ entityId, type = 'supplier' }: ReviewListProps) {
   const firestore = useFirestore();
 
   const reviewsQuery = useMemo(() => {
+    // Determine filter field based on type
+    const filterField = type === 'rider' ? 'riderId' : 'supplierId';
+    
     return query(
       collection(firestore, 'reviews').withConverter(createConverter<Review>()),
-      where('supplierId', '==', supplierId),
+      where(filterField, '==', entityId),
       orderBy('createdAt', 'desc'),
       limit(20)
     );
-  }, [firestore, supplierId]);
+  }, [firestore, entityId, type]);
 
   const { data: reviews, isLoading } = useCollection(reviewsQuery);
 
@@ -49,44 +58,49 @@ export function ReviewList({ supplierId }: { supplierId: string }) {
 
   if (!reviews || reviews.length === 0) {
     return (
-      <div className="text-center py-12 bg-background/20 rounded-3xl border-2 border-dashed flex flex-col items-center">
+      <div className="text-center py-12 bg-background/20 rounded-[2.5rem] border-2 border-dashed flex flex-col items-center">
         <MessageSquare className="h-10 w-10 text-foreground/30 mb-2" />
-        <p className="text-foreground font-medium">Aún no hay reseñas para este Cluber.</p>
-        <p className="text-xs text-foreground mt-1">¡Sé el primero en calificar un beneficio!</p>
+        <p className="text-foreground font-black uppercase tracking-widest text-[10px]">Sin opiniones aún</p>
+        <p className="text-[9px] text-foreground/40 mt-1 uppercase tracking-tighter">¡Sé el primero en calificar este servicio!</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {reviews.map((review) => (
-        <div key={review.id} className="p-5 rounded-2xl border bg-card shadow-sm space-y-3">
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border shadow-sm">
-                <AvatarImage src={review.userPhoto} alt={review.userName} />
-                <AvatarFallback className="font-bold">{getInitials(review.userName)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-bold text-foreground">{review.userName}</p>
-                <StarRating rating={review.rating} readonly size="sm" className="mt-0.5" />
+      {reviews.map((review) => {
+        // Use either riderRating or standardized rating based on type
+        const displayRating = type === 'rider' ? (review.riderRating || review.rating) : review.rating;
+
+        return (
+          <div key={review.id} className="p-6 rounded-[2rem] border bg-white/50 backdrop-blur-sm shadow-sm space-y-4 transition-all hover:bg-white/80">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-12 w-12 border-2 border-primary/10 shadow-sm">
+                  <AvatarImage src={review.userPhoto} alt={review.userName} />
+                  <AvatarFallback className="font-extrabold bg-primary/5 text-primary">{getInitials(review.userName)}</AvatarFallback>
+                </Avatar>
+                <div className="space-y-0.5">
+                  <p className="text-sm font-black italic uppercase tracking-tighter text-foreground">{review.userName}</p>
+                  <StarRating rating={displayRating} readonly size="sm" className="mt-0.5" />
+                </div>
+              </div>
+              <div className="text-right">
+                  <div className="flex items-center gap-1.5 text-[10px] text-foreground/40 font-black uppercase tracking-widest">
+                      <Calendar className="h-3 w-3" />
+                      {review.createdAt?.toDate ? format(review.createdAt.toDate(), 'd MMM, yyyy', { locale: es }) : 'Reciente'}
+                  </div>
               </div>
             </div>
-            <div className="text-right">
-                <div className="flex items-center gap-1 text-[10px] text-foreground font-medium uppercase tracking-wider">
-                    <Calendar className="h-3 w-3" />
-                    {review.createdAt?.toDate ? format(review.createdAt.toDate(), 'd MMM, yyyy', { locale: es }) : 'Reciente'}
-                </div>
-            </div>
+            
+            {review.comment && (
+              <p className="text-sm text-foreground/70 font-medium italic leading-relaxed pl-4 border-l-2 border-primary/20 bg-primary/[0.02] py-2 rounded-r-xl">
+                "{review.comment}"
+              </p>
+            )}
           </div>
-          
-          {review.comment && (
-            <p className="text-sm text-foreground/90 italic leading-relaxed pl-1 border-l-2 border-primary/20">
-              "{review.comment}"
-            </p>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

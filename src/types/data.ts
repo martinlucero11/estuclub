@@ -46,7 +46,7 @@ export interface UserProfile {
     xp?: number;
     level?: number;
     isCincoDos?: boolean; // Proyecto Social Cinco.Dos (Comedor Estudiantil)
-    permitsBenefits?: boolean; // Permisos Centralizados (Mission 1)
+    permitsBenefits?: boolean;
     permitsShifts?: boolean;
     permitsAds?: boolean;
     permitsTeam?: boolean;
@@ -65,8 +65,8 @@ export interface UserProfile {
     educationLevel: string;
     career: string;
     studentCertificateUrl: string;
-    mercadopago_linked?: boolean; // Centralized status
-    mp_linked?: boolean; // Mercado Pago account linked status for riders (legacy alias)
+    mercadopago_linked?: boolean;
+    mp_linked?: boolean;
     mp_grace_period_end?: Timestamp; // Deadline to link MP before access is restricted
     // Rider & Subscription Info
     subscriptionStatus?: 'none' | 'pending' | 'active' | 'expired';
@@ -83,10 +83,8 @@ export interface UserProfile {
     // Real-time Logistics
     isOnline?: boolean;
     lastStatusChange?: Timestamp;
-    // Supplier Sync Aliases (Requested Specification)
     storeName?: string;
     address?: string;
-    // phone?: string; // Already exists as phone
     description?: string;
     logo?: string;
     theme?: 'light' | 'dark';
@@ -141,6 +139,7 @@ export interface SupplierProfile {
   address?: string;
   whatsapp?: string;
   coverUrl?: string; // High-quality promotional image for banners/promo cards
+  driveFolderId?: string; // Root folder for this supplier's assets in Google Drive
   isVisible: boolean; // Admin-controlled
   isFeatured: boolean; // Admin-controlled
   featuredRank?: number; // Admin-controlled
@@ -179,7 +178,6 @@ export interface SupplierProfile {
   menuSections?: string[]; // Custom subcategories defined by the supplier
   mp_linked?: boolean;
   mp_grace_period_end?: Timestamp;
-  // Specific Specification Aliases
   storeName?: string;
   phone?: string;
   logo?: string;
@@ -353,7 +351,7 @@ export interface Announcement {
     linkUrl?: string;
     status: 'pending' | 'approved' | 'rejected';
     isVisible: boolean;
-    notificationTarget?: 'broadcast' | 'followers'; // Mission: Segmented Push
+    notificationTarget?: 'broadcast' | 'followers';
     // Targeting
     isStudentOnly?: boolean;
     isCincoDosOnly?: boolean;

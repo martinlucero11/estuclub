@@ -216,7 +216,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
                 updatedAt: serverTimestamp()
             };
 
-            // MISSION 2: LOGISTICS & ESTIMATION (Corazón de Estuclub)
+            // Lógica de logística y estimación de tiempos
             if ((newStatus === 'accepted' || newStatus === 'searching_rider') && !order.startTime) {
                 const now = new Date();
                 const prepTime = supplierData?.avgPrepTime || 30; // 30 min default
@@ -249,7 +249,7 @@ export default function OrdersDashboard({ supplierId: propSupplierId }: { suppli
             
             const displayStatus = updatePayload.status as keyof typeof statusConfig;
 
-            // MISSION 6: TRIGGER STATUS NOTIFICATION
+            // Lanzar notificación de cambio de estado
             fetch('/api/notifications/notify-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

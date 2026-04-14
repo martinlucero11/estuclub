@@ -393,7 +393,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
                                     "text-[8px] font-black uppercase tracking-[0.15em] flex items-center gap-1",
                                     isNoteMissing ? "text-primary" : "text-foreground"
                                 )}>
-                                    Piso / Depto / Referencias {isNoteMissing && <span className="text-[7px] animate-pulse">(OBILIGATORIO)</span>}
+                                    Piso / Depto / Referencias {isNoteMissing && <span className="text-[7px] animate-pulse">(OBLIGATORIO)</span>}
                                 </Label>
                                 <div className="relative group/input">
                                     <Target className={cn(

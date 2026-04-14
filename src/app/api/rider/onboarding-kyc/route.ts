@@ -149,10 +149,19 @@ export async function POST(req: NextRequest) {
         
         console.log(`[KYC API] Uploading documents to Drive folder: ${parentFolderId}`);
 
-        const [dniUpload, selfieUpload] = await Promise.all([
-            uploadFileToDrive(dniBuffer, `DNI_${uid}_${Date.now()}.jpg`, 'image/jpeg', parentFolderId),
-            uploadFileToDrive(selfieBuffer, `SELFIE_${uid}_${Date.now()}.jpg`, 'image/jpeg', parentFolderId)
-        ]);
+        let dniUpload, selfieUpload;
+        try {
+            [dniUpload, selfieUpload] = await Promise.all([
+                uploadFileToDrive(dniBuffer, `DNI_${uid}_${Date.now()}.jpg`, 'image/jpeg', parentFolderId),
+                uploadFileToDrive(selfieBuffer, `SELFIE_${uid}_${Date.now()}.jpg`, 'image/jpeg', parentFolderId)
+            ]);
+        } catch (driveErr: any) {
+            console.error('[KYC API] Drive Upload Failed:', driveErr.message);
+            return NextResponse.json({ 
+                error: `Error de almacenamiento: ${driveErr.message}`,
+                code: 'DRIVE_UPLOAD_FAILED'
+            }, { status: 502 }); // Bad Gateway / External service error
+        }
 
         if (!adminDb) throw new Error("Firestore Admin not initialized");
         const userRef = adminDb.collection('users').doc(uid);
@@ -160,7 +169,7 @@ export async function POST(req: NextRequest) {
 
         const batch = adminDb.batch();
         batch.update(userRef, {
-            photoUrl: selfieUpload.url,
+            photoURL: selfieUpload.contentLink,
             role: 'rider_pending',
             kycVerifiedAt: new Date(),
             updatedAt: new Date()
@@ -176,7 +185,7 @@ export async function POST(req: NextRequest) {
             nationality: formData.get('nationality') || '',
             isManualVerification: formData.get('isManualVerification') === 'true',
             dniUrl: dniUpload.url,
-            selfieUrl: selfieUpload.url,
+            selfieUrl: selfieUpload.contentLink,
             vehicleType: formData.get('vehicleType'),
             patente: formData.get('patente'),
             address: formData.get('address'),
@@ -190,6 +199,17 @@ export async function POST(req: NextRequest) {
         });
 
         await batch.commit();
+
+        // 3. Sync Firebase Auth Profile (Centralized)
+        try {
+            await adminAuth.updateUser(uid, {
+                photoURL: selfieUpload.contentLink
+            });
+            console.log(`[KYC API] Auth profile synced for user ${uid}`);
+        } catch (authSyncError) {
+            console.error('[KYC API] Failed to sync Auth profile photo:', authSyncError);
+            // Non-blocking but logged
+        }
 
         return NextResponse.json({ success: true, redirect: '/rider' });
 

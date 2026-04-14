@@ -567,8 +567,8 @@ function CincoDosSection({ userProfile }: { userProfile: any }) {
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <div className="space-y-2">
                             <p className="text-2xl font-black tracking-tighter italic">Comedor Estudiantil Gratuito</p>
-                            <p className="text-xs font-bold text-foreground leading-relaxed">
-                                El Proyecto Cinco.Dos es una iniciativa social de Alem que provee almuerzos nutritivos y gratuitos a estudiantes en situación de vulnerabilidad.
+                                <p className="text-xs font-bold text-foreground leading-relaxed">
+                                El Proyecto Cinco.Dos es una iniciativa social de Alem que provee almuerzos nutritivos y gratuitos a la comunidad estudiantil.
                             </p>
                         </div>
                         <Button 

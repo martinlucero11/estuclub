@@ -73,7 +73,7 @@ export function CluberSidebar({
             <Logo brand="default" variant="rosa" className="h-8 w-auto" />
             <div className="flex items-center gap-1.5 px-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Merchant Hub</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Portal Cluber</span>
             </div>
           </div>
         )}

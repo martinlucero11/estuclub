@@ -121,7 +121,7 @@ export default function SupplierSalesDashboard({ supplierId: initialSupplierId }
                     <button onClick={() => setDateFilter('month')} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${dateFilter === 'month' ? 'bg-primary text-white shadow-xl' : 'text-foreground/40 hover:text-foreground'}`}>30 Días</button>
                 </div>
                 
-                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredOrders, `Delivery_Report_${dateFilter}`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
+                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredOrders, `Reporte_Ventas_${dateFilter}`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
                     <Download className="h-4 w-4" /> Exportar Datos
                 </Button>
             </div>

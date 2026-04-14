@@ -6,14 +6,15 @@ import {
     Map as MapIcon, 
     BarChart3, 
     User, 
+    Star,
     History 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { haptic } from '@/lib/haptics';
 
 interface RiderBottomNavProps {
-    currentTab: 'map' | 'earnings' | 'profile' | 'history';
-    onTabChange: (tab: 'map' | 'earnings' | 'profile' | 'history') => void;
+    currentTab: 'map' | 'earnings' | 'profile' | 'history' | 'rating';
+    onTabChange: (tab: 'map' | 'earnings' | 'profile' | 'history' | 'rating') => void;
 }
 
 export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps) {
@@ -21,6 +22,7 @@ export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps)
         { id: 'map', label: 'Radar', icon: MapIcon },
         { id: 'earnings', label: 'Efectivo', icon: BarChart3 },
         { id: 'history', label: 'Recientes', icon: History },
+        { id: 'rating', label: 'Rating', icon: Star },
         { id: 'profile', label: 'Cuenta', icon: User },
     ] as const;
 

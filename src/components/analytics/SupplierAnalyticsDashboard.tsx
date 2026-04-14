@@ -127,7 +127,7 @@ export default function SupplierAnalyticsDashboard({ supplierId: initialSupplier
                     <button className="px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-primary text-white shadow-xl transition-all">Últimos 30 Días</button>
                 </div>
                 
-                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredRedemptions, `Benefits_Report`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
+                <Button variant="outline" size="sm" onClick={() => generateCSV(stats.filteredRedemptions, `Reporte_Beneficios`)} className="h-11 rounded-2xl font-black text-[10px] uppercase tracking-widest gap-2 bg-white dark:bg-white/5 border-black/5 dark:border-white/10 shadow-lg">
                     <Download className="h-4 w-4" /> Exportar Datos
                 </Button>
             </div>

@@ -38,7 +38,7 @@ export default function SettingsPage() {
 
             if (permission === 'granted') {
                 const currentToken = await getToken(messaging, {
-                    vapidKey: 'YOUR_VAPID_KEY_HERE',
+                    vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
                 });
 
                 if (currentToken) {

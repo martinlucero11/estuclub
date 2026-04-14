@@ -75,6 +75,7 @@ export async function uploadFileToDrive(
                 body: bufferStream,
             },
             fields: 'id, webViewLink, webContentLink',
+            supportsAllDrives: true,
         });
 
         const fileId = response.data.id;
@@ -100,19 +101,115 @@ export async function uploadFileToDrive(
         const fileMetadata = await drive.files.get({
             fileId: fileId,
             fields: 'id, webViewLink, webContentLink',
+            supportsAllDrives: true,
         });
 
         console.log(`[DRIVE LIB] Final URL: ${fileMetadata.data.webViewLink}`);
 
         return {
+            success: true,
             id: fileId,
             url: fileMetadata.data.webViewLink,
             contentLink: fileMetadata.data.webContentLink
         };
     } catch (error: any) {
-        console.error('CENTRAL DRIVE UPLOAD ERROR:', error.message);
-        throw error;
+        // Mapeo detallado de errores para auditoría
+        const status = error.response?.status;
+        let mappedError = error.message;
+
+        if (status === 404) {
+             mappedError = `CARPETA NO ENCONTRADA: El Folder ID ${parentFolderId} no existe o no es visible para el Service Account.`;
+        } else if (status === 403) {
+             mappedError = `PERMISO DENEGADO: El Service Account no tiene permisos de escritura en la carpeta ${parentFolderId}.`;
+        } else if (status === 401) {
+             mappedError = 'ERROR DE AUTENTICACIÓN: Las credenciales de Google Drive no son válidas o han expirado.';
+        }
+
+        console.error('CENTRAL DRIVE UPLOAD ERROR:', mappedError);
+        throw new Error(mappedError);
     }
 }
 
+/**
+ * Valida el acceso a una carpeta específica (Verificación de permisos)
+ */
+export async function validateFolderAccess(folderId: string) {
+    try {
+        const drive = await getDriveClient();
+        const res = await drive.files.get({
+            fileId: folderId,
+            fields: 'id, name, capabilities, kind',
+            supportsAllDrives: true,
+            // @ts-ignore - Some versions of the library expect this even for get
+            includeItemsFromAllDrives: true
+        });
+        
+        const canAddChildren = res.data.capabilities?.canAddChildren;
+        
+        return { 
+            success: true, 
+            id: res.data.id || '', 
+            name: res.data.name || '',
+            canWrite: canAddChildren,
+            kind: res.data.kind
+        };
+    } catch (error: any) {
+        return { success: false, error: mapDriveError(error) };
+    }
+}
 
+/**
+ * Crea una carpeta en Google Drive.
+ */
+export async function createFolder(name: string, parentId: string) {
+    try {
+        const drive = await getDriveClient();
+        const res = await drive.files.create({
+            requestBody: {
+                name: name,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [parentId]
+            },
+            fields: 'id, name',
+            supportsAllDrives: true
+        });
+
+        return { success: true, id: res.data.id || '', name: res.data.name || '' };
+    } catch (error: any) {
+        console.error(`[GOOGLE DRIVE] Failed to create folder ${name}:`, error.message);
+        return { success: false, error: mapDriveError(error) };
+    }
+}
+
+/**
+ * Asegura que una carpeta exista buscando por nombre dentro de un padre,
+ * o creándola si no existe.
+ */
+export async function ensureFolderExists(name: string, parentId: string) {
+    try {
+        const drive = await getDriveClient();
+        
+        // 1. Buscar si ya existe la carpeta con ese nombre
+        const res = await drive.files.list({
+            q: `name = '${name}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+            fields: 'files(id, name)',
+            spaces: 'drive',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true
+        });
+
+        if (res.data.files && res.data.files.length > 0) {
+            return { success: true, id: res.data.files[0].id || '', name: res.data.files[0].name || '', alreadyExisted: true };
+        }
+
+        // 2. Si no existe, crearla
+        return await createFolder(name, parentId);
+    } catch (error: any) {
+        console.error(`[GOOGLE DRIVE] Failed to ensure folder ${name}:`, error.message);
+        return { success: false, error: mapDriveError(error) };
+    }
+}
+
+function mapDriveError(error: any) {
+    return error.message;
+}

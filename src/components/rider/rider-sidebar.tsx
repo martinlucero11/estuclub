@@ -11,7 +11,8 @@ import {
     Settings,
     History,
     Zap,
-    ZapOff
+    ZapOff,
+    Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,8 +21,8 @@ import { haptic } from '@/lib/haptics';
 interface RiderSidebarProps {
     isOpen: boolean;
     onClose: () => void;
-    currentView: 'map' | 'earnings' | 'profile' | 'history';
-    onViewChange: (view: 'map' | 'earnings' | 'profile' | 'history') => void;
+    currentView: 'map' | 'earnings' | 'profile' | 'history' | 'rating';
+    onViewChange: (view: 'map' | 'earnings' | 'profile' | 'history' | 'rating') => void;
     isOnline: boolean;
     onToggleOnline: () => void;
     userName?: string;
@@ -41,6 +42,7 @@ export function RiderSidebar({
         { id: 'map', label: 'Mapa Radar', icon: MapIcon },
         { id: 'earnings', label: 'Ganancias', icon: BarChart3 },
         { id: 'history', label: 'Historial', icon: History },
+        { id: 'rating', label: 'Mis Reseñas', icon: Star },
         { id: 'profile', label: 'Mi Perfil', icon: User },
     ] as const;
 

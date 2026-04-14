@@ -1,6 +1,7 @@
 'use server';
 
 import { adminDb } from '@/lib/firebase-admin';
+import { ensureFolderExists } from '@/lib/google-drive';
 import { RiderApplicationSchema, SupplierRequestSchema } from '../validations/schemas';
 import { z } from 'zod';
 
@@ -118,12 +119,18 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
         const validatedData = SupplierRequestSchema.parse(reqData);
         const { userId, supplierName, category, address, commercialPhone, logo, fachada } = validatedData;
 
-        return await adminDb.runTransaction(async (transaction) => {
-            const userRef = adminDb!.collection('users').doc(userId);
-            const supplierRoleRef = adminDb!.collection('roles_supplier').doc(userId);
-            const requestRef = adminDb!.collection('supplier_requests').doc(requestId);
+            // 1. Provision Google Drive Folder (Pre-transactional for simplicity, or handle error)
+            let driveFolderId = '';
+            const parentId = process.env.GOOGLE_DRIVE_CLUBER_FOLDER_ID;
+            if (parentId) {
+                const folderName = `${supplierName}_${userId}`;
+                const driveResult = await ensureFolderExists(folderName, parentId);
+                if (driveResult.success) {
+                    driveFolderId = driveResult.id;
+                }
+            }
 
-            // 1. Create Supplier Role
+            // 2. Create Supplier Role
             transaction.set(supplierRoleRef, {
                 id: userId,
                 name: supplierName,
@@ -132,6 +139,7 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
                 whatsapp: commercialPhone,
                 logoUrl: logo || '',
                 coverUrl: fachada || '',
+                driveFolderId,
                 verified: true,
                 verifiedAt: new Date().toISOString(),
                 isVisible: true,
@@ -140,7 +148,7 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
                 storeName: supplierName,
             }, { merge: true });
 
-            // 2. Update User Profile Role
+            // 3. Update User Profile Role
             transaction.set(userRef, {
                 role: 'supplier',
                 isVerified: true,

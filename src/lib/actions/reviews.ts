@@ -57,6 +57,7 @@ export async function submitOrderReview(input: ReviewInput) {
             // Guardar Reseña Dual
             transaction.set(reviewRef, {
                 ...input,
+                rating: input.localRating, // Standard field for ReviewList
                 createdAt: Timestamp.now(),
                 type: 'order_delivery'
             });
@@ -87,6 +88,64 @@ export async function submitOrderReview(input: ReviewInput) {
         return { success: true };
     } catch (error: any) {
         console.error('Review Transaction Error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+interface AppointmentReviewInput {
+    appointmentId: string;
+    supplierId: string;
+    userId: string;
+    rating: number;
+    comment?: string;
+}
+
+/**
+ * submitAppointmentReview
+ * Califica un turno asistido y actualiza estrellas del comercio.
+ */
+export async function submitAppointmentReview(input: AppointmentReviewInput) {
+    if (!adminDb) return { success: false, error: 'Admin DB not initialized' };
+
+    try {
+        await adminDb.runTransaction(async (transaction) => {
+            const appointmentRef = adminDb.collection('appointments').doc(input.appointmentId);
+            const supplierRef = adminDb.collection('roles_supplier').doc(input.supplierId);
+            const reviewRef = adminDb.collection('reviews').doc(`apt_${input.appointmentId}`);
+
+            const supplierDoc = await transaction.get(supplierRef);
+            const appointmentDoc = await transaction.get(appointmentRef);
+
+            if (!appointmentDoc.exists) throw new Error('Appointment not found');
+
+            const sData = supplierDoc.data() || {};
+            const sCount = sData.reviewCount || 0;
+            const sAvg = sData.avgRating || 0;
+            const newCount = sCount + 1;
+            const newAvg = ((sAvg * sCount) + input.rating) / newCount;
+
+            transaction.set(reviewRef, {
+                ...input,
+                createdAt: Timestamp.now(),
+                type: 'appointment_review',
+                entityId: input.supplierId // Standard for List
+            });
+
+            transaction.update(supplierRef, {
+                avgRating: newAvg,
+                reviewCount: newCount,
+                updatedAt: Timestamp.now()
+            });
+
+            transaction.update(appointmentRef, {
+                reviewed: true,
+                updatedAt: Timestamp.now()
+            });
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Appointment Review Error:', error);
         return { success: false, error: error.message };
     }
 }

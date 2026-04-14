@@ -9,9 +9,9 @@ import AppointmentReceiptCard from '@/components/appointments/appointment-receip
 import { PageHeader } from '@/components/ui/page-header';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, ShieldAlert } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ReviewForm } from '@/components/reviews/review-form';
 
 function ReceiptSkeleton() {
     return (
@@ -60,6 +60,24 @@ function AppointmentDetails({ appointment }: { appointment: Appointment }) {
                     <MessageCircle className="mr-2 h-4 w-4" />
                     Contactar por WhatsApp
                 </Button>
+            )}
+
+            {/* Review Section */}
+            {appointment.status === 'attended' && !appointment.reviewed && (
+                <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <ReviewForm 
+                        type="appointment"
+                        appointmentId={appointment.id}
+                        supplierId={appointment.supplierId}
+                        title={appointment.serviceName}
+                    />
+                </div>
+            )}
+            
+            {appointment.reviewed && (
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500">¡Gracias por calificar este servicio!</p>
+                </div>
             )}
         </div>
     )

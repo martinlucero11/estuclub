@@ -177,22 +177,34 @@ export default function EditSupplierProfileForm() {
     setUploading(true);
 
     try {
-        const imageStorageRef = storageRef(storage, `suppliers/${user.uid}/${path}-${Date.now()}`);
-        await uploadBytes(imageStorageRef, file);
-        const downloadURL = await getDownloadURL(imageStorageRef);
-        
-        form.setValue(fieldName, downloadURL, { shouldValidate: true, shouldDirty: true });
-        setPreview(null);
-        URL.revokeObjectURL(localUrl);
-        toast({ title: 'Imagen subida', description: 'El cambio se guardará al actualizar tu perfil.'});
+        const idToken = await user.getIdToken();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'cluber');
+        formData.append('subfolder', path === 'logo' ? 'logos' : 'portadas');
 
-    } catch (error) {
-        console.error(`Error uploading ${path}:`, error);
-        toast({ variant: 'destructive', title: 'Error de subida', description: `No se pudo subir la imagen.` });
+        const res = await fetch('/api/upload-drive', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${idToken}` },
+            body: formData
+        });
+        
+        const result = await res.json();
+        if (result.success && result.contentLink) {
+            form.setValue(fieldName, result.contentLink, { shouldValidate: true, shouldDirty: true });
+            setPreview(null);
+            toast({ title: 'Imagen subida a Drive', description: 'El cambio se guardará al actualizar tu perfil.'});
+        } else {
+            throw new Error(result.error || 'Fallo al subir a Google Drive');
+        }
+
+    } catch (error: any) {
+        console.error(`Error uploading ${path} to Drive:`, error);
+        toast({ variant: 'destructive', title: 'Error de subida', description: error.message || `No se pudo subir la imagen.` });
         setPreview(null);
-        URL.revokeObjectURL(localUrl);
     } finally {
         setUploading(false);
+        URL.revokeObjectURL(localUrl);
     }
   };
 

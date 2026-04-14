@@ -95,7 +95,7 @@ export default function RootLayout({
           </FirebaseProvider>
         </ThemeProvider>
         <Script 
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"}&libraries=places,geometry,marker&v=weekly&loading=async`} 
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places,geometry,marker&v=weekly&loading=async`} 
           strategy="afterInteractive"
         />
       </body>

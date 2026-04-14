@@ -54,7 +54,6 @@ export default function PanelCluberPage() {
     const [analyticsView, setAnalyticsView] = useState<'general' | 'sales'>('general');
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    // Mission: URL-driven navigation
     const currentSection = searchParams.get('section') || 'dashboard';
 
     const effectiveSupplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : supplierData;
@@ -316,7 +315,7 @@ export default function PanelCluberPage() {
                             <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
                                     <Megaphone className="h-3.5 w-3.5 text-primary" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Marketing Hub</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Centro de Marketing</span>
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none">Anuncios en <span className="text-primary">App</span></h1>
                                 <p className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Llegá a más estudiantes con promociones directas</p>
@@ -406,7 +405,7 @@ export default function PanelCluberPage() {
                             <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 rounded-full border border-emerald-500/20">
                                     <Activity className="h-3.5 w-3.5 text-emerald-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Business Intelligence</span>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500">Inteligencia de Negocio</span>
                                 </div>
                                 <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none">Panel de <span className="text-primary">Métricas</span></h1>
                                 <p className="text-[11px] font-black uppercase tracking-widest text-zinc-400">Análisis operativo y financiero en tiempo real</p>
@@ -531,8 +530,8 @@ export default function PanelCluberPage() {
                                      <Sparkles className="h-5 w-5 text-primary" />
                                  </div>
                                  <div className="space-y-1">
-                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Carga Rápida (Demo)</h3>
-                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Insertar datos de prueba para testing</p>
+                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Carga Rápida (Prueba)</h3>
+                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Insertar datos reales para pruebas</p>
                                  </div>
                                  <Button 
                                     onClick={handleSeedData}

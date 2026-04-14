@@ -46,6 +46,28 @@ h1, h2, h3, h4, .font-branding {
     --brand-pink: #cb465a;
     --brand-pink-rgb: 203, 70, 90;
   }
+
+  .dark {
+    --background: 240 10% 4%; /* Deepest Black/Blue */
+    --foreground: 0 0% 98%;   /* Almost White */
+    --card: 240 10% 6%;       /* Dark Card */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 351 56% 54%;    /* Keep Rosa Estuclub */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 351 56% 54%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 351 56% 54%;
+  }
 }
 
 @layer base {

@@ -236,7 +236,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                             {isUploading ? (
                                                 <div className="flex flex-col items-center gap-2">
                                                     <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest text-primary">Subiendo a Cloud...</span>
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-primary">Subiendo a la nube...</span>
                                                 </div>
                                             ) : selectedProduct?.imageUrl ? (
                                                 <div className="absolute inset-0">
@@ -268,6 +268,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                     const formData = new FormData();
                                                     formData.append('file', file);
                                                     formData.append('folder', 'cluber');
+                                                    formData.append('subfolder', 'productos');
 
                                                     try {
                                                         const idToken = await user?.getIdToken();
@@ -282,7 +283,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                                             setSelectedProduct({ ...selectedProduct, imageUrl: result.contentLink });
                                                             toast({ title: "✅ IMAGEN SUBIDA", description: "El archivo se guardó en Google Drive." });
                                                         } else {
-                                                            throw new Error(result.error || 'Upload failed');
+                                                            throw new Error(result.error || 'Fallo en la subida');
                                                         }
                                                     } catch (err: any) {
                                                         console.error(err);
@@ -541,7 +542,6 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                 <MenuSectionManager supplierId={supplierId} sections={menuSections} products={products || []} />
             </TabsContent>
 
-            {/* MISSION 3: MODAL DE CONFIRMACIÓN ELEGANTE */}
             <AlertDialog open={!!productToDelete} onOpenChange={(open) => !open && setProductToDelete(null)}>
                 <AlertDialogContent className="rounded-[2.5rem] border-none shadow-2xl">
                     <AlertDialogHeader>
