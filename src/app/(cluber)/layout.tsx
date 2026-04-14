@@ -6,10 +6,13 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { doc, updateDoc, query, collection, where, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
 import { CluberSidebar } from "@/components/layout/cluber-sidebar";
 import { CluberHeader } from "@/components/layout/cluber-header";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { haptic } from "@/lib/haptics";
 import { useToast } from "@/hooks/use-toast";
 import { useAdmin } from "@/context/admin-context";
+import { RoleProvider } from "@/context/role-context";
+import { UserRole } from "@/types/data";
 
 export default function CluberLayout({
   children,
@@ -36,6 +39,10 @@ export default function CluberLayout({
   const supplierData = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData : ownSupplierData;
   const cluberName = supplierData?.name || userData?.firstName || 'Mi Local';
   const isPaused = supplierData?.isOpen === false;
+
+  const availableRoles: UserRole[] = roles.filter(
+    (role): role is UserRole => ['admin', 'supplier', 'cluber', 'user'].includes(role)
+  );
 
   // Global Audio Alert System
   const [isAudioEnabled, setIsAudioEnabled] = useState(false);
@@ -150,48 +157,56 @@ export default function CluberLayout({
   if (!hasAccess) return null;
 
   return (
-    <div className="flex min-h-screen bg-[#FDFDFD] selection:bg-rose-500/10">
-      <CluberSidebar 
-        currentSection={currentSection}
-        onSectionChange={handleSectionChange}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        cluberName={cluberName}
-        className="hidden md:flex"
-      />
-
-      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent side="left" className="p-0 border-none w-[280px]">
-           <CluberSidebar 
-              currentSection={currentSection}
-              onSectionChange={handleSectionChange}
-              isCollapsed={false}
-              onToggleCollapse={() => setIsMobileMenuOpen(false)}
-              className="w-full h-full border-none"
-              cluberName={cluberName}
-            />
-        </SheetContent>
-      </Sheet>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        <CluberHeader 
-             onMenuClick={() => setIsMobileMenuOpen(true)}
-             isPaused={isPaused}
-             onTogglePause={handleTogglePause}
-             cluberName={cluberName}
-             isAudioEnabled={isAudioEnabled}
-             onToggleAudio={() => {
-                 haptic.vibrateSubtle();
-                 setIsAudioEnabled(!isAudioEnabled);
-             }}
+    <RoleProvider availableRoles={availableRoles}>
+      <div className="flex min-h-screen bg-[#FDFDFD] selection:bg-rose-500/10">
+        {/* Desktop Sidebar */}
+        <CluberSidebar 
+          currentSection={currentSection}
+          onSectionChange={handleSectionChange}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          cluberName={cluberName}
+          className="hidden lg:flex"
         />
 
-        <main className="flex-1 overflow-x-hidden p-4 md:p-8 animate-in fade-in duration-700">
-           <div className="max-w-6xl mx-auto h-full">
-              {children}
-           </div>
-        </main>
+        {/* Mobile Sidebar (Sheet) */}
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+          <SheetContent side="left" className="p-0 border-none w-[280px]">
+            <CluberSidebar 
+                currentSection={currentSection}
+                onSectionChange={handleSectionChange}
+                isCollapsed={false}
+                onToggleCollapse={() => setIsMobileMenuOpen(false)}
+                className="w-full h-full border-none"
+                cluberName={cluberName}
+              />
+          </SheetContent>
+        </Sheet>
+
+        <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0">
+          <CluberHeader 
+              onMenuClick={() => setIsMobileMenuOpen(true)}
+              isPaused={isPaused}
+              onTogglePause={handleTogglePause}
+              cluberName={cluberName}
+              isAudioEnabled={isAudioEnabled}
+              onToggleAudio={() => {
+                  haptic.vibrateSubtle();
+                  setIsAudioEnabled(!isAudioEnabled);
+              }}
+          />
+
+          <main className="flex-1 overflow-x-hidden p-4 md:p-8 animate-in fade-in duration-700">
+            <div className="max-w-6xl mx-auto h-full">
+                {children}
+            </div>
+          </main>
+        </div>
+
+        {/* Mobile Navigation */}
+        <BottomNav />
       </div>
-    </div>
+    </RoleProvider>
   );
 }
+
