@@ -17,16 +17,26 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { MessageSquarePlus, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { MessageSquarePlus, Image as ImageIcon, Link as LinkIcon, Radio } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from '@/components/ui/badge';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc, addDoc } from 'firebase/firestore';
 import { useMemo } from 'react';
+import { useAdmin } from '@/context/admin-context';
 
 const formSchema = z.object({
   title: z.string().min(5, 'El título debe tener al menos 5 caracteres.').max(100, 'El título no puede exceder los 100 caracteres.'),
   content: z.string().min(10, 'El contenido debe tener al menos 10 caracteres.').max(500, 'El contenido no puede exceder los 500 caracteres.'),
   imageUrl: z.string().url('Por favor, introduce una URL de imagen válida.').optional().or(z.literal('')),
   linkUrl: z.string().url('Por favor, introduce una URL válida.').optional().or(z.literal('')),
+  notificationTarget: z.enum(['broadcast', 'followers']).default('followers'),
 });
 
 interface UserProfile {
@@ -35,10 +45,14 @@ interface UserProfile {
 
 export default function AddAnnouncementForm() {
   const { toast } = useToast();
-  const { user } = useUser();
   const firestore = useFirestore();
+  const { isAdmin, impersonatedSupplierId, impersonatedSupplierData } = useAdmin();
+  const { user, userData, supplierData } = useUser();
   const userProfileRef = useMemo(() => user ? doc(firestore, 'users', user.uid) : null, [user, firestore]);
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  const effectiveSupplierId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : user?.uid;
+  const merchantName = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierData?.name : supplierData?.name;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,6 +61,7 @@ export default function AddAnnouncementForm() {
       content: '',
       imageUrl: '',
       linkUrl: '',
+      notificationTarget: 'followers',
     },
   });
 
@@ -65,6 +80,8 @@ export default function AddAnnouncementForm() {
       const dataToSave: any = {
         authorId: user.uid,
         authorUsername: userProfile.username,
+        supplierId: effectiveSupplierId || null,
+        merchantName: merchantName || userProfile.username,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -178,6 +195,46 @@ export default function AddAnnouncementForm() {
             </FormItem>
           )}
         />
+
+        {/* Audience Selection - Visible only if announcements are enabled */}
+        {(supplierData?.announcementsEnabled || userData?.permitsAds) && (
+            <FormField
+                control={form.control}
+                name="notificationTarget"
+                render={({ field }) => (
+                    <FormItem className="bg-primary/5 p-6 rounded-[2rem] border border-primary/10 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Radio className="h-4 w-4 text-primary" />
+                                <FormLabel className="text-[10px] font-black uppercase tracking-widest leading-none">Alcance de la Notificación</FormLabel>
+                            </div>
+                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-tighter bg-white border-primary/20 text-primary">Premium</Badge>
+                        </div>
+                        <FormControl>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger className="h-12 rounded-xl bg-white border-primary/10 font-bold text-xs uppercase tracking-widest">
+                                    <SelectValue placeholder="Seleccionar alcance" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-primary/10">
+                                    <SelectItem value="followers" className="text-xs font-bold uppercase tracking-widest focus:bg-primary/5 focus:text-primary">
+                                        Solo mis Seguidores
+                                    </SelectItem>
+                                    <SelectItem value="broadcast" className="text-xs font-bold uppercase tracking-widest focus:bg-primary/5 focus:text-primary">
+                                        Toda la Comunidad
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormControl>
+                        <FormDescription className="text-[9px] font-medium uppercase tracking-tight text-primary/60">
+                            {field.value === 'followers' 
+                                ? "Llega directo a quienes marcaron tu local como favorito." 
+                                : "Visibilidad máxima en toda la red Estuclub."}
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        )}
         <Button type="submit">
             <MessageSquarePlus className="mr-2 h-4 w-4" />
             Publicar Anuncio

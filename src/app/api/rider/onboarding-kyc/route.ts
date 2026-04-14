@@ -36,16 +36,23 @@ export async function POST(req: NextRequest) {
             if (!dniFile) return NextResponse.json({ error: 'Falta foto del DNI' }, { status: 400 });
             
             const buffer = Buffer.from(await dniFile.arrayBuffer());
-            const [result] = await visionClient.textDetection(buffer);
+            let result;
+            try {
+                [result] = await visionClient.textDetection(buffer);
+            } catch (err: any) {
+                console.error("Vision API Error:", err);
+                return NextResponse.json({ error: 'El servicio de reconocimiento está saturado o falló. Intenta de nuevo en unos segundos.' }, { status: 503 });
+            }
+
             const fullText = result.fullTextAnnotation?.text || '';
             
             if (!fullText || fullText.length < 20) {
-                return NextResponse.json({ error: 'No se pudo leer el documento. Asegúrate de que haya buena luz.' }, { status: 400 });
+                return NextResponse.json({ error: 'No se pudo leer el documento. Asegúrate de capturar bien todo el frente del DNI con buena luz.' }, { status: 400 });
             }
 
-            const extractedName = extractArgentineDNIName(fullText);
+            const extractedData = extractArgentineDNIData(fullText);
             
-            if (!extractedName.fullName) {
+            if (!extractedData.fullName) {
                 return NextResponse.json({ 
                     error: 'No pudimos identificar tu nombre. Intenta con una foto más clara enfocando los campos NOMBRE y APELLIDO.',
                     raw: fullText.substring(0, 200)
@@ -54,9 +61,12 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json({ 
                 success: true, 
-                fullName: extractedName.fullName,
-                firstName: extractedName.firstName,
-                lastName: extractedName.lastName
+                fullName: extractedData.fullName,
+                firstName: extractedData.firstName,
+                lastName: extractedData.lastName,
+                dniNumber: extractedData.dniNumber,
+                dob: extractedData.dob,
+                nationality: extractedData.nationality
             });
         }
 
@@ -88,6 +98,43 @@ export async function POST(req: NextRequest) {
 
         if (!dniFile || !selfieFile || !fullNameInput) {
             return NextResponse.json({ error: 'Faltan documentos o datos obligatorios' }, { status: 400 });
+        }
+
+        if (!adminDb) throw new Error("Firestore Admin not initialized");
+
+        const dniNumberInput = (formData.get('dniNumber') as string || '').replace(/\D/g, '');
+
+        // 1. User Application Check (Same user applying again)
+        const userAppRes = await adminDb.collection('rider_applications')
+            .where('userId', '==', uid)
+            .limit(1)
+            .get();
+        
+        if (!userAppRes.empty) {
+            const app = userAppRes.docs[0].data();
+            if (app.status === 'pending') {
+                return NextResponse.json({ error: 'Ya tienes una solicitud de Rider en revisión. Por favor espera a que sea validada.' }, { status: 400 });
+            } else if (app.status === 'approved') {
+                return NextResponse.json({ error: 'Tu cuenta ya está activa como Rider. Redirigiendo...', redirect: '/rider' }, { status: 400 });
+            }
+        }
+
+        // 2. Global DNI Uniqueness Check (Another user with same DNI)
+        if (dniNumberInput) {
+            const globalDniRes = await adminDb.collection('rider_applications')
+                .where('dniNumber', '==', dniNumberInput)
+                .limit(1)
+                .get();
+            
+            if (!globalDniRes.empty) {
+                const otherApp = globalDniRes.docs[0].data();
+                if (otherApp.userId !== uid) {
+                   return NextResponse.json({ 
+                       error: 'Este número de DNI ya está registrado en nuestro sistema. Si crees que es un error, contacta a soporte.', 
+                       code: 'DUPLICATE_DNI' 
+                   }, { status: 400 });
+                }
+            }
         }
 
         const dniBuffer = Buffer.from(await dniFile.arrayBuffer());
@@ -122,7 +169,12 @@ export async function POST(req: NextRequest) {
         batch.set(appRef, {
             id: appRef.id,
             userId: uid,
-            fullName: fullNameInput,
+            firstName: formData.get('firstName') || '',
+            lastName: formData.get('lastName') || '',
+            dniNumber: dniNumberInput,
+            dob: formData.get('dob') || '',
+            nationality: formData.get('nationality') || '',
+            isManualVerification: formData.get('isManualVerification') === 'true',
             dniUrl: dniUpload.url,
             selfieUrl: selfieUpload.url,
             vehicleType: formData.get('vehicleType'),
@@ -143,7 +195,14 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error('KYC_ROUTE_ERROR:', error);
-        return NextResponse.json({ error: error.message || 'Error en la verificación' }, { status: 500 });
+        // Special handle for known error types to avoid "Oops" generic page
+        const message = error.message || 'Error inesperado en el servidor';
+        const status = error.status || 500;
+        
+        return NextResponse.json({ 
+            error: message,
+            code: error.code || 'UNKNOWN_ERROR'
+        }, { status });
     }
 }
 
@@ -152,62 +211,238 @@ function idTokenFromHeader(header: string) {
 }
 
 /**
- * Heuristic to extract Name and Surname from Argentine DNI using anchors
+ * Heuristic to extract Name, Surname and DNI Number from Argentine DNI using anchors
  * Rules:
  * - APELLIDO/S followed by surname
  * - NOMBRE/S followed by given names
+ * - DOCUMENTO Nº followed by 8 digits
  */
-function extractArgentineDNIName(text: string) {
+function extractArgentineDNIData(text: string) {
     const lines = text.toUpperCase().split('\n').map(l => l.trim()).filter(l => l.length > 1);
     
-    // Anchors for Argentine DNI
-    const surnameAnchors = ['APELLIDO/S', 'APELLIDO', 'SURNAME'];
-    const nameAnchors = ['NOMBRE/S', 'NOMBRE', 'GIVEN NAMES'];
-    const skipList = ['DNI', 'SEXO', 'SEX', 'NACIONALIDAD', 'FECHA', 'DOCUMENTO', 'REPUBLICA', 'EJEMPLAR'];
+    // Anchors for Argentine DNI (including combined labels for vertical structure)
+    const surnameAnchors = ['APELLIDO/SURNAME', 'APELLIDO', 'APELLIDOS', 'SURNAME', 'SURNAMES'];
+    const nameAnchors = ['NOMBRE/NAME', 'NOMBRES/NAME', 'NOMBRE', 'NOMBRES', 'NAME', 'GIVEN NAME', 'GIVEN NAMES'];
+    const dniAnchors = [
+        'DOCUMENTO/DOCUMENT', 'DOCUMENTO', 'DOCUMENT', 'DNI', 'N°', 'NRO', 'NÚMERO', 
+        'DOCUMENTO NACIONAL DE IDENTIDAD', 'NATIONAL IDENTITY CARD', 'NUMERO DE DOCUMENTO',
+        'OPCUMENTO', 'OCUMENTO', 'DUCUMENTO' // Fuzzy misreads emergency addition
+    ];
+    const dobAnchors = ['FECHA DE NACIMIENTO', 'FECHA NACIMIENTO', 'DATE OF BIRTH', 'FECHA DE EMISION'];
+    const natAnchors = ['NACIONALIDAD', 'NATIONALITY'];
+    const skipList = [
+        'SEXO', 'SEX', 'NACIONALIDAD', 'FECHA', 'REPUBLICA', 'EJEMPLAR', 
+        'SURNAME', 'NAME', 'GIVEN', 'DOCUMENTO', 'DOCUMENT', 'OPCUMENTO', 'OCUMENTO'
+    ];
 
     let lastName = '';
     let firstName = '';
 
-    const findValueAfterAnchor = (anchors: string[]) => {
+    const findAnchorIndex = (anchors: string[]) => {
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            // Strict whole-word matching to avoid confusion (like SURNAME containing NAME)
+            const matched = anchors.some(a => {
+                const escaped = a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+                return regex.test(line);
+            });
+            if (matched) return i;
+        }
+        return -1;
+    };
+
+    const surnameIdx = findAnchorIndex(surnameAnchors);
+    const nameIdx = findAnchorIndex(nameAnchors);
+    const dniIdx = findAnchorIndex(dniAnchors);
+    const dobIdx = findAnchorIndex(dobAnchors);
+    const natIdx = findAnchorIndex(natAnchors);
+
+    // Technique: Extract text between anchors
+    const extractBetween = (startIdx: number, endIdx: number) => {
+        if (startIdx === -1) return '';
+        // If endIdx is -1 or before startIdx, look at next 2 lines
+        const end = (endIdx !== -1 && endIdx > startIdx) ? endIdx : startIdx + 3;
+        
+        let result = '';
+        for (let i = startIdx + 1; i < Math.min(end, lines.length); i++) {
+            const line = lines[i];
+            // Stop if we hit another known field label that wasn't the target endIdx
+            const isAnyLabel = [...surnameAnchors, ...nameAnchors, ...dniAnchors, ...skipList].some(a => {
+                const escaped = a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+                return regex.test(line);
+            });
+            // Extra Safety: Stop if line contains a DNI-like pattern (even without label)
+            if (line.match(/\d{2}[\.\s]?\d{3}[\.\s]?\d{3}/) && i > startIdx + 1) break;
+            
+            // Stop if line contains misread document labels
+            if (/OPCUMENTO|OCUMENTO|DUCUMENTO|COCAINE|DNI/i.test(line) && i > startIdx + 1) break;
+
+            const cleanLine = line.replace(/[:;]/g, '').trim();
+            if (cleanLine.length > 1) {
+                result += (result ? ' ' : '') + cleanLine;
+            }
+        }
+        return result;
+    };
+
+    lastName = extractBetween(surnameIdx, nameIdx);
+    firstName = extractBetween(nameIdx, dniIdx);
+    
+    // Improved DOB Extraction with Strict Label Guard & Regex
+    let dobRaw = extractBetween(dobIdx, natIdx);
+    const dateRegex = /\b\d{2}[-/\s](?:\d{2}|[A-Z]{3})[-/\s]\d{4}\b/; 
+    
+    const isInvalidLine = (l: string) => /DOCUMENTO|DOCUMENT|DNI|N[ÚU]MERO/i.test(l);
+
+    if (!dateRegex.test(dobRaw) || isInvalidLine(dobRaw)) {
+        if (dobIdx !== -1) {
+            for (let i = 0; i < 4; i++) {
+                const line = lines[dobIdx + i];
+                // Strict check: Must match date pattern AND NOT contain DNI keywords
+                if (line && dateRegex.test(line) && !isInvalidLine(line)) {
+                    dobRaw = line;
+                    break;
+                }
+            }
+        }
+    }
+    
+    // Final check: If it contains DNI keywords, it's definitely not DOB
+    if (isInvalidLine(dobRaw)) dobRaw = '';
+
+    // Advanced cleaning for DOB (Bulletproof Reconstruction Strategy)
+    const monthMap: { [key: string]: string } = {
+        'ENE': '01', 'FEB': '02', 'MAR': '03', 'ABR': '04', 'MAY': '05', 'JUN': '06',
+        'JUL': '07', 'AGO': '08', 'SEP': '09', 'OCT': '10', 'NOV': '11', 'DIC': '12'
+    };
+
+    let dobNum = '';
+    // Optimized Regex: Day - Month (2 digits or 3 letters, potentially repeated) - Year
+    const strictDateMatch = dobRaw.match(/\b(\d{1,2})[-/\s]+(?:[A-Z]{3}|\d{1,2})(?:[-/\s]+[A-Z]{3})?[-/\s]+(\d{4})\b/i);
+    
+    if (strictDateMatch) {
+        const day = strictDateMatch[1].padStart(2, '0');
+        // Find the month part (it could be capture 2 or 3 depending on OCR noise)
+        // We look for any text in the matched sequence that matches our monthMap
+        const rawSeq = strictDateMatch[0].toUpperCase();
+        let month = '01';
+        for (const [key, val] of Object.entries(monthMap)) {
+            if (rawSeq.includes(key)) {
+                month = val;
+                break;
+            }
+        }
+        const year = strictDateMatch[2];
+        dobNum = `${day}/${month}/${year}`;
+    }
+
+    // Secondary safety cleanup if reconstruction failed
+    let dob = dobNum || dobRaw.split(/FECHA|EMISION|DATE|ISSUE|FEDIA/i)[0]
+        .replace(/\//g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    
+    if (!dobNum && dob.split(' ').length >= 3) {
+        const parts = dob.split(' ');
+        const day = parts[0].padStart(2, '0');
+        const monthTxt = parts[1].toUpperCase();
+        const month = monthMap[monthTxt] || monthMap[monthTxt.substring(0, 3)] || parts[1].padStart(2, '0');
+        const year = parts[parts.length - 1].substring(0, 4);
+        if (day.match(/^\d+$/) && year.match(/^\d+$/)) {
+            dob = `${day}/${month}/${year}`;
+        }
+    } else if (dobNum) {
+        dob = dobNum;
+    }
+
+    let nationality = extractBetween(natIdx, -1); 
+    if (nationality.length > 20) nationality = nationality.split(' ')[0]; // Basic truncation for clean data
+
+    // Fallback to vertical strategy if regions are empty
+    const findValueFallback = (anchors: string[]) => {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             const matchingAnchor = anchors.find(a => line.includes(a));
-            
             if (matchingAnchor) {
-                // 1. Try to find on the SAME line after the anchor
-                const parts = line.split(matchingAnchor);
-                if (parts[1]) {
-                    const candidate = parts[1].replace(/[:;]/g, '').trim();
-                    if (candidate.length > 2 && !skipList.some(s => candidate.includes(s))) {
-                        return candidate;
-                    }
-                }
-
-                // 2. Try the NEXT 3 lines (ignoring labels and empty lines)
-                for (let j = 1; j <= 3; j++) {
-                    const nextLine = lines[i + j];
-                    if (!nextLine) break;
-                    
-                    // If the line is another known anchor or a skip-word, ignore it
-                    const looksLikeOtherAnchor = [...surnameAnchors, ...nameAnchors, ...skipList].some(a => nextLine.includes(a));
-                    
-                    if (!looksLikeOtherAnchor && nextLine.length > 2) {
-                        return nextLine;
-                    }
+                const nextLine = lines[i + 1];
+                if (nextLine && nextLine.length > 2 && ![...surnameAnchors, ...nameAnchors, ...dniAnchors].some(a => nextLine.includes(a))) {
+                    return nextLine.replace(/[:;]/g, '').trim();
                 }
             }
         }
         return '';
     };
 
-    lastName = findValueAfterAnchor(surnameAnchors);
-    firstName = findValueAfterAnchor(nameAnchors);
+    if (!lastName) lastName = findValueFallback(surnameAnchors);
+    if (!firstName) firstName = findValueFallback(nameAnchors);
 
-    const clean = (s: string) => s.replace(/[^A-Z\s]/g, '').trim();
+    // DNI Number Extraction
+    let dniNumber = '';
+    
+    // Strategy for DNI: Look for a clean 7-8 digit block in neighborhood
+    if (dniIdx !== -1) {
+        for (let j = 0; j <= 2; j++) {
+            const line = lines[dniIdx + j];
+            if (!line) continue;
+            
+            // Clean common OCR noise like dots or letters in the DNI number
+            const cleanCandidate = line.replace(/[^0-9\s\.-]/g, '');
+            // Look for exactly 7-8 digits in a row (ignoring dots/spaces)
+            const matches = cleanCandidate.replace(/[\.\s-]/g, '').match(/\d{7,8}/);
+            
+            if (matches) {
+                dniNumber = matches[0];
+                // Ultra-Precision: If length is 9 and starts with '1', it's likely the hologram noise
+                if (dniNumber.length === 9 && dniNumber.startsWith('1')) {
+                    dniNumber = dniNumber.substring(1);
+                }
+                break;
+            }
+        }
+    }
+
+    // Global DNI Fallback: Search the whole text for any 7-8 digit sequence
+    if (!dniNumber) {
+        const matches = text.replace(/[\.\s-]/g, '').match(/\d{7,9}/g);
+        if (matches) {
+            dniNumber = matches[0];
+            if (dniNumber.length === 9 && dniNumber.startsWith('1')) {
+                dniNumber = dniNumber.substring(1);
+            }
+        }
+    }
+
+    // Fallback if no anchor: just find any 8 digit number in text
+    if (!dniNumber) {
+        const matches = text.match(/\b\d{8}\b/g);
+        if (matches && matches.length > 0) dniNumber = matches[0];
+    }
+
+    // Clear label noise from extracted values
+    const clean = (val: string) => {
+        // Strict word blacklist to prevent offensive holograms/misreads
+        const blackListWords = ['OPCUMENTO', 'OCUMENTO', 'COCAINE', 'FEDE', 'EMISION', 'GIVEN'];
+        
+        let cleaned = val
+            .replace(/APELLIDO|SURNAME|NOMBRE|NAME|N[UÚ]MERO|DOCUMENTO|DOCUMENT|DNI/gi, '')
+            .replace(/[^A-ZÁÉÍÓÚÑ\s]/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        // High-Precision filter: remove any remaining blacklisted words
+        return cleaned.split(' ')
+            .filter(word => !blackListWords.includes(word.toUpperCase()))
+            .join(' ');
+    };
 
     return {
         firstName: clean(firstName),
         lastName: clean(lastName),
-        fullName: clean(`${firstName} ${lastName}`)
+        fullName: clean(`${firstName} ${lastName}`),
+        dniNumber: dniNumber.replace(/\D/g, ''),
+        dob: dob.trim(),
+        nationality: clean(nationality)
     };
 }

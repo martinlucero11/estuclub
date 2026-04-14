@@ -70,7 +70,9 @@ export function AnnouncementTable({ className, search }: AnnouncementTableProps)
                             content: announcement.content,
                             announcementId: announcement.id,
                             imageUrl: announcement.imageUrl,
-                            supplierName: announcement.supplierId // We could fetch actual name, but ID works or we assume Global
+                            supplierName: announcement.merchantName || 'Estuclub',
+                            supplierId: announcement.supplierId,
+                            targetType: announcement.notificationTarget || 'broadcast'
                         })
                     });
                 } catch (notiError) {

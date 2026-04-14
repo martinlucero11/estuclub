@@ -137,19 +137,24 @@ export default function HomePage() {
     useEffect(() => {
         if (isUserLoading || hasRedirected) return;
         
-        if (roles.includes('admin')) {
-            // Optional: Don't redirect if admin wants to see the home
-            // For now keeping it since it's the existing logic
-            // router.replace('/panel-admin');
-            // return;
+        if (roles.includes('rider') || userData?.role === 'rider') {
+            setHasRedirected(true);
+            router.replace('/rider');
+            return;
         }
 
-        if (roles.includes('supplier')) {
+        if (roles.includes('supplier') || roles.includes('cluber') || userData?.role === 'supplier') {
             setHasRedirected(true);
             router.replace('/panel-cluber');
             return;
         }
-    }, [roles, isUserLoading, router, hasRedirected]);
+
+        if (roles.includes('admin')) {
+            // Usually admins want to see the home too, 
+            // but if the requirement is total focus:
+            // router.replace('/panel-admin');
+        }
+    }, [roles, userData, isUserLoading, router, hasRedirected]);
 
     return (
         <MainLayout>

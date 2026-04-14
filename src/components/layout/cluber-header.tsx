@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { useAuthService } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { 
@@ -44,8 +46,20 @@ export function CluberHeader({
   isAudioEnabled,
   onToggleAudio 
 }: CluberHeaderProps) {
+  const auth = useAuthService();
+
+  const handleLogout = async () => {
+    haptic.vibrateSubtle();
+    try {
+      await signOut(auth);
+      window.location.href = '/login';
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-xl border-b border-zinc-100 px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
+    <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-xl border-b border-zinc-100 px-4 md:px-8 h-16 md:h-20 flex items-center justify-between">
       {/* Left: Mobile Menu & Breadcrumb (Desktop) */}
       <div className="flex items-center gap-4">
         <Button 
@@ -127,7 +141,7 @@ export function CluberHeader({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-zinc-50" />
                 <DropdownMenuItem 
-                    onClick={() => { haptic.vibrateSubtle(); window.location.href = '/login'; }}
+                    onClick={handleLogout}
                     className="rounded-xl font-bold text-[10px] uppercase py-3 cursor-pointer focus:bg-red-50 text-red-500 gap-3"
                 >
                     <LogOut className="h-4 w-4" /> Salir del Panel

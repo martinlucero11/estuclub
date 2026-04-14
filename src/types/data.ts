@@ -353,6 +353,7 @@ export interface Announcement {
     linkUrl?: string;
     status: 'pending' | 'approved' | 'rejected';
     isVisible: boolean;
+    notificationTarget?: 'broadcast' | 'followers'; // Mission: Segmented Push
     // Targeting
     isStudentOnly?: boolean;
     isCincoDosOnly?: boolean;
@@ -452,6 +453,7 @@ export type SerializableAnnouncement = Omit<Announcement, 'submittedAt' | 'updat
     approvedAt?: string;
     updatedAt?: string;
     createdAt?: string;
+    notificationTarget?: 'broadcast' | 'followers';
 };
 
 export interface Coupon {

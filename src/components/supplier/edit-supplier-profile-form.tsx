@@ -280,7 +280,7 @@ export default function EditSupplierProfileForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10 px-2 sm:px-0 pb-12">
         
         <FormItem className="flex flex-col items-center">
             <FormLabel>Logo del Cluber</FormLabel>
@@ -356,81 +356,72 @@ export default function EditSupplierProfileForm() {
             </p>
         </FormItem>
         
-        <FormField
-          control={form.control}
-          name="logoUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL del Logo</FormLabel>
-              <FormControl>
-                <Input type="url" placeholder="Sube una imagen o pega una URL aquí" {...field} />
-              </FormControl>
-               <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nombre Público</FormLabel>
-              <FormControl>
-                <Input placeholder="Ej: Café Martínez" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="logoUrl"
+              render={({ field }) => (
                 <FormItem>
-                <FormLabel>Categoría del Cluber</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo" />
-                    </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                    {cluberCategories.map(category => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-                <FormMessage />
+                  <FormLabel>URL del Logo</FormLabel>
+                  <FormControl>
+                    <Input type="url" placeholder="Sube una imagen o pega una URL aquí" {...field} />
+                  </FormControl>
+                   <FormMessage />
                 </FormItem>
-            )}
-        />
-         <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descripción / Bio</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Describe brevemente tu comercio, institución o club..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Dirección</FormLabel>
-              <FormControl>
-                <Input placeholder="Av. Siempreviva 742" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre Público</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ej: Café Martínez" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Categoría del Cluber</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un tipo" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {cluberCategories.map(category => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dirección</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Av. Siempreviva 742" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
         <FormField
           control={form.control}
           name="locationCoords"
@@ -487,22 +478,22 @@ export default function EditSupplierProfileForm() {
                         </div>
 
                         <div className={cn(
-                            "flex items-center gap-3 transition-opacity duration-300",
+                            "grid grid-cols-2 items-center gap-3 transition-opacity duration-300",
                             !form.watch(`operatingHours.${day}.active`) && "opacity-20 pointer-events-none"
                         )}>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold opacity-40 uppercase">Desde</span>
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[9px] font-black opacity-40 uppercase ml-1">Desde</span>
                                 <Input 
                                     type="time" 
-                                    className="h-10 w-32 rounded-xl bg-white/50 dark:bg-black/50"
+                                    className="h-11 w-full rounded-2xl bg-white/50 border-foreground/20"
                                     {...form.register(`operatingHours.${day}.startTime`)}
                                 />
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold opacity-40 uppercase">Hasta</span>
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-[9px] font-black opacity-40 uppercase ml-1">Hasta</span>
                                 <Input 
                                     type="time" 
-                                    className="h-10 w-32 rounded-xl bg-white/50 dark:bg-black/50"
+                                    className="h-11 w-full rounded-2xl bg-white/50 border-foreground/20"
                                     {...form.register(`operatingHours.${day}.endTime`)}
                                 />
                             </div>
@@ -626,13 +617,18 @@ export default function EditSupplierProfileForm() {
             </div>
          </div>
 
-        <Button type="submit" disabled={isSubmitting || isUploadingLogo} className="w-full sm:w-auto h-12 px-8 text-lg font-black rounded-2xl shadow-lg shadow-primary/20">
-          {isSubmitting ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Guardando...</>
-          ) : (
-              <><Save className="mr-2 h-5 w-5" /> Guardar Cambios</>
-          )}
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-foreground/10">
+            <Button type="submit" disabled={isSubmitting || isUploadingLogo} className="w-full sm:w-auto h-14 px-10 text-xs font-black uppercase tracking-widest rounded-3xl shadow-xl shadow-primary/20">
+              {isSubmitting ? (
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Guardando...</>
+              ) : (
+                  <><Save className="mr-2 h-5 w-5" /> Guardar Cambios</>
+              )}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => window.location.reload()} className="w-full sm:w-auto h-14 px-10 text-xs font-black uppercase tracking-widest rounded-3xl">
+                Descartar
+            </Button>
+        </div>
       </form>
     </Form>
   );

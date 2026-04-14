@@ -8,7 +8,7 @@ import {
     Bike, MapPin, Truck, Car, Phone, Mail, Lock, 
     Loader2, CheckCircle2, ChevronRight, ArrowLeft, 
     Camera, User as UserIcon, X, FlipHorizontal, 
-    Smartphone, Fingerprint 
+    Smartphone, Fingerprint, ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,14 +30,28 @@ const riderSchema = z.object({
     lat: z.number(),
     lng: z.number(),
     // Step 2: Personal
-    fullName: z.string().min(3, 'Nombre requerido'),
+    firstName: z.string().min(2, 'Nombre requerido'),
+    lastName: z.string().min(2, 'Apellido requerido'),
+    dniNumber: z.string().min(7, 'DNI debe tener 7-9 dígitos').max(9, 'DNI debe tener 7-9 dígitos'),
+    dob: z.string().min(5, 'Fecha requerida'),
+    nationality: z.string().min(3, 'Nacionalidad requerida'),
     email: z.string().email('Email inválido'),
     phone: z.string().min(8, 'WhatsApp inválido'),
     password: z.string().min(8, 'Mín. 8 caracteres'),
+}).refine((data) => {
+    // Patente is required for moto or auto
+    if (data.vehicleType !== 'bici' && (!data.patente || data.patente.trim().length < 3)) {
+        return false;
+    }
+    return true;
+}, {
+    message: "La patente es obligatoria para este vehículo",
+    path: ["patente"]
 });
 
 type RiderFormData = z.infer<typeof riderSchema>;
 
+// --- UI Components ---
 const FormError = ({ message }: { message?: string }) => {
     if (!message) return null;
     return (
@@ -141,7 +155,13 @@ function CameraCapture({ onCapture, onClose, title, action, onValidated }: {
                         onClose();
                     }, 1000);
                 } else {
-                    throw new Error(data.error);
+                    const errorMsg = data.error || 'Ocurrió un error en el servidor';
+                    if (data.redirect && typeof window !== 'undefined') {
+                        toast({ title: 'Aviso', description: errorMsg });
+                        window.location.href = data.redirect;
+                        return;
+                    }
+                    throw new Error(errorMsg);
                 }
             } catch (err: any) {
                 setStatus({ type: 'error', message: err.message || 'Error al validar' });
@@ -228,6 +248,7 @@ export function RiderSignupFlow() {
     const [activeCamera, setActiveCamera] = useState<{ id: string, label: string } | null>(null);
     const [files, setFiles] = useState<{ dni: File | null; selfie: File | null }>({ dni: null, selfie: null });
     const [isNameVerified, setIsNameVerified] = useState(false);
+    const [isManualInput, setIsManualInput] = useState(false);
     
     const auth = useAuthService();
     const firestore = useFirestore();
@@ -241,7 +262,11 @@ export function RiderSignupFlow() {
             address: '',
             lat: 0,
             lng: 0,
-            fullName: '',
+            firstName: '',
+            lastName: '',
+            dniNumber: '',
+            dob: '',
+            nationality: '',
             email: '',
             phone: '',
             password: ''
@@ -251,7 +276,7 @@ export function RiderSignupFlow() {
     const { register, handleSubmit, trigger, formState: { errors } } = form;
 
     const nextStep = async () => {
-        const fields = ['vehicleType', 'address', 'lat', 'lng'];
+        const fields = ['vehicleType', 'patente', 'address', 'lat', 'lng'];
         const isValid = await trigger(fields as any);
         if (isValid) {
             haptic.vibrateSubtle();
@@ -274,7 +299,16 @@ export function RiderSignupFlow() {
         setIsSubmitting(true);
         try {
             // 1. Create Account (Only now that we verified everything)
-            const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+            let userCredential;
+            try {
+                userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
+            } catch (authError: any) {
+                if (authError.code === 'auth/email-already-in-use') {
+                    throw new Error('Este email ya está registrado. Intenta iniciar sesión.');
+                }
+                throw authError;
+            }
+            
             const user = userCredential.user;
             await updateProfile(user, { displayName: data.fullName });
 
@@ -284,7 +318,12 @@ export function RiderSignupFlow() {
             const formData = new FormData();
             formData.append('dni', files.dni);
             formData.append('selfie', files.selfie);
-            formData.append('fullName', data.fullName);
+            formData.append('firstName', data.firstName);
+            formData.append('lastName', data.lastName);
+            formData.append('dniNumber', data.dniNumber);
+            formData.append('dob', data.dob);
+            formData.append('nationality', data.nationality);
+            formData.append('isManualVerification', isManualInput.toString());
             formData.append('vehicleType', data.vehicleType);
             formData.append('patente', data.patente || '');
             formData.append('address', data.address);
@@ -299,7 +338,11 @@ export function RiderSignupFlow() {
                 body: formData
             });
 
-            if (!res.ok) throw new Error('Error al finalizar el registro');
+            const responseData = await res.json();
+
+            if (!res.ok) {
+                throw new Error(responseData.error || 'Error al finalizar el registro');
+            }
 
             haptic.vibrateSuccess();
             toast({ title: "¡Bienvenido Rider!", description: "Has completado tu registro con éxito." });
@@ -341,10 +384,28 @@ export function RiderSignupFlow() {
                         onClose={() => setActiveCamera(null)} 
                         onCapture={(f) => setFiles(prev => ({ ...prev, [activeCamera.id]: f }))} 
                         onValidated={(data) => {
-                            if (activeCamera.id === 'dni' && data.fullName) {
-                                form.setValue('fullName', data.fullName);
-                                setIsNameVerified(true);
-                                toast({ title: "Nombre Autocompletado", description: `Detectamos: ${data.fullName}` });
+                            if (activeCamera.id === 'dni') {
+                                if (data.firstName) {
+                                    form.setValue('firstName', data.firstName);
+                                }
+                                if (data.lastName) {
+                                    form.setValue('lastName', data.lastName);
+                                }
+                                if (data.firstName || data.lastName) {
+                                    setIsNameVerified(true);
+                                }
+                                if (data.dniNumber) {
+                                    form.setValue('dniNumber', data.dniNumber);
+                                }
+                                if (data.dob) {
+                                    form.setValue('dob', data.dob);
+                                }
+                                if (data.nationality) {
+                                    form.setValue('nationality', data.nationality);
+                                }
+                                if (data.firstName || data.dniNumber) {
+                                    toast({ title: "Datos Extraídos", description: "Hemos autocompletado tu información desde el DNI." });
+                                }
                             }
                         }}
                     />
@@ -365,19 +426,20 @@ export function RiderSignupFlow() {
                     <motion.div key="v" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                         <div className="grid grid-cols-3 gap-3">
                             {[
-                                { id: 'bici', icon: Bike, label: 'Bici' },
-                                { id: 'moto', icon: Truck, label: 'Moto' },
-                                { id: 'auto', icon: Car, label: 'Auto' }
+                                { id: 'bici', icon: '🚲', label: 'Bici' },
+                                { id: 'moto', icon: '🏍️', label: 'Moto' },
+                                { id: 'auto', icon: '🚗', label: 'Auto' }
                             ].map(v => (
                                 <button 
                                     key={v.id}
+                                    type="button"
                                     onClick={() => form.setValue('vehicleType', v.id as any)}
                                     className={cn(
                                         "flex flex-col items-center justify-center gap-3 h-24 rounded-2xl border transition-all",
                                         form.watch('vehicleType') === v.id ? "bg-primary border-primary text-white shadow-lg" : "bg-black/[0.03] border-black/10 text-foreground"
                                     )}
                                 >
-                                    <v.icon className={cn("h-6 w-6", form.watch('vehicleType') === v.id ? "text-white" : "text-foreground")} />
+                                    <span className="text-2xl">{v.icon}</span>
                                     <span className="text-[9px] font-black uppercase tracking-widest">{v.label}</span>
                                 </button>
                             ))}
@@ -410,59 +472,158 @@ export function RiderSignupFlow() {
                         </Button>
                     </motion.div>
                 ) : (
-                    <motion.div key="p" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
-                         <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between ml-1">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70">Nombre Completo</Label>
-                                    {isNameVerified && (
-                                        <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-1">
-                                            <ShieldCheck className="h-3 w-3 text-emerald-500" />
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-emerald-500">DNI Verificado</span>
-                                        </motion.div>
-                                    )}
+                    <motion.div key="p" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
+                        {/* Seccion Verificada por DNI */}
+                        <div className="space-y-4 p-5 rounded-3xl bg-black/[0.02] border border-black/[0.05] relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-3">
+                                {isNameVerified || form.watch('dniNumber') ? (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 animate-in fade-in zoom-in duration-500">
+                                        <ShieldCheck className="h-3 w-3" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Verificado</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary animate-pulse">
+                                        <Smartphone className="h-3 w-3" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest">Pendiente</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-1">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground/40">Datos del Documento</h3>
+                                <p className="text-[9px] font-medium text-foreground/30">Estos campos se completan escaneando el DNI</p>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-[#cb465a] ml-1">Nombres / Name</Label>
+                                    <Input 
+                                        {...register('firstName')} 
+                                        placeholder="Juan Manuel" 
+                                        readOnly={!isManualInput}
+                                        className={cn(
+                                            "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
+                                            isManualInput ? "bg-muted/50 text-foreground" : (isNameVerified ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground/40 cursor-not-allowed")
+                                        )} 
+                                    />
+                                    <FormError message={errors.firstName?.message} />
                                 </div>
-                                <Input 
-                                    {...register('fullName')} 
-                                    placeholder="Pedro G." 
-                                    disabled={isNameVerified}
-                                    className={cn(
-                                        "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
-                                        isNameVerified ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground"
-                                    )} 
-                                />
-                                <FormError message={errors.fullName?.message} />
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-[#cb465a] ml-1">Apellido / Surname</Label>
+                                    <Input 
+                                        {...register('lastName')} 
+                                        placeholder="García" 
+                                        readOnly={!isManualInput}
+                                        className={cn(
+                                            "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
+                                            isManualInput ? "bg-muted/50 text-foreground" : (isNameVerified ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground/40 cursor-not-allowed")
+                                        )} 
+                                    />
+                                    <FormError message={errors.lastName?.message} />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">WhatsApp</Label>
-                                <Input 
-                                    {...register('phone')} 
-                                    placeholder="3755.." 
-                                    className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
-                                />
-                                <FormError message={errors.phone?.message} />
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Número de DNI</Label>
+                                    <Input 
+                                        {...register('dniNumber')} 
+                                        placeholder="8 dígitos" 
+                                        readOnly={!isManualInput}
+                                        className={cn(
+                                            "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
+                                            isManualInput ? "bg-muted/50 text-foreground" : (form.watch('dniNumber') ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground/40 cursor-not-allowed")
+                                        )} 
+                                    />
+                                    <FormError message={errors.dniNumber?.message} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Fecha de Nacimiento</Label>
+                                    <Input 
+                                        {...register('dob')} 
+                                        placeholder="DD/MM/YYYY" 
+                                        readOnly={!isManualInput}
+                                        className={cn(
+                                            "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
+                                            isManualInput ? "bg-muted/50 text-foreground" : (form.watch('dob') ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground/40 cursor-not-allowed")
+                                        )} 
+                                    />
+                                    <FormError message={errors.dob?.message} />
+                                </div>
                             </div>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Nacionalidad</Label>
+                                    <Input 
+                                        {...register('nationality')} 
+                                        placeholder="Argentina" 
+                                        readOnly={!isManualInput}
+                                        className={cn(
+                                            "h-14 border-white/10 rounded-2xl placeholder:text-foreground/40 transition-all",
+                                            isManualInput ? "bg-muted/50 text-foreground" : (form.watch('nationality') ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-muted/50 text-foreground/40 cursor-not-allowed")
+                                        )} 
+                                    />
+                                    <FormError message={errors.nationality?.message} />
+                                </div>
+                            </div>
+
+                            {!form.watch('dniNumber') && !isManualInput && (
+                                <div className="pt-2 border-t border-black/[0.05] mt-2 flex flex-col gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsManualInput(true)}
+                                        className="text-[9px] font-black uppercase tracking-widest text-[#cb465a] hover:underline opacity-70 text-center"
+                                    >
+                                        ¿Problemas con el escáner? Ingreso manual
+                                    </button>
+                                </div>
+                            )}
+                            
+                            {isManualInput && (
+                                <div className="flex items-center gap-2 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 mt-2">
+                                    <ShieldCheck className="h-4 w-4 text-amber-500" />
+                                    <p className="text-[9px] font-bold text-amber-500 uppercase leading-tight">
+                                        Modo manual: Tu cuenta requerirá una revisión física extendida.
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email</Label>
-                                <Input 
-                                    {...register('email')} 
-                                    type="email" 
-                                    placeholder="rider@email.com" 
-                                    className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
-                                />
-                                <FormError message={errors.email?.message} />
+
+                        {/* Seccion Manual */}
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">WhatsApp</Label>
+                                    <Input 
+                                        {...register('phone')} 
+                                        placeholder="3755.." 
+                                        className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
+                                    />
+                                    <FormError message={errors.phone?.message} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email</Label>
+                                    <Input 
+                                        {...register('email')} 
+                                        type="email" 
+                                        placeholder="rider@email.com" 
+                                        className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
+                                    />
+                                    <FormError message={errors.email?.message} />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Password</Label>
-                                <Input 
-                                    {...register('password')} 
-                                    type="password" 
-                                    placeholder="••••••••" 
-                                    className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
-                                />
-                                <FormError message={errors.password?.message} />
+                            <div className="grid grid-cols-1 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Password</Label>
+                                    <Input 
+                                        {...register('password')} 
+                                        type="password" 
+                                        placeholder="••••••••" 
+                                        className="h-14 bg-muted/50 border-white/10 rounded-2xl text-foreground placeholder:text-foreground/40" 
+                                    />
+                                    <FormError message={errors.password?.message} />
+                                </div>
                             </div>
                         </div>
 

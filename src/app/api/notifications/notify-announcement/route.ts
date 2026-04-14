@@ -13,25 +13,53 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Firebase Admin not initialized' }, { status: 500 });
         }
 
-        const { title, content, announcementId, imageUrl, supplierName } = await request.json();
+        const { title, content, announcementId, imageUrl, supplierName, supplierId, targetType } = await request.json();
 
         if (!title || !announcementId) {
             return NextResponse.json({ error: 'Missing announcement data' }, { status: 400 });
         }
 
-        // 1. Get all active tokens
+        // 1. Get tokens based on Target Type
         let tokens: string[] = [];
         const tokenDocs: { id: string, tokens: string[] }[] = [];
         
         try {
-            const snapshot = await adminDb.collection('userTokens').get();
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.tokens && Array.isArray(data.tokens) && data.tokens.length > 0) {
-                    tokens.push(...data.tokens);
-                    tokenDocs.push({ id: doc.id, tokens: data.tokens });
+            if (targetType === 'followers' && supplierId) {
+                // SEGMENTED: Only followers of this supplier
+                console.log(`Searching for followers of supplier: ${supplierId}`);
+                const followersSnapshot = await adminDb.collection('users')
+                    .where('favoriteSuppliers', 'array-contains', supplierId)
+                    .limit(500)
+                    .get();
+                
+                const followerUids = followersSnapshot.docs.map(doc => doc.id);
+                
+                if (followerUids.length > 0) {
+                    const tokenRefs = followerUids.map(uid => adminDb.collection('userTokens').doc(uid));
+                    const snapshots = await adminDb.getAll(...tokenRefs);
+                    
+                    snapshots.forEach(docSnap => {
+                        if (docSnap.exists) {
+                            const data = docSnap.data();
+                            if (data?.tokens && Array.isArray(data.tokens)) {
+                                tokens.push(...data.tokens);
+                                tokenDocs.push({ id: docSnap.id, tokens: data.tokens });
+                            }
+                        }
+                    });
                 }
-            });
+            } else {
+                // BROADCAST: All registered users
+                console.log('Broadcasting notification to all community...');
+                const snapshot = await adminDb.collection('userTokens').limit(500).get(); // Safety limit
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.tokens && Array.isArray(data.tokens)) {
+                        tokens.push(...data.tokens);
+                        tokenDocs.push({ id: doc.id, tokens: data.tokens });
+                    }
+                });
+            }
         } catch (dbError) {
             console.error('Error fetching tokens:', dbError);
             return NextResponse.json({ error: 'Error fetching device tokens' }, { status: 500 });
