@@ -196,6 +196,7 @@ export default function LoginForm() {
                       <FormControl>
                         <Input 
                             placeholder="tu@email.com" 
+                            autoComplete="username"
                             {...field} 
                             className="h-12 pl-12 rounded-xl bg-background border-2 border-foreground focus:border-primary focus:ring-primary/20 transition-all font-bold" 
                         />

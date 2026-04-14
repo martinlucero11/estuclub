@@ -608,7 +608,7 @@ function AddStaffModal({ onAdd, isLoading }: { onAdd: (email: string) => void, i
     );
 }
 
-function StatCard({ label, value, icon: Icon, description, variant = 'default' }: { 
+function StatCard({ label, value, icon: Icon, iconClassName, description, variant = 'default' }: { 
     label: string, 
     value: string | number, 
     icon: any, 
