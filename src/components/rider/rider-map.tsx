@@ -430,10 +430,10 @@ export function RiderMap({ orders, onOrderSelect, userLocation, isOnline, active
             `}</style>
 
             {/* FLOATING CONTROLS */}
-            <div className="absolute left-6 bottom-32 flex flex-col gap-3">
+            <div className="absolute left-6 bottom-[160px] flex flex-col gap-3">
                 <Button 
                     onClick={handleCenterUser}
-                    className="w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-xl border border-zinc-200 hover:bg-zinc-50 shadow-lg group transition-all active:scale-95"
+                    className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-xl border border-zinc-200 hover:bg-zinc-50 shadow-lg group transition-all active:scale-95"
                     size="icon"
                 >
                     <Navigation className="h-5 w-5 text-zinc-600 group-hover:scale-110 transition-transform" />

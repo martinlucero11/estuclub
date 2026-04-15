@@ -20,7 +20,7 @@ const Logo = React.forwardRef<any, LogoProps>(
                     width={500}
                     height={500}
                     className={cn(
-                        "w-full h-full",
+                        "w-full h-full object-contain",
                         variant === 'rosa-glow' && "drop-shadow-[0_0_12px_rgba(203,70,90,0.8)]"
                     )}
                     priority

@@ -31,9 +31,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     useEffect(() => {
         const handleFCM = async () => {
             setIsMounted(true);
+            
+            // Solo obtener el token si el usuario YA otorgó permiso previamente.
+            // No pedir permiso automáticamente (viola guidelines de Chrome/Safari).
+            if (typeof window === 'undefined' || !('Notification' in window)) return;
+            if (Notification.permission !== 'granted') return;
+            
             const token = await requestNotificationPermission();
             
-            // If we got a token and we have a logged in user, save it
+            // Si tenemos token y usuario logueado, guardarlo
             if (token && user && firestore) {
                 try {
                     await updateDoc(doc(firestore, 'users', user.uid), { 
@@ -85,10 +91,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                         setImpersonatedSupplierId(null);
                         window.location.reload();
                     }}
-                    className="fixed bottom-20 right-4 z-[9999] bg-black text-white px-4 py-2 rounded-full font-bold shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/20 flex items-center gap-2 hover:scale-105 active:scale-95 transition-all text-xs uppercase tracking-widest"
+                    className="fixed top-[100px] right-4 z-[9999] bg-black/90 backdrop-blur-md text-white px-3 py-2 rounded-xl font-bold shadow-lg border border-white/10 flex items-center gap-2 hover:bg-black active:scale-95 transition-all text-[10px] uppercase tracking-widest"
                 >
                     <LogOut className="h-4 w-4 text-red-500" />
-                    🛑 Salir de Simulación
+                    SALIR SIMULACIÓN
                 </button>
             )}
         </div>

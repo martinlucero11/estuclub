@@ -84,16 +84,16 @@ export function RiderEarnings({ orders }: RiderEarningsProps) {
     ];
 
     return (
-        <div className="space-y-8 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Balance Viewport (Clean Card) */}
             <div className="relative group">
-                <Card className="relative bg-white border-zinc-200 rounded-[2.5rem] p-10 overflow-hidden shadow-xl">
+                <Card className="relative bg-white border-zinc-200 rounded-[2.5rem] p-6 overflow-hidden shadow-xl">
                     {/* Background Visuals */}
                     <div className="absolute -right-10 -top-10 opacity-[0.03] scale-150 rotate-12">
                         <Wallet className="h-64 w-64 text-zinc-900" />
                     </div>
                     
-                    <div className="relative z-10 space-y-8">
+                    <div className="relative z-10 space-y-6">
                         <div className="flex justify-between items-start">
                             <div className="space-y-1.5">
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">Saldo Acumulado</p>
@@ -112,14 +112,14 @@ export function RiderEarnings({ orders }: RiderEarningsProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100 flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest text-left">Tendencia</p>
+                                    <p className="text-[10px] sm:text-xs font-black uppercase text-zinc-400 tracking-widest text-left whitespace-nowrap">Tendencia</p>
                                     <p className="text-sm font-black text-emerald-600">+12.4%</p>
                                 </div>
                                 <ArrowUpRight className="h-4 w-4 text-emerald-500" />
                             </div>
                             <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100 flex items-center justify-between">
                                 <div className="space-y-0.5">
-                                    <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest text-left">Maestro Pro</p>
+                                    <p className="text-[10px] sm:text-xs font-black uppercase text-zinc-400 tracking-widest text-left whitespace-nowrap">Maestro Pro</p>
                                     <p className="text-sm font-black text-zinc-600">NIVEL 4</p>
                                 </div>
                                 <Trophy className="h-4 w-4 text-yellow-500" />
@@ -139,7 +139,7 @@ export function RiderEarnings({ orders }: RiderEarningsProps) {
                             setRange(r);
                         }}
                         className={cn(
-                            "flex-1 py-4 text-[9px] font-black uppercase tracking-[0.2em] rounded-[1.2rem] transition-all duration-300",
+                            "flex-1 py-4 text-[10px] sm:text-xs font-black uppercase tracking-wider rounded-[1.2rem] transition-all duration-300 whitespace-nowrap",
                             range === r 
                                 ? "bg-white text-zinc-900 shadow-md" 
                                 : "text-zinc-400 hover:text-zinc-600 hover:bg-white/40"
@@ -151,8 +151,8 @@ export function RiderEarnings({ orders }: RiderEarningsProps) {
             </div>
 
             {/* High-Fidelity Chart Area */}
-            <Card className="bg-white border-zinc-200 rounded-[2.5rem] p-8 shadow-xl overflow-hidden relative">
-                <CardHeader className="p-0 mb-10 flex flex-row items-center justify-between">
+            <Card className="bg-white border-zinc-200 rounded-[2.5rem] p-6 shadow-xl overflow-hidden relative">
+                <CardHeader className="p-0 mb-6 flex flex-row items-center justify-between">
                     <div className="space-y-1.5">
                         <CardTitle className="text-xs font-black uppercase tracking-[0.3em] italic text-zinc-900">Análisis Visor de Ganancias</CardTitle>
                         <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">Rendimiento por Período Detallado</p>
@@ -233,7 +233,7 @@ export function RiderEarnings({ orders }: RiderEarningsProps) {
                             </div>
                             <div className="space-y-1">
                                 <p className="text-xl font-black tracking-tighter italic text-zinc-900 group-hover:text-[#cb465a] transition-colors">{stat.value.toLocaleString()}</p>
-                                <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-zinc-400">{stat.label}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-zinc-400 whitespace-nowrap truncate">{stat.label}</p>
                             </div>
                         </Card>
                     );

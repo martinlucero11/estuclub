@@ -59,10 +59,10 @@ export function RiderBottomNav({ currentTab, onTabChange }: RiderBottomNavProps)
                                 </div>
                                 
                                 <span className={cn(
-                                    "text-[9px] font-black uppercase tracking-[0.2em] transition-all duration-300",
-                                    isActive ? "opacity-100" : "opacity-60"
+                                    "text-[10px] font-black uppercase tracking-tight transition-all duration-300 whitespace-nowrap",
+                                    isActive ? "opacity-100" : "opacity-60 hidden sm:block"
                                 )}>
-                                    {item.label}
+                                    {isActive ? item.label : <span className="opacity-0 hidden">{item.label}</span>}
                                 </span>
 
                                 {isActive && (

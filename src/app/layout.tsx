@@ -68,6 +68,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            const originalConsoleWarn = console.warn;
+            console.warn = function() {
+              if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('google.maps')) return;
+              originalConsoleWarn.apply(console, arguments);
+            };
+            const originalConsoleError = console.error;
+            console.error = function() {
+              if (arguments[0] && typeof arguments[0] === 'string' && arguments[0].includes('google.maps')) return;
+              originalConsoleError.apply(console, arguments);
+            };
+          `
+        }} />
+      </head>
       <body className={cn("min-h-screen flex flex-col bg-background font-sans antialiased selection:bg-primary/20", fontSans.variable, fontMontserrat.variable, fontInter.variable, fontLobster.variable)}>
         <ThemeProvider
           attribute="class"
@@ -84,7 +100,6 @@ export default function RootLayout({
                       <Suspense fallback={<Loading />}>
                         <StatusBarConfig />
                         {children}
-                        <FloatingAdminMetrics />
                       </Suspense>
                     </GlobalErrorBoundary>
                   </MessagingProvider>
@@ -95,7 +110,7 @@ export default function RootLayout({
           </FirebaseProvider>
         </ThemeProvider>
         <Script 
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY}&libraries=places,geometry,marker&v=weekly&loading=async`} 
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places,geometry,marker&v=weekly&loading=async`} 
           strategy="afterInteractive"
         />
       </body>

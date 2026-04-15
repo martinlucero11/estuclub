@@ -538,53 +538,61 @@ export default function RiderPage() {
                 />
             </div>
 
-            {/* FLOATING BRANDING & CONTROLS (CLEAN STYLE) */}
-            <div className="fixed top-0 left-0 right-0 z-40 p-6 pointer-events-none flex justify-between items-start">
-                <div className="flex flex-col items-start gap-4 pointer-events-auto">
+            {/* GLASS HEADER (PILL SHAPE) */}
+            <div className="fixed top-6 left-6 right-6 z-40 p-2 bg-white/80 backdrop-blur-2xl border border-zinc-200/80 shadow-lg rounded-[2.5rem] flex items-center justify-between">
+                
+                {/* MENU BARS */}
+                <div className="pointer-events-auto shrink-0 relative z-10">
                     <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => setIsSidebarOpen(true)}
-                        className="h-14 w-14 rounded-2xl border border-zinc-200 bg-white/80 backdrop-blur-xl shadow-lg active:scale-95 transition-all text-zinc-900 hover:text-[#cb465a] hover:bg-zinc-50"
+                        className="h-12 w-12 rounded-full border border-zinc-200 bg-white shadow-sm active:scale-95 transition-all text-zinc-900 hover:text-[#cb465a] hover:bg-zinc-50"
                     >
-                        <Menu className="h-7 w-7" />
+                        <Menu className="h-6 w-6" />
                     </Button>
-                    
-                    <Logo brand="rider" variant="rosa" className="h-[120px] w-auto drop-shadow-[0_10px_30px_rgba(203,70,90,0.2)]" />
                 </div>
+                
+                {/* CENTER LOGO GIGANTE */}
+                <div className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center pointer-events-none w-full max-w-[300px]">
+                    <Logo brand="rider" variant="rosa" className="h-[68px] w-[300px] drop-shadow-sm object-contain" />
+                </div>
+                
+                {/* ESTRUCTURA PARA BALANCEAR EL FLEX (Espacio vacío igual al botón de menú) */}
+                <div className="w-12 h-12" />
+            </div>
 
-                <div className="pointer-events-auto">
-                    <div className={cn(
-                        "relative h-14 py-1 pl-5 pr-1.5 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-4 shadow-lg",
-                        isOnline 
-                            ? "bg-emerald-500/10 border-emerald-500/20" 
-                            : "bg-white/80 backdrop-blur-xl border-zinc-200"
-                    )}>
-                        <div className="flex flex-col items-end">
-                            <span className={cn(
-                                "text-[10px] font-black uppercase tracking-[0.1em] leading-none transition-colors",
-                                isOnline ? "text-emerald-600" : "text-zinc-400"
-                            )}>
-                                {isOnline ? 'ONLINE' : 'OFFLINE'}
-                            </span>
-                            <span className="text-[7px] font-black text-zinc-300 uppercase tracking-tighter mt-1.5">RADAR ACTIVO</span>
-                        </div>
-                        <div className={cn(
-                            "p-2 rounded-full transition-all duration-500",
-                            isOnline ? "bg-emerald-500/20" : "bg-zinc-100"
+            {/* FLOATING CONTROLS (OFFLINE/ONLINE) ARRIBA DEL BOTTOM NAV A LA DERECHA */}
+            <div className="fixed bottom-[160px] right-6 z-30 pointer-events-auto">
+                <div className={cn(
+                    "relative h-12 py-1 pl-4 pr-1 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-3 shadow-xl backdrop-blur-xl",
+                    isOnline 
+                        ? "bg-emerald-500/10 border-emerald-500/30" 
+                        : "bg-white/90 border-zinc-200"
+                )}>
+                    <div className="flex flex-col items-end">
+                        <span className={cn(
+                            "text-[9px] font-black uppercase tracking-[0.1em] leading-none transition-colors",
+                            isOnline ? "text-emerald-600" : "text-zinc-500"
                         )}>
-                            <Switch 
-                                checked={isOnline} 
-                                onCheckedChange={handleToggleOnline}
-                                className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-zinc-300"
-                            />
-                        </div>
+                            {isOnline ? 'ONLINE' : 'OFFLINE'}
+                        </span>
+                    </div>
+                    <div className={cn(
+                        "p-1.5 rounded-full transition-all duration-500 border border-transparent shadow-sm",
+                        isOnline ? "bg-emerald-500/20" : "bg-zinc-100"
+                    )}>
+                        <Switch 
+                            checked={isOnline} 
+                            onCheckedChange={handleToggleOnline}
+                            className="data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-zinc-300 scale-90"
+                        />
                     </div>
                 </div>
             </div>
 
             {/* MAIN CONTENT AREA (FLOATING) */}
-            <main className="relative z-30 h-full pt-32 pb-40 px-6 overflow-y-auto pointer-events-none">
+            <main className="relative z-30 h-full pt-28 pb-40 px-4 mt-2 overflow-y-auto pointer-events-none">
                 <div className="pointer-events-auto max-w-xl mx-auto space-y-6">
                     <AnimatePresence mode='wait'>
                         {currentTab === 'earnings' && (

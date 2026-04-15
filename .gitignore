@@ -28,6 +28,8 @@ www/
 .env.test.local
 .env.production.local
 service-account.json
+google-services.json
+GoogleService-Info.plist
 
 # IDEs and editors
 .idea

@@ -14,6 +14,7 @@ import {
     ZapOff,
     Star
 } from 'lucide-react';
+import Logo from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { haptic } from '@/lib/haptics';
@@ -71,10 +72,8 @@ export function RiderSidebar({
                         <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[#cb465a]/5 to-transparent pointer-events-none" />
                         
                         <div className="px-6 mb-10 relative z-10">
-                            <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-2xl font-medium italic tracking-tighter text-zinc-900 font-montserrat flex items-baseline">
-                                    Estu<span className="text-[#cb465a] font-lobster text-3xl ml-1 tracking-normal italic-none">Rider</span>
-                                </h2>
+                            <div className="flex items-center justify-between mb-4">
+                                <Logo brand="rider" variant="rosa" className="h-7 w-auto drop-shadow-sm" />
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
