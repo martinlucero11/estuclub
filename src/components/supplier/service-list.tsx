@@ -67,38 +67,37 @@ export default function ServiceList({ services, availability, supplierId, allows
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1, duration: 0.5 }}
         >
-          <Card className="p-6 rounded-[2rem] border-primary/5 glass glass-dark shadow-premium group transition-all duration-500 hover:shadow-2xl hover:scale-[1.01]">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                  <h3 className="font-black text-xl tracking-tight uppercase group-hover:text-primary transition-colors">{service.name}</h3>
-                </div>
-                <p className="text-sm font-medium text-foreground leading-relaxed italic opacity-80 line-clamp-2">
-                  "{service.description}"
-                </p>
-                <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-primary/70">
-                  <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
-                    <Clock className="h-3 w-3" />
-                    <span>{service.duration} min</span>
+          <BookingDialog service={service} availability={availability} supplierId={supplierId}>
+            <div onClick={() => haptic.vibrateImpact()} className="block w-full text-left cursor-pointer focus:outline-none">
+              <Card className="p-6 rounded-[2rem] border-primary/5 glass glass-dark shadow-premium group transition-all duration-500 hover:shadow-2xl hover:scale-[1.01]">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                      <h3 className="font-black text-xl tracking-tight uppercase group-hover:text-primary transition-colors">{service.name}</h3>
+                    </div>
+                    <p className="text-sm font-medium text-foreground leading-relaxed italic opacity-80 line-clamp-2">
+                      "{service.description}"
+                    </p>
+                    <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-primary/70">
+                      <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10">
+                        <Clock className="h-3 w-3" />
+                        <span>{service.duration} min</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <BookingDialog service={service} availability={availability} supplierId={supplierId}>
-                <MagneticButton>
-                  <Button 
-                    onClick={() => haptic.vibrateImpact()}
-                    className="h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 group/btn"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Reservar
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-                  </Button>
-                </MagneticButton>
-              </BookingDialog>
+                  <MagneticButton>
+                    <div className="h-14 px-8 inline-flex items-center justify-center rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 bg-primary text-white transition-all hover:brightness-110 group/btn">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Reservar
+                      <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+                    </div>
+                  </MagneticButton>
+                </div>
+              </Card>
             </div>
-          </Card>
+          </BookingDialog>
         </motion.div>
       ))}
     </div>

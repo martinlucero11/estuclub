@@ -1,5 +1,7 @@
 'use client';
 
+import { useTheme } from 'next-themes';
+
 import { useState, useEffect } from 'react';
 import { useUser, useFirestore, useAuthService } from '@/firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -29,7 +31,7 @@ export default function CluberConfiguracionPage() {
     
     const [isSaving, setIsSaving] = useState(false);
     const [isLinking, setIsLinking] = useState(false);
-    const [theme, setTheme] = useState<'light' | 'dark'>(userData?.theme || 'dark');
+    const { theme: activeTheme, setTheme } = useTheme();
     const [notifications, setNotifications] = useState(userData?.notificationsEnabled ?? true);
     
     // Store profile state
@@ -39,7 +41,6 @@ export default function CluberConfiguracionPage() {
 
     useEffect(() => {
         if (userData) {
-            setTheme(userData.theme || 'dark');
             setNotifications(userData.notificationsEnabled ?? true);
         }
         if (supplierData) {
@@ -55,9 +56,8 @@ export default function CluberConfiguracionPage() {
         setIsSaving(true);
         
         try {
-            // Update User Profile (Theme, Notifications)
+            // Update User Profile (Notifications)
             await updateDoc(doc(firestore, 'users', user.uid), {
-                theme,
                 notificationsEnabled: notifications,
                 updatedAt: serverTimestamp()
             });
@@ -154,18 +154,19 @@ export default function CluberConfiguracionPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
-                        <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                            <div className="flex items-center gap-4">
-                                {theme === 'dark' ? <Moon className="h-5 w-5 opacity-50" /> : <Sun className="h-5 w-5 text-amber-500" />}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 mb-2">
+                                <Moon className="h-5 w-5 text-zinc-400" />
                                 <div>
-                                    <p className="text-xs font-black uppercase tracking-widest">Modo Oscuro</p>
-                                    <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">Cambiar apariencia visual</p>
+                                    <p className="text-xs font-black uppercase tracking-widest">Apariencia</p>
+                                    <p className="text-[10px] text-foreground/40 font-bold uppercase tracking-widest">Elige el modo visual</p>
                                 </div>
                             </div>
-                            <Switch 
-                                checked={theme === 'dark'} 
-                                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')} 
-                            />
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-xs", activeTheme === 'light' ? 'border-primary text-primary bg-primary/5' : 'border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5')} onClick={() => setTheme('light')}>CLARO</Button>
+                                <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-xs", activeTheme === 'dark' ? 'border-primary text-primary bg-primary/5' : 'border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5')} onClick={() => setTheme('dark')}>OSCURO</Button>
+                                <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-xs", activeTheme === 'system' ? 'border-primary text-primary bg-primary/5' : 'border-black/10 dark:border-white/10 hover:bg-black/5 dark:hover:bg-white/5')} onClick={() => setTheme('system')}>SISTEMA</Button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">

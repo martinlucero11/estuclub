@@ -3,7 +3,8 @@ import React, { useMemo } from 'react';
 import Link from "next/link";
 import { doc } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import type { Announcement, Banner, SupplierProfile, SerializableBenefit, SerializableAnnouncement, Product, Service } from "@/types/data";
+import dynamic from 'next/dynamic';
+import type { Announcement, Banner, SupplierProfile, SerializableBenefit, SerializableAnnouncement, Product, Service, Availability } from "@/types/data";
 import Image from "next/image";
 import { getInitials, cn, optimizeImage } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -26,6 +27,8 @@ import { useUser } from "@/firebase";
 import { useDoc } from "@/firebase/firestore/use-doc";
 import { useCart } from "@/context/cart-context";
 import { Button } from "../ui/button";
+
+const BookingDialog = dynamic(() => import('../booking/booking-dialog'), { ssr: false });
 
 // --- SUPPLIER CARD ---
 const SupplierCard = React.memo(({ supplier, priority = false, activeTab }: { supplier: SupplierProfile, priority?: boolean, activeTab?: string }) => {
@@ -212,45 +215,46 @@ const ServiceCarouselCard = ({ service, activeTab }: { service: Service, activeT
     const { data: supplier } = useDoc<SupplierProfile>(
         service.supplierId ? doc(firestore, 'roles_supplier', service.supplierId) : null
     );
+    const { data: availability } = useDoc<Availability>(
+        service.supplierId ? doc(firestore, `roles_supplier/${service.supplierId}/availability/schedule`) : null
+    );
 
     return (
-        <Link 
-            href={`/proveedores/view?slug=${supplier?.slug || ''}${activeTab ? `&tab=${activeTab}` : ''}`}
-            onClick={() => haptic.vibrateSubtle()}
-            className="group block h-full"
-        >
-            <div className="flex flex-col h-full bg-white rounded-[2rem] overflow-hidden shadow-premium border border-black/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl group relative">
-                 <div className="aspect-[1.5/1] relative rounded-[1.5rem] overflow-hidden m-2 border border-black/5">
-                    <Image 
-                        src={optimizeImage(service.imageUrl || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800", 600)} 
-                        alt={service.name} 
-                        fill 
-                        className="object-cover transition-transform duration-700 group-hover:scale-110" 
-                    />
-                    <div className="absolute top-3 right-3">
-                        <div className="bg-primary px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-2">
-                             <Sparkles className="h-2.5 w-2.5" /> AGENDAR
+        <BookingDialog service={service} availability={availability || {schedule: {}}} supplierId={service.supplierId}>
+            <div onClick={() => haptic.vibrateSubtle()} className="group block h-full cursor-pointer text-left focus:outline-none">
+                <div className="flex flex-col h-full bg-white rounded-[2rem] overflow-hidden shadow-premium border border-black/5 hover:border-primary/20 transition-all duration-500 hover:shadow-2xl relative">
+                     <div className="aspect-[1.5/1] relative rounded-[1.5rem] overflow-hidden m-2 border border-black/5">
+                        <Image 
+                            src={optimizeImage(service.imageUrl || "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80&w=800", 600)} 
+                            alt={service.name} 
+                            fill 
+                            className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                        />
+                        <div className="absolute top-3 right-3">
+                            <div className="bg-primary px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest text-white shadow-lg flex items-center gap-2">
+                                 <Sparkles className="h-2.5 w-2.5" /> CANJEAR
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="p-4 pt-1 flex flex-col flex-1">
-                    <h3 className="font-black text-base tracking-tighter italic text-black leading-tight mb-1 group-hover:text-primary transition-colors">{service.name}</h3>
-                    <p className="text-[10px] font-bold text-black/40 uppercase mb-3">{supplier?.name || "EstuCluber"}</p>
-                    
-                    <div className="mt-auto flex items-center justify-between pt-3 border-t border-black/5">
-                        <div className="flex items-center gap-2">
-                            <Clock className="h-3.5 w-3.5 text-primary" />
-                            <span className="text-[9px] font-black uppercase tracking-widest text-black/60">{service.duration} mins</span>
-                        </div>
-                         <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-black text-primary">${service.price || 0}</span>
-                            <ChevronRight className="h-4 w-4 text-black/20" />
+                    <div className="p-4 pt-1 flex flex-col flex-1">
+                        <h3 className="font-black text-base tracking-tighter italic text-black leading-tight mb-1 group-hover:text-primary transition-colors">{service.name}</h3>
+                        <p className="text-[10px] font-bold text-black/40 uppercase mb-3">{supplier?.name || "EstuCluber"}</p>
+                        
+                        <div className="mt-auto flex items-center justify-between pt-3 border-t border-black/5">
+                            <div className="flex items-center gap-2">
+                                <Clock className="h-3.5 w-3.5 text-primary" />
+                                <span className="text-[9px] font-black uppercase tracking-widest text-black/60">{service.duration} mins</span>
+                            </div>
+                             <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-black text-primary">${service.price || 0}</span>
+                                <ChevronRight className="h-4 w-4 text-black/20" />
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </Link>
+        </BookingDialog>
     );
 };
 

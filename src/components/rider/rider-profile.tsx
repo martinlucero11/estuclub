@@ -1,5 +1,7 @@
 'use client';
 
+import { useTheme } from 'next-themes';
+
 import React from 'react';
 import { 
     User, 
@@ -33,6 +35,7 @@ import { Separator } from '@/components/ui/separator';
 export function RiderProfile() {
     const { userData, user } = useUser();
     const auth = useAuthService();
+    const { theme: activeTheme, setTheme } = useTheme();
 
     const handleLogout = async () => {
         haptic.vibrateMedium();
@@ -149,6 +152,19 @@ export function RiderProfile() {
                             <ChevronRight className="h-4 w-4 text-zinc-200 group-hover:text-zinc-400 transition-colors" />
                         </Card>
                     ))}
+                </div>
+            </div>
+
+            {/* Appearance Settings */}
+            <div className="space-y-6 px-4">
+                <div className="flex items-center gap-3">
+                    <div className="h-1 w-8 bg-[#cb465a]/40 rounded-full" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#cb465a]">Visualización</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-[10px] tracking-widest", activeTheme === 'light' ? 'border-[#cb465a] text-[#cb465a] bg-[#cb465a]/5' : 'border-zinc-200 bg-white hover:bg-zinc-50')} onClick={() => setTheme('light')}>CLARO</Button>
+                    <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-[10px] tracking-widest", activeTheme === 'dark' ? 'border-[#cb465a] text-[#cb465a] bg-[#cb465a]/5' : 'border-zinc-200 bg-white hover:bg-zinc-50')} onClick={() => setTheme('dark')}>OSCURO</Button>
+                    <Button variant="outline" className={cn("h-14 rounded-xl font-bold active:scale-95 transition-all text-[10px] tracking-widest", activeTheme === 'system' ? 'border-[#cb465a] text-[#cb465a] bg-[#cb465a]/5' : 'border-zinc-200 bg-white hover:bg-zinc-50')} onClick={() => setTheme('system')}>SISTEMA</Button>
                 </div>
             </div>
 

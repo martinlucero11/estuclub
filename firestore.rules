@@ -72,6 +72,7 @@ service cloud.firestore {
       match /availability/{docId} { allow read: if true; allow write: if isOwner(supplierId) || isAdmin(); }
       match /services/{serviceId} { allow read: if true; allow write: if isOwner(supplierId) || isAdmin(); }
       match /appointments/{appointmentId} { allow read, write: if isOwner(supplierId) || isAdmin(); }
+      match /subscribers/{userId} { allow read: if true; allow write: if isAuthenticated() && request.auth.uid == userId; }
     }
 
     /* ================= PEDIDOS (CORE) ================= */
