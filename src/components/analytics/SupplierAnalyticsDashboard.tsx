@@ -3,6 +3,7 @@
 import { useCollectionOnce, useFirestore, useDoc, useUser } from '@/firebase';
 import { collection, query, where, doc, orderBy } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
+
 import { ReviewBreakdown } from './ReviewBreakdown';
 import { LoyaltyMetrics } from './LoyaltyMetrics';
 import { StatCard } from './StatCard';
@@ -22,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Benefit, BenefitRedemption, Appointment, UserProfile, SupplierProfile, Product } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
-import { startOfMonth, subMonths, isAfter, isBefore, endOfMonth, format } from 'date-fns';
+import { subDays, format, startOfMonth, subMonths, isAfter, isBefore, endOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from 'framer-motion';

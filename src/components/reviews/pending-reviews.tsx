@@ -66,7 +66,7 @@ export function PendingReviews({ supplierId }: PendingReviewsProps) {
         redemptionId={pendingReview.id}
         benefitId={pendingReview.benefitId}
         supplierId={pendingReview.supplierId}
-        benefitTitle={pendingReview.benefitTitle}
+        title={pendingReview.benefitTitle}
         onSuccess={() => setClosedIds([...closedIds, pendingReview.id])}
       />
     </div>

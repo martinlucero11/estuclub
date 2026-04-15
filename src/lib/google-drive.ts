@@ -133,9 +133,7 @@ export async function validateFolderAccess(folderId: string) {
         const res = await drive.files.get({
             fileId: folderId,
             fields: 'id, name, capabilities, kind',
-            supportsAllDrives: true,
-            // @ts-ignore - Some versions of the library expect this even for get
-            includeItemsFromAllDrives: true
+            supportsAllDrives: true
         });
         
         const canAddChildren = res.data.capabilities?.canAddChildren;
@@ -188,8 +186,7 @@ export async function ensureFolderExists(name: string, parentId: string) {
             q: `name = '${name}' and '${parentId}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
             fields: 'files(id, name)',
             spaces: 'drive',
-            supportsAllDrives: true,
-            includeItemsFromAllDrives: true
+            supportsAllDrives: true
         });
 
         if (res.data.files && res.data.files.length > 0) {

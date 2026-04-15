@@ -382,16 +382,6 @@ export default function PanelCluberPage() {
                                     </div>
                                 </div>
 
-                                <Card className="rounded-[3rem] p-10 border-zinc-100 bg-zinc-50 border-dashed flex flex-col items-center justify-center text-center gap-6 opacity-60 min-h-[300px]">
-                                    <div className="h-16 w-16 rounded-[2rem] bg-white flex items-center justify-center shadow-xl border border-zinc-100">
-                                        <Sparkles className="h-6 w-6 text-zinc-300" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <h3 className="text-2xl font-black uppercase tracking-tighter italic text-zinc-400 leading-none">Notificaciones Push</h3>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">Muy pronto: Envía alertas directas a tus seguidores</p>
-                                    </div>
-                                    <Button disabled variant="outline" className="rounded-xl h-12 uppercase font-black text-[9px] tracking-widest px-8">Próximamente</Button>
-                                </Card>
                             </div>
                         </div>
                     </div>

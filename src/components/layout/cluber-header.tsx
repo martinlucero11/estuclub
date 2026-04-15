@@ -163,9 +163,6 @@ export function CluberHeader({
                 <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase py-3 cursor-pointer focus:bg-zinc-50 gap-3">
                     <User className="h-4 w-4 text-zinc-400" /> Mi Perfil
                 </DropdownMenuItem>
-                <DropdownMenuItem className="rounded-xl font-bold text-[10px] uppercase py-3 cursor-pointer focus:bg-zinc-50 gap-3">
-                    <Zap className="h-4 w-4 text-zinc-400" /> Suscripción
-                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-zinc-50" />
                 <DropdownMenuItem 
                     onClick={handleLogout}

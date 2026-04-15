@@ -278,6 +278,7 @@ export interface OrderItem {
     quantity: number;
     imageUrl?: string;
     notes?: string;
+    originalPrice?: number;
 }
 
 export type OrderStatus = 
@@ -334,6 +335,7 @@ export interface BenefitRedemption {
     status: 'pending' | 'used';
     qrCodeValue?: string;
     pointsGranted?: number;
+    hasReview?: boolean;
 }
 
 export interface SerializableBenefitRedemption extends Omit<BenefitRedemption, 'redeemedAt' | 'usedAt'> {
