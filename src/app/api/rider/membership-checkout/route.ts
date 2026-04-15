@@ -66,8 +66,6 @@ export async function POST(req: Request) {
 
         const response = await preference.create(preferenceData);
 
-        console.log(`[MEMBERSHIP CHECKOUT] Generated preference for ${userId}: ${response.id}`);
-
         return NextResponse.json({ 
             id: response.id, 
             init_point: response.init_point,

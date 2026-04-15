@@ -9,8 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 const VAPID_KEY = 'BFp8_dzQcHkXTre2tT6YT85zBrFz0xoB7QCRXmfVbsTOOW9IMClQSueOt2yeLpSuWMWKABJVfredoC-cFM58ULE';
 
 /**
- * useNotifications Hook
- * Misión 1: Gestión de permisos y tokens de FCM.
+ * Gestión de permisos y tokens de FCM.
  */
 export function useNotifications() {
     const { user } = useUser();
@@ -39,8 +38,6 @@ export function useNotifications() {
                 const token = await getToken(messaging, { vapidKey: VAPID_KEY });
 
                 if (token) {
-                    console.log('FCM Token:', token);
-                    // Guardar token en Firestore (SSoT para notificaciones)
                     const tokenRef = doc(firestore, 'userTokens', user.uid);
                     await setDoc(tokenRef, {
                         tokens: arrayUnion(token),
@@ -50,11 +47,10 @@ export function useNotifications() {
                 }
             }
         } catch (error) {
-            console.error('Error in FCM permission/token:', error);
+            console.error('Error en permisos FCM:', error);
         }
     };
 
-    // Escuchar mensajes en primer plano (Foreground)
     useEffect(() => {
         if (!app || typeof window === 'undefined') return;
         
@@ -64,7 +60,6 @@ export function useNotifications() {
 
             const messaging = getMessaging(app);
             const unsubscribe = onMessage(messaging, (payload) => {
-                console.log('Foreground Message:', payload);
                 toast({
                     title: payload.notification?.title || 'Notificación',
                     description: payload.notification?.body || '',

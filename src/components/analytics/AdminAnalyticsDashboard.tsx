@@ -499,7 +499,7 @@ export default function AdminAnalyticsDashboard() {
                             </div>
                             <div>
                                 <h2 className="text-xl font-black italic tracking-tighter leading-none mb-1">
-                                    Command <span className="text-primary">Center</span>
+                                    Centro de <span className="text-primary">Control</span>
                                 </h2>
                                 <div className="flex items-center gap-2">
                                     <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -511,7 +511,7 @@ export default function AdminAnalyticsDashboard() {
                         </div>
 
                         <div className="flex gap-4 items-center">
-                            <div className="relative min-w-[350px] group">
+                            <div className="relative min-w-[200px] md:min-w-[350px] group">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground group-focus-within:text-primary transition-colors z-10" />
                                 <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
                                     <SelectTrigger className={cn(
@@ -569,19 +569,19 @@ export default function AdminAnalyticsDashboard() {
                     <div className="space-y-2">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-2 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]" />
-                            <h1 className="text-5xl font-black tracking-tighter italic text-foreground dark:text-white drop-shadow-sm">
-                                {selectedSupplierId === 'all' ? 'Analytics Globales' : 'Detalle de Partner'}
+                            <h1 className="text-3xl md:text-5xl font-black tracking-tighter italic text-foreground dark:text-white drop-shadow-sm">
+                                {selectedSupplierId === 'all' ? 'Estadísticas Globales' : 'Detalle de Socio'}
                             </h1>
                         </div>
                         <p className="text-[12px] font-bold uppercase tracking-[0.4em] text-foreground dark:text-white/40 ml-6">
-                            Estuclub Business Intelligence v2.5
+                            Estuclub Inteligencia de Negocio v2.5
                         </p>
                     </div>
 
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="relative z-10">
                         <TabsList className="bg-white/40 dark:bg-white/5 border border-black/10 dark:border-white/10 p-1.5 rounded-[2.2rem] h-16 backdrop-blur-4xl shadow-2xl">
                             {[
-                                { id: "overview", label: "Dashboard", icon: LayoutDashboard },
+                                { id: "overview", label: "Panel", icon: LayoutDashboard },
                                 { id: "demographics", label: "Audiencia", icon: GraduationCap },
                                 { id: "activity", label: "Actividad", icon: Activity },
                                 { id: "behavior", label: "Fidelidad", icon: Heart },
@@ -590,7 +590,7 @@ export default function AdminAnalyticsDashboard() {
                                 <TabsTrigger 
                                     key={t.id} 
                                     value={t.id} 
-                                    className="rounded-[1.8rem] px-10 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all duration-700 gap-3 text-foreground shadow-sm data-[state=active]:shadow-primary/40"
+                                    className="rounded-[1.8rem] px-4 md:px-10 h-full data-[state=active]:bg-primary data-[state=active]:text-white font-black uppercase tracking-[0.2em] text-[10px] transition-all duration-700 gap-2 md:gap-3 text-foreground shadow-sm data-[state=active]:shadow-primary/40"
                                 >
                                     <t.icon className="h-4.5 w-4.5" />
                                     {t.label}
@@ -618,10 +618,10 @@ export default function AdminAnalyticsDashboard() {
                                             </div>
                                             <div className="space-y-1.5">
                                                 <h3 className="text-2xl font-black text-white italic tracking-tighter leading-none">
-                                                    Supplier Intelligence <span className="opacity-60">Mode</span>
+                                                    Modo Inteligencia <span className="opacity-60">de Socio</span>
                                                 </h3>
                                                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-white/70">
-                                                    Auditoria de Performance: <span className="text-white bg-black/30 px-3 py-1 rounded-lg border border-white/10">{suppliers?.find(s => s.id === selectedSupplierId)?.name}</span>
+                                                    Auditoría de Rendimiento: <span className="text-white bg-black/30 px-3 py-1 rounded-lg border border-white/10">{suppliers?.find(s => s.id === selectedSupplierId)?.name}</span>
                                                 </p>
                                             </div>
                                         </div>

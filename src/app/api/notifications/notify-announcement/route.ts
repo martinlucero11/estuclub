@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * API Route: /api/notifications/notify-announcement
- * Misión 2: Notificar anuncios aprobados a toda la comunidad.
+ * Notificar anuncios aprobados a toda la comunidad.
  */
 export async function POST(request: NextRequest) {
     try {
@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
         
         try {
             if (targetType === 'followers' && supplierId) {
-                // SEGMENTED: Only followers of this supplier
-                console.log(`Searching for followers of supplier: ${supplierId}`);
+                // Solo seguidores de este Cluber
                 const followersSnapshot = await adminDb.collection('users')
                     .where('favoriteSuppliers', 'array-contains', supplierId)
                     .limit(500)
@@ -49,8 +48,7 @@ export async function POST(request: NextRequest) {
                     });
                 }
             } else {
-                // BROADCAST: All registered users
-                console.log('Broadcasting notification to all community...');
+                // Broadcast a toda la comunidad
                 const snapshot = await adminDb.collection('userTokens').limit(500).get(); // Safety limit
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
             });
 
             if (tokensToRemove.length > 0) {
-                console.log(`Cleaning up ${tokensToRemove.length} stale tokens from Announcements broadcast...`);
+
                 for (const docInfo of tokenDocs) {
                     const remainingTokens = docInfo.tokens.filter(t => !tokensToRemove.includes(t));
                     if (remainingTokens.length !== docInfo.tokens.length) {

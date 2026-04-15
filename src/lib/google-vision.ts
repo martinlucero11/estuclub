@@ -13,7 +13,6 @@ export function getVisionClient() {
     try {
       const credentials = JSON.parse(Buffer.from(base64, 'base64').toString('utf-8'));
       options = { credentials };
-      console.log("[VISION] Client initialized via Service Account Base64");
     } catch (error) {
       console.error("[VISION] Failed to parse Service Account Base64", error);
     }

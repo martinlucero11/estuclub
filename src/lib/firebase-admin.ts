@@ -27,7 +27,6 @@ if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(getServiceAccount()),
     });
-    console.log("Firebase Admin inicializado correctamente vía Base64");
     initializationError = null;
   } catch (error: any) {
     console.error("Error inicializando Firebase Admin:", error);

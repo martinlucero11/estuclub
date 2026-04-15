@@ -147,7 +147,6 @@ export async function POST(req: NextRequest) {
             throw new Error('Configuración de carpeta de Drive faltante: GOOGLE_DRIVE_RIDER_FOLDER_ID');
         }
         
-        console.log(`[KYC API] Uploading documents to Drive folder: ${parentFolderId}`);
 
         let dniUpload, selfieUpload;
         try {
@@ -205,7 +204,6 @@ export async function POST(req: NextRequest) {
             await adminAuth.updateUser(uid, {
                 photoURL: selfieUpload.contentLink
             });
-            console.log(`[KYC API] Auth profile synced for user ${uid}`);
         } catch (authSyncError) {
             console.error('[KYC API] Failed to sync Auth profile photo:', authSyncError);
             // Non-blocking but logged

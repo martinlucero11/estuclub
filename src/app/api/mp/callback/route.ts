@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
   // Read the cookie (diagnostic only for MVP bypass)
   const storedState = cookies().get('__session')?.value;
 
-  console.log(`[MP-DEBUG] Callback received. Code: ${code ? 'Yes' : 'No'}, State: ${state}, Cookie: ${storedState || 'Missing'}`);
 
   // 0. Database Availability Check
   if (!adminDb) {
@@ -66,7 +65,6 @@ export async function GET(request: NextRequest) {
     }
 
     const redirectUri = getRedirectUri();
-    console.log(`[MP-DEBUG] Exchanging code for user ${userId}. Using Redirect URI: ${redirectUri}`);
 
 
     // 4. Token Exchange Request
@@ -129,7 +127,6 @@ export async function GET(request: NextRequest) {
 
     await batch.commit();
 
-    console.log(`[MP-SUCCESS] Account ${mp_user_id} linked successfully for user ${userId}`);
 
     const dashboardUrl = new URL('/panel-cluber/configuracion', redirectUri);
     dashboardUrl.searchParams.set('success', 'mp_linked');

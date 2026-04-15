@@ -119,18 +119,23 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
         const validatedData = SupplierRequestSchema.parse(reqData);
         const { userId, supplierName, category, address, commercialPhone, logo, fachada } = validatedData;
 
-            // 1. Provision Google Drive Folder (Pre-transactional for simplicity, or handle error)
-            let driveFolderId = '';
-            const parentId = process.env.GOOGLE_DRIVE_CLUBER_FOLDER_ID;
-            if (parentId) {
-                const folderName = `${supplierName}_${userId}`;
-                const driveResult = await ensureFolderExists(folderName, parentId);
-                if (driveResult.success) {
-                    driveFolderId = driveResult.id;
-                }
+        // 1. Provisionar carpeta de Google Drive (fuera de la transacción)
+        let driveFolderId = '';
+        const parentId = process.env.GOOGLE_DRIVE_CLUBER_FOLDER_ID;
+        if (parentId) {
+            const folderName = `${supplierName}_${userId}`;
+            const driveResult = await ensureFolderExists(folderName, parentId);
+            if (driveResult.success) {
+                driveFolderId = driveResult.id;
             }
+        }
 
-            // 2. Create Supplier Role
+        return await adminDb.runTransaction(async (transaction) => {
+            const userRef = adminDb!.collection('users').doc(userId);
+            const supplierRoleRef = adminDb!.collection('roles_supplier').doc(userId);
+            const requestRef = adminDb!.collection('supplier_requests').doc(requestId);
+
+            // 2. Crear Rol de Supplier
             transaction.set(supplierRoleRef, {
                 id: userId,
                 name: supplierName,
@@ -148,7 +153,7 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
                 storeName: supplierName,
             }, { merge: true });
 
-            // 3. Update User Profile Role
+            // 3. Actualizar Perfil de Usuario
             transaction.set(userRef, {
                 role: 'supplier',
                 isVerified: true,
@@ -159,7 +164,7 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
                 address: address || '',
             }, { merge: true });
 
-            // 3. Mark request as approved
+            // 4. Marcar solicitud como aprobada
             transaction.update(requestRef, {
                 status: 'approved',
                 approvedAt: new Date().toISOString(),

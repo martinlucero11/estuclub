@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
     const startTime = Date.now();
     const timestamp = new Date().toISOString();
     
-    console.log('--- [DRIVE DIAGNOSTIC MASTER] STARTING ---');
 
     try {
         // 1. Verificar Cliente
@@ -75,7 +74,6 @@ export async function GET(req: NextRequest) {
 
                 // C. Test de Jerarquía (Solo en CLUBERS_ROOT)
                 if (folder.name === 'CLUBERS_ROOT' && upload.success) {
-                    console.log('[DIAGNOSTIC] Testing Hierarchy Logic...');
                     const subfolderName = `Diagnostic_Deep_Test_${Date.now()}`;
                     const ensureResult = await ensureFolderExists(subfolderName, folder.id);
                     

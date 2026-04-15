@@ -139,6 +139,6 @@ export async function seedBenefits(firestore: Firestore, currentUserId: string, 
   });
 
   await batch.commit();
-  console.log('✅ Demo data sembrada en Leandro N. Alem.');
+  // Seed completado
 }
 

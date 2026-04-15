@@ -164,8 +164,6 @@ async function handleApprovedPayment(orderId: string, paymentId: string, metadat
             subscriptionPaidAt: FieldValue.serverTimestamp(),
             mp_linked: true
         });
-        
-        console.log(`[SUBSCRIPTION RE-ACTIVATION] User ${metadata.rider_id} paid. Valid until: ${nextMonth.toISOString()}`);
     }
 
     await batch.commit();

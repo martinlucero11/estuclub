@@ -1,11 +1,11 @@
 {
   "name": "Estuclub",
   "short_name": "Estuclub",
-  "start_url": "/benefits",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "Estuclub App",
-  "theme_color": "#d83762",
+  "description": "Beneficios y Delivery para Estudiantes",
+  "theme_color": "#cb465a",
   "icons": [
     {
       "src": "/icon-192.png",

@@ -16,14 +16,11 @@ export default function RiderLayout({
   // Riders AND admins can access rider routes
   const hasAccess = roles.includes('rider') || roles.includes('admin');
 
-  /* 
-  // EMERGENCY DISABLE FOR DEMO
   useEffect(() => {
     if (!isUserLoading && !hasAccess) {
       router.replace('/');
     }
   }, [isUserLoading, hasAccess, router]);
-  */
 
   if (isUserLoading) {
     return (
@@ -36,8 +33,7 @@ export default function RiderLayout({
     );
   }
 
-  // EMERGENCY DISABLE FOR DEMO
-  // if (!hasAccess) return null;
+  if (!hasAccess) return null;
 
   return (
     <div className="rider-night bg-[#000000] min-h-screen text-white selection:bg-[#cb465a]/30">

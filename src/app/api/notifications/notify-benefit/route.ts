@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             response.responses.forEach((resp, idx) => {
                 if (!resp.success) {
                     const errorCode = resp.error?.code;
-                    // MISSION 4: Cleanup stale/ghost tokens
+                    // Limpiar tokens inválidos
                     if (errorCode === 'messaging/registration-token-not-registered' || 
                         errorCode === 'messaging/invalid-registration-token') {
                         tokensToRemove.push(message.tokens[idx]);
@@ -88,7 +88,6 @@ export async function POST(request: NextRequest) {
             });
 
             if (tokensToRemove.length > 0) {
-                console.log(`Cleaning up ${tokensToRemove.length} stale tokens...`);
                 // Batch delete/filter tokens in Firestore
                 for (const docInfo of tokenDocs) {
                     const remainingTokens = docInfo.tokens.filter(t => !tokensToRemove.includes(t));

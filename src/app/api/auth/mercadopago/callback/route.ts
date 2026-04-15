@@ -13,6 +13,5 @@ export async function GET(request: NextRequest) {
         newUrl.searchParams.set(key, value);
     });
 
-    console.log(`[MP-MIGRATE] Redirecting legacy callback to: ${newUrl.toString()}`);
     return NextResponse.redirect(newUrl);
 }

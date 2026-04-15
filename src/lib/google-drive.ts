@@ -22,7 +22,6 @@ export async function getDriveClient() {
     }
 
     if (credentials) {
-        console.log('[DRIVE AUTH] Initializing via Service Account (Shared Email)');
         const auth = new google.auth.GoogleAuth({
             credentials,
             scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'],
@@ -56,8 +55,6 @@ export async function uploadFileToDrive(
     parentFolderId: string
 ) {
     try {
-        console.log(`[DRIVE] Starting centralized upload for ${filename}`);
-
         const drive = await getDriveClient();
 
         // Create Readable Stream from Buffer
@@ -84,7 +81,6 @@ export async function uploadFileToDrive(
             throw new Error('Drive API did not return a file ID');
         }
 
-        console.log(`[DRIVE LIB] File created successfully. ID: ${fileId}`);
 
         // MANDATORY: Set permissions to anyone with link can view
         await drive.permissions.create({
@@ -95,7 +91,6 @@ export async function uploadFileToDrive(
             },
         });
 
-        console.log('[DRIVE LIB] Permissions set to public:reader');
 
         // Re-fetch to get links after permission change
         const fileMetadata = await drive.files.get({
@@ -104,7 +99,6 @@ export async function uploadFileToDrive(
             supportsAllDrives: true,
         });
 
-        console.log(`[DRIVE LIB] Final URL: ${fileMetadata.data.webViewLink}`);
 
         return {
             success: true,
