@@ -37,6 +37,7 @@ service cloud.firestore {
       );
     }
 
+    /* 
     function isRider() {
       let data = getUserData();
       return isAuthenticated() && (
@@ -44,6 +45,7 @@ service cloud.firestore {
         exists(/databases/$(database)/documents/roles_rider/$(request.auth.uid))
       );
     }
+    */
 
     /* ================= USUARIOS & TOKENS ================= */
 

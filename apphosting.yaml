@@ -18,7 +18,7 @@ env:
   - variable: NEXT_PUBLIC_FIREBASE_VAPID_KEY
     value: "BFp8_dzQcHkXTre2tT6YT85zBrFz0xoB7QCRXmfVbsTOOW9IMClQSueOt2yeLpSuWMWKABJVfredoC-cFM58ULE"
   - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    value: "AIzaSyCybt-ydw4Cdr1cHFO7W2h9zcuNILlp-50"
+    value: "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"
   - variable: NEXT_PUBLIC_BASE_URL
     value: "https://estuclub.com.ar"
 

@@ -73,8 +73,13 @@ export function MapLocationPicker({ onLocationSelect, initialLocation, className
                 setAddress(fullAddress);
                 onLocationSelect({ lat, lng, address: fullAddress });
             }
-        } catch (error) {
-            console.error("Geocoding failed", error);
+        } catch (error: any) {
+            console.warn("Geocoding failed:", error?.message || error);
+            if (error?.message?.includes('REQUEST_DENIED')) {
+                setAddress('Error: API no autorizada (Revisar consola Google Cloud)');
+            } else {
+                setAddress('Ubicación sin dirección detectada');
+            }
         } finally {
             setIsGeocoding(false);
         }
