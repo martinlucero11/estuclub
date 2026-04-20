@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useUser, useFirestore } from "@/firebase";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { doc, updateDoc, query, collection, where, orderBy, limit, onSnapshot, Timestamp } from "firebase/firestore";
@@ -32,7 +32,12 @@ export default function CluberLayout({
   // Mobile Sidebar State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // Section Navigation State (Lifts Panel state to URL)
-  const currentSection = searchParams.get('section') || 'dashboard';
+  const currentSection = useMemo(() => {
+    if (pathname.includes('/analytics')) return 'analytics';
+    if (pathname.includes('/scanner')) return 'vouchers'; // Scanner is linked to vouchers in sidebar usually
+    if (pathname.includes('/supplier-profile')) return 'settings';
+    return searchParams.get('section') || 'dashboard';
+  }, [pathname, searchParams]);
 
   // Resolved Data
   const supplierId = (isAdmin && impersonatedSupplierId) ? impersonatedSupplierId : user?.uid;
@@ -140,7 +145,17 @@ export default function CluberLayout({
   const handleSectionChange = (sectionId: string) => {
     haptic.vibrateSubtle();
     setIsMobileMenuOpen(false);
-    router.push(`${pathname}?section=${sectionId}`);
+    
+    // Always navigate back to the root panel-cluber when switching sections
+    // unless we are specifically going to a standalone route (like scanner)
+    if (sectionId === 'scanner') {
+        router.push('/panel-cluber/scanner/');
+    } else if (sectionId === 'analytics') {
+        // Redirigir a la página dedicada de analíticas que es más completa
+        router.push('/panel-cluber/analytics/');
+    } else {
+        router.push(`/panel-cluber/?section=${sectionId}`);
+    }
   };
 
   if (isUserLoading) {

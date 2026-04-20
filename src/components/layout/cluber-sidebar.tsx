@@ -70,7 +70,7 @@ export function CluberSidebar({
       <div className="p-6 flex items-center justify-between">
         {!isCollapsed && (
           <div className="flex flex-col gap-1 animate-in fade-in duration-500">
-            <Logo brand="default" variant="rosa" className="h-8 w-auto" />
+            <Logo brand="default" variant="rosa" className="h-[68px] w-auto" />
             <div className="flex items-center gap-1.5 px-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Portal Cluber</span>

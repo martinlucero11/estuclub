@@ -99,6 +99,9 @@ export function AnnouncementFormDialog({ isOpen, onOpenChange, announcement }: A
                 }
 
                 toast({ title: "Anuncio enviado para revisión" });
+
+                // If Admin, auto-approve and trigger push (Optional: depends on if we want bypass)
+                // For now, we keep the submission and let them approve in the dashboard as per the new UI.
             }
             onOpenChange(false);
             form.reset();

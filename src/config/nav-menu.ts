@@ -213,7 +213,7 @@ export const navConfig: NavConfig = {
             },
             {
                 title: "Métricas en Tiempo Real",
-                href: "/panel-cluber/analytics",
+                href: "/admin/analytics/",
                 icon: BarChart,
                 role: ["admin"],
             },

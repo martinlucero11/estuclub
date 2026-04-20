@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { 
     Gift, Ticket, Users, Star, Heart, TrendingUp, Users2, 
     Award, GraduationCap, Activity, PieChart as PieIcon, ArrowUpRight, ChevronRight,
-    Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare, Package
+    Zap, Clock, Calendar, Search, Filter, X, LayoutDashboard, Target, Sparkles, Trophy, Building, MessageSquare, Package,
+    Download
 } from 'lucide-react';
 import { useAdmin } from '@/context/admin-context';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -28,6 +29,8 @@ import { es } from 'date-fns/locale';
 import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { generateCSV } from '@/lib/export-utils';
 
 interface SupplierAnalyticsDashboardProps {
     supplierId: string;

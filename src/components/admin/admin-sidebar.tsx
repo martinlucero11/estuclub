@@ -38,6 +38,7 @@ const navItems = [
   { label: 'Usuarios', icon: Users, href: '/admin/users' },
   { label: 'Métricas', icon: BarChart3, href: '/admin/analytics' },
   { label: 'Cupones', icon: Ticket, href: '/admin/coupons' },
+  { label: 'Moderación', icon: CheckCircle2, href: '/dashboard/approve-announcements' },
   { label: 'Master Seed', icon: Sparkles, href: '/admin/seed' },
   { label: 'Ajustes', icon: Settings, href: '#', isGhost: true },
 ];
@@ -59,7 +60,7 @@ export function AdminSidebar({ className }: { className?: string }) {
       <div className="p-6 flex items-center justify-between">
         {!isCollapsed && (
           <div className="flex flex-col gap-1 animate-in fade-in duration-500">
-            <Logo variant="rosa" className="h-8 w-auto" />
+            <Logo variant="rosa" className="h-[68px] w-auto" />
             <div className="flex items-center gap-1.5 px-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                 <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900">Admin Central</span>
@@ -89,7 +90,7 @@ export function AdminSidebar({ className }: { className?: string }) {
             if (item.href === '#') {
               return (
                 <button 
-                  onClick={() => alert('🚀 Función en desarrollo')}
+                  onClick={() => { haptic.vibrateNormal(); }}
                   className="w-full text-left"
                 >
                   {children}

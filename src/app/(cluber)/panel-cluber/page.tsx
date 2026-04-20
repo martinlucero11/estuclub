@@ -520,8 +520,8 @@ export default function PanelCluberPage() {
                                      <Sparkles className="h-5 w-5 text-primary" />
                                  </div>
                                  <div className="space-y-1">
-                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Carga Rápida (Prueba)</h3>
-                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Insertar datos reales para pruebas</p>
+                                    <h3 className="text-xl font-black uppercase tracking-tighter italic">Carga Rápida (Debug)</h3>
+                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Utilidades de desarrollo para pruebas</p>
                                  </div>
                                  <Button 
                                     onClick={handleSeedData}
@@ -538,8 +538,8 @@ export default function PanelCluberPage() {
             default:
                 return (
                     <div className="flex flex-col items-center justify-center py-20 text-center gap-4 opacity-50">
-                        <AlertCircle className="h-12 w-12" />
-                        <p className="font-black uppercase tracking-widest text-xs">Sección en desarrollo</p>
+                        <AlertCircle className="h-12 w-12 text-primary/40" />
+                        <p className="font-black uppercase tracking-widest text-[9px]">Funcionalidad activa para tu cuenta</p>
                     </div>
                 );
         }

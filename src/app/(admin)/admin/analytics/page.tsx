@@ -2,7 +2,7 @@
 
 import React, { useMemo } from 'react';
 import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy, limit, Timestamp, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, Timestamp, where, getDocs } from 'firebase/firestore';
 import { createConverter } from '@/lib/firestore-converter';
 import { Order } from '@/types/data';
 import { 
@@ -13,15 +13,17 @@ import {
     DollarSign,
     ArrowUpRight,
     Zap,
-    Download
+    Download,
+    Loader2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import GlobalAnalyticsDashboard from '@/components/analytics/GlobalAnalyticsDashboard';
-import { subDays, startOfDay } from 'date-fns';
+import { subDays, startOfDay, format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { generateCSV } from '@/lib/export-utils';
+import { useToast } from '@/hooks/use-toast';
 
 function AnalyticsHeader() {
     return (
@@ -114,6 +116,40 @@ function RealTimeKPIs() {
 }
 
 export default function AdminAnalyticsPage() {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isExporting, setIsExporting] = React.useState(false);
+
+    const handleExport = async () => {
+        if (!firestore) return;
+        setIsExporting(true);
+        try {
+            // Fetch more orders for the export (last 500)
+            const exportQuery = query(
+                collection(firestore, 'orders').withConverter(createConverter<Order>()),
+                orderBy('createdAt', 'desc'),
+                limit(500)
+            );
+            
+            const snapshot = await getDocs(exportQuery);
+            const ordersToExport = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                // Flatten date for CSV
+                date: (doc.data() as any).createdAt?.toDate().toLocaleString() || ''
+            }));
+
+            generateCSV(ordersToExport, `estuclub-orders-${format(new Date(), 'yyyy-MM-dd')}`);
+            
+            toast({ title: "Exportación exitosa", description: "El reporte se ha generado correctamente." });
+        } catch (error) {
+            console.error("Export error:", error);
+            toast({ variant: "destructive", title: "Error", description: "No se pudieron exportar los datos." });
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="space-y-10 animate-in fade-in duration-700 min-h-screen pb-20">
             <AnalyticsHeader />
@@ -131,14 +167,19 @@ export default function AdminAnalyticsPage() {
                 <div className="absolute -right-20 -top-20 h-64 w-64 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all" />
                 <div className="relative z-10 space-y-6 text-center max-w-2xl mx-auto">
                     <div className="h-20 w-20 rounded-[2rem] bg-primary/10 flex items-center justify-center mx-auto border border-primary/20">
-                         <Download className="h-10 w-10 text-primary" />
+                        <Download className="h-10 w-10 text-primary" />
                     </div>
                     <h3 className="text-3xl font-black uppercase tracking-tighter italic">Export Center</h3>
                     <p className="text-xs font-bold text-foreground/40 uppercase tracking-widest leading-relaxed">
-                        Descarga la base de datos completa de transacciones para análisis externo offline.
+                        Descarga la base de datos completa de transacciones (últimos 500 pedidos) para análisis externo offline.
                     </p>
-                    <Button className="h-14 px-12 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl">
-                        Descargar Reporte Anual
+                    <Button 
+                        disabled={isExporting}
+                        onClick={handleExport}
+                        className="h-14 px-12 rounded-2xl bg-white text-black font-black uppercase tracking-widest text-[11px] hover:bg-primary hover:text-white transition-all shadow-2xl"
+                    >
+                        {isExporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Descargar Reporte de Órdenes
                     </Button>
                 </div>
             </Card>

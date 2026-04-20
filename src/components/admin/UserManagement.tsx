@@ -12,7 +12,11 @@ import {
   Loader2,
   Filter,
   Edit,
-  Trash2
+  Trash2,
+  CheckCircle,
+  XCircle,
+  FileText,
+  ShieldCheck
 } from 'lucide-react';
 import { 
   DropdownMenu, 
@@ -33,12 +37,23 @@ import { UserProfile } from '@/types/data';
 import { createConverter } from '@/lib/firestore-converter';
 import { syncUserRole } from '@/lib/actions/role-actions';
 import { OptimizedImage } from '@/components/common/OptimizedImage';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function UserManagement() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const { setImpersonatedUserId } = useAdmin();
   const [searchQuery, setSearchQuery] = useState('');
+  const [verifyingUser, setVerifyingUser] = useState<UserProfile | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // 1. Fetch Users
   const usersQuery = useMemo(() => {
@@ -93,9 +108,10 @@ export default function UserManagement() {
 
       {/* User Table Header (Desktop only) */}
       <div className="hidden md:grid grid-cols-12 gap-4 px-8 pb-4 text-[10px] font-black uppercase tracking-[0.3em] text-foreground opacity-40">
-        <div className="col-span-4">Usuario</div>
+        <div className="col-span-3">Usuario</div>
         <div className="col-span-2">Rol Base</div>
-        <div className="col-span-3">Registro</div>
+        <div className="col-span-2">Alumno</div>
+        <div className="col-span-2">Registro</div>
         <div className="col-span-3 text-right">Acciones</div>
       </div>
 
@@ -130,8 +146,27 @@ export default function UserManagement() {
                </Badge>
             </div>
 
+            {/* Student Status */}
+            <div className="col-span-2">
+                {user.isStudent ? (
+                    <Badge 
+                        variant="outline" 
+                        className={cn(
+                            "text-[8px] font-black uppercase px-2 py-0.5 rounded-lg border-white/5",
+                            user.studentStatus === 'verified' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
+                            user.studentStatus === 'submitted' ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse" :
+                            "bg-white/5 text-white/40"
+                        )}
+                    >
+                        {user.studentStatus || 'inactive'}
+                    </Badge>
+                ) : (
+                    <span className="text-[10px] opacity-20 font-black uppercase tracking-widest">-</span>
+                )}
+            </div>
+
             {/* Date */}
-            <div className="col-span-3 flex items-center gap-2 text-[10px] font-bold text-foreground italic">
+            <div className="col-span-2 flex items-center gap-2 text-[10px] font-bold text-foreground italic">
                <Calendar className="h-3 w-3 opacity-30" />
                Hoy, 14:20hs
             </div>
@@ -174,6 +209,15 @@ export default function UserManagement() {
                     >
                       <Edit className="h-4 w-4" /> Editar Rol Seguro
                     </DropdownMenuItem>
+
+                    {user.isStudent && user.studentStatus === 'submitted' && (
+                        <DropdownMenuItem 
+                            onClick={() => setVerifyingUser(user)}
+                            className="rounded-xl font-black uppercase text-[10px] tracking-widest gap-3 py-3 cursor-pointer text-amber-500 focus:text-amber-600 focus:bg-amber-500/10"
+                        >
+                            <ShieldCheck className="h-4 w-4" /> Verificar Alumno
+                        </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator className="bg-white/5" />
                     <DropdownMenuItem 
                       onClick={() => {
@@ -193,6 +237,107 @@ export default function UserManagement() {
           </div>
         ))}
       </div>
+      </div>
+
+      {/* Verification Dialog */}
+      <Dialog open={!!verifyingUser} onOpenChange={(o) => !o && setVerifyingUser(null)}>
+          <DialogContent className="bg-card border-none rounded-[3rem] p-0 max-w-2xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+              <div className="p-10 border-b border-white/5 bg-background/50">
+                  <DialogHeader className="flex flex-row items-center gap-6">
+                      <div className="h-16 w-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                          <ShieldCheck className="h-8 w-8 text-amber-500" />
+                      </div>
+                      <div className="text-left">
+                          <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.4em] mb-1">Verificación Académica</p>
+                          <DialogTitle className="text-3xl font-black italic tracking-tighter uppercase font-montserrat leading-none">
+                              {verifyingUser?.firstName} {verifyingUser?.lastName}
+                          </DialogTitle>
+                          <p className="text-[10px] font-black opacity-30 uppercase tracking-widest mt-1">Institución: {verifyingUser?.institution || 'Desconocida'}</p>
+                      </div>
+                  </DialogHeader>
+              </div>
+
+              <div className="p-10 space-y-8">
+                  <div className="space-y-4">
+                      <Label className="text-[10px] font-black opacity-40 uppercase tracking-[0.3em] ml-2">Certificado Presentado</Label>
+                      <div className="rounded-3xl border border-white/10 overflow-hidden bg-black/40 aspect-[4/3] relative flex items-center justify-center group">
+                          {verifyingUser?.studentCertificateUrl ? (
+                              <img 
+                                src={verifyingUser.studentCertificateUrl} 
+                                alt="Certificado" 
+                                className="w-full h-full object-contain"
+                              />
+                          ) : (
+                              <div className="flex flex-col items-center gap-4 py-20 text-white/20">
+                                  <FileText className="h-12 w-12" />
+                                  <p className="text-xs font-black uppercase tracking-widest">Sin imagen cargada</p>
+                              </div>
+                          )}
+                          {verifyingUser?.studentCertificateUrl && (
+                             <a 
+                                href={verifyingUser.studentCertificateUrl} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-3 backdrop-blur-sm"
+                             >
+                                <FileText className="h-8 w-8 text-white" />
+                                <span className="text-[10px] font-black uppercase text-white tracking-widest">Abrir en pestaña nueva</span>
+                             </a>
+                          )}
+                      </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                          <p className="text-[8px] font-black opacity-20 uppercase tracking-widest">Carrera</p>
+                          <p className="text-xs font-bold uppercase truncate">{verifyingUser?.career || '-'}</p>
+                      </div>
+                      <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-1">
+                          <p className="text-[8px] font-black opacity-20 uppercase tracking-widest">Nivel</p>
+                          <p className="text-xs font-bold uppercase truncate">{verifyingUser?.educationLevel || '-'}</p>
+                      </div>
+                  </div>
+              </div>
+
+              <DialogFooter className="p-10 pt-0 flex gap-4">
+                  <Button 
+                    variant="ghost" 
+                    className="flex-1 h-16 rounded-2xl font-black uppercase text-[10px] tracking-widest border border-red-500/20 text-red-500 hover:bg-red-500/10"
+                    disabled={isUpdating}
+                    onClick={async () => {
+                        if (!firestore || !verifyingUser) return;
+                        setIsUpdating(true);
+                        try {
+                            await updateDoc(doc(firestore, 'users', verifyingUser.uid), {
+                                studentStatus: 'pending' // Re-solicitar o simplemente rechazar
+                            });
+                            toast({ title: 'Solicitud Rechazada' });
+                            setVerifyingUser(null);
+                        } finally { setIsUpdating(false); }
+                    }}
+                  >
+                      <XCircle className="h-4 w-4 mr-2" /> Rechazar
+                  </Button>
+                  <Button 
+                    className="flex-1 h-16 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-[10px] tracking-widest shadow-xl shadow-emerald-500/20"
+                    disabled={isUpdating}
+                    onClick={async () => {
+                        if (!firestore || !verifyingUser) return;
+                        setIsUpdating(true);
+                        try {
+                            await updateDoc(doc(firestore, 'users', verifyingUser.uid), {
+                                studentStatus: 'verified'
+                            });
+                            toast({ title: '✅ ALUMNO VERIFICADO', description: 'El acceso a beneficios ha sido habilitado.' });
+                            setVerifyingUser(null);
+                        } finally { setIsUpdating(false); }
+                    }}
+                  >
+                      <ShieldCheck className="h-4 w-4 mr-2" /> Validar Alumno
+                  </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }

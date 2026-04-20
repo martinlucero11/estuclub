@@ -4,7 +4,7 @@ schemaVersion: "v1"
 env:
   # --- VARIABLES PÚBLICAS (Se pueden ver) ---
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "AIzaSyBAW-IVnjtxmCaxi9c_XtgoktXDb24lcik"
+    value: "AIzaSyA5uoVL0SxsuSwaudRvZewzgHHEMGG8Fng"
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
     value: "studio-7814845508-d173f.firebaseapp.com"
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID

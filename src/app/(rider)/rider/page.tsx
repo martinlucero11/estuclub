@@ -2,8 +2,9 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useUser, useFirestore, useCollection, useAuthService } from '@/firebase';
+import { useUser, useFirestore, useCollection, useAuthService, useStorage } from '@/firebase';
 import { collection, query, where, doc, updateDoc, Timestamp, onSnapshot, serverTimestamp, writeBatch, limit } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, deleteUser } from 'firebase/auth';
 import { Order } from '@/types/data';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -104,6 +105,7 @@ function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
 // ─── SIGNUP FORM ─────────────────────────────────────────
 function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
     const firestore = useFirestore();
+    const storage = useStorage();
     const auth = useAuthService();
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -131,8 +133,26 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             const cred = await createUserWithEmailAndPassword(auth, email, password);
             const user = cred.user;
             await updateProfile(user, { displayName: `${firstName} ${lastName}` });
+            
+            haptic.vibrate();
+            toast({ title: 'Procesando archivos...', description: 'Estamos subiendo tus documentos.' });
 
-            await new Promise(r => setTimeout(r, 800));
+            // --- UPLOAD DOCUMENTS TO STORAGE ---
+            let rostroUrl = '';
+            let vehiculoUrl = '';
+
+            if (fotoRostro) {
+                const rostroRef = ref(storage, `rider_applications/${user.uid}/rostro.jpg`);
+                const snap = await uploadBytes(rostroRef, fotoRostro);
+                rostroUrl = await getDownloadURL(snap.ref);
+            }
+
+            if (fotoVehiculo) {
+                const vehiculoRef = ref(storage, `rider_applications/${user.uid}/vehiculo.jpg`);
+                const snap = await uploadBytes(vehiculoRef, fotoVehiculo);
+                vehiculoUrl = await getDownloadURL(snap.ref);
+            }
+
             const batch = writeBatch(firestore);
             
             // Set trial for 7 days
@@ -141,14 +161,19 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
 
             batch.set(doc(firestore, 'users', user.uid), {
                 id: user.uid, uid: user.uid, email, firstName, lastName, dni, phone,
-                role: 'rider_pending', patente: patente.toUpperCase(), photoURL: '', points: 0,
+                role: 'rider_pending', patente: patente.toUpperCase(), 
+                photoURL: rostroUrl, 
+                vehiclePhotoUrl: vehiculoUrl,
+                points: 0,
                 isEmailVerified: false, createdAt: serverTimestamp(),
-                mp_linked: true, trialEndsAt: Timestamp.fromDate(trialEndsAt)
+                mp_linked: isMpLinked, trialEndsAt: Timestamp.fromDate(trialEndsAt)
             });
             
             batch.set(doc(firestore, 'rider_applications', user.uid), {
                 userId: user.uid, userName: `${firstName} ${lastName}`, email, dni, phone,
                 patente: patente.toUpperCase(),
+                rostroUrl,
+                vehiculoUrl,
                 ddjjAntecedentes: true, status: 'pending', createdAt: serverTimestamp(),
             });
             
@@ -156,9 +181,10 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
             haptic.vibrateSuccess();
             toast({ title: '✅ Solicitud enviada', description: 'Te notificaremos cuando seas aprobado.' });
         } catch (error: any) {
+            console.error('Signup error:', error);
             if (auth.currentUser) await deleteUser(auth.currentUser);
             haptic.vibrateError();
-            toast({ variant: 'destructive', title: 'Error', description: error.code === 'auth/email-already-in-use' ? 'Este email ya está en uso.' : 'Error al registrarse.' });
+            toast({ variant: 'destructive', title: 'Error fatal', description: error.message || 'Error al registrarse.' });
         } finally {
             setIsSubmitting(false);
         }
@@ -232,15 +258,23 @@ function RiderSignup({ onSwitchToLogin }: { onSwitchToLogin: () => void }) {
                                 type="button"
                                 size="sm" 
                                 onClick={() => {
-                                    haptic.vibrateSuccess();
-                                    setIsMpLinked(true);
+                                    if (!isMpLinked) {
+                                        haptic.vibrateSuccess();
+                                        setIsMpLinked(true);
+                                        toast({ 
+                                            title: '✅ Intención de Vinculación', 
+                                            description: 'Tu cuenta de Mercado Pago se asociará automáticamente al completar el registro.' 
+                                        });
+                                    } else {
+                                        setIsMpLinked(false);
+                                    }
                                 }}
                                 className={cn(
-                                    "h-8 px-4 rounded-lg font-black text-[8px] uppercase tracking-widest",
+                                    "h-8 px-4 rounded-lg font-black text-[8px] uppercase tracking-widest transition-all",
                                     isMpLinked ? "bg-emerald-500 text-white" : "bg-white/10 text-white hover:bg-white/20"
                                 )}
                             >
-                                {isMpLinked ? 'OK' : 'VINCULAR'}
+                                {isMpLinked ? 'LISTO' : 'VINCULAR'}
                             </Button>
                         </div>
 
