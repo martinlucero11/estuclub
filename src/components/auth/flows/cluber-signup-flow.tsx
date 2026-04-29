@@ -40,7 +40,11 @@ const cluberSchema = z.object({
     // Step 2: Owner
     fullName: z.string().min(3, 'Nombre requerido'),
     email: z.string().email('Email inválido'),
-    password: z.string().min(8, 'Mín. 8 caracteres'),
+    password: z.string().min(8, 'Mínimo 8 caracteres')
+        .regex(/[a-z]/, 'Falta letra minúscula')
+        .regex(/[A-Z]/, 'Falta letra mayúscula')
+        .regex(/[0-9]/, 'Falta un número')
+        .regex(/[^a-zA-Z0-9]/, 'Falta símbolo especial'),
 });
 
 type CluberFormData = z.infer<typeof cluberSchema>;
@@ -172,35 +176,91 @@ export function CluberSignupFlow() {
         }
     };
 
+    const handlePlanSelect = async (planId: string) => {
+        setIsSubmitting(true);
+        try {
+            const idToken = await auth.currentUser?.getIdToken();
+            const res = await fetch('/api/cluber/membership-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`,
+                },
+                body: JSON.stringify({ planId })
+            });
+            const data = await res.json();
+            if (data.init_point) {
+                window.location.href = data.init_point;
+            } else {
+                throw new Error("Error al generar link");
+            }
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'No pudimos generar el link de pago.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (isSuccess) {
         return (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-8 py-10">
-                <div className="h-24 w-24 bg-emerald-500/10 mx-auto rounded-[2.5rem] flex items-center justify-center animate-bounce-slow border border-emerald-500/20 shadow-2xl shadow-emerald-500/10">
-                    <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 py-6">
+                <div className="h-16 w-16 bg-emerald-500/10 mx-auto rounded-2xl flex items-center justify-center animate-bounce-slow border border-emerald-500/20">
+                    <CheckCircle2 className="h-8 w-8 text-emerald-500" />
                 </div>
-                <div className="space-y-3 px-4">
-                    <h2 className="text-3xl font-black uppercase italic tracking-tighter text-foreground font-montserrat">¡Casi listo!</h2>
-                    <p className="text-xs font-bold text-foreground/70 font-inter uppercase tracking-widest leading-relaxed">
-                        Tu cuenta ha sido creada. Ahora, para poder cobrar tus ventas, <span className="text-[#cb465a]">necesitás vincular tu cuenta de Mercado Pago</span>.
+                <div className="space-y-2 px-4">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">¡Registro Completo!</h2>
+                    <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest leading-relaxed">
+                        Para activar tu comercio y aparecer en Estuclub, elegí tu plan de suscripción.
                     </p>
                 </div>
-                <div className="space-y-4 px-4 pt-2">
-                    <Button 
-                        onClick={() => {
-                            const u = auth.currentUser;
-                            if (u) {
-                                haptic.vibrateMedium();
-                                window.location.href = getMPOAuthUrl(u.uid);
-                            }
-                        }}
-                        className="w-full h-18 bg-[#cb465a] text-white font-black uppercase tracking-[0.2em] rounded-3xl shadow-[0_0_40px_rgba(203,70,90,0.3)] group py-8"
-                    >
-                        <Wallet className="mr-3 h-6 w-6" /> VINCULAR MERCADO PAGO <ExternalLink className="ml-2 h-4 w-4 opacity-40 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                    </Button>
-                    <p className="text-[9px] font-black text-foreground/40 uppercase tracking-[0.3em]">Serás redirigido a Mercado Pago para autorizar la conexión.</p>
+                
+                <div className="space-y-4 px-2 text-left">
+                    {/* Plan Cluber */}
+                    <div className="p-5 rounded-3xl border border-black/5 bg-white shadow-xl hover:shadow-[0_10px_30px_rgba(203,70,90,0.1)] transition-all cursor-pointer group" onClick={() => handlePlanSelect('cluber')}>
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-black uppercase tracking-widest text-[#cb465a]">Plan Cluber</h3>
+                            <span className="font-black text-xl italic">$25.000</span>
+                        </div>
+                        <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest mb-4">
+                            Solo crea beneficios o servicios. No incluye productos ni delivery.
+                        </p>
+                        <Button className="w-full h-10 rounded-xl bg-black/5 text-foreground hover:bg-[#cb465a] hover:text-white uppercase font-black text-[10px] tracking-widest transition-colors" disabled={isSubmitting}>
+                            {isSubmitting ? 'Procesando...' : 'Elegir Plan'}
+                        </Button>
+                    </div>
+
+                    {/* Plan Delivery */}
+                    <div className="p-5 rounded-3xl border border-[#cb465a]/20 bg-[#cb465a]/5 shadow-xl relative overflow-hidden flex flex-col cursor-pointer" onClick={() => handlePlanSelect('delivery')}>
+                        <div className="absolute -right-4 -top-4 w-12 h-12 bg-[#cb465a] rotate-45" />
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-black uppercase tracking-widest text-foreground">Plan Delivery</h3>
+                            <span className="font-black text-xl text-[#cb465a] italic">$35.000</span>
+                        </div>
+                        <p className="text-[9px] font-bold text-foreground/60 uppercase tracking-widest mb-4">
+                            Acceso completo a creación de productos y plataforma de Delivery.
+                        </p>
+                        <Button className="w-full h-10 rounded-xl bg-[#cb465a] text-white hover:bg-[#cb465a]/90 uppercase font-black text-[10px] tracking-widest shadow-lg shadow-[#cb465a]/20" disabled={isSubmitting}>
+                            {isSubmitting ? 'Procesando...' : 'Elegir Plan Delivery'}
+                        </Button>
+                    </div>
+
+                    {/* Plan Pro */}
+                    <div className="p-5 rounded-3xl border border-amber-500/30 bg-amber-500/5 shadow-xl cursor-pointer" onClick={() => handlePlanSelect('pro')}>
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-black uppercase tracking-widest text-amber-600">Plan Pro ⭐</h3>
+                            <span className="font-black text-xl italic">$50.000</span>
+                        </div>
+                        <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest mb-4">
+                            Todo lo anterior + Comercio Destacado y aparición en publicidades.
+                        </p>
+                        <Button className="w-full h-10 rounded-xl bg-amber-500 text-white hover:bg-amber-600 uppercase font-black text-[10px] tracking-widest shadow-lg shadow-amber-500/20" disabled={isSubmitting}>
+                            {isSubmitting ? 'Procesando...' : 'Elegir Plan Pro'}
+                        </Button>
+                    </div>
                 </div>
-                <Button variant="ghost" onClick={() => window.location.href = '/'} className="w-full h-12 text-foreground/20 font-black uppercase tracking-widest text-[9px]">
-                    OMITIR POR AHORA (NO PODRÁS COBRAR)
+                
+                <Button variant="ghost" onClick={() => window.location.href = '/panel-cluber'} className="w-full mt-4 h-12 text-foreground/20 font-black uppercase tracking-widest text-[9px]">
+                    Ir a mi panel (Pagar más tarde)
                 </Button>
             </motion.div>
         );
@@ -228,6 +288,7 @@ export function CluberSignupFlow() {
                                     <Store className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40 group-focus-within:text-primary transition-colors" />
                                     <Input {...form.register('supplierName')} placeholder="Ej: Barber Shop 22" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                                 </div>
+                                {form.formState.errors.supplierName && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.supplierName.message}</p>}
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Ubica tu local en el mapa</Label>
@@ -258,6 +319,7 @@ export function CluberSignupFlow() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {form.formState.errors.category && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.category.message}</p>}
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">WhatsApp Ventas</Label>
@@ -265,6 +327,7 @@ export function CluberSignupFlow() {
                                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                                         <Input {...form.register('commercialPhone')} placeholder="3755 000111" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                                     </div>
+                                    {form.formState.errors.commercialPhone && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.commercialPhone.message}</p>}
                                 </div>
                             </div>
                         </div>
@@ -280,12 +343,18 @@ export function CluberSignupFlow() {
                                 <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
                                 <Input {...form.register('fullName')} placeholder="Ej: Juan Pérez" className="h-14 pl-12 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
                             </div>
+                            {form.formState.errors.fullName && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.fullName.message}</p>}
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email y Password</Label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input {...form.register('email')} type="email" placeholder="tienda@email.com" className="h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
-                                <Input {...form.register('password')} type="password" placeholder="••••••••" className="h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Email</Label>
+                                <Input {...form.register('email')} type="email" placeholder="tienda@email.com" className="w-full h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
+                                {form.formState.errors.email && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.email.message}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary/70 ml-1">Contraseña</Label>
+                                <Input {...form.register('password')} type="password" placeholder="••••••••" className="w-full h-14 bg-black/[0.03] border-black/10 rounded-2xl text-foreground placeholder:text-foreground/40" />
+                                {form.formState.errors.password && <p className="text-red-500 text-[10px] font-bold ml-2 -mt-1">{form.formState.errors.password.message}</p>}
                             </div>
                         </div>
 

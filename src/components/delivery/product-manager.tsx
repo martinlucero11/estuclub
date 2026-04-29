@@ -378,18 +378,133 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                                 </div>
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2 flex flex-col justify-end">
-                                    <div className="flex items-center justify-between p-3.5 bg-black/[0.02] rounded-2xl border border-black/5 shadow-inner">
-                                        <Label htmlFor="isActive" className="text-[10px] font-black uppercase tracking-widest opacity-60">Producto Visible</Label>
-                                        <Switch 
-                                            id="isActive" 
-                                            checked={selectedProduct?.isActive} 
-                                            onCheckedChange={v => setSelectedProduct({...selectedProduct, isActive: v})}
-                                            className="data-[state=checked]:bg-primary"
-                                        />
-                                    </div>
+                            <div className="space-y-2 flex flex-col justify-end">
+                                <div className="flex items-center justify-between p-3.5 bg-black/[0.02] rounded-2xl border border-black/5 shadow-inner">
+                                    <Label htmlFor="isActive" className="text-[10px] font-black uppercase tracking-widest opacity-60">Producto Visible</Label>
+                                    <Switch 
+                                        id="isActive" 
+                                        checked={selectedProduct?.isActive} 
+                                        onCheckedChange={v => setSelectedProduct({...selectedProduct, isActive: v})}
+                                        className="data-[state=checked]:bg-primary"
+                                    />
                                 </div>
+                            </div>
+
+                            <div className="p-4 rounded-2xl border border-black/5 bg-black/[0.02] space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Variantes (ej: Sabores)</Label>
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-6 text-[8px] font-black px-2"
+                                      onClick={() => {
+                                          const vars = selectedProduct?.variants || [];
+                                          setSelectedProduct({...selectedProduct, variants: [...vars, { id: Date.now().toString(), name: 'Nueva Variante', isRequired: false, options: [] }]});
+                                      }}
+                                    ><Plus className="h-3 w-3 mr-1"/> Agregar Variante</Button>
+                                </div>
+                                {selectedProduct?.variants?.map((variant, vIndex) => (
+                                    <div key={variant.id} className="space-y-2 p-3 bg-white rounded-xl border border-black/5">
+                                        <div className="flex gap-2 items-center">
+                                            <Input 
+                                                value={variant.name} 
+                                                className="h-8 text-xs font-bold"
+                                                onChange={e => {
+                                                    const newVars = [...(selectedProduct.variants || [])];
+                                                    newVars[vIndex].name = e.target.value;
+                                                    setSelectedProduct({...selectedProduct, variants: newVars});
+                                                }}
+                                            />
+                                            <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500" onClick={() => {
+                                                const newVars = selectedProduct.variants!.filter((_, i) => i !== vIndex);
+                                                setSelectedProduct({...selectedProduct, variants: newVars});
+                                            }}><Trash2 className="h-4 w-4"/></Button>
+                                        </div>
+                                        <div className="pl-2 space-y-1">
+                                            {variant.options.map((opt, oIndex) => (
+                                                <div key={oIndex} className="flex gap-2 items-center">
+                                                    <Input 
+                                                        value={opt.name} 
+                                                        placeholder="Opción (ej. Jamón)" 
+                                                        className="h-7 text-[10px]"
+                                                        onChange={e => {
+                                                            const newVars = [...(selectedProduct.variants || [])];
+                                                            newVars[vIndex].options[oIndex].name = e.target.value;
+                                                            setSelectedProduct({...selectedProduct, variants: newVars});
+                                                        }}
+                                                    />
+                                                    <Input 
+                                                        type="number" 
+                                                        value={opt.extraPrice} 
+                                                        placeholder="$ Extra"
+                                                        className="h-7 text-[10px] w-20"
+                                                        onChange={e => {
+                                                            const newVars = [...(selectedProduct.variants || [])];
+                                                            newVars[vIndex].options[oIndex].extraPrice = parseFloat(e.target.value) || 0;
+                                                            setSelectedProduct({...selectedProduct, variants: newVars});
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                            <Button 
+                                                type="button" 
+                                                variant="ghost" 
+                                                className="h-6 text-[8px] mt-1 opacity-60 hover:opacity-100"
+                                                onClick={() => {
+                                                    const newVars = [...(selectedProduct.variants || [])];
+                                                    newVars[vIndex].options.push({ name: '', extraPrice: 0 });
+                                                    setSelectedProduct({...selectedProduct, variants: newVars});
+                                                }}
+                                            >+ Agregar Opción</Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="p-4 rounded-2xl border border-black/5 bg-black/[0.02] space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Adicionales (ej: Extras)</Label>
+                                    <Button 
+                                      type="button" 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-6 text-[8px] font-black px-2"
+                                      onClick={() => {
+                                          const addons = selectedProduct?.addons || [];
+                                          setSelectedProduct({...selectedProduct, addons: [...addons, { id: Date.now().toString(), name: 'Nuevo Adicional', price: 0 }]});
+                                      }}
+                                    ><Plus className="h-3 w-3 mr-1"/> Agregar Extra</Button>
+                                </div>
+                                {selectedProduct?.addons?.map((addon, aIndex) => (
+                                    <div key={addon.id} className="flex gap-2 items-center p-2 bg-white rounded-xl border border-black/5">
+                                        <Input 
+                                            value={addon.name} 
+                                            placeholder="Ej. Cheddar"
+                                            className="h-8 text-xs font-bold flex-1"
+                                            onChange={e => {
+                                                const newAddons = [...(selectedProduct.addons || [])];
+                                                newAddons[aIndex].name = e.target.value;
+                                                setSelectedProduct({...selectedProduct, addons: newAddons});
+                                            }}
+                                        />
+                                        <Input 
+                                            type="number" 
+                                            value={addon.price} 
+                                            placeholder="$ Precio"
+                                            className="h-8 text-xs w-24"
+                                            onChange={e => {
+                                                const newAddons = [...(selectedProduct.addons || [])];
+                                                newAddons[aIndex].price = parseFloat(e.target.value) || 0;
+                                                setSelectedProduct({...selectedProduct, addons: newAddons});
+                                            }}
+                                        />
+                                        <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-500" onClick={() => {
+                                            const newAddons = selectedProduct.addons!.filter((_, i) => i !== aIndex);
+                                            setSelectedProduct({...selectedProduct, addons: newAddons});
+                                        }}><Trash2 className="h-4 w-4"/></Button>
+                                    </div>
+                                ))}
                             </div>
 
                             <DialogFooter className="pt-4">

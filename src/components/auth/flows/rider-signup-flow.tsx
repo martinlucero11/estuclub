@@ -37,7 +37,11 @@ const riderSchema = z.object({
     nationality: z.string().min(3, 'Nacionalidad requerida'),
     email: z.string().email('Email inválido'),
     phone: z.string().min(8, 'WhatsApp inválido'),
-    password: z.string().min(8, 'Mín. 8 caracteres'),
+    password: z.string().min(8, 'Mínimo 8 caracteres')
+        .regex(/[a-z]/, 'Falta letra minúscula')
+        .regex(/[A-Z]/, 'Falta letra mayúscula')
+        .regex(/[0-9]/, 'Falta un número')
+        .regex(/[^a-zA-Z0-9]/, 'Falta símbolo especial'),
 }).refine((data) => {
     // Patente is required for moto or auto
     if (data.vehicleType !== 'bici' && (!data.patente || data.patente.trim().length < 3)) {
@@ -346,7 +350,7 @@ export function RiderSignupFlow() {
 
             haptic.vibrateSuccess();
             toast({ title: "¡Bienvenido Rider!", description: "Has completado tu registro con éxito." });
-            window.location.href = '/rider';
+            setIsSuccess(true);
 
         } catch (error: any) {
             console.error('KYC_SUBMISSION_ERROR:', error);
@@ -357,18 +361,58 @@ export function RiderSignupFlow() {
         }
     };
 
+    const handlePayMembership = async () => {
+        setIsSubmitting(true);
+        try {
+            const idToken = await auth.currentUser?.getIdToken();
+            const res = await fetch('/api/rider/membership-checkout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            const data = await res.json();
+            if (data.init_point) {
+                window.location.href = data.init_point;
+            } else {
+                throw new Error("Error al generar link");
+            }
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'No pudimos procesar el enlace de pago.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     if (isSuccess) {
         return (
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-8 py-10">
-                <div className="h-24 w-24 bg-primary/10 mx-auto rounded-full flex items-center justify-center animate-bounce-slow border border-primary/20 shadow-2xl">
-                    <Bike className="h-10 w-10 text-primary" />
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 py-6">
+                <div className="h-16 w-16 bg-primary/10 mx-auto rounded-2xl flex items-center justify-center animate-bounce-slow border border-primary/20">
+                    <Bike className="h-8 w-8 text-primary" />
                 </div>
-                <div className="space-y-3">
-                    <h2 className="text-3xl font-black uppercase italic tracking-tighter text-foreground font-montserrat">¡Postulación Enviada!</h2>
-                    <p className="text-sm text-foreground/60 font-bold italic max-w-xs mx-auto uppercase tracking-widest leading-relaxed">Analizaremos tus datos para activarte como Rider oficial de Alem.</p>
+                <div className="space-y-2 px-4">
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">¡Cuenta Creada!</h2>
+                    <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest leading-relaxed">
+                        Para empezar a recibir viajes, es necesario abonar la membresía mensual de Rider.
+                    </p>
                 </div>
-                <Button onClick={() => window.location.href = '/'} className="w-full h-16 bg-white border border-black/10 text-foreground font-black uppercase tracking-widest rounded-3xl shadow-sm hover:bg-black/[0.02]">
-                    VOLVER AL INICIO
+                
+                <div className="p-5 mx-4 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="font-black uppercase tracking-widest text-primary text-left">Membresía<br/>Mensual</h3>
+                        <span className="font-black text-2xl italic">$25.000</span>
+                    </div>
+                    <Button 
+                        onClick={handlePayMembership} 
+                        disabled={isSubmitting} 
+                        className="w-full h-12 bg-primary text-white font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary/20"
+                    >
+                        {isSubmitting ? 'Cargando...' : 'Abonar Menbresía'}
+                    </Button>
+                </div>
+                
+                <Button onClick={() => window.location.href = '/rider'} variant="ghost" className="w-full h-12 text-foreground/30 font-black uppercase tracking-widest text-[9px]">
+                    Pagar más tarde (Ir al panel)
                 </Button>
             </motion.div>
         );

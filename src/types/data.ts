@@ -196,6 +196,20 @@ export interface Availability {
   };
 }
 
+export interface ProductVariant {
+  id: string;
+  name: string;
+  isRequired: boolean;
+  maxSelections?: number;
+  options: { name: string; extraPrice: number }[];
+}
+
+export interface ProductAddon {
+  id: string;
+  name: string;
+  price: number;
+}
+
 export interface Product {
     id: string;
     supplierId: string;
@@ -211,6 +225,8 @@ export interface Product {
     order?: number;
     viewsCount?: number;
     salesCount?: number;
+    variants?: ProductVariant[];
+    addons?: ProductAddon[];
     createdAt: Timestamp;
     updatedAt?: Timestamp;
 }
@@ -279,6 +295,8 @@ export interface OrderItem {
     imageUrl?: string;
     notes?: string;
     originalPrice?: number;
+    selectedVariants?: { variantName: string; optionName: string; extraPrice: number }[];
+    selectedAddons?: { name: string; price: number }[];
 }
 
 export type OrderStatus = 

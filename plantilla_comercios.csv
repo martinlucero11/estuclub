@@ -1,0 +1,3 @@
+email,password,supplierName,category,commercialPhone,address,lat,lng,fullName
+comercio1@ejemplo.com,Pass123!@#,SuperBurger,Comida y Bebida,3755123456,San Martin 123, -27.5, -55.0, Juan Perez
+pizzeria@ejemplo.com,Pass123!@#,Pizza Mania,Comida y Bebida,3755987654,Avenida Mitre 456, -27.51, -55.1, Maria Lopez

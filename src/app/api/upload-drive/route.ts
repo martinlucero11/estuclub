@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
                 const result = await ensureFolderExists(folderName, rootParentId);
                 if (result.success) {
                     cluberRootId = result.id;
-                    // Persistir el ID para futuras subidas
-                    await adminDb!.collection('roles_supplier').doc(uid).update({ driveFolderId: cluberRootId });
+                    // Persistir el ID para futuras subidas sin fallar si el doc no existe aún
+                    await adminDb!.collection('roles_supplier').doc(uid).set({ driveFolderId: cluberRootId }, { merge: true });
                 } else {
                     throw new Error("No se pudo inicializar la carpeta del Cluber en Drive.");
                 }

@@ -237,7 +237,6 @@ export default function UserManagement() {
           </div>
         ))}
       </div>
-      </div>
 
       {/* Verification Dialog */}
       <Dialog open={!!verifyingUser} onOpenChange={(o) => !o && setVerifyingUser(null)}>

@@ -7,7 +7,6 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
     try {
-        // 1. Validar Autenticación (Bearer Token)
         const authHeader = req.headers.get('Authorization');
         if (!authHeader?.startsWith('Bearer ')) {
             return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -23,28 +22,36 @@ export async function POST(req: Request) {
 
         const userId = decodedToken.uid;
         const userEmail = decodedToken.email || '';
+        
+        const { planId } = await req.json();
+        
+        const PLAN_MAP: Record<string, { title: string, price: number }> = {
+            cluber: { title: 'Suscripción Plan Cluber Estuclub', price: 25000 },
+            delivery: { title: 'Suscripción Plan Delivery Estuclub', price: 35000 },
+            pro: { title: 'Suscripción Plan Pro Estuclub', price: 50000 }
+        };
+        
+        const plan = PLAN_MAP[planId];
+        if (!plan) return NextResponse.json({ error: 'Plan inválido' }, { status: 400 });
 
-        // 2. Configuración y Validaciones de Entorno
         const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL;
         const baseUrl = (rawBaseUrl || 'https://estuclub.com.ar').replace(/\/$/, '');
 
-        const MEMBERSHIP_PRICE = 25000;
-
-        // 3. Crear Subscripción Recurrente
+        // Create recurring subscription directly
         const preapproval = new PreApproval(mpClient);
 
         const preApprovalData = {
             body: {
-                reason: 'Membresía Mensual Rider Estuclub (30 días)',
-                external_reference: `rider_sub_${userId}`,
+                reason: plan.title,
+                external_reference: `cluber_sub_${userId}_${planId}`,
                 payer_email: userEmail,
                 auto_recurring: {
                     frequency: 1,
                     frequency_type: "months",
-                    transaction_amount: MEMBERSHIP_PRICE,
+                    transaction_amount: plan.price,
                     currency_id: "ARS"
                 },
-                back_url: `${baseUrl}/rider`,
+                back_url: `${baseUrl}/panel-cluber`,
                 status: "pending"
             }
         };
@@ -57,7 +64,7 @@ export async function POST(req: Request) {
         });
 
     } catch (error: any) {
-        console.error('Membership Checkout Error:', error);
+        console.error('Cluber Membership Checkout Error:', error);
         return NextResponse.json({ 
             error: 'Error procesando el checkout',
             message: error.message 
