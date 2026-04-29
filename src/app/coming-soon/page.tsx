@@ -75,16 +75,14 @@ export default function ComingSoonPage() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="mb-8"
         >
-          {/* Si tienes un logo, puedes descomentar esto:
-          <Image src="/logo.png" alt="Estuclub" width={180} height={60} className="mx-auto mb-6" /> 
-          */}
+          <Image src="/logo-white.svg" alt="Estuclub" width={180} height={60} className="mx-auto mb-6" /> 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
               Muy Pronto
             </span>
           </h1>
           <p className="text-xl md:text-3xl font-light text-slate-300 max-w-2xl leading-relaxed">
-            la solución integral que <strong className="text-[#cb465a] font-bold">alem</strong> necesitaba!
+            la solución integral que <strong className="text-[#cb465a] font-bold">Alem</strong> necesitaba!
           </p>
         </motion.div>
 
