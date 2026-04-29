@@ -10,6 +10,7 @@ import { Suspense } from "react";
 import { StatusBarConfig } from "@/components/layout/status-bar-config";
 import Loading from "./loading";
 import VerificationGate from "@/components/auth/verification-gate";
+import ComingSoonGuard from "@/components/auth/coming-soon-guard";
 import { CartProvider } from "@/context/cart-context";
 import { AdminProvider } from "@/context/admin-context";
 import { FloatingAdminMetrics } from "@/components/analytics/FloatingAdminMetrics";
@@ -93,18 +94,20 @@ export default function RootLayout({
         >
           <FirebaseProvider>
             <AdminProvider>
-              <VerificationGate>
-                <CartProvider>
-                  <MessagingProvider>
-                    <GlobalErrorBoundary>
-                      <Suspense fallback={<Loading />}>
-                        <StatusBarConfig />
-                        {children}
-                      </Suspense>
-                    </GlobalErrorBoundary>
-                  </MessagingProvider>
-                </CartProvider>
-              </VerificationGate>
+              <ComingSoonGuard>
+                <VerificationGate>
+                  <CartProvider>
+                    <MessagingProvider>
+                      <GlobalErrorBoundary>
+                        <Suspense fallback={<Loading />}>
+                          <StatusBarConfig />
+                          {children}
+                        </Suspense>
+                      </GlobalErrorBoundary>
+                    </MessagingProvider>
+                  </CartProvider>
+                </VerificationGate>
+              </ComingSoonGuard>
               <Toaster />
             </AdminProvider>
           </FirebaseProvider>
