@@ -8,8 +8,8 @@ import Link from 'next/link';
 
 // --- CONFIGURA LA FECHA AQUÍ ---
 // Formato: Año, Mes (0-11, osea que Enero es 0 y Diciembre es 11), Día, Hora, Minuto, Segundo
-// Ejemplo para 15 de Mayo de 2026 a las 00:00:00:
-const TARGET_DATE = new Date(2026, 4, 15, 0, 0, 0).getTime();
+// Ejemplo para 15 de Mayo de 2026 a las 19:00:00:
+const TARGET_DATE = new Date(2026, 4, 15, 19, 0, 0).getTime();
 
 export default function ComingSoonPage() {
   const [timeLeft, setTimeLeft] = useState({
