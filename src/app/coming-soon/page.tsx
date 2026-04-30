@@ -28,7 +28,7 @@ export default function ComingSoonPage() {
 
   useEffect(() => {
     if (localStorage.getItem('estuclub_tester_unlocked') === 'true') {
-      router.push('/');
+      router.push('/login');
       return;
     }
     setIsMounted(true);
@@ -177,7 +177,7 @@ export default function ComingSoonPage() {
                   if (e.key === 'Enter') {
                     if (secretPassword === 'Mismuki') {
                       localStorage.setItem('estuclub_tester_unlocked', 'true');
-                      router.push('/');
+                      router.push('/login');
                     } else {
                       setIsError(true);
                       setTimeout(() => setIsError(false), 500);
