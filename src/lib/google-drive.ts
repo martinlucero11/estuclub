@@ -6,16 +6,18 @@ import { Readable } from 'stream';
  * Uses Service Account credentials to leverage shared folder permissions.
  */
 export async function getDriveClient() {
-    // 1. Try GOOGLE_VISION_CREDENTIALS first (centralized)
-    const visionCreds = process.env.GOOGLE_VISION_CREDENTIALS;
+    // 1. Try FIREBASE_SERVICE_ACCOUNT_BASE64 first (primary admin account)
     const firebaseAdminCreds = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64;
+    const visionCreds = process.env.GOOGLE_VISION_CREDENTIALS; // Fallback only if needed
 
     let credentials;
     try {
-        if (visionCreds) {
-            credentials = JSON.parse(visionCreds);
-        } else if (firebaseAdminCreds) {
+        if (firebaseAdminCreds) {
             credentials = JSON.parse(Buffer.from(firebaseAdminCreds, 'base64').toString('utf-8'));
+            console.log('[DRIVE AUTH] Usando FIREBASE_SERVICE_ACCOUNT_BASE64');
+        } else if (visionCreds) {
+            credentials = JSON.parse(visionCreds);
+            console.log('[DRIVE AUTH] Usando GOOGLE_VISION_CREDENTIALS');
         }
     } catch (e) {
         console.error('[DRIVE AUTH] Failed to parse Service Account credentials:', e);

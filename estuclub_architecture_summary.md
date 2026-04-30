@@ -23,7 +23,7 @@ La base de datos NoSQL sigue una estructura plana optimizada para lecturas masiv
 
 - **Colección `users`**: Contiene todo usuario (Student, Cluber, Rider). Campos varian según el rol (ej: estado de suscripción `membershipPaidUntil`, estatus de estudiante `studentStatus`, o datos de DNI).
 - **Colección `products`**: Los items del menú. Han sido evolucionados para soportar `variants` (e.g. Tamaño: Chico, Mediano) y `addons` (Adicionales como Queso).
-- **Colección `orders`**: Los pedidos de delivery generados. Poseen integración compleja `logistics_split` y ciclos de estado: `pending -> preparing -> ready -> riding -> delivered`.
+- **Colección `orders`**: Los pedidos de delivery generados. Poseen integración compleja `logistics_split` y ciclos de estado: `pending -> accepted -> searching_rider -> assigned -> at_store -> on_the_way -> delivered -> completed`.
 - **Colección `supplier_requests` / `rider_requests`**: Colecciones transitorias donde caen temporalmente las postulaciones antes de que un admin las analice y procese el Alta definitiva del comercio/rider.
 
 ## 4. Filosofía de Sistema y Arquitectura de Código
@@ -31,7 +31,16 @@ La base de datos NoSQL sigue una estructura plana optimizada para lecturas masiv
 - **Seguridad y Trazabilidad**: 
   - Las rutas API internas están protegidas decodificando el Bearer Token (`adminAuth.verifyIdToken(token)`).
   - Los Webhooks de Mercado pago están asegurados verificando el hash asimétrico `x-signature`.
-- **Líneas de Diseño de Código**: Tipado fuerte (`src/types/data.ts`), Server Actions minimizados salvo para manejo de roles y configuraciones seguras, hooks extensivos de Firestore.
+- **Líneas de Diseño de Código**: Tipado fuerte (`src/types/data.ts`), Server Actions centralizados para operaciones críticas que requieren atomicidad (manejo de roles, integraciones de pago y transiciones de estado logístico), hooks extensivos de Firestore.
 
-## Estado Actual
-La plataforma ya cuenta con los paneles operativos de `admin`, `cluber`, y `rider`. La lógica de suscripciones _PreApproval_ y Onboarding fue finalizada exitosamente para soportar el flujo comercial, y se utiliza un Excel / Carga Masiva (script) en desarrollo para los comercios pre-poblados.
+## Estado Actual (Fase: Alerta Roja Pre-Lanzamiento)
+La plataforma cuenta con los paneles operativos funcionales de `admin`, `cluber`, y `rider`. Recientemente se completó una estabilización crítica de pre-lanzamiento que incluye:
+
+1. **Arquitectura Financiera (Split Payments):** 
+   - El checkout de Mercado Pago opera en modo Marketplace descentralizado. Los pagos se dirigen directamente a las credenciales (`mp_credentials`) de cada Comercio, reteniendo automáticamente un *Marketplace Fee* fijo de la plataforma ($500 ARS).
+   - El costo de envío está excluido de la pasarela digital; el Rider recauda el envío directamente en Efectivo o Transferencia en puerta.
+
+2. **Seguridad y Atomicidad de Estados (Server Actions):**
+   - Transiciones críticas (ej: Comercio acepta pedido, Rider toma viaje, Rider finaliza con PIN) se manejan vía **Server Actions** usando transacciones atómicas de Firestore (`adminDb.runTransaction`).
+   - Todos los Server Actions validan identidad criptográficamente en el backend (`adminAuth.verifyIdToken`) previniendo ataques de inyección, Race Conditions y cancelaciones simultáneas.
+   - El `deliveryPin` está protegido mediante Firestore Rules de lectura/escritura, ofuscando su modificación no autorizada.

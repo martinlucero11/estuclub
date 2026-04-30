@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Rocket, Clock, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { AnimatePresence } from 'framer-motion';
 
 // --- CONFIGURA LA FECHA AQUÍ ---
 // Formato: Año, Mes (0-11, osea que Enero es 0 y Diciembre es 11), Día, Hora, Minuto, Segundo
@@ -19,8 +21,16 @@ export default function ComingSoonPage() {
     seconds: 0,
   });
   const [isMounted, setIsMounted] = useState(false);
+  const [showSecretInput, setShowSecretInput] = useState(false);
+  const [secretPassword, setSecretPassword] = useState('');
+  const [isError, setIsError] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
+    if (localStorage.getItem('estuclub_tester_unlocked') === 'true') {
+      router.push('/');
+      return;
+    }
     setIsMounted(true);
 
     const interval = setInterval(() => {
@@ -123,6 +133,65 @@ export default function ComingSoonPage() {
         </motion.div>
 
       </div>
+
+      {/* Secret Cat */}
+      <motion.div 
+        className="absolute bottom-4 right-4 z-50 cursor-pointer opacity-40 hover:opacity-100 transition-opacity"
+        animate={{ scale: [1, 1.05, 1] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+        onClick={() => setShowSecretInput(true)}
+      >
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+            <path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 5.5-2.26.14.18-.54 3.72-2.54 5.51A8.966 8.966 0 0 1 18 14c0 5-2.69 8-6 8s-6-3-6-8c0-1.9.5-3.66 1.35-5.1C5.35 7.1 4.67 3.56 4.8 3.38c.47-.58 3.72.26 5.5 2.26.65-.17 1.33-.26 2-.26z"></path>
+            <path d="M9 13v.01"></path>
+            <path d="M15 13v.01"></path>
+            <path d="M12 16c-.5 0-1-.34-1-1 0-.5.5-1 1-1s1 .5 1 1c0 .66-.5 1-1 1z"></path>
+        </svg>
+      </motion.div>
+
+      <AnimatePresence>
+        {showSecretInput && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowSecretInput(false);
+            }}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={isError ? { x: [-10, 10, -10, 10, 0] } : { scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-sm bg-white/5 border border-[#cb465a]/50 p-6 rounded-3xl shadow-[0_0_30px_rgba(203,70,90,0.2)] text-center"
+            >
+              <h3 className="text-xl font-black mb-4 text-[#cb465a] uppercase tracking-widest">Acceso Secreto</h3>
+              <input 
+                type="password" 
+                placeholder="Contraseña"
+                value={secretPassword}
+                onChange={(e) => setSecretPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    if (secretPassword === 'Mismuki') {
+                      localStorage.setItem('estuclub_tester_unlocked', 'true');
+                      router.push('/');
+                    } else {
+                      setIsError(true);
+                      setTimeout(() => setIsError(false), 500);
+                    }
+                  }
+                }}
+                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:border-[#cb465a] transition-colors mb-4"
+                autoFocus
+              />
+              {isError && <p className="text-[#cb465a] text-sm font-bold animate-pulse">Acceso denegado 🐾</p>}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

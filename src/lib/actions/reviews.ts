@@ -1,6 +1,6 @@
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 interface ReviewInput {
@@ -16,33 +16,49 @@ interface ReviewInput {
 /**
  * submitOrderReview (Misión 5: Lógica Blindada)
  * Actualiza promedios de estrellas y conteo de reseñas de forma atómica.
+ * SECURED: Verifies caller identity and order ownership.
  */
-export async function submitOrderReview(input: ReviewInput) {
-    if (!adminDb) return { success: false, error: 'Admin DB not initialized' };
+export async function submitOrderReview(input: ReviewInput, idToken: string) {
+    if (!adminDb || !adminAuth) return { success: false, error: 'Admin DB not initialized' };
 
     try {
+        // 1. Verify caller identity
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        const callerUid = decoded.uid;
+
+        // 2. Verify callerUid matches the userId in the review
+        if (callerUid !== input.userId) {
+            return { success: false, error: 'Unauthorized: No podés dejar una reseña como otro usuario.' };
+        }
+
         await adminDb.runTransaction(async (transaction) => {
-            // 1. Referencias
+            // 3. Referencias
             const orderRef = adminDb.collection('orders').doc(input.orderId);
             const supplierRef = adminDb.collection('roles_supplier').doc(input.supplierId);
             const riderRef = adminDb.collection('users').doc(input.riderId);
             const reviewRef = adminDb.collection('reviews').doc(input.orderId);
 
-            // 2. Lecturas (Todas las lecturas deben ir antes de las escrituras)
+            // 4. Lecturas (Todas las lecturas deben ir antes de las escrituras)
             const supplierDoc = await transaction.get(supplierRef);
             const riderDoc = await transaction.get(riderRef);
             const orderDoc = await transaction.get(orderRef);
 
             if (!orderDoc.exists) throw new Error('Order not found');
 
-            // 3. Cálculos Supplier
+            // 5. Verify order ownership
+            const orderData = orderDoc.data();
+            if (orderData?.customerId !== callerUid && orderData?.userId !== callerUid) {
+                throw new Error('Unauthorized: Esta orden no te pertenece.');
+            }
+
+            // 6. Cálculos Supplier
             const sData = supplierDoc.data() || {};
             const sCount = sData.reviewCount || 0;
             const sAvg = sData.avgRating || 0;
             const newSCount = sCount + 1;
             const newSAvg = ((sAvg * sCount) + input.localRating) / newSCount;
 
-            // 4. Cálculos Rider
+            // 7. Cálculos Rider
             let newRCount = 0;
             let newRAvg = 0;
             if (riderDoc.exists) {
@@ -53,7 +69,7 @@ export async function submitOrderReview(input: ReviewInput) {
                 newRAvg = ((rAvg * rCount) + input.riderRating) / newRCount;
             }
 
-            // 5. Escrituras
+            // 8. Escrituras
             // Guardar Reseña Dual
             transaction.set(reviewRef, {
                 ...input,
@@ -103,11 +119,21 @@ interface AppointmentReviewInput {
 /**
  * submitAppointmentReview
  * Califica un turno asistido y actualiza estrellas del comercio.
+ * SECURED: Verifies caller identity.
  */
-export async function submitAppointmentReview(input: AppointmentReviewInput) {
-    if (!adminDb) return { success: false, error: 'Admin DB not initialized' };
+export async function submitAppointmentReview(input: AppointmentReviewInput, idToken: string) {
+    if (!adminDb || !adminAuth) return { success: false, error: 'Admin DB not initialized' };
 
     try {
+        // 1. Verify caller identity
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        const callerUid = decoded.uid;
+
+        // 2. Verify callerUid matches the userId in the review
+        if (callerUid !== input.userId) {
+            return { success: false, error: 'Unauthorized: No podés dejar una reseña como otro usuario.' };
+        }
+
         await adminDb.runTransaction(async (transaction) => {
             const appointmentRef = adminDb.collection('appointments').doc(input.appointmentId);
             const supplierRef = adminDb.collection('roles_supplier').doc(input.supplierId);

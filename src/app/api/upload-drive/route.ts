@@ -86,7 +86,10 @@ export async function POST(req: NextRequest) {
 
 
         // 4. Ejecutar Subida
+        console.log(`[UPLOAD-DRIVE] Intentando subir archivo: ${filename} (Size: ${buffer.length} bytes) al Folder ID: ${destinationFolderId}`);
         const result = await uploadFileToDrive(buffer, filename, mimeType, destinationFolderId);
+        
+        console.log(`[UPLOAD-DRIVE] Éxito. File ID: ${result?.id}`);
 
         return NextResponse.json({ 
             success: true, 
@@ -96,7 +99,8 @@ export async function POST(req: NextRequest) {
         });
 
     } catch (error: any) {
-        console.error('CRITICAL API DRIVE UPLOAD ERROR:', error.message);
+        console.error('CRITICAL API DRIVE UPLOAD ERROR:', error);
+        console.error('CRITICAL API DRIVE UPLOAD STACK:', error.stack);
         return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
     }
 }

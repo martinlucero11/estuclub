@@ -2,8 +2,10 @@
 
 import React from 'react';
 import { useOrders } from '@/hooks/use-orders';
+import { useNewOrderAlarm } from '@/hooks/use-new-order-alarm';
 import { Order } from '@/types/data';
-import { useFirestore } from '@/firebase';
+import { auth, useFirestore } from '@/firebase';
+import { updateOrderOperationStatus } from '@/lib/actions/order-actions';
 import { doc, updateDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { NewOrderAlarmModal } from './new-order-alarm-modal';
 
 interface OrderManagementProps {
     supplierId: string;
@@ -44,17 +47,24 @@ const statusConfig = {
 
 export function OrderManagement({ supplierId }: OrderManagementProps) {
     const { data: orders, isLoading } = useOrders('supplier', supplierId);
+    const { newOrder, clearOrder } = useNewOrderAlarm(supplierId);
     const firestore = useFirestore();
     const { toast } = useToast();
 
     const updateStatus = async (orderId: string, newStatus: Order['status']) => {
-        if (!firestore) return;
         try {
-            await updateDoc(doc(firestore, 'orders', orderId), {
-                status: newStatus,
-                updatedAt: new Date()
-            });
-            toast({ title: `Pedido ${statusConfig[newStatus].label}` });
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) {
+                toast({ title: "Sesión expirada. Por favor, recarga la página.", variant: "destructive" });
+                return;
+            }
+
+            const res = await updateOrderOperationStatus(orderId, newStatus, token);
+            if (res.success) {
+                toast({ title: `Pedido ${statusConfig[newStatus].label}` });
+            } else {
+                throw new Error(res.error);
+            }
         } catch (error) {
             console.error(error);
             toast({ title: "Error al actualizar estado", variant: "destructive" });
@@ -80,15 +90,18 @@ export function OrderManagement({ supplierId }: OrderManagementProps) {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-            {orders.map((order) => (
-                <OrderCard 
-                    key={order.id} 
-                    order={order} 
-                    onUpdateStatus={updateStatus} 
-                />
-            ))}
-        </div>
+        <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+                {orders.map((order) => (
+                    <OrderCard 
+                        key={order.id} 
+                        order={order} 
+                        onUpdateStatus={updateStatus} 
+                    />
+                ))}
+            </div>
+            <NewOrderAlarmModal order={newOrder} onClose={clearOrder} />
+        </>
     );
 }
 

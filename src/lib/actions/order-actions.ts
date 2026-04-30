@@ -1,6 +1,6 @@
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { OrderSchema } from '../validations/schemas';
 import { z } from 'zod';
 
@@ -13,8 +13,16 @@ function formatZodError(error: z.ZodError) {
  * Prevents race conditions where two riders accept the same order.
  * This is handled on the server via transactions for absolute safety.
  */
-export async function acceptDeliveryOrder(orderId: string, riderUid: string) {
-    if (!adminDb) throw new Error('Firebase Admin not initialized');
+export async function acceptDeliveryOrder(orderId: string, idToken: string) {
+    if (!adminDb || !adminAuth) throw new Error('Firebase Admin not initialized');
+
+    let callerUid: string;
+    try {
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        callerUid = decoded.uid;
+    } catch (e) {
+        throw new Error('Unauthorized or invalid token');
+    }
 
     const orderRef = adminDb.collection('orders').doc(orderId);
 
@@ -28,8 +36,8 @@ export async function acceptDeliveryOrder(orderId: string, riderUid: string) {
 
             const data = orderDoc.data();
             
-            // Critical Check: Ensure status is 'pending' and no rider is assigned
-            if (data?.status !== 'pending' && data?.status !== 'waiting_rider') {
+            // Critical Check: Ensure status is 'pending', 'waiting_rider', or 'searching_rider' and no rider is assigned
+            if (data?.status !== 'pending' && data?.status !== 'waiting_rider' && data?.status !== 'searching_rider') {
                 throw new Error('Este pedido ya fue tomado por otro repartidor o cambió de estado.');
             }
 
@@ -39,7 +47,7 @@ export async function acceptDeliveryOrder(orderId: string, riderUid: string) {
 
             // Atomics Update
             transaction.update(orderRef, {
-                riderId: riderUid,
+                riderId: callerUid,
                 status: 'assigned',
                 acceptedAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -56,13 +64,84 @@ export async function acceptDeliveryOrder(orderId: string, riderUid: string) {
 }
 
 /**
- * Update Order Status (System/Admin/Rider context)
+ * Atomic Order Completion with PIN Verification.
+ * Ensures the Rider can only complete the order if the PIN matches.
  */
-export async function updateOrderOperationStatus(orderId: string, newStatus: string) {
-    if (!adminDb) return { success: false, error: 'Firebase Admin not initialized' };
+export async function completeDeliveryAtomic(orderId: string, enteredPin: string, proofUrl: string | null, idToken: string) {
+    if (!adminDb || !adminAuth) throw new Error('Firebase Admin not initialized');
+
+    let callerUid: string;
+    try {
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        callerUid = decoded.uid;
+    } catch (e) {
+        throw new Error('Unauthorized or invalid token');
+    }
+
+    const orderRef = adminDb.collection('orders').doc(orderId);
 
     try {
+        const result = await adminDb.runTransaction(async (transaction) => {
+            const orderDoc = await transaction.get(orderRef);
+
+            if (!orderDoc.exists) {
+                throw new Error('El pedido no existe.');
+            }
+
+            const data = orderDoc.data();
+
+            if (data?.riderId !== callerUid) {
+                throw new Error('No tienes permiso para finalizar este pedido.');
+            }
+
+            if (data?.status === 'completed' || data?.status === 'delivered') {
+                throw new Error('El pedido ya fue finalizado.');
+            }
+
+            if (data?.deliveryPin && data.deliveryPin !== enteredPin) {
+                throw new Error('El PIN ingresado es incorrecto.');
+            }
+
+            // Atomics Update
+            transaction.update(orderRef, {
+                status: 'completed',
+                deliveryPinValidated: true,
+                proofOfDeliveryUrl: proofUrl || null,
+                completedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+
+            return { success: true, orderId };
+        });
+
+        return result;
+    } catch (error: any) {
+        console.error('CONCURRENCY_ERROR_COMPLETE_ORDER:', error.message);
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Update Order Status (System/Admin/Rider context)
+ */
+export async function updateOrderOperationStatus(orderId: string, newStatus: string, idToken: string) {
+    if (!adminDb || !adminAuth) return { success: false, error: 'Firebase Admin not initialized' };
+
+    try {
+        const decoded = await adminAuth.verifyIdToken(idToken);
+        const callerUid = decoded.uid;
+
         const orderRef = adminDb.collection('orders').doc(orderId);
+        
+        const orderSnap = await orderRef.get();
+        if (!orderSnap.exists) {
+            throw new Error('El pedido no existe.');
+        }
+        const order = orderSnap.data();
+
+        if (order?.supplierId !== callerUid && order?.riderId !== callerUid) {
+            throw new Error('Unauthorized: No tienes permiso para actualizar este pedido.');
+        }
         
         // 0. Validate Status
         const statusSchema = OrderSchema.shape.status;

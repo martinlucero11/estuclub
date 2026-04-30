@@ -54,7 +54,13 @@ export const OrderSchema = z.object({
   supplierName: z.string(),
   items: z.array(z.any()),
   total: z.number().positive(),
-  status: z.enum(['pending', 'assigned', 'at_store', 'on_the_way', 'delivered', 'completed', 'cancelled']),
+  status: z.enum([
+    'pending_payment', 'failed_api_init', 'payment_failed',
+    'pending', 'rejected',
+    'searching_rider', 'waiting_rider', 'assigned',
+    'at_store', 'on_the_way', 'arrived',
+    'delivered', 'completed', 'cancelled'
+  ]),
   deliveryAddress: z.string().min(5),
   riderId: z.string().optional(),
   paymentMethod: z.enum(['cash', 'mercado_pago', 'wallet']),

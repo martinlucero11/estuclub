@@ -1,6 +1,6 @@
 'use server';
 
-import { adminDb } from '@/lib/firebase-admin';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { ensureFolderExists } from '@/lib/google-drive';
 import { RiderApplicationSchema, SupplierRequestSchema } from '../validations/schemas';
 import { z } from 'zod';
@@ -10,13 +10,43 @@ function formatZodError(error: z.ZodError) {
 }
 
 /**
+ * Verifies that the caller is an authenticated admin.
+ * Returns the caller UID or throws.
+ */
+async function verifyAdmin(idToken: string): Promise<string> {
+    if (!adminAuth) throw new Error('Firebase Admin Auth not initialized');
+    
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const callerUid = decoded.uid;
+
+    // Check admin role in Firestore
+    const userDoc = await adminDb!.collection('users').doc(callerUid).get();
+    const userData = userDoc.data();
+    
+    const isAdmin = userData?.role === 'admin';
+    
+    if (!isAdmin) {
+        // Fallback: check roles_admin collection
+        const adminDoc = await adminDb!.collection('roles_admin').doc(callerUid).get();
+        if (!adminDoc.exists) {
+            throw new Error('Unauthorized: caller is not an admin');
+        }
+    }
+
+    return callerUid;
+}
+
+/**
  * Atomics Role Synchronization.
  * This bypasses Client-Side Firestore Rules and ensures SSoT.
+ * SECURED: Requires admin idToken.
  */
-export async function syncUserRole(uid: string, newRole: string) {
+export async function syncUserRole(uid: string, newRole: string, idToken: string) {
     if (!adminDb) return { success: false, error: 'Firebase Admin not initialized' };
 
     try {
+        await verifyAdmin(idToken);
+
         return await adminDb.runTransaction(async (transaction) => {
             const userRef = adminDb!.collection('users').doc(uid);
             const adminRoleRef = adminDb!.collection('roles_admin').doc(uid);
@@ -48,12 +78,15 @@ export async function syncUserRole(uid: string, newRole: string) {
 }
 
 /**
- * Specialized action to approve a Rider Request
+ * Specialized action to approve a Rider Request.
+ * SECURED: Requires admin idToken.
  */
-export async function approveRiderOperation(requestId: string, appData: any) {
+export async function approveRiderOperation(requestId: string, appData: any, idToken: string) {
     if (!adminDb) return { success: false, error: 'Firebase Admin not initialized' };
 
     try {
+        await verifyAdmin(idToken);
+
         // 0. Validate Data
         const validatedData = RiderApplicationSchema.partial().parse(appData);
         const { userId, email, userName, phone } = validatedData;
@@ -109,12 +142,15 @@ export async function approveRiderOperation(requestId: string, appData: any) {
 }
 
 /**
- * Specialized action to approve a Supplier Request
+ * Specialized action to approve a Supplier Request.
+ * SECURED: Requires admin idToken.
  */
-export async function approveSupplierOperation(requestId: string, reqData: any) {
+export async function approveSupplierOperation(requestId: string, reqData: any, idToken: string) {
     if (!adminDb) return { success: false, error: 'Firebase Admin not initialized' };
 
     try {
+        await verifyAdmin(idToken);
+
         // 0. Validate Data
         const validatedData = SupplierRequestSchema.parse(reqData);
         const { userId, supplierName, category, address, commercialPhone, logo, fachada } = validatedData;
@@ -179,12 +215,15 @@ export async function approveSupplierOperation(requestId: string, reqData: any) 
 }
 
 /**
- * Specialized action to reject a Rider Request
+ * Specialized action to reject a Rider Request.
+ * SECURED: Requires admin idToken.
  */
-export async function rejectRiderOperation(requestId: string, userId: string) {
+export async function rejectRiderOperation(requestId: string, userId: string, idToken: string) {
     if (!adminDb) return { success: false, error: 'Firebase Admin not initialized' };
 
     try {
+        await verifyAdmin(idToken);
+
         return await adminDb.runTransaction(async (transaction) => {
             const requestRef = adminDb!.collection('rider_applications').doc(requestId);
             const userRef = adminDb!.collection('users').doc(userId);

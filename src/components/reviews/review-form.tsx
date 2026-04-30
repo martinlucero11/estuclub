@@ -46,13 +46,15 @@ export function ReviewForm({
       if (type === 'appointment') {
         if (!appointmentId) throw new Error('Appointment ID missing');
         
+        const idToken = await user.getIdToken();
+
         const res = await submitAppointmentReview({
           appointmentId,
           supplierId,
           userId: user.uid,
           rating,
           comment
-        });
+        }, idToken);
 
         if (!res.success) throw new Error(res.error);
 

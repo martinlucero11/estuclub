@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { haptic } from '@/lib/haptics';
 import { Order } from '@/types/data';
 import { submitOrderReview } from '@/lib/actions/reviews';
+import { auth } from '@/firebase/config';
 import { useToast } from '@/hooks/use-toast';
 
 interface OrderReviewModalProps {
@@ -33,6 +34,10 @@ export function OrderReviewModal({ order, isOpen, onClose }: OrderReviewModalPro
         haptic.vibrateMedium();
         
         try {
+            const currentUser = auth.currentUser;
+            if (!currentUser) throw new Error('Sesión expirada');
+            const idToken = await currentUser.getIdToken();
+
             const res = await submitOrderReview({
                 orderId: order.id,
                 supplierId: order.supplierId,
@@ -41,7 +46,7 @@ export function OrderReviewModal({ order, isOpen, onClose }: OrderReviewModalPro
                 localRating,
                 riderRating,
                 comment
-            });
+            }, idToken);
 
             if (res.success) {
                 toast({ title: '¡Gracias!', description: 'Tu reputación ayuda a la comunidad.' });

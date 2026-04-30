@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { adminAuth } from '@/lib/firebase-admin';
 
 /**
  * SECURE SHIPPING ENGINE (Server-Side)
  * Protection for Google Maps Billing & Business Logic
+ * SECURED: Requires Bearer Token authentication.
  */
 
 const BASE_RATE = 1400;   // Arancel base por envío
@@ -10,13 +12,28 @@ const PER_KM_RATE = 500;  // Extra por cada km excedente del primero
 
 export async function POST(req: Request) {
     try {
+        // 1. Validar Autenticación (Bearer Token)
+        const authHeader = req.headers.get('Authorization');
+        if (!authHeader?.startsWith('Bearer ')) {
+            return NextResponse.json({ error: 'No autorizado: Token faltante' }, { status: 401 });
+        }
+
+        const token = authHeader.split('Bearer ')[1];
+        try {
+            await adminAuth.verifyIdToken(token);
+        } catch (authError) {
+            console.error('Shipping auth verification failed:', authError);
+            return NextResponse.json({ error: 'No autorizado: Token inválido' }, { status: 401 });
+        }
+
+        // 2. Parse request
         const { origin, destination } = await req.json();
 
         if (!origin || !destination) {
             return NextResponse.json({ error: 'Origin and destination are required' }, { status: 400 });
         }
 
-        // 1. Usar API Key privada (no expuesta al cliente)
+        // 3. Usar API Key privada (no expuesta al cliente)
         const apiKey = process.env.GOOGLE_MAPS_API_KEY;
         
         if (!apiKey) {
@@ -29,7 +46,7 @@ export async function POST(req: Request) {
         const response = await fetch(url);
         const data = await response.json();
 
-        // 2. Manejo de Errores de Google
+        // 4. Manejo de Errores de Google
         if (data.status !== 'OK' || !data.rows[0].elements[0].distance) {
             console.error('Distance Matrix API Error:', data);
             return NextResponse.json({ 
@@ -57,14 +74,14 @@ export async function POST(req: Request) {
         const distanceKm = distanceValue / 1000;
         const durationMin = Math.ceil(durationValue / 60);
 
-        // 3. Aplicar Fórmula de Tarifas Estuclub
+        // 5. Aplicar Fórmula de Tarifas Estuclub
         // Formula: $1.400 + ($500 * (km - 1)) solo si km > 1
         let rate = BASE_RATE;
         if (distanceKm > 1) {
             rate += (distanceKm - 1) * PER_KM_RATE;
         }
 
-        // 4. Retornar Resultado Seguro
+        // 6. Retornar Resultado Seguro
         return NextResponse.json({
             success: true,
             distanceKm: parseFloat(distanceKm.toFixed(2)),
@@ -81,4 +98,3 @@ export async function POST(req: Request) {
         }, { status: 500 });
     }
 }
-

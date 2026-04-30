@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { useFirestore, useCollection } from '@/firebase';
+import { auth } from '@/firebase/config';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { 
   Users, 
@@ -196,7 +197,10 @@ export default function UserManagement() {
                         const newRole = prompt('Nuevo Rol (estudiante, rider, admin, cluber):', user.role || 'estudiante');
                         if (newRole) {
                           try {
-                            const result = await syncUserRole(user.uid, newRole);
+                            const currentUser = auth.currentUser;
+                            if (!currentUser) throw new Error('No autenticado');
+                            const idToken = await currentUser.getIdToken();
+                            const result = await syncUserRole(user.uid, newRole, idToken);
                             if (result.success) {
                               toast({ title: 'Sincronización Atómica Exitosa', description: `Nuevo rol: ${newRole} (Reflejado en Auth & DB)` });
                             }

@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useFirestore, useUser, useCollection } from '@/firebase';
+import { auth } from '@/firebase/config';
 import { collection, query, where, doc, updateDoc, setDoc, serverTimestamp, orderBy, Timestamp, deleteField } from 'firebase/firestore';
 import { useMemo, useState, useTransition } from 'react';
 import { createConverter } from '@/lib/firestore-converter';
@@ -180,6 +181,10 @@ export default function VerifyPage() {
   const handleApproveRider = (app: RiderApplication) => {
     startTransition(async () => {
       try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error('No autenticado');
+        const idToken = await currentUser.getIdToken();
+
         const result = await approveRiderOperation(app.id, {
           userId: app.userId,
           email: app.email,
@@ -187,7 +192,7 @@ export default function VerifyPage() {
           phone: app.phone,
           patente: app.patente,
           vehicleType: (app as any).vehicleType 
-        });
+        }, idToken);
         
         if (result.success) {
           toast({ title: '✅ RIDER ACTIVADO', description: `${app.userName} ya es parte de la flota.` });
@@ -204,7 +209,11 @@ export default function VerifyPage() {
   const handleRejectRider = (app: RiderApplication) => {
     startTransition(async () => {
       try {
-        const result = await rejectRiderOperation(app.id, app.userId);
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error('No autenticado');
+        const idToken = await currentUser.getIdToken();
+
+        const result = await rejectRiderOperation(app.id, app.userId, idToken);
         if (result.success) {
           toast({ title: 'Rider Rechazado', description: 'La solicitud fue denegada correctamente.' });
           router.refresh();
@@ -266,6 +275,10 @@ export default function VerifyPage() {
   const handleVerifyCluber = (req: SupplierRequest) => {
     startTransition(async () => {
       try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error('No autenticado');
+        const idToken = await currentUser.getIdToken();
+
         const result = await approveSupplierOperation(req.id, {
           userId: req.userId,
           supplierName: req.supplierName,
@@ -274,7 +287,7 @@ export default function VerifyPage() {
           commercialPhone: req.commercialPhone,
           logo: req.logo,
           fachada: req.fachada
-        });
+        }, idToken);
 
         if (result.success) {
           toast({ title: '✅ CLUBER VERIFICADO', description: `${req.supplierName} tiene sello oficial.` });

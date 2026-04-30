@@ -86,9 +86,13 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
             try {
                 const origin = supplierProfile.location?.address || supplierProfile.address || '';
                 
+                const idToken = await user?.getIdToken();
                 const response = await fetch('/api/shipping/calculate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
                     body: JSON.stringify({ origin, destination: address })
                 });
 
@@ -202,6 +206,7 @@ export function CheckoutDialog({ open, onOpenChange }: CheckoutDialogProps) {
 
             orderRef = await addDoc(collection(firestore, 'orders'), {
                 userId: user.uid,
+                customerId: user.uid,
                 userName: profile?.firstName ? `${profile.firstName} ${profile.lastName}` : user.displayName || 'EstuClub User',
                 userPhone: profile?.phone || '',
                 supplierId,

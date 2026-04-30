@@ -297,6 +297,25 @@ export default function OrderTrackingPage() {
                     </motion.div>
                 )}
 
+                {/* AVISO DE PAGO AL REPARTIDOR */}
+                {order.status !== 'delivered' && order.status !== 'completed' && order.status !== 'cancelled' && (
+                    <div className="bg-red-500/10 border-2 border-red-500/50 rounded-[2.5rem] p-6 text-center shadow-lg relative overflow-hidden">
+                        <div className="absolute top-0 left-0 p-4 opacity-10">
+                            <Truck className="h-24 w-24 text-red-500 -scale-x-100 rotate-12" />
+                        </div>
+                        <div className="space-y-1 relative z-10">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-red-400">Importante</p>
+                            <h3 className="text-xl font-black italic tracking-tighter text-red-100 uppercase">Pago al Repartidor</h3>
+                            <p className="text-4xl font-black tracking-tighter text-white tabular-nums my-2">
+                                ${(order.paymentMethod === 'cash_at_door' ? order.total : (order.deliveryFee || order.deliveryCost || 0)).toLocaleString()}
+                            </p>
+                            <p className="text-[10px] font-black text-red-200 uppercase tracking-widest pt-1">
+                                (Efectivo o Transferencia)
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Details Section */}
                 <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 space-y-8 shadow-2xl">
                     <div className="space-y-6">

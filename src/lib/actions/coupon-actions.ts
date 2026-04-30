@@ -1,26 +1,31 @@
 'use server';
 
-import { db } from '@/firebase/config';
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  doc, 
-  getDoc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  serverTimestamp, 
-  Timestamp,
-  increment,
-  arrayUnion
-} from 'firebase/firestore';
+import { adminDb, adminAuth } from '@/lib/firebase-admin';
 import { Coupon } from '@/types/data';
 import { z } from 'zod';
+import { FieldValue } from 'firebase-admin/firestore';
 
-// Security: Check for Admin role (assuming we have a utility or session)
-// For now, we'll implement the logic and leave hooks for role verification
+// Security: Verify admin identity before CRUD mutations
+async function verifyAdmin(idToken: string): Promise<string> {
+    if (!adminAuth || !adminDb) throw new Error('Firebase Admin not initialized');
+    
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const callerUid = decoded.uid;
+
+    // Check admin role in Firestore
+    const userDoc = await adminDb.collection('users').doc(callerUid).get();
+    const userData = userDoc.data();
+    const isAdmin = userData?.role === 'admin';
+    
+    if (!isAdmin) {
+        const adminDoc = await adminDb.collection('roles_admin').doc(callerUid).get();
+        if (!adminDoc.exists) {
+            throw new Error('Unauthorized: caller is not an admin');
+        }
+    }
+
+    return callerUid;
+}
 
 const couponSchema = z.object({
   code: z.string().min(3).max(20).toUpperCase(),
@@ -40,12 +45,17 @@ const couponSchema = z.object({
 
 /**
  * Validates a coupon code for a specific user and order amount.
+ * This is user-facing and does NOT require admin auth.
  */
 export async function validateCoupon(code: string, userId: string, orderTotal: number) {
+  if (!adminDb) return { success: false, message: 'Firebase Admin not initialized' };
+
   try {
     const normalizedCode = code.trim().toUpperCase();
-    const q = query(collection(db, 'coupons'), where('code', '==', normalizedCode), where('isActive', '==', true));
-    const snapshot = await getDocs(q);
+    const snapshot = await adminDb.collection('coupons')
+      .where('code', '==', normalizedCode)
+      .where('isActive', '==', true)
+      .get();
 
     if (snapshot.empty) {
       return { success: false, message: 'Cupón no encontrado o inactivo.' };
@@ -53,13 +63,16 @@ export async function validateCoupon(code: string, userId: string, orderTotal: n
 
     const couponDoc = snapshot.docs[0];
     const coupon = { ...couponDoc.data(), id: couponDoc.id } as Coupon;
-    const now = Timestamp.now();
+    const now = Date.now() / 1000; // seconds
 
     // 1. Check Dates
-    if (now.seconds < coupon.startDate.seconds) {
+    const startSeconds = coupon.startDate?.seconds ?? coupon.startDate?._seconds ?? 0;
+    const endSeconds = coupon.endDate?.seconds ?? coupon.endDate?._seconds ?? 0;
+
+    if (now < startSeconds) {
       return { success: false, message: 'El cupón aún no está vigente.' };
     }
-    if (now.seconds > coupon.endDate.seconds) {
+    if (now > endSeconds) {
       return { success: false, message: 'El cupón ha expirado.' };
     }
 
@@ -97,14 +110,17 @@ export async function validateCoupon(code: string, userId: string, orderTotal: n
 /**
  * Increments the usage count and adds the user to usedBy.
  * This should be called AFTER a successful payment/order creation.
+ * User-facing, no admin auth required.
  */
 export async function recordCouponUsage(couponId: string, userId: string) {
+  if (!adminDb) return { success: false };
+
   try {
-    const couponRef = doc(db, 'coupons', couponId);
-    await updateDoc(couponRef, {
-      usageCount: increment(1),
-      usedBy: arrayUnion(userId),
-      updatedAt: serverTimestamp()
+    const couponRef = adminDb.collection('coupons').doc(couponId);
+    await couponRef.update({
+      usageCount: FieldValue.increment(1),
+      usedBy: FieldValue.arrayUnion(userId),
+      updatedAt: FieldValue.serverTimestamp()
     });
     return { success: true };
   } catch (error) {
@@ -113,27 +129,37 @@ export async function recordCouponUsage(couponId: string, userId: string) {
   }
 }
 
-// --- ADMIN CRUD ACTIONS ---
+// --- ADMIN CRUD ACTIONS (require admin idToken) ---
 
-export async function createCoupon(data: any) {
+/**
+ * Creates a new coupon.
+ * SECURED: Requires admin idToken.
+ */
+export async function createCoupon(data: any, idToken: string) {
+  if (!adminDb) return { success: false, message: 'Firebase Admin not initialized' };
+
   try {
+    await verifyAdmin(idToken);
+
     const validated = couponSchema.parse(data);
     
     // Check for duplicate code
-    const q = query(collection(db, 'coupons'), where('code', '==', validated.code));
-    const existing = await getDocs(q);
+    const existing = await adminDb.collection('coupons')
+      .where('code', '==', validated.code)
+      .get();
+
     if (!existing.empty) {
       return { success: false, message: 'Este código de cupón ya existe.' };
     }
 
-    await addDoc(collection(db, 'coupons'), {
+    await adminDb.collection('coupons').add({
       ...validated,
-      startDate: Timestamp.fromDate(validated.startDate),
-      endDate: Timestamp.fromDate(validated.endDate),
+      startDate: new Date(validated.startDate),
+      endDate: new Date(validated.endDate),
       usageCount: 0,
       usedBy: [],
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp()
     });
 
     return { success: true, message: 'Cupón creado correctamente.' };
@@ -142,23 +168,39 @@ export async function createCoupon(data: any) {
   }
 }
 
-export async function toggleCouponStatus(id: string, active: boolean) {
+/**
+ * Toggles the active status of a coupon.
+ * SECURED: Requires admin idToken.
+ */
+export async function toggleCouponStatus(id: string, active: boolean, idToken: string) {
+  if (!adminDb) return { success: false };
+
   try {
-    await updateDoc(doc(db, 'coupons', id), {
+    await verifyAdmin(idToken);
+
+    await adminDb.collection('coupons').doc(id).update({
       isActive: active,
-      updatedAt: serverTimestamp()
+      updatedAt: FieldValue.serverTimestamp()
     });
     return { success: true };
-  } catch (error) {
-    return { success: false };
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Error al cambiar estado.' };
   }
 }
 
-export async function deleteCoupon(id: string) {
+/**
+ * Deletes a coupon.
+ * SECURED: Requires admin idToken.
+ */
+export async function deleteCoupon(id: string, idToken: string) {
+  if (!adminDb) return { success: false };
+
   try {
-    await deleteDoc(doc(db, 'coupons', id));
+    await verifyAdmin(idToken);
+
+    await adminDb.collection('coupons').doc(id).delete();
     return { success: true };
-  } catch (error) {
-    return { success: false };
+  } catch (error: any) {
+    return { success: false, message: error.message || 'Error al eliminar cupón.' };
   }
 }

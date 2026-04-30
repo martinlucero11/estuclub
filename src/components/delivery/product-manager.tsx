@@ -101,6 +101,12 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
         }
 
         startTransition(async () => {
+            const idToken = await user?.getIdToken();
+            if (!idToken) {
+                toast({ title: "Error", description: "Sesión expirada. Recargá la página.", variant: "destructive" });
+                return;
+            }
+
             const productData = {
                 ...selectedProduct,
                 supplierId: supplierId,
@@ -111,7 +117,7 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
                 stockAvailable: selectedProduct?.stockAvailable ?? true,
             };
 
-            const result = await saveProductOperation(productData);
+            const result = await saveProductOperation(productData, idToken);
 
             if (result.success) {
                 toast({ title: selectedProduct?.id ? "Producto actualizado" : "Producto creado" });
@@ -127,7 +133,12 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const handleDeleteProduct = () => {
         if (!productToDelete) return;
         startTransition(async () => {
-             const result = await deleteProductAction(productToDelete);
+             const idToken = await user?.getIdToken();
+             if (!idToken) {
+                 toast({ title: "Error", description: "Sesión expirada.", variant: "destructive" });
+                 return;
+             }
+             const result = await deleteProductAction(productToDelete, idToken);
              if (result.success) {
                  toast({ title: "✅ PRODUCTO ELIMINADO" });
                  router.refresh();
@@ -141,7 +152,12 @@ export function ProductManager({ supplierId: initialSupplierId }: ProductManager
     const toggleStatus = (product: Product, field: 'isActive' | 'stockAvailable') => {
         const newValue = !product[field];
         startTransition(async () => {
-            const result = await toggleProductStatusAction(product.id, field, newValue);
+            const idToken = await user?.getIdToken();
+            if (!idToken) {
+                toast({ title: "Error", description: "Sesión expirada.", variant: "destructive" });
+                return;
+            }
+            const result = await toggleProductStatusAction(product.id, field, newValue, idToken);
             if (result.success) {
                 toast({ 
                     title: newValue ? "Activado" : "Desactivado", 

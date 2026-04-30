@@ -46,47 +46,44 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No tienes permiso para pagar esta orden' }, { status: 403 });
         }
 
-        const { items } = orderData as { items: any[] };
+        const { items, supplierId } = orderData as { items: any[], supplierId: string };
 
-        // 4. Configuración y Validaciones de Entorno
-        const accessToken = process.env.MP_ACCESS_TOKEN;
-        if (!accessToken) {
-            console.error('CRITICAL: MP_ACCESS_TOKEN is not defined in environment variables');
-            return NextResponse.json({ error: 'Configuración de pagos incompleta (Token)' }, { status: 500 });
+        // 4. Configuración y Validaciones del Comercio (Seller)
+        if (!supplierId) {
+            return NextResponse.json({ error: 'La orden no tiene un comercio asociado (supplierId faltante)' }, { status: 400 });
+        }
+
+        const supplierDoc = await adminDb.collection('roles_supplier').doc(supplierId).get();
+        const supplierData = supplierDoc.data();
+        const sellerAccessToken = supplierData?.mp_credentials?.access_token;
+
+        if (!sellerAccessToken) {
+            console.error(`Comercio ${supplierId} no tiene credenciales de Mercado Pago vinculadas.`);
+            return NextResponse.json({ error: 'El comercio no está habilitado para recibir pagos digitales' }, { status: 400 });
         }
 
         const rawBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.BASE_URL;
-        // Fallback robusto para producción si falta la variable de entorno
         const baseUrl = (rawBaseUrl || 'https://estuclub.com.ar').replace(/\/$/, '');
 
-        // Recalcular totalSubtotal desde la base de datos
-        const recalculatedSubtotal = items.reduce((acc: number, item: any) => {
-            return acc + (Math.max(0, Number(item.price)) * Math.max(1, Number(item.quantity || 1)));
-        }, 0);
+        // 5. Preparar Cliente MP con el Token del Comercio
+        const { MercadoPagoConfig, Preference } = require('mercadopago');
+        const mpSellerClient = new MercadoPagoConfig({ accessToken: sellerAccessToken, options: { timeout: 10000 } });
+        const preference = new Preference(mpSellerClient);
 
-        // Calculate 5% service fee based on DB data
-        const serviceFee = Math.max(1, Math.round(recalculatedSubtotal * 0.05));
-
-        const preference = new Preference(mpClient);
-
+        // 6. Split de Pagos y Estructuración
+        // Costo de envío se EXCLUYE totalmente de Mercado Pago.
+        // Solo enviamos los items. El delivery se cobra en persona.
+        
         const preferenceData = {
             body: {
-                items: [
-                    ...items.map((item: any) => ({
-                        id: String(item.productId || item.id || 'product'),
-                        title: String(item.name || 'Producto EstuClub').slice(0, 250),
-                        quantity: Math.max(1, Number(item.quantity) || 1),
-                        unit_price: Math.max(1, Number(item.price)), 
-                        currency_id: 'ARS'
-                    })),
-                    {
-                        id: 'service_fee',
-                        title: 'Tarifa de Servicio (EstuClub)',
-                        quantity: 1,
-                        unit_price: serviceFee,
-                        currency_id: 'ARS'
-                    }
-                ],
+                items: items.map((item: any) => ({
+                    id: String(item.productId || item.id || 'product'),
+                    title: String(item.name || 'Producto EstuClub').slice(0, 250),
+                    quantity: Math.max(1, Number(item.quantity) || 1),
+                    unit_price: Math.max(1, Number(item.price)), 
+                    currency_id: 'ARS'
+                })),
+                marketplace_fee: 500, // Comisión Fija de Estuclub
                 back_urls: {
                     success: `${baseUrl}/orders/${orderId}`,
                     failure: `${baseUrl}/delivery`,

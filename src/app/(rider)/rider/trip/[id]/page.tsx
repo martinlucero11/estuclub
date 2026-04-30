@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useDoc } from '@/firebase';
+import { auth } from '@/firebase/config';
 import { doc, onSnapshot, updateDoc, Timestamp } from 'firebase/firestore';
+import { completeDeliveryAtomic, updateOrderOperationStatus } from '@/lib/actions/order-actions';
 import { Order, UserProfile } from '@/types/data';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -76,59 +78,61 @@ export default function RiderTripPage() {
     }, [firestore, id, order?.status]);
 
     const handleValidatePin = async () => {
-        if (!order || !firestore || !id) return;
+        if (!order || !id || pinEntry.length < 4) return;
+
+        setIsValidating(true);
+        haptic.vibrateMedium();
         
-        if (pinEntry !== order.deliveryPin) {
+        try {
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('Sesión expirada. Reinicia la app.');
+
+            const res = await completeDeliveryAtomic(order.id, pinEntry, null, token);
+
+            if (res.success) {
+                haptic.vibrateSuccess();
+                toast({ title: "🎁 ¡Entrega Confirmada!", description: "El pedido ha sido finalizado con éxito." });
+                setShowPinModal(false);
+
+                // TRIGGER STATUS NOTIFICATION
+                fetch('/api/notifications/notify-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: order.customerId || order.userId,
+                        orderId: order.id,
+                        status: 'completed',
+                        supplierName: order.supplierName || 'El Local'
+                    })
+                }).catch(e => console.error("Notification trigger error:", e));
+            } else {
+                haptic.vibrateError();
+                setPinError(true);
+                setTimeout(() => setPinError(false), 1000);
+                toast({ variant: 'destructive', title: "Error", description: (res as any).error || 'PIN incorrecto o error de servidor.' });
+            }
+        } catch (error: any) {
+            console.error("Error validating PIN:", error);
             haptic.vibrateError();
             setPinError(true);
             setTimeout(() => setPinError(false), 1000);
-            return;
-        }
-
-        setIsValidating(true);
-        haptic.vibrateSuccess();
-        
-        try {
-            await updateDoc(doc(firestore, 'orders', id as string), {
-                status: 'delivered',
-                updatedAt: Timestamp.now(),
-                deliveryPinValidated: true,
-                deliveryPaymentStatus: order.deliveryPaymentStatus === 'pending' ? 'completed' : order.deliveryPaymentStatus
-            });
-            
-            toast({ title: "🎁 ¡Entrega Confirmada!", description: "El pedido ha sido finalizado con éxito." });
-            setShowPinModal(false);
-
-            // MISSION 6: TRIGGER STATUS NOTIFICATION
-            fetch('/api/notifications/notify-status', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: order.customerId || order.userId,
-                    orderId: order.id,
-                    status: 'delivered',
-                    supplierName: order.supplierName || 'El Local'
-                })
-            }).catch(e => console.error("Notification trigger error:", e));
-
-        } catch (error) {
-            console.error("Error validating PIN:", error);
-            toast({ variant: 'destructive', title: "Error", description: "No se pudo finalizar la entrega." });
+            toast({ variant: 'destructive', title: "Error", description: error.message || "No se pudo finalizar la entrega." });
         } finally {
             setIsValidating(false);
         }
     };
 
     const handleUpdateStatus = async (newStatus: string) => {
-        if (!id || !firestore) return;
+        if (!id || !order) return;
         haptic.vibrateMedium();
         try {
-            await updateDoc(doc(firestore, 'orders', id as string), {
-                status: newStatus,
-                updatedAt: Timestamp.now()
-            });
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error('Sesión expirada. Reinicia la app.');
 
-            // MISSION 6: TRIGGER STATUS NOTIFICATION
+            const res = await updateOrderOperationStatus(id as string, newStatus, token);
+            if (!res.success) throw new Error((res as any).error);
+
+            // TRIGGER STATUS NOTIFICATION
             fetch('/api/notifications/notify-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -141,8 +145,8 @@ export default function RiderTripPage() {
             }).catch(e => console.error("Notification trigger error:", e));
 
             toast({ title: "Estado Actualizado", description: `Pedido marcado como ${newStatus.replace('_', ' ')}.` });
-        } catch (error) {
-            toast({ variant: 'destructive', title: "Error" });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: "Error", description: error.message || 'No se pudo actualizar el estado.' });
         }
     };
 

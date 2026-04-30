@@ -45,6 +45,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { haptic } from '@/lib/haptics';
 import { createCoupon, toggleCouponStatus, deleteCoupon } from '@/lib/actions/coupon-actions';
+import { auth } from '@/firebase/config';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
@@ -98,11 +99,15 @@ export function CouponManagement() {
     }
 
     try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) { toast({ variant: 'destructive', title: 'Sesión expirada' }); return; }
+      const idToken = await currentUser.getIdToken();
+
       const res = await createCoupon({
         ...formData,
         startDate: new Date(formData.startDate),
         endDate: new Date(formData.endDate),
-      });
+      }, idToken);
 
       if (res.success) {
         toast({ title: '✅ Cupón Creado', description: `El código ${formData.code.toUpperCase()} está activo.` });
@@ -111,8 +116,8 @@ export function CouponManagement() {
       } else {
         toast({ variant: 'destructive', title: 'Error', description: res.message });
       }
-    } catch (err) {
-      toast({ variant: 'destructive', title: 'Fallo crítico' });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Fallo crítico', description: err.message });
     }
   };
 
@@ -279,14 +284,24 @@ export function CouponManagement() {
                 <div className="flex items-center gap-2">
                    <Switch 
                      checked={coupon.isActive} 
-                     onCheckedChange={(v) => toggleCouponStatus(coupon.id, v)}
+                     onCheckedChange={async (v) => {
+                       const currentUser = auth.currentUser;
+                       if (!currentUser) return;
+                       const idToken = await currentUser.getIdToken();
+                       toggleCouponStatus(coupon.id, v, idToken);
+                     }}
                      className="data-[state=checked]:bg-primary"
                    />
                    <Button 
                      variant="ghost" 
                      size="icon" 
                      className="h-8 w-8 text-red-500/40 hover:text-red-500 hover:bg-red-500/10 rounded-lg"
-                     onClick={() => deleteCoupon(coupon.id)}
+                     onClick={async () => {
+                       const currentUser = auth.currentUser;
+                       if (!currentUser) return;
+                       const idToken = await currentUser.getIdToken();
+                       deleteCoupon(coupon.id, idToken);
+                     }}
                    >
                      <Trash2 className="h-4 w-4" />
                    </Button>

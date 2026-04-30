@@ -30,7 +30,7 @@ import { createConverter } from '@/lib/firestore-converter';
 import { useMessaging } from '@/firebase/messaging';
 
 import { StarRating } from '@/components/reviews/star-rating';
-import { acceptDeliveryOrder } from '@/lib/actions/order-actions';
+import { acceptDeliveryOrder, completeDeliveryAtomic } from '@/lib/actions/order-actions';
 
 // --- NEW COMPONENTS ---
 import { RiderSidebar } from '@/components/rider/rider-sidebar';
@@ -531,22 +531,26 @@ export default function RiderPage() {
         }
     };
 
-    const handleCompleteDelivery = async () => {
+    const handleCompleteDelivery = async (enteredPin: string) => {
         if (!selectedOrder || !user?.uid) return;
-        haptic.vibrateSuccess();
+        haptic.vibrateMedium();
         try {
-            await updateDoc(doc(firestore, 'orders', selectedOrder.id), { 
-                status: 'completed', 
-                deliveryPinValidated: true,
-                proofOfDeliveryUrl: deliveryProofUrl,
-                completedAt: serverTimestamp() 
-            });
-            setIsPinEntryOpen(false);
-            setSelectedOrder(null);
-            setDeliveryProofUrl(null);
-            toast({ title: '✅ Entrega Finalizada', description: 'El pago y la evidencia han sido validados.' });
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error al finalizar' });
+            const token = await auth.currentUser?.getIdToken();
+            if (!token) throw new Error("Sesión expirada. Por favor, reinicia la app.");
+            
+            const res = await completeDeliveryAtomic(selectedOrder.id, enteredPin, deliveryProofUrl, token);
+            if (res.success) {
+                setIsPinEntryOpen(false);
+                setSelectedOrder(null);
+                setDeliveryProofUrl(null);
+                haptic.vibrateSuccess();
+                toast({ title: '✅ Entrega Finalizada', description: 'El pago y la evidencia han sido validados.' });
+            } else {
+                throw new Error((res as any).error);
+            }
+        } catch (error: any) {
+            haptic.vibrateError();
+            toast({ variant: 'destructive', title: 'Error al finalizar', description: error.message || 'Código incorrecto o error de red.' });
         }
     };
 
@@ -741,7 +745,10 @@ export default function RiderPage() {
                                             setIsAccepting(true);
                                             haptic.vibrateMedium();
                                             try {
-                                                const res = await acceptDeliveryOrder(selectedOrder.id, user.uid);
+                                                const token = await auth.currentUser?.getIdToken();
+                                                if (!token) throw new Error("Sesión expirada. Por favor, reinicia la app.");
+                                                
+                                                const res = await acceptDeliveryOrder(selectedOrder.id, token);
                                                 if (res.success) {
                                                     setSelectedOrder(null);
                                                     toast({ title: '✅ Pedido Aceptado', description: 'Dirigite al comercio para retirar el pedido.' });
@@ -772,6 +779,11 @@ export default function RiderPage() {
                 onClose={() => setIsPinEntryOpen(false)} 
                 correctPin={selectedOrder?.deliveryPin || '1234'} // Fallback for legacy
                 onSuccess={handleCompleteDelivery} 
+                amountToCollect={
+                    selectedOrder?.paymentMethod === 'cash_at_door'
+                        ? selectedOrder.total
+                        : (selectedOrder?.deliveryFee || selectedOrder?.deliveryCost || 0)
+                }
             />
 
             <DeliveryPhotoCapture
