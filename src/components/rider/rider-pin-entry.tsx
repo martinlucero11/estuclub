@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { haptic } from '@/lib/haptics';
 import { cn } from '@/lib/utils';
 
+interface RiderPinEntryProps {
     isOpen: boolean;
     onClose: () => void;
     correctPin: string;

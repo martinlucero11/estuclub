@@ -300,9 +300,14 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 
+    'pending_payment' |
+    'failed_api_init' |
+    'payment_failed' |
     'pending' | 
+    'rejected' |
     'accepted' |
     'searching_rider' |
+    'waiting_rider' |
     'assigned' | 
     'at_store' | 
     'on_the_way' | 

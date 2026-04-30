@@ -46,6 +46,7 @@ const STATUS_CONFIG = {
     'delivered': { label: 'Entregado', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-400/10', step: 5 },
     'completed': { label: 'Finalizado', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-400/10', step: 5 },
     'cancelled': { label: 'Cancelado', icon: CheckCircle2, color: 'text-red-400', bg: 'bg-red-400/10', step: -1 },
+    'rejected': { label: 'Rechazado por el Comercio', icon: CheckCircle2, color: 'text-red-400', bg: 'bg-red-400/10', step: -1 },
 } as any;
 
 const STEPS = [

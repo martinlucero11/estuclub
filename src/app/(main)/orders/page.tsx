@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo, Suspense, useState } from 'react';
 import MainLayout from '@/components/layout/main-layout';
 import { useCollection, useFirestore, useUser } from '@/firebase';
-import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { ShoppingBag, Clock, CheckCircle2, Truck, Package, Store, ChevronRight, Hash, ArrowUpRight, Navigation, MapPin } from 'lucide-react';
+import { collection, query, where, orderBy, limit, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { ShoppingBag, Clock, CheckCircle2, Truck, Package, Store, ChevronRight, Hash, ArrowUpRight, Navigation, MapPin, XCircle, AlertTriangle, RotateCcw, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createConverter } from '@/lib/firestore-converter';
@@ -14,7 +15,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '@/context/cart-context';
+import { useToast } from '@/hooks/use-toast';
+import { haptic } from '@/lib/haptics';
 
 // ─── CONFIG ───────────────────────────────────────────────
 const statusConfig = {
@@ -27,6 +32,7 @@ const statusConfig = {
     delivered: { label: 'Entregado', icon: CheckCircle2, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
     completed: { label: 'Finalizado', icon: CheckCircle2, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
     cancelled: { label: 'Cancelado', icon: Hash, color: 'text-destructive bg-destructive/10 border-destructive/20' },
+    rejected: { label: 'Rechazado', icon: XCircle, color: 'text-red-500 bg-red-500/10 border-red-500/20' },
     paid: { label: 'Pagado', icon: CheckCircle2, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
 };
 
@@ -60,8 +66,90 @@ function OrdersDashboard() {
 
     const { data: orders, isLoading } = useCollection(ordersQuery);
 
-    const activeOrders = useMemo(() => orders?.filter(o => !['completed', 'cancelled', 'delivered'].includes(o.status)) || [], [orders]);
-    const recentHistory = useMemo(() => orders?.filter(o => ['completed', 'delivered'].includes(o.status)).slice(0, 10) || [], [orders]);
+    const activeOrders = useMemo(() => orders?.filter(o => !['completed', 'cancelled', 'delivered', 'rejected'].includes(o.status)) || [], [orders]);
+    const recentHistory = useMemo(() => orders?.filter(o => ['completed', 'delivered', 'rejected'].includes(o.status)).slice(0, 10) || [], [orders]);
+
+    // ─── Repeat Order Logic ──────────────────────────────────
+    const { addItem, clearCart } = useCart();
+    const { toast } = useToast();
+    const router = useRouter();
+    const [repeatLoading, setRepeatLoading] = useState<string | null>(null);
+
+    const handleRepeatOrder = async (e: React.MouseEvent, order: Order) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!firestore || repeatLoading) return;
+
+        setRepeatLoading(order.id);
+        haptic.vibrateMedium();
+
+        try {
+            const available: typeof order.items = [];
+            const unavailable: string[] = [];
+
+            // Check each product's current availability
+            for (const item of order.items) {
+                try {
+                    const productSnap = await getDoc(doc(firestore, 'products', item.productId));
+                    if (productSnap.exists()) {
+                        const productData = productSnap.data();
+                        if (productData.isActive !== false && productData.stockAvailable !== false) {
+                            // Use current price from DB, not the old order price
+                            available.push({
+                                ...item,
+                                price: productData.price ?? item.price,
+                                originalPrice: productData.originalPrice ?? item.originalPrice,
+                            });
+                        } else {
+                            unavailable.push(item.name);
+                        }
+                    } else {
+                        unavailable.push(item.name);
+                    }
+                } catch {
+                    unavailable.push(item.name);
+                }
+            }
+
+            if (available.length === 0) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Productos no disponibles',
+                    description: 'Ningún producto de este pedido está disponible actualmente.'
+                });
+                return;
+            }
+
+            // Clear cart and add available items
+            clearCart();
+            const supplier = {
+                id: order.supplierId,
+                name: order.supplierName,
+                phone: order.supplierPhone || ''
+            };
+
+            for (const item of available) {
+                addItem({ ...item, quantity: item.quantity }, supplier);
+            }
+
+            if (unavailable.length > 0) {
+                toast({
+                    title: `${available.length} producto(s) agregados`,
+                    description: `No disponibles: ${unavailable.join(', ')}`,
+                });
+            } else {
+                toast({ title: '\u2705 Pedido cargado en el carrito' });
+            }
+
+            // Navigate to the supplier's store page
+            router.push(`/delivery/${order.supplierId}`);
+        } catch (error) {
+            console.error('Repeat order error:', error);
+            toast({ variant: 'destructive', title: 'Error al repetir pedido' });
+        } finally {
+            setRepeatLoading(null);
+        }
+    };
 
     if (isLoading) return <OrdersSkeleton />;
 
@@ -163,26 +251,66 @@ function OrdersDashboard() {
                             transition={{ delay: i * 0.05 }}
                         >
                             <Link href={`/orders/${order.id}`}>
-                                <Card className="group bg-white/50 border border-foreground/50 rounded-[2rem] p-6 hover:bg-white hover:border-primary/20 hover:shadow-xl transition-all duration-300">
+                                <Card className={cn(
+                                    "group border rounded-[2rem] p-6 hover:shadow-xl transition-all duration-300",
+                                    order.status === 'rejected' 
+                                        ? "bg-red-50/50 border-red-200 hover:bg-red-50 hover:border-red-300" 
+                                        : "bg-white/50 border-foreground/50 hover:bg-white hover:border-primary/20"
+                                )}>
                                     <div className="flex items-center justify-between gap-6">
                                         <div className="flex items-center gap-6">
-                                            <div className="h-14 w-14 bg-background rounded-2xl flex items-center justify-center border border-foreground/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-colors">
-                                                {order.status === 'completed' ? <CheckCircle2 className="h-6 w-6 text-green-500" /> : <Package className="h-6 w-6 text-foreground" />}
+                                            <div className={cn(
+                                                "h-14 w-14 rounded-2xl flex items-center justify-center border transition-colors",
+                                                order.status === 'rejected' 
+                                                    ? "bg-red-500/10 border-red-200 group-hover:bg-red-500/20" 
+                                                    : "bg-background border-foreground/50 group-hover:bg-primary/5 group-hover:border-primary/20"
+                                            )}>
+                                                {order.status === 'rejected' 
+                                                    ? <XCircle className="h-6 w-6 text-red-500" /> 
+                                                    : order.status === 'completed' 
+                                                        ? <CheckCircle2 className="h-6 w-6 text-green-500" /> 
+                                                        : <Package className="h-6 w-6 text-foreground" />}
                                             </div>
                                             <div className="space-y-1">
                                                 <h4 className="text-lg font-black tracking-tighter uppercase italic text-foreground">{order.supplierName}</h4>
-                                                <p className="text-[10px] font-black text-foreground uppercase tracking-widest">
-                                                    {order.createdAt instanceof Timestamp ? format(order.createdAt.toDate(), "d MMM • HH:mm", { locale: es }) : 'Finalizada'}
-                                                </p>
+                                                {order.status === 'rejected' ? (
+                                                    <div className="space-y-0.5">
+                                                        <Badge className="bg-red-500 text-white border-0 text-[8px] font-black uppercase tracking-widest rounded-lg px-2 py-0.5">Rechazado</Badge>
+                                                        <p className="text-[10px] font-bold text-red-500/70 italic">El comercio no pudo aceptar este pedido</p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest">
+                                                        {order.createdAt instanceof Timestamp ? format(order.createdAt.toDate(), "d MMM • HH:mm", { locale: es }) : 'Finalizada'}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xl font-black tracking-tighter text-foreground">${order.totalAmount.toLocaleString()}</p>
+                                            <p className={cn(
+                                                "text-xl font-black tracking-tighter",
+                                                order.status === 'rejected' ? "text-red-500/60 line-through" : "text-foreground"
+                                            )}>${order.totalAmount.toLocaleString()}</p>
                                             <Badge variant="outline" className="mt-1 border-foreground text-[8px] font-black uppercase tracking-tighter text-foreground rounded-lg">ID {order.id.slice(-6)}</Badge>
                                         </div>
                                     </div>
                                 </Card>
                             </Link>
+                            {/* Repeat Order Button — outside the Link to prevent navigation */}
+                            <div className="flex justify-end -mt-2 pr-2">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-primary hover:bg-primary/10 rounded-xl px-4 h-9 gap-2 transition-all"
+                                    disabled={repeatLoading === order.id}
+                                    onClick={(e) => handleRepeatOrder(e, order)}
+                                >
+                                    {repeatLoading === order.id 
+                                        ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        : <RotateCcw className="h-3.5 w-3.5" />
+                                    }
+                                    Repetir Pedido
+                                </Button>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
@@ -236,6 +364,4 @@ export default function StudentOrdersPage() {
         </MainLayout>
     );
 }
-
-import { Button } from '@/components/ui/button';
 

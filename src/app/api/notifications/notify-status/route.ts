@@ -29,6 +29,11 @@ export async function POST(req: NextRequest) {
         let url = `/orders/${orderId}`;
 
         switch (status) {
+            case 'rejected':
+                title = '❌ Pedido rechazado';
+                body = `${supplierName || 'El comercio'} no pudo aceptar tu pedido. Podés hacer uno nuevo.`;
+                url = '/orders';
+                break;
             case 'accepted':
                 title = '👨‍🍳 ¡Pedido en preparación!';
                 body = `${supplierName || 'El local'} está preparando tu orden.`;

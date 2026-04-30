@@ -1,6 +1,6 @@
 'use server';
 
-import { adminDb, adminAuth } from '@/lib/firebase-admin';
+import { adminDb, adminAuth, adminMessaging } from '@/lib/firebase-admin';
 import { OrderSchema } from '../validations/schemas';
 import { z } from 'zod';
 
@@ -151,6 +151,27 @@ export async function updateOrderOperationStatus(orderId: string, newStatus: str
             status: validatedStatus,
             updatedAt: new Date().toISOString()
         });
+
+        // Fire push notification to customer on rejection
+        if (validatedStatus === 'rejected' && order?.customerId && adminMessaging) {
+            try {
+                const tokenDoc = await adminDb.collection('userTokens').doc(order.customerId).get();
+                const tokens = tokenDoc.data()?.tokens || [];
+                if (tokens.length > 0) {
+                    await adminMessaging.sendEachForMulticast({
+                        tokens,
+                        notification: {
+                            title: '❌ Pedido rechazado',
+                            body: `${order.supplierName || 'El comercio'} no pudo aceptar tu pedido. Podés hacer uno nuevo.`
+                        },
+                        data: { url: '/orders', orderId }
+                    });
+                }
+            } catch (notifError) {
+                console.error('REJECTED_NOTIFICATION_ERROR:', notifError);
+                // Don't fail the whole operation for a notification error
+            }
+        }
 
         return { success: true };
     } catch (e: any) {
