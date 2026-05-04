@@ -168,25 +168,28 @@ export default function ComingSoonPage() {
               className="w-full max-w-sm bg-white/5 border border-[#cb465a]/50 p-6 rounded-3xl shadow-[0_0_30px_rgba(203,70,90,0.2)] text-center"
             >
               <h3 className="text-xl font-black mb-4 text-[#cb465a] uppercase tracking-widest">Acceso Secreto</h3>
-              <input 
-                type="password" 
-                placeholder="Contraseña"
-                value={secretPassword}
-                onChange={(e) => setSecretPassword(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    if (secretPassword === 'Mismuki') {
-                      localStorage.setItem('estuclub_tester_unlocked', 'true');
-                      router.push('/login');
-                    } else {
-                      setIsError(true);
-                      setTimeout(() => setIsError(false), 500);
-                    }
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (secretPassword === 'Mismuki') {
+                    localStorage.setItem('estuclub_tester_unlocked', 'true');
+                    router.push('/login');
+                  } else {
+                    setIsError(true);
+                    setTimeout(() => setIsError(false), 500);
                   }
                 }}
-                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:border-[#cb465a] transition-colors mb-4"
-                autoFocus
-              />
+                className="w-full"
+              >
+                <input 
+                  type="password" 
+                  placeholder="Contraseña"
+                  value={secretPassword}
+                  onChange={(e) => setSecretPassword(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:border-[#cb465a] transition-colors mb-4"
+                  autoFocus
+                />
+              </form>
               {isError && <p className="text-[#cb465a] text-sm font-bold animate-pulse">Acceso denegado 🐾</p>}
             </motion.div>
           </motion.div>

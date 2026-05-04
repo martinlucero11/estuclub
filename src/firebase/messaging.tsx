@@ -35,6 +35,10 @@ export const MessagingProvider = ({ children }: { children: ReactNode }) => {
                     const supported = await isSupported();
                     if (!supported) return;
 
+                    // Only get token if permission was already granted
+                    if (typeof window === 'undefined' || !('Notification' in window)) return;
+                    if (Notification.permission !== 'granted') return;
+
                     // 1. Request Permission & Get Token
                     const token = await requestNotificationPermission();
                     
