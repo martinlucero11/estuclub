@@ -17,7 +17,7 @@ export default function ComingSoonGuard({ children }: { children: React.ReactNod
   useEffect(() => {
     setMounted(true);
     setIsTester(localStorage.getItem('estuclub_tester_unlocked') === 'true');
-  }, []);
+  }, [pathname]);
 
   const isAdmin = roles.includes('admin');
   const isPublicPath = PUBLIC_PATHS.some(path => pathname.startsWith(path));
