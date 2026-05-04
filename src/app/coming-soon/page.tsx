@@ -188,6 +188,7 @@ export default function ComingSoonPage() {
                   onChange={(e) => setSecretPassword(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white text-center focus:outline-none focus:border-[#cb465a] transition-colors mb-4"
                   autoFocus
+                  autoComplete="new-password"
                 />
               </form>
               {isError && <p className="text-[#cb465a] text-sm font-bold animate-pulse">Acceso denegado 🐾</p>}
