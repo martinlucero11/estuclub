@@ -65,6 +65,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Forbidden: Invalid Signature' }, { status: 403 });
         }
 
+        // Check for subscription preapproval first
+        const eventType = body.type || req.nextUrl.searchParams.get('type') || req.nextUrl.searchParams.get('topic');
+        if (eventType === 'subscription_preapproval') {
+            await handleSubscriptionPreapproval(String(paymentId));
+            return NextResponse.json({ status: 'ok' });
+        }
+
         // 2. Process Valid Payment
         const paymentResource = new Payment(mpClient);
         const paymentData = await paymentResource.get({ id: String(paymentId) });
@@ -189,4 +196,52 @@ async function handleFailedPayment(orderId: string, status: string) {
         last_mp_status: status,
         updatedAt: FieldValue.serverTimestamp()
     });
+}
+
+async function handleSubscriptionPreapproval(preapprovalId: string) {
+    if (!adminDb || !preapprovalId) return;
+
+    const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN;
+    if (!MP_ACCESS_TOKEN) {
+        console.error('MP_ACCESS_TOKEN missing for subscription webhook');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://api.mercadopago.com/preapproval/${preapprovalId}`, {
+            headers: { 'Authorization': `Bearer ${MP_ACCESS_TOKEN}` }
+        });
+        
+        if (!response.ok) {
+            console.error(`Failed to fetch preapproval ${preapprovalId}`);
+            return;
+        }
+
+        const data = await response.json();
+        const { status, external_reference } = data;
+        const uid = external_reference;
+
+        if (!uid) return;
+
+        const userRef = adminDb.collection('users').doc(uid);
+
+        if (status === 'authorized') {
+            const nextMonth = new Date();
+            nextMonth.setDate(nextMonth.getDate() + 30);
+
+            await userRef.update({
+                subscriptionStatus: 'active',
+                membershipPaidUntil: Timestamp.fromDate(nextMonth),
+                updatedAt: FieldValue.serverTimestamp()
+            });
+        } else if (status === 'cancelled' || status === 'paused') {
+            await userRef.update({
+                subscriptionStatus: 'inactive',
+                updatedAt: FieldValue.serverTimestamp()
+            });
+        }
+
+    } catch (error) {
+        console.error('Error handling subscription preapproval:', error);
+    }
 }

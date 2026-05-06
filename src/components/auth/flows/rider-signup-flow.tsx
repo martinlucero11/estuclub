@@ -21,6 +21,7 @@ import { haptic } from '@/lib/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapLocationPicker } from '@/components/ui/map-location-picker';
 import { cn } from '@/lib/utils';
+import { createSubscription } from '@/lib/actions/subscription-actions';
 
 const riderSchema = z.object({
     // Step 1: Vehicle & Location
@@ -365,17 +366,14 @@ export function RiderSignupFlow() {
         setIsSubmitting(true);
         try {
             const idToken = await auth.currentUser?.getIdToken();
-            const res = await fetch('/api/rider/membership-checkout', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${idToken}`
-                }
-            });
-            const data = await res.json();
-            if (data.init_point) {
-                window.location.href = data.init_point;
+            if (!idToken) throw new Error("No hay token de sesión");
+
+            const result = await createSubscription('rider', idToken);
+            
+            if (result.success && result.initPoint) {
+                window.location.href = result.initPoint;
             } else {
-                throw new Error("Error al generar link");
+                throw new Error(result.error || "Error al generar link");
             }
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'No pudimos procesar el enlace de pago.' });

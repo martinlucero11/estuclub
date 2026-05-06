@@ -50,7 +50,7 @@ service cloud.firestore {
     /* ================= USUARIOS & TOKENS ================= */
 
     match /users/{userId} {
-      allow read: if true; // El perfil es público o semi-público para identificación
+      allow read: if isAuthenticated(); // El perfil es público o semi-público para identificación
       allow create: if isAuthenticated() && request.auth.uid == userId; 
       allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
@@ -75,6 +75,10 @@ service cloud.firestore {
       match /services/{serviceId} { allow read: if true; allow write: if isOwner(supplierId) || isAdmin(); }
       match /appointments/{appointmentId} { allow read, write: if isOwner(supplierId) || isAdmin(); }
       match /subscribers/{userId} { allow read: if true; allow write: if isAuthenticated() && request.auth.uid == userId; }
+      
+      match /private/{doc} {
+        allow read, write: if request.auth.uid == supplierId || isAdmin();
+      }
     }
 
     /* ================= PEDIDOS (CORE) ================= */

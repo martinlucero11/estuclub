@@ -42,14 +42,18 @@ export async function GET(request: Request) {
             // Save tokens to Firestore (Preferably encrypted or in a secure subcollection)
             const userId = state || '';
             const userRef = adminDb.collection('users').doc(userId);
+            const credentialsRef = adminDb.collection('roles_supplier').doc(userId).collection('private').doc('credentials');
             
             await userRef.update({
                 mp_linked: true,
                 mp_user_id: data.user_id,
+            });
+
+            await credentialsRef.set({
                 mp_access_token: data.access_token,
                 mp_refresh_token: data.refresh_token,
                 mp_link_date: admin.firestore.FieldValue.serverTimestamp()
-            });
+            }, { merge: true });
 
             return NextResponse.redirect(`${process.env.NEXT_PUBLIC_BASE_URL}/profile?mp_linked=success`);
         } else {

@@ -63,6 +63,19 @@ export default function CluberLayout({
     }
   }, [isUserLoading, hasAccess, router]);
 
+  // Subscription check
+  useEffect(() => {
+    if (!isUserLoading && userData && !isAdmin) {
+      const status = userData.subscriptionStatus;
+      const paidUntil = userData.membershipPaidUntil;
+      const isExpired = paidUntil ? (paidUntil as Timestamp).toMillis() < Date.now() : false;
+      
+      if (status === 'inactive' || isExpired) {
+        router.replace('/suscripcion-vencida');
+      }
+    }
+  }, [isUserLoading, userData, isAdmin, router]);
+
   // Initial audio setup
   useEffect(() => {
     if (typeof window !== 'undefined') {

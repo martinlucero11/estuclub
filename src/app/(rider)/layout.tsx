@@ -10,7 +10,7 @@ export default function RiderLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { roles, isUserLoading } = useUser();
+  const { roles, isUserLoading, userData } = useUser();
   const router = useRouter();
 
   // Riders AND admins can access rider routes
@@ -21,6 +21,19 @@ export default function RiderLayout({
       router.replace('/');
     }
   }, [isUserLoading, hasAccess, router]);
+
+  // Subscription check
+  useEffect(() => {
+    if (!isUserLoading && userData && roles && !roles.includes('admin')) {
+      const status = userData.subscriptionStatus;
+      const paidUntil = userData.membershipPaidUntil;
+      const isExpired = paidUntil ? (paidUntil as any).toMillis() < Date.now() : false;
+      
+      if (status === 'inactive' || isExpired) {
+        router.replace('/suscripcion-vencida');
+      }
+    }
+  }, [isUserLoading, userData, roles, router]);
 
   if (isUserLoading) {
     return (

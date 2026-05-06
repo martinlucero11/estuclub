@@ -42,6 +42,7 @@ import { RiderPinEntry } from '@/components/rider/rider-pin-entry';
 import { RiderBottomNav } from '@/components/rider/rider-bottom-nav';
 import { DeliveryPhotoCapture } from '@/components/rider/delivery-photo-capture';
 import { RiderReviews } from '@/components/rider/rider-reviews';
+import { RiderOrderAlarmModal } from '@/components/rider/rider-order-alarm-modal';
 
 // ─── LOGIN FORM ──────────────────────────────────────────
 function RiderLogin({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
@@ -320,6 +321,7 @@ export default function RiderPage() {
     const [isPayingMembership, setIsPayingMembership] = useState(false);
     const [isOnline, setIsOnline] = useState(userData?.isOnline === true);
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; heading: number | null } | undefined>(undefined);
+    const [alarmOrder, setAlarmOrder] = useState<Order | null>(null);
 
     // Throttling References for Location Updates
     const lastUpdateAttempt = useRef<number>(0);
@@ -439,9 +441,12 @@ export default function RiderPage() {
             
             // Sensor and Audio Trigger for new matches
             if (!snapshot.metadata.hasPendingWrites && snapshot.docChanges().some(c => c.type === 'added')) {
-                haptic.vibrateSuccess();
-                if (radarAudioRef.current) {
-                    radarAudioRef.current.play().catch(e => console.error("Radar sound error", e));
+                const addedOrders = snapshot.docChanges().filter(c => c.type === 'added').map(c => ({...c.doc.data(), id: c.doc.id}));
+                // Only show alarm for searching_rider to avoid double triggering if we already accepted it
+                const newAlarmOrder = addedOrders.find(o => o.status === 'searching_rider');
+                
+                if (newAlarmOrder && !alarmOrder) {
+                    setAlarmOrder(newAlarmOrder);
                 }
             }
         });
@@ -794,6 +799,15 @@ export default function RiderPage() {
                     setDeliveryProofUrl(url);
                     setIsPhotoCaptureOpen(false);
                     setIsPinEntryOpen(true);
+                }}
+            />
+
+            <RiderOrderAlarmModal 
+                order={alarmOrder} 
+                onClose={() => setAlarmOrder(null)} 
+                onAccept={() => {
+                    setAlarmOrder(null);
+                    // Selection logic would automatically pick it up via activeOrders
                 }}
             />
 

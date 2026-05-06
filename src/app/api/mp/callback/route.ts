@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { adminDb, getInitError } from '@/lib/firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 
 /**
  * Standardized Redirect URI Logic
@@ -113,15 +114,21 @@ export async function GET(request: NextRequest) {
     const batch = adminDb.batch();
     const userRef = adminDb.collection('users').doc(userId);
     const supplierRef = adminDb.collection('roles_supplier').doc(userId);
+    const credentialsRef = supplierRef.collection('private').doc('credentials');
 
     batch.update(userRef, {
-      mp_credentials: credentialData,
-      mercadopago_linked: true
+      mercadopago_linked: true,
+      mp_credentials: FieldValue.delete() // Remove any previously stored credentials
     });
 
     batch.set(supplierRef, {
-      mp_credentials: credentialData,
       mp_linked: true,
+      updatedAt: new Date(),
+      mp_credentials: FieldValue.delete() // Remove any previously stored credentials
+    }, { merge: true });
+
+    batch.set(credentialsRef, {
+      ...credentialData,
       updatedAt: new Date()
     }, { merge: true });
 

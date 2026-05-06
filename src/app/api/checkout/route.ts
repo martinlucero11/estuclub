@@ -53,9 +53,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'La orden no tiene un comercio asociado (supplierId faltante)' }, { status: 400 });
         }
 
-        const supplierDoc = await adminDb.collection('roles_supplier').doc(supplierId).get();
-        const supplierData = supplierDoc.data();
-        const sellerAccessToken = supplierData?.mp_credentials?.access_token;
+        const credentialsDoc = await adminDb.collection('roles_supplier').doc(supplierId).collection('private').doc('credentials').get();
+        const credentialsData = credentialsDoc.data();
+        const sellerAccessToken = credentialsData?.access_token || credentialsData?.mp_access_token;
 
         if (!sellerAccessToken) {
             console.error(`Comercio ${supplierId} no tiene credenciales de Mercado Pago vinculadas.`);

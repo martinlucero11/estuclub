@@ -236,6 +236,15 @@ function SectionContent({ section }: { section: HomeSection }) {
     }
 
     if (isLoading) return <SectionSkeleton />;
+
+    // Client-side sort to prioritize featured items
+    if (items) {
+        items = [...items].sort((a: any, b: any) => {
+            const aFeatured = a.featured ? 1 : 0;
+            const bFeatured = b.featured ? 1 : 0;
+            return bFeatured - aFeatured;
+        });
+    }
     
     // IF NO ITEMS, SHOW A MESSAGE INSTEAD OF HIDING (HELPS DEBUGGING)
     if (!items || items.length === 0) {

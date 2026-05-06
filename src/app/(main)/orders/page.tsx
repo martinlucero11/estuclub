@@ -276,7 +276,7 @@ function OrdersDashboard() {
                                                 {order.status === 'rejected' ? (
                                                     <div className="space-y-0.5">
                                                         <Badge className="bg-red-500 text-white border-0 text-[8px] font-black uppercase tracking-widest rounded-lg px-2 py-0.5">Rechazado</Badge>
-                                                        <p className="text-[10px] font-bold text-red-500/70 italic">El comercio no pudo aceptar este pedido</p>
+                                                        <p className="text-[10px] font-bold text-red-500/70 italic">El comercio no pudo tomar tu pedido.</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-[10px] font-black text-foreground uppercase tracking-widest">

@@ -161,15 +161,83 @@ export async function updateOrderOperationStatus(orderId: string, newStatus: str
                     await adminMessaging.sendEachForMulticast({
                         tokens,
                         notification: {
-                            title: '❌ Pedido rechazado',
-                            body: `${order.supplierName || 'El comercio'} no pudo aceptar tu pedido. Podés hacer uno nuevo.`
+                            title: 'Pedido rechazado',
+                            body: `El comercio no pudo tomar tu pedido. Podés hacer un nuevo pedido cuando quieras.`
                         },
-                        data: { url: '/orders', orderId }
+                        data: { orderId, type: 'order_rejected' }
                     });
                 }
             } catch (notifError) {
                 console.error('REJECTED_NOTIFICATION_ERROR:', notifError);
                 // Don't fail the whole operation for a notification error
+            }
+        }
+
+        // Fire push notification to riders when order is searching for a rider
+        if (validatedStatus === 'searching_rider' && adminMessaging && order) {
+            try {
+                // Calculate trip distance (store to customer)
+                let tripDistance = 0;
+                if (order.supplierCoords && order.deliveryCoords) {
+                    const R = 6371;
+                    const dLat = (order.deliveryCoords.latitude - order.supplierCoords.latitude) * Math.PI / 180;
+                    const dLon = (order.deliveryCoords.longitude - order.supplierCoords.longitude) * Math.PI / 180;
+                    const a = 
+                        Math.sin(dLat/2) * Math.sin(dLat/2) +
+                        Math.cos(order.supplierCoords.latitude * Math.PI / 180) * Math.cos(order.deliveryCoords.latitude * Math.PI / 180) * 
+                        Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                    tripDistance = R * c;
+                }
+                const formattedDistance = tripDistance.toFixed(1);
+
+                // Fetch online and active riders
+                const ridersSnapshot = await adminDb.collection('users')
+                    .where('role', '==', 'rider')
+                    .where('isOnline', '==', true)
+                    .where('subscriptionStatus', '==', 'active')
+                    .get();
+
+                const riderTokens: string[] = [];
+                const R = 6371;
+
+                for (const doc of ridersSnapshot.docs) {
+                    const rider = doc.data();
+                    let distanceToStore = 0;
+                    
+                    // Filter riders within 10km of the store
+                    if (rider.location?.lat && rider.location?.lng && order.supplierCoords) {
+                        const dLat = (order.supplierCoords.latitude - rider.location.lat) * Math.PI / 180;
+                        const dLon = (order.supplierCoords.longitude - rider.location.lng) * Math.PI / 180;
+                        const a = 
+                            Math.sin(dLat/2) * Math.sin(dLat/2) +
+                            Math.cos(rider.location.lat * Math.PI / 180) * Math.cos(order.supplierCoords.latitude * Math.PI / 180) * 
+                            Math.sin(dLon/2) * Math.sin(dLon/2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                        distanceToStore = R * c;
+                    }
+
+                    // If rider location is unknown or within 10km, send it
+                    if (!rider.location?.lat || distanceToStore <= 10) {
+                        const tokenDoc = await adminDb.collection('userTokens').doc(doc.id).get();
+                        const tokens = tokenDoc.data()?.tokens || [];
+                        riderTokens.push(...tokens);
+                    }
+                }
+
+                if (riderTokens.length > 0) {
+                    const montoEnvio = order.deliveryFee || 0;
+                    await adminMessaging.sendEachForMulticast({
+                        tokens: riderTokens,
+                        notification: {
+                            title: '¡Nuevo pedido disponible!',
+                            body: `${order.supplierName || 'Comercio'} · ${formattedDistance}km · $${montoEnvio} de envío`
+                        },
+                        data: { orderId, type: 'new_order' }
+                    });
+                }
+            } catch (notifError) {
+                console.error('SEARCHING_RIDER_NOTIFICATION_ERROR:', notifError);
             }
         }
 

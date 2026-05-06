@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { 
     Store, MapPin, Building2, Phone, Mail, Lock, 
     Loader2, CheckCircle2, ChevronRight, ArrowLeft, 
-    ImageIcon, User as UserIcon, Wallet, ExternalLink
+    ImageIcon, User as UserIcon, Wallet, ExternalLink, Calendar, Tag
 } from 'lucide-react';
 import { getMPOAuthUrl } from '@/lib/mercadopago';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,7 @@ import {
 import { useAuthService, useFirestore, useUser } from '@/firebase';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, collection, writeBatch } from 'firebase/firestore';
+import { createSubscription } from '@/lib/actions/subscription-actions';
 import { useToast } from '@/hooks/use-toast';
 import { haptic } from '@/lib/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -64,6 +65,7 @@ export function CluberSignupFlow() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [files, setFiles] = useState<{ logo: File | null; fachada: File | null }>({ logo: null, fachada: null });
+    const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
     
     const auth = useAuthService();
     const firestore = useFirestore();
@@ -177,22 +179,49 @@ export function CluberSignupFlow() {
     };
 
     const handlePlanSelect = async (planId: string) => {
+        haptic.vibrateSubtle();
+        if (planId === 'cluber_basic') {
+            setSelectedPlanId('cluber_basic');
+            return;
+        }
+        await submitPlan(planId);
+    };
+
+    const submitPlan = async (planId: string, activeModule?: string) => {
         setIsSubmitting(true);
         try {
             const idToken = await auth.currentUser?.getIdToken();
-            const res = await fetch('/api/cluber/membership-checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${idToken}`,
-                },
-                body: JSON.stringify({ planId })
-            });
-            const data = await res.json();
-            if (data.init_point) {
-                window.location.href = data.init_point;
+            if (!idToken) throw new Error("No hay token de sesión");
+
+            let subscriptionPlan: 'cluber_basic' | 'cluber_plus' | 'cluber_pro' = 'cluber_basic';
+            if (planId === 'cluber_plus') subscriptionPlan = 'cluber_plus';
+            if (planId === 'cluber_pro') subscriptionPlan = 'cluber_pro';
+
+            const updateData: any = {
+                planType: subscriptionPlan,
+            };
+
+            if (subscriptionPlan === 'cluber_basic' && activeModule) {
+                updateData.activeModule = activeModule;
+            } else if (subscriptionPlan === 'cluber_plus' || subscriptionPlan === 'cluber_pro') {
+                updateData.activeModule = 'all';
+            }
+
+            if (subscriptionPlan === 'cluber_pro') {
+                updateData.featured = true;
+                // Default featuredModule, admin can change it later or we can infer from category
+                updateData.featuredModule = 'benefits';
+            }
+
+            const userRef = doc(firestore, 'users', auth.currentUser!.uid);
+            await setDoc(userRef, updateData, { merge: true });
+
+            const result = await createSubscription(subscriptionPlan, idToken);
+            
+            if (result.success && result.initPoint) {
+                window.location.href = result.initPoint;
             } else {
-                throw new Error("Error al generar link");
+                throw new Error(result.error || "Error al generar link");
             }
         } catch (error) {
             toast({ variant: 'destructive', title: 'Error', description: 'No pudimos generar el link de pago.' });
@@ -202,6 +231,49 @@ export function CluberSignupFlow() {
     };
 
     if (isSuccess) {
+        if (selectedPlanId === 'cluber_basic') {
+            return (
+                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 py-6">
+                    <div className="space-y-2 px-4">
+                        <h2 className="text-2xl font-black uppercase italic tracking-tighter text-foreground">Elegí tu módulo principal</h2>
+                        <p className="text-[10px] font-bold text-foreground/70 uppercase tracking-widest leading-relaxed">
+                            El plan Basic incluye acceso a UNO de estos módulos. ¿Cuál vas a usar en tu local?
+                        </p>
+                    </div>
+                    
+                    <div className="space-y-4 px-2 text-left">
+                        <div className="p-5 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl hover:shadow-[0_10px_30px_rgba(203,70,90,0.1)] transition-all cursor-pointer group flex items-center gap-4" onClick={() => submitPlan('cluber_basic', 'benefits')}>
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <Tag className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-black uppercase tracking-widest text-primary mb-1">Beneficios y Descuentos</h3>
+                                <p className="text-[9px] font-bold text-foreground/60 uppercase tracking-widest leading-tight">
+                                    Crea cupones y promociones exclusivas para estudiantes.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-5 rounded-3xl border border-primary/20 bg-primary/5 shadow-xl hover:shadow-[0_10px_30px_rgba(203,70,90,0.1)] transition-all cursor-pointer group flex items-center gap-4" onClick={() => submitPlan('cluber_basic', 'appointments')}>
+                            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                                <Calendar className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-black uppercase tracking-widest text-primary mb-1">Gestión de Turnos</h3>
+                                <p className="text-[9px] font-bold text-foreground/60 uppercase tracking-widest leading-tight">
+                                    Ideal para barberías, salones, canchas y profesionales.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <Button variant="ghost" onClick={() => setSelectedPlanId(null)} className="w-full mt-4 h-12 text-foreground/40 font-black uppercase tracking-widest text-[9px] hover:text-foreground/70">
+                        <ArrowLeft className="h-4 w-4 mr-2" /> Volver a los planes
+                    </Button>
+                </motion.div>
+            );
+        }
+
         return (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center space-y-6 py-6">
                 <div className="h-16 w-16 bg-emerald-500/10 mx-auto rounded-2xl flex items-center justify-center animate-bounce-slow border border-emerald-500/20">
@@ -215,53 +287,58 @@ export function CluberSignupFlow() {
                 </div>
                 
                 <div className="space-y-4 px-2 text-left">
-                    {/* Plan Cluber */}
-                    <div className="p-5 rounded-3xl border border-black/5 bg-white shadow-xl hover:shadow-[0_10px_30px_rgba(203,70,90,0.1)] transition-all cursor-pointer group" onClick={() => handlePlanSelect('cluber')}>
+                    {/* Plan Basic */}
+                    <div className="p-5 rounded-3xl border border-white/5 bg-white/5 shadow-xl hover:bg-white/10 transition-all cursor-pointer group glass" onClick={() => handlePlanSelect('cluber_basic')}>
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-black uppercase tracking-widest text-[#cb465a]">Plan Cluber</h3>
-                            <span className="font-black text-xl italic">$25.000</span>
+                            <h3 className="font-black uppercase tracking-widest text-white/80">Cluber Basic</h3>
+                            <span className="font-black text-xl italic text-white">$25.000<span className="text-[10px] opacity-50">/mes</span></span>
                         </div>
-                        <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest mb-4">
-                            Solo crea beneficios o servicios. No incluye productos ni delivery.
+                        <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-4">
+                            Elige Beneficios O Turnos. (No incluye Delivery).
                         </p>
-                        <Button className="w-full h-10 rounded-xl bg-black/5 text-foreground hover:bg-[#cb465a] hover:text-white uppercase font-black text-[10px] tracking-widest transition-colors" disabled={isSubmitting}>
-                            {isSubmitting ? 'Procesando...' : 'Elegir Plan'}
+                        <Button className="w-full h-10 rounded-xl bg-white/10 text-white hover:bg-[#cb465a] hover:text-white uppercase font-black text-[10px] tracking-widest transition-colors border border-white/10" disabled={isSubmitting}>
+                            Elegir Plan Basic
                         </Button>
                     </div>
 
-                    {/* Plan Delivery */}
-                    <div className="p-5 rounded-3xl border border-[#cb465a]/20 bg-[#cb465a]/5 shadow-xl relative overflow-hidden flex flex-col cursor-pointer" onClick={() => handlePlanSelect('delivery')}>
-                        <div className="absolute -right-4 -top-4 w-12 h-12 bg-[#cb465a] rotate-45" />
-                        <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-black uppercase tracking-widest text-foreground">Plan Delivery</h3>
-                            <span className="font-black text-xl text-[#cb465a] italic">$35.000</span>
+                    {/* Plan Plus */}
+                    <div className="p-5 rounded-3xl border border-[#cb465a]/30 bg-[#cb465a]/10 shadow-[0_0_30px_rgba(203,70,90,0.15)] relative overflow-hidden flex flex-col cursor-pointer glass" onClick={() => handlePlanSelect('cluber_plus')}>
+                        <div className="absolute -right-8 -top-8 w-24 h-24 bg-[#cb465a] rotate-45 flex items-end justify-center pb-2">
+                             <span className="text-[7px] font-black uppercase tracking-widest text-white">Elegido</span>
                         </div>
-                        <p className="text-[9px] font-bold text-foreground/60 uppercase tracking-widest mb-4">
-                            Acceso completo a creación de productos y plataforma de Delivery.
+                        <div className="flex justify-between items-center mb-2">
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-black uppercase tracking-widest text-[#cb465a]">Cluber Plus</h3>
+                                <span className="bg-[#cb465a] text-white text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest">Recomendado</span>
+                            </div>
+                            <span className="font-black text-xl text-[#cb465a] italic">$35.000<span className="text-[10px] opacity-50">/mes</span></span>
+                        </div>
+                        <p className="text-[9px] font-bold text-white/70 uppercase tracking-widest mb-4">
+                            Beneficios + Turnos + Delivery. Todo habilitado.
                         </p>
                         <Button className="w-full h-10 rounded-xl bg-[#cb465a] text-white hover:bg-[#cb465a]/90 uppercase font-black text-[10px] tracking-widest shadow-lg shadow-[#cb465a]/20" disabled={isSubmitting}>
-                            {isSubmitting ? 'Procesando...' : 'Elegir Plan Delivery'}
+                            {isSubmitting ? 'Procesando...' : 'Elegir Plan Plus'}
                         </Button>
                     </div>
 
                     {/* Plan Pro */}
-                    <div className="p-5 rounded-3xl border border-amber-500/30 bg-amber-500/5 shadow-xl cursor-pointer" onClick={() => handlePlanSelect('pro')}>
+                    <div className="p-5 rounded-3xl border border-amber-500/30 bg-amber-500/5 shadow-xl cursor-pointer glass hover:bg-amber-500/10 transition-colors" onClick={() => handlePlanSelect('cluber_pro')}>
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-black uppercase tracking-widest text-amber-600">Plan Pro ⭐</h3>
-                            <span className="font-black text-xl italic">$50.000</span>
+                            <h3 className="font-black uppercase tracking-widest text-amber-500">Cluber Pro ⭐</h3>
+                            <span className="font-black text-xl italic text-amber-500">$50.000<span className="text-[10px] opacity-50">/mes</span></span>
                         </div>
-                        <p className="text-[9px] font-bold text-foreground/40 uppercase tracking-widest mb-4">
-                            Todo lo anterior + Comercio Destacado y aparición en publicidades.
+                        <p className="text-[9px] font-bold text-white/50 uppercase tracking-widest mb-4">
+                            Todo lo del Plus + Comercio Destacado y exposición prioritaria.
                         </p>
-                        <Button className="w-full h-10 rounded-xl bg-amber-500 text-white hover:bg-amber-600 uppercase font-black text-[10px] tracking-widest shadow-lg shadow-amber-500/20" disabled={isSubmitting}>
+                        <Button className="w-full h-10 rounded-xl bg-amber-500/20 text-amber-500 hover:bg-amber-500 hover:text-white uppercase font-black text-[10px] tracking-widest border border-amber-500/30 transition-colors" disabled={isSubmitting}>
                             {isSubmitting ? 'Procesando...' : 'Elegir Plan Pro'}
                         </Button>
                     </div>
                 </div>
                 
-                <Button variant="ghost" onClick={() => window.location.href = '/panel-cluber'} className="w-full mt-4 h-12 text-foreground/20 font-black uppercase tracking-widest text-[9px]">
-                    Ir a mi panel (Pagar más tarde)
-                </Button>
+                <p className="text-[8px] font-black text-foreground/30 uppercase tracking-widest pt-4">
+                    Podés cambiar de plan en cualquier momento
+                </p>
             </motion.div>
         );
     }

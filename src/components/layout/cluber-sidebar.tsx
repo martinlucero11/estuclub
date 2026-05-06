@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import Logo from '@/components/common/Logo';
 import { haptic } from '@/lib/haptics';
+import { useUser } from '@/firebase';
 
 interface NavItem {
   id: string;
@@ -58,6 +59,17 @@ export function CluberSidebar({
   className,
   cluberName
 }: CluberSidebarProps) {
+  const { userData } = useUser();
+  const planType = userData?.planType as string | undefined;
+  const activeModule = userData?.activeModule as string | undefined;
+
+  const filteredNavItems = navItems.filter(item => {
+      if (item.id === 'menu' && planType === 'cluber_basic') return false; // Basic never has delivery
+      if (item.id === 'turnero' && planType === 'cluber_basic' && activeModule !== 'appointments') return false;
+      if (item.id === 'benefits' && planType === 'cluber_basic' && activeModule !== 'benefits') return false;
+      return true;
+  });
+
   return (
     <div 
       className={cn(
@@ -93,7 +105,7 @@ export function CluberSidebar({
 
       {/* Nav Items */}
       <nav className="flex-1 px-4 py-8 space-y-1 overflow-y-auto overflow-x-hidden no-scrollbar">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = currentSection === item.id;
           
           return (
@@ -127,7 +139,12 @@ export function CluberSidebar({
       {/* Profile/Footer */}
       <div className="p-4 border-t border-zinc-50 mt-auto">
           {!isCollapsed ? (
-              <div className="bg-zinc-50/50 p-4 rounded-2xl border border-zinc-100/50 flex items-center gap-3">
+              <div className="bg-zinc-50/50 p-4 rounded-2xl border border-zinc-100/50 flex items-center gap-3 relative overflow-hidden">
+                  {planType === 'cluber_pro' && (
+                      <div className="absolute top-0 right-0 bg-amber-500 text-white text-[7px] font-black uppercase px-2 py-0.5 rounded-bl-xl tracking-widest shadow-sm">
+                          PRO
+                      </div>
+                  )}
                   <div className="h-10 w-10 rounded-xl bg-white border border-zinc-200 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <ShieldCheck className="h-5 w-5 text-primary" />
                   </div>
@@ -137,7 +154,10 @@ export function CluberSidebar({
                   </div>
               </div>
           ) : (
-            <div className="h-10 w-10 rounded-xl bg-zinc-50 flex items-center justify-center mx-auto text-primary">
+            <div className="h-10 w-10 rounded-xl bg-zinc-50 flex items-center justify-center mx-auto text-primary relative">
+                {planType === 'cluber_pro' && (
+                    <div className="absolute -top-1 -right-1 h-3 w-3 bg-amber-500 rounded-full border-2 border-white" />
+                )}
                 <ShieldCheck className="h-5 w-5" />
             </div>
           )}
